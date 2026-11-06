@@ -576,6 +576,110 @@ class ResolverRenamedBooks(_ResolverBase):
         self.assertEqual("I", self.one(f["choices"][1]["clause"])["book"])
 
 
+class ChoicesKeepOtherOrders(_ResolverBase):
+    """1.0.7.2 third review: every choice offered on an instruction of several orders, applied as the page applies it (its text in place
+    of the flag's span, then a new parse of the whole instruction), leaves every OTHER order with the book, account and side the parser
+    read, never newly sendable, and the order it is on in the book and account it was read in (unless the choice is that book or
+    account).  The world is the corpus's, plus a WIDG chain and 100 WIDG short in the Fund book."""
+
+    TEXTS = (("short 100 WIDG in the Fund book and 1 ACME Dec 18 2026 240/250 call spread", "P"),
+             ("short 100 GIZM at pb ms and 1 ACME Dec 18 2026 240/250 call spread", "I"),
+             ("sell 1 ACME Dec 18 2026 260 calls in the Institutional book at pb ms and 3 ACME Dec 18 2026 250 calls", "P"),
+             ("short 100 WIDG in the Fund book and 2 ACME Dec 18 2026 260 calls", "P"),
+             ("sell 10 ACME in the Fund book and 300 WIDG", "P"),
+             ("sell 10 ACME in the Fund book and 1 ACME Dec 18 2026 240/250 call spread at 1.00", "P"),
+             ("short 100 GIZM in the Institutional book and 1 ACME Dec 18 2026 240/250 call spread and 1 ACME Dec 18 2026 210/220 put spread", "P"),
+             ("short 100 WIDG in the Fund book and 2 ACME Dec 18 2026 260 calls and 1 ACME Dec 18 2026 240/250 call spread", "P"),
+             ("buy 3 WIDG Nov 20 2026 40 calls and buy 1 ACME Dec 18 2026 240/250 call spread at I1:PB_MS", "P"),
+             ("buy 100 ACME; buy 50 GIZM at I1:PB_MS", "P"),
+             ("buy 100 ACME, sto 2 ACME Dec 18 2026 250 calls in the Institutional book", "P"),
+             ("sell 3 ACME Dec 18 2026 250 calls in the Institutional book and buy 10 WIDG", "P"),
+             ("buy 100 ACME in F1:US_EXCHANGE and 50 WIDG", "P"),
+             ("buy 1 ACME Dec 18 2026 245 call and 2 ACME Dec 18 2026 260 calls in the Fund book", "P"),
+             ("buy 100 ACME and 50 WIDG and 15 LOTX", "P"),
+             ("100 ACME and 50 WIDG", "P"))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp, cls.rt = cls._make()
+        world = dict(corpus.WORLD)
+        world["chains"] = list(corpus.WORLD["chains"]) + [{"underlying": "WIDG", "cboe": "WIDG", "spot": 40, "expiries": ("2026-11-20", corpus.DEC),
+                                                           "strikes": (35, 40, 45), "skip": (), "age_s": 30, "trade_time": corpus.TRADE_TIME, "extra": ()}]
+        world["positions"] = list(corpus.WORLD["positions"]) + [(F, "WIDG", "SHORT", 100, "40")]
+        build_world(unittest.TestCase(), cls.rt, world)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rt.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    @staticmethod
+    def goes(out, l) -> bool:
+        return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+
+    def test_every_choice_changes_only_the_order_it_is_on(self):
+        applied = widened = dropped = 0
+        problems = []
+        for text, book in self.TEXTS:
+            out = self.parse(text, book)
+            seen = set()
+            for item in out["legs"] + out["combos"]:
+                for f in item["flags"]:
+                    if not f.get("choices"):
+                        if f["code"] == "MISSING_SIDE" and len(out["legs"]) > 1:
+                            dropped += 1
+                        continue
+                    a, b = f["span"]
+                    for ch in f["choices"]:
+                        if (f["code"], a, b, ch["clause"]) in seen:
+                            continue
+                        seen.add((f["code"], a, b, ch["clause"]))
+                        applied += 1
+                        widened += int(any(l["span"][0] >= a and l["span"][1] <= b and l is not item and l["span"] != item["span"] for l in out["legs"]))
+                        out2 = self.parse(out["text"][:a] + ch["clause"] + out["text"][b:], book)
+                        delta = len(ch["clause"]) - (b - a)
+                        where = f"{text!r} [{f['code']} -> {ch['clause']!r}]"
+                        before = {(l["book"], l["account_id"]) for l in out["legs"] if a <= l["span"][0] and l["span"][1] <= b}
+                        known = all(x[1] is not None for x in before)        # an order not read yet (no contract) has no account to keep
+                        for m in out2["legs"]:
+                            if a <= m["span"][0] and m["span"][1] <= a + len(ch["clause"]):
+                                moved = m["book"] not in {x[0] for x in before} or (known and (m["book"], m["account_id"]) not in before)
+                                if f["code"] not in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK") and self.goes(out2, m) and moved:
+                                    problems.append(f"{where}: leg {m['n']} moved to {m['book']} {m['account_id']}")
+                        for l in out["legs"]:
+                            if a <= l["span"][0] and l["span"][1] <= b:
+                                continue
+                            sp = l["span"] if l["span"][1] <= a else [l["span"][0] + delta, l["span"][1] + delta]
+                            m = next((m for m in out2["legs"] if m["span"] == sp and m["instrument"].get("id") == l["instrument"].get("id")
+                                      and m["book"] == l["book"]), None)
+                            if m is None or (m["account_id"], m["side"]) != (l["account_id"], l["side"]) or (self.goes(out2, m) and not self.goes(out, l)):
+                                problems.append(f"{where}: the other leg {l['n']} {(l['book'], l['account_id'], l['side'])} became "
+                                                f"{None if m is None else (m['book'], m['account_id'], m['side'], self.goes(out2, m))}")
+        self.assertEqual([], problems, "\n".join(problems))
+        self.assertGreaterEqual(applied, 25)
+        self.assertGreaterEqual(widened, 4)                     # choices that wrote out the orders around them
+        self.assertGreaterEqual(dropped, 1)                     # "100 ACME and 50 WIDG": a side for the first would carry into the second
+
+    def test_the_rewritten_choices_read_as_trader_words(self):
+        f = flag(self.parse("short 100 WIDG in the Fund book and 1 ACME Dec 18 2026 240/250 call spread")["legs"][1], "MISSING_SIDE")
+        self.assertEqual(["buy 1 ACME Dec 18 2026 240/250 call spread in the Fund book", "sell 1 ACME Dec 18 2026 240/250 call spread in the Fund book"],
+                         [c["clause"] for c in f["choices"]])
+        out = self.parse("short 100 GIZM in the Institutional book and 1 ACME Dec 18 2026 240/250 call spread and 1 ACME Dec 18 2026 210/220 put spread")
+        f = flag(out["legs"][1], "MISSING_SIDE")
+        self.assertEqual((45, len(out["text"])), tuple(f["span"]))     # widened over the put spread, which keeps its own (refused) side
+        self.assertEqual("buy 1 ACME Dec 18 2026 240/250 call spread in the Institutional book and short 1 ACME Dec 18 2026 210/220 put spread in the"
+                         " Institutional book", f["choices"][0]["clause"])
+        out = self.parse("buy 3 WIDG Nov 20 2026 40 calls and buy 1 ACME Dec 18 2026 240/250 call spread at I1:PB_MS")
+        f = flag(out["legs"][1], "ACCOUNT_NOT_IN_BOOK")
+        self.assertEqual(([0, len(out["text"])], ["buy 3 WIDG Nov 20 2026 40 calls in the Personal book and buy 1 ACME Dec 18 2026 240/250 call spread at"
+                                                  " I1:PB_MS in the Institutional book"]), (f["span"], [c["clause"] for c in f["choices"]]))
+        # the opening part of a split keeps the account the leg was read in (the one that holds the calls), never R-ACCT-1's US Exchange
+        f = flag(self.one("sell 3 ACME Dec 18 2026 250 calls in the Institutional book"), "SIDE_SPLIT")
+        self.assertEqual("stc 2 ACME Dec 18 2026 250 calls in the Institutional book and sto 1 ACME Dec 18 2026 250 calls in the Institutional book at pb ms",
+                         f["choices"][0]["clause"])
+        self.assertEqual([PB, PB], [l["account_id"] for l in self.parse(f["choices"][0]["clause"])["legs"]])
+
+
 # ===== the route on a full runtime: registration, 400s, the corpus and the purity proof ================================================
 def _build_full(tmp):
     os.environ[config.HOME_ENV] = tmp

@@ -543,7 +543,7 @@ class SmartTicketShellTests(unittest.TestCase):
         raw.decode("ascii")                                                            # ASCII only
         src = raw.decode("ascii")
         self.assertIsNone(re.search(r"https?://", src), "the page loads or links nothing outside the app")
-        self.assertIn("T.pages.smart = { render: render, unmount: unmount, submit: submit };", src)
+        self.assertIn("T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms };", src)
         self.assertEqual((0, 0, 0), js_balance(src))
         for helper in ("T.components.grid.mount(", "T.components.preview", "T.ui.modal(", "T.store.set(STORE", "T.uuid()", "T.poll.page('smart'"):
             self.assertIn(helper, src, helper)
@@ -644,9 +644,11 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertEqual(["askConfirm"], [_enclosing(fns, m.start()) for m in re.finditer(r"confirm_large: true", src)])
         self.assertIn("{ label: 'Confirm and send', cls: 'primary', id: 'smart-confirm-large', value: 'confirm' }", src)
         self.assertIn("var stop = h.el.querySelector('#smart-stop');", src)
-        # a single order reconciles a lost answer through T.api (status=all); a combination looks up rid, rid:L1 and rid:H1 itself
-        self.assertIn("if (it.kind === 'leg') { opts.reconcile = body.account_id; }", src)
-        self.assertIn("var ids = [rid, rid + ':L1', rid + ':H1'];", src)
+        # a single order reconciles a lost answer through T.api (status=all) - third review: only when the order under its id has its
+        # terms (else REQUEST_ID_REUSED); a combination looks up rid, rid:L1 and rid:H1 itself and records its own order, never a waiting leg
+        self.assertIn("if (it.kind === 'leg') { opts.reconcile = body.account_id; opts.match = function (o, list) { return sameTerms(it.req || body, list, rid); }; }", src)
+        self.assertIn("var hit = by[rid] || by[rid + ':L1'] || by[rid + ':H1'] || null;", src)
+        self.assertIn("if (found && typeof opts.match === 'function' && !opts.match(found, list)) {", read(os.path.join(STATIC, "core.js")))
         # the docked ticket opens only on the order's account page, never on #/smart
         self.assertEqual(["openTicket"], [_enclosing(fns, m.start()) for m in re.finditer(r"T\.ticket\.open\(", src)])
         self.assertIn("var off = T.state.on('route', function (route) { off(); if (route && route.account === acct) { T.ticket.open(f); } });", src)
@@ -668,6 +670,12 @@ class SmartTicketShellTests(unittest.TestCase):
         # the one-order cancel and its x key stay as they were
         self.assertIn("T.api.del('/api/orders/' + encodeURIComponent(r.order_id), {})", src)
         self.assertIn("onKey: function (k, r) { if (k === 'x' && r && r.actions && r.actions.cancel) { cancelOrder(r, function () { load(false); }); return true; } return false; } });", src)
+        # third review: a ticked leg is listed before its primary, a waiting leg of a ticked primary right after it (it ends with it, never by
+        # a cancel of its own); "kept" is counted and said; the x reads the primary's legs before its confirm and its toast names the ended ones
+        for s in ("rows = batchOrder(rows, linked.extra);", "rows.forEach(function (r) { (kidsOf[r.order_id] || []).forEach(put); put(r); (linkedOf[r.order_id] || []).forEach(put); });",
+                  "tot.kept += ((a && a.kept) || []).length;", "if (r.$primary && last && last.indexOf(r.$primary) >= 0) { last.push(r.order_id); }",
+                  "primaryLegs(r).then(function (lk) {", "var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];"):
+            self.assertIn(s, src, s)
 
     def test_smart_css_uses_the_tokens_only(self):
         css = read(NEW_CSS)

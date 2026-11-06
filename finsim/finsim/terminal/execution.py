@@ -925,9 +925,12 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
     never the half-up rounding of the new quantity, which released a call the shares did not cover.  The shares are counted over the
     replace chain (``replaces_order_id``): what the orders it replaced filled plus this one's fill, against what they filled plus this
     one's quantity, and the children of the orders it replaced (a leg released before the replace) are sized with it, so every leg is
-    released in full once the package's shares have all filled.  The stored ratio is unchanged (1.0.7.1 reads it as before)."""
+    released in full once the package's shares have all filled.  The stored ratio is unchanged (1.0.7.1 reads it as before).  Third
+    review: a confirmed leg that ends with its primary after a partial fill is said - the owner's own cancel names it in its answer;
+    when a fill or the session close ended the primary, ONE INFO attention item (HEDGE_LEG_ENDED) per primary names the legs."""
     conn = ctx.conn
     out: List[dict] = []
+    ended_due: List[Any] = []
     chain = _primary_chain(conn, primary_order_id)
     before = sum(int(r["filled_qty"] or 0) for r in chain[1:])                     # what the orders it replaced filled
     shares_filled = before + int(primary_filled_qty)
@@ -974,4 +977,15 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
             ctx.event("ORDER_CANCELLED", account_id=r["account_id"], instrument_id=r["instrument_id"], ref_type="order", ref_id=r["order_id"],
                       reason="primary ended before it was due")
             out.append({"order_id": r["order_id"], "status": "CANCELLED"})
+            ended_due.append(r)
+    if ended_due and getattr(ctx, "kind", "") != "order.cancel":
+        # third review: a fill (an amended quantity the ratio does not fit) or the session close ended the primary and with it a confirmed
+        # leg none of which was due - said once per primary (a cancel's own answer names the legs it ended)
+        pst = str(chain[0]["status"]).lower() if chain else "ended"
+        many = len(ended_due) > 1
+        what = "; ".join(f"{r['order_id']} {str(r['side']).replace('_', ' ').lower()} {int(r['qty']):,} {r['instrument_id']}" for r in ended_due)
+        ctx.attention("INFO", "orders", "HEDGE_LEG_ENDED",
+                      f"the hedge leg{'s' if many else ''} {what} ended with {primary_order_id} ({pst}, {shares_filled:,} of {pqty:,} shares filled): none of"
+                      f" {'them' if many else 'it'} was due, so nothing can release {'them' if many else 'it'} any more",
+                      {"account_id": ended_due[0]["account_id"], "ref_type": "order", "ref_id": primary_order_id, "legs": [r["order_id"] for r in ended_due]})
     return out

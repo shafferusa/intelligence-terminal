@@ -1362,7 +1362,10 @@ class QuoteWorker(threading.Thread):
         quote pool and chain pool - a chain download already running finishes and releases its slot; queued jobs give theirs back; no
         job takes a new chain - and hand its pending quote changes to ``successor`` now.  Second review: a chain job still running hands
         the changes of its last chain over itself when it ends (``_hand_over``); the successor keeps no link to this worker, so restarts
-        never build a chain of dead workers that every tick walks."""
+        never build a chain of dead workers that every tick walks.  Third review: the product refreshers the modules registered at bind
+        time (taken by the first worker) go to ``successor`` too - the same ``Refresher`` objects, with their schedule, counters and
+        back-off - for every name it does not run already (its own ``rfr`` and ``curves`` stay its own), so a restart never stops the
+        debt, OTC option or CDS inputs.  ``Runtime.make_worker`` calls this before the successor starts."""
         self._stop_event.set()
         pool, self._pool = self._pool, None
         if pool is not None:
@@ -1371,6 +1374,17 @@ class QuoteWorker(threading.Thread):
         if successor is not None and successor is not self:
             self._successor = successor
             self._hand_over()
+            self._hand_refreshers(successor)
+
+    def _hand_refreshers(self, successor: "QuoteWorker") -> None:
+        """The registered refreshers this worker runs and ``successor`` does not: moved over (a run of one still in flight here ends and
+        clears its own flag; one cancelled with the pool had it cleared by ``_run_refreshers``'s callback)."""
+        with self._lock:
+            mine = list(self._refreshers.items())
+        with successor._lock:
+            for name, ref in mine:
+                if name not in successor._refreshers:
+                    successor._refreshers[name] = ref
 
     def _hand_over(self) -> None:
         """A retired worker's pending quote changes go to the live worker that replaced it (following later replacements), which reports
@@ -1483,7 +1497,10 @@ class QuoteWorker(threading.Thread):
         for r in due:
             if self._pool is not None and self.fetch_threads > 0:
                 try:
-                    self._pool.submit(self._run_refresher, r, now)
+                    fut = self._pool.submit(self._run_refresher, r, now)
+                    # third review: a run cancelled with the pool (retire) never started, so it clears the in-flight flag here - the refresher
+                    # then runs again in the worker it is handed to, instead of staying "in flight" for good
+                    fut.add_done_callback(lambda f, ref=r: setattr(ref, "in_flight", False) if f.cancelled() else None)
                     continue
                 except RuntimeError:                 # the pool is shutting down: run inline once
                     pass

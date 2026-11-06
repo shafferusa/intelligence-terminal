@@ -24,11 +24,14 @@
  *   id of the preview the CONFIRM listed (an order's, or a sequential combination's shares leg's; second review), so the server judges a
  *   price that moved since the owner read the confirm (PREVIEW_STALE: more than 0.5 % against the owner, or a preview older than 120 s).
  *   The first refusal stops the run: a moved price (PREVIEW_STALE) shows the server's diff with Accept & continue / Skip / Stop (Accept
- *   resends the same request id with the fresh preview); a large order (CONFIRM_REQUIRED) is resent under the same id with
+ *   resends the same request id with the preview the dialog shows - third review: the server stores the 409's preview, so a price that
+ *   moves again while the dialog is open asks again); a large order (CONFIRM_REQUIRED) is resent under the same id with
  *   confirm_large only when the owner clicks Confirm and send; any other refusal stops with its message.  A lost answer is looked up
- *   by its request id (a single order through T.api's reconcile, a combination by rid / rid:L1 / rid:H1) before anything else goes.
+ *   by its request id (a single order through T.api's reconcile, a combination by rid / rid:L1 / rid:H1) before anything else goes,
+ *   and recorded as sent only when the orders there have the item's terms (a sequential package's option legs too: type, limit and
+ *   size through their ratio; third review).
  * - "Cancel what this ticket sent": the open orders of this ticket (request ids st:<ticket>:...) in every account it used, listed and
- *   confirmed, then one POST /api/orders/cancel?book=<b> per book.
+ *   confirmed, then one POST /api/orders/cancel?book=<b> per book, every hedge leg listed before its primary (each by its own cancel).
  * The ticket id is made here (T.uuid, 12 hex characters), never from the text; an unchanged item resent is a replay ("already
  * submitted"), never a second order, and within one ticket an order already sent stays marked sent when the text is read again - by
  * its terms, or by its words in the same place when they now read as another order (a position it closed has moved): such an item is
@@ -1061,7 +1064,9 @@
   }
   function post(S, it, body, rid) {
     var opts = { request_id: rid };
-    if (it.kind === 'leg') { opts.reconcile = body.account_id; }
+    /* third review: a lost answer of a single order is recovered only when the order under its id has this item's terms (else the
+       answer is REQUEST_ID_REUSED, handled below like the server's own) */
+    if (it.kind === 'leg') { opts.reconcile = body.account_id; opts.match = function (o, list) { return sameTerms(it.req || body, list, rid); }; }
     return T.api.post('/api/orders' + bookQ(it.book), body, opts).then(function (res) {
       return record(S, it, rid, res);
     }, function (e) {
@@ -1084,13 +1089,15 @@
   }
   /* an item whose answer was lost (or whose own request id already carries an order): its request id (a single order, a sequential
      primary), rid:L1 (all-or-none legs) or rid:H1 (the primary's children) is looked up in the account's orders before anything else
-     is sent */
+     is sent.  Third review: the order recorded is the item's own - the request id itself (a single order, the shares order of a
+     sequential package) or the first all-or-none leg - never a waiting leg (the list is newest first, so rid:H1 came first) */
   function reconcileCombo(S, it, rid, body, err) {
     var acct = (it.req && it.req.account_id) || it.account_id;
-    return T.api.get('/api/accounts/' + encodeURIComponent(acct) + '/orders', { status: 'all' }).then(function (rows) {
+    return T.api.get('/api/accounts/' + encodeURIComponent(acct) + '/orders', { status: 'all', limit: 2000 }).then(function (rows) {
       var list = Array.isArray(rows) ? rows : (rows && rows.orders) || [];
-      var ids = [rid, rid + ':L1', rid + ':H1']; var hit = null;
-      list.forEach(function (o) { if (!hit && o && ids.indexOf(o.request_id) >= 0) { hit = o; } });
+      var by = {};
+      list.forEach(function (o) { if (o && typeof o.request_id === 'string' && !by[o.request_id]) { by[o.request_id] = o; } });
+      var hit = by[rid] || by[rid + ':L1'] || by[rid + ':H1'] || null;
       if (hit && sameTerms(it.req || body, list, rid)) {
         return record(S, it, rid, { order: hit, package: { package_id: hit.package_id, status: hit.status }, recovered: true, replayed: true });
       }
@@ -1111,8 +1118,10 @@
     });
   }
   /* whether the orders under request ``rid`` (a single order, a sequential primary rid with its waiting legs rid:H1.., or all-or-none
-     legs rid:L1..) are the item's request ``req``: account, instrument, side, quantity, type, prices and time in force (a waiting leg's
-     size follows its primary, so it is matched by instrument and side) */
+     legs rid:L1..) are the item's request ``req``: account, instrument, side, quantity, type, prices and time in force.  Third review: a
+     sequential package's option leg is matched on its type and limit too, and on its size through its ratio (the leg's quantity over the
+     shares' at 8 decimals, which a release never changes; a leg still waiting also keeps its whole quantity) - another call quantity
+     under the same id is another order */
   function sameTerms(req, orders, rid) {
     if (!req) { return false; }
     var by = {}; (orders || []).forEach(function (o) { if (o && typeof o.request_id === 'string') { by[o.request_id] = o; } });
@@ -1126,20 +1135,27 @@
     }
     var pl = req.package && Array.isArray(req.package.legs) ? req.package.legs : null;
     if (!pl) { return one(by[rid], req, true); }
+    /* a sequential package's option leg (rid:H1..): its type and limit as sent, its size through its ratio */
+    function waiting(o, l) {
+      if (!one(o, l, false) || o.order_type !== (l.order_type || 'MARKET') || !px(o.limit_px, l.limit_px)) { return false; }
+      if (o.status === 'WAITING_PARENT' && Number(o.qty) !== Number(l.qty)) { return false; }
+      var want = Number(l.qty) / Number(pl[0].qty);
+      return o.ratio != null && o.ratio !== '' && isFinite(want) ? Math.abs(Number(o.ratio) - want) < 1e-8 : Number(o.qty) === Number(l.qty);
+    }
     /* each leg of the request matched to one order of its own under the id (rid:H1.. waiting legs, rid:L1.. all-or-none legs) */
-    function each(legs, prefix, sized) {
+    function each(legs, prefix, match) {
       var got = Object.keys(by).filter(function (k) { return k.indexOf(prefix) === 0; }).map(function (k) { return by[k]; });
       if (got.length !== legs.length) { return false; }
       var used = {};
       return legs.every(function (l) {
-        for (var j = 0; j < got.length; j++) { if (!used[j] && one(got[j], l, sized)) { used[j] = true; return true; } }
+        for (var j = 0; j < got.length; j++) { if (!used[j] && match(got[j], l)) { used[j] = true; return true; } }
         return false;
       });
     }
     if (by[rid]) {                                     /* sequential: the shares leg is the primary (listed first), the options wait */
-      return one(by[rid], pl[0], true) && each(pl.slice(1), rid + ':H', false);
+      return one(by[rid], pl[0], true) && each(pl.slice(1), rid + ':H', waiting);
     }
-    return each(pl, rid + ':L', true);
+    return each(pl, rid + ':L', function (o, l) { return one(o, l, true); });
   }
   function orderWords(o) {
     return (SIDE_WORDS[o.side] || o.side || '?') + ' ' + T.fmt.qty(o.qty) + ' ' + (o.symbol || o.instrument_id || '?') + (o.order_type === 'LIMIT' && o.limit_px ? ' limit ' + o.limit_px : '');
@@ -1243,22 +1259,32 @@
     }, function (e) { if (!S.dead) { say(S, 'could not read the open orders: ' + T.api.describe(e), 'err'); } });
   }
   function cancelByBook(S, orders, reason) {
+    /* every order listed in the confirm is cancelled by its own command: a hedge leg goes BEFORE its primary (third review: the server
+       reads a leg listed after its primary as "ends with it", which would keep a released leg working) */
+    var placed = {}, listed = [];
+    function put(o) { if (!placed[o.order_id]) { placed[o.order_id] = true; listed.push(o); } }
+    orders.forEach(function (o) {
+      orders.forEach(function (k) { if (k.parent_order_id && k.parent_order_id === o.order_id) { put(k); } });
+      put(o);
+    });
     var groups = {}, order = [];
-    orders.forEach(function (o) { var b = o.book || ''; if (!groups[b]) { groups[b] = []; order.push(b); } if (groups[b].indexOf(o.order_id) < 0) { groups[b].push(o.order_id); } });
+    listed.forEach(function (o) { var b = o.book || ''; if (!groups[b]) { groups[b] = []; order.push(b); } if (groups[b].indexOf(o.order_id) < 0) { groups[b].push(o.order_id); } });
     var batches = [];
     order.forEach(function (b) { for (var i = 0; i < groups[b].length; i += BATCH_MAX) { batches.push({ book: b, ids: groups[b].slice(i, i + BATCH_MAX) }); } });
-    var tot = { cancelled: 0, skipped: 0, failed: 0, errors: [] };
+    var tot = { cancelled: 0, skipped: 0, failed: 0, kept: 0, errors: [] };
     function one(k) {
       if (k >= batches.length) { return Promise.resolve(); }
       var bt = batches[k];
       return T.api.post('/api/orders/cancel' + bookQ(bt.book), { order_ids: bt.ids, reason: reason }, { request_id: 'mc:' + hex12() }).then(function (r) {
         tot.cancelled += ((r && r.cancelled) || []).length; tot.skipped += ((r && r.skipped) || []).length; tot.failed += ((r && r.failed) || []).length;
+        tot.kept += ((r && r.kept) || []).length;
       }, function (e) { tot.errors.push(bookName(bt.book) + ': ' + T.api.describe(e)); }).then(function () { return one(k + 1); });
     }
     say(S, 'cancelling ...');
     one(0).then(function () {
       kick();
-      var msg = 'cancelled ' + tot.cancelled + (tot.skipped ? ' . already ended ' + tot.skipped : '') + (tot.failed ? ' . failed ' + tot.failed : '') + (tot.errors.length ? ' . refused: ' + tot.errors.join('; ') : '');
+      var msg = 'cancelled ' + tot.cancelled + (tot.skipped ? ' . already ended ' + tot.skipped : '') + (tot.failed ? ' . failed ' + tot.failed : '') +
+        (tot.kept ? ' . kept working ' + tot.kept : '') + (tot.errors.length ? ' . refused: ' + tot.errors.join('; ') : '');
       T.ui.toast(msg, tot.failed || tot.errors.length ? 'err' : 'ok', 6000);
       if (!S.dead) { say(S, msg, tot.failed || tot.errors.length ? 'err' : 'ok'); }
     });
@@ -1342,5 +1368,5 @@
     if (S.grid) { try { S.grid.destroy(); } catch (e) { /* the page is gone anyway */ } }
     st = null; ui = null;
   }
-  T.pages.smart = { render: render, unmount: unmount, submit: submit };
+  T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms };     /* sameTerms: pure, read by the browser smoke */
 })();

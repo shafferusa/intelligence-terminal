@@ -250,6 +250,49 @@ class PoolModeTests(_Base):
         self.assertEqual((["ACME", "WIDG1"], []), (w3._drain_changed(), w1._changed))
         self.assertEqual([], w3._drain_changed())
 
+    def test_a_retired_worker_hands_its_product_refreshers_to_the_live_one(self):
+        """1.0.7.2 third review: the product refreshers the modules register at bind time are taken by the first worker built; a worker
+        that replaces a dead one (``Runtime.make_worker``) gets them from it at ``retire`` - the same schedules, counters and back-off - so a
+        restart never stops the debt, OTC option or CDS inputs.  Its own ``rfr`` and ``curves`` stay its own.  A run queued on the dead
+        worker's pool is cancelled with it and clears its in-flight flag, so the refresher runs again in the live worker."""
+        from concurrent.futures import ThreadPoolExecutor
+        fp = SlowChains(self.rt.clock, delay=0.0)
+        now = int(self.rt.clock.epoch())
+        calls = []
+
+        def failing(services, at):
+            calls.append(at)
+            raise RuntimeError("source down (test)")
+        w1 = self.worker(fp, fetch_threads=1)
+        w1.add_refresher("debt", 60, failing)
+        w1.add_refresher("otc_options", 15, lambda services, at: calls.append(("otc", at)))
+        gate = threading.Event()
+        w1._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="quote-test")
+        try:
+            w1._pool.submit(gate.wait, 10)                                    # the pool's only thread is busy: the next runs queue behind it
+            w1._run_refresher(w1._refreshers["debt"], now)                    # one failed run: backed off
+            debt = w1._refreshers["debt"]
+            self.assertEqual((1, 1, 1, now + 60), (debt.runs, debt.failures, debt.streak, debt.retry_at))
+            self.assertIn("otc_options", w1._run_refreshers(now))             # queued on the busy pool: in flight
+            otc = w1._refreshers["otc_options"]
+            self.assertTrue(otc.in_flight)
+            w2 = self.worker(fp, fetch_threads=0)
+            own = {n: w2._refreshers[n] for n in ("rfr", "curves")}
+            w1.retire(w2)                                                     # the pool shuts: the queued run is cancelled
+        finally:
+            gate.set()
+        self.assertFalse(otc.in_flight)
+        self.assertEqual({"debt", "otc_options", "rfr", "curves"} - set(w2.refreshers()), set())
+        self.assertIs(debt, w2._refreshers["debt"])                            # the same schedule and back-off
+        self.assertIs(otc, w2._refreshers["otc_options"])
+        self.assertEqual(own, {n: w2._refreshers[n] for n in ("rfr", "curves")})
+        self.assertEqual((1, 1, now + 60), (w2.refreshers()["debt"]["runs"], w2.refreshers()["debt"]["failures"], w2.refreshers()["debt"]["retry_at"]))
+        ran = w2._run_refreshers(now + 30)                                    # the live worker runs them: OTC due, debt still backed off
+        self.assertIn("otc_options", ran)
+        self.assertNotIn("debt", ran)
+        self.assertIn(("otc", now + 30), calls)
+        self.assertIn("debt", w2._run_refreshers(now + 60))
+
     def test_the_pool_size_follows_the_config_and_fetch_threads(self):
         fp = SlowChains(self.rt.clock, delay=0.0)
         self.assertEqual((3, 32), (config.CHAIN_FETCH_WORKERS, CHAIN_FETCH_TIMES_KEPT))

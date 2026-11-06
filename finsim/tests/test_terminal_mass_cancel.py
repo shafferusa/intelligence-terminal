@@ -21,10 +21,12 @@ import tempfile
 import unittest
 from datetime import date
 from decimal import Decimal
+from unittest import mock
 
 from tests.terminal_helpers import _Log, assert_integrity
 from finsim.terminal import config, server as _server
 from finsim.terminal.clock import FakeClock
+from finsim.terminal.commands import Result
 from finsim.terminal.instruments import occ_symbol
 from finsim.terminal.quotes import Bar1m, QuoteRecord
 from finsim.terminal.quotes.cache import records_from_chain
@@ -296,6 +298,106 @@ class MassCancelTests(MassCancelBase):
         st, out, _h = self.cancel([sold], "mc:f1f1f1f1f1f1", book="P")
         self.assertEqual([{"order_id": sold, "status": "CANCELLED", "package_id": pkg["package"]["package_id"]}], out["cancelled"])
         self.assertEqual(["mc:f1f1f1f1f1f1:" + sold], self.cancels("mc:f1f1f1f1f1f1"))
+        assert_integrity(self, self.rt, "full")
+
+
+class ListedWithItsPrimaryTests(MassCancelBase):
+    """1.0.7.2 third review: Pending's "Cancel selected" on a primary alone lists the legs still waiting for it right AFTER it ("ends with
+    its primary").  Such a leg gets no command of its own: it ends with its primary only while it still waits; released for shares bought
+    in the meantime, or with a primary that did not end in this batch, it keeps working and is reported as kept - so a protective put is
+    never cancelled for shares the owner holds.  A leg listed BEFORE its primary is the owner's own tick: its own cancel."""
+
+    def setUp(self):
+        super().setUp()
+        # BUY 300 ACME limit 99 (below the 100.00 print: it rests) + BTO 3 Dec 100 calls limit 1.00 (below the 5.00 ask: they rest once
+        # released); the other ACME buys rest at 95.00 and below.  Ratio 3 / 300 = 0.01
+        st, pkg, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
+            {"instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00"},
+            {"instrument_id": acme("C", 100), "side": "BTO", "qty": 3, "order_type": "LIMIT", "limit_px": "1.00"}]}}, "st:0123456789ab:C5:r1")
+        self.assertEqual((200, "SEQUENTIAL"), (st, pkg["package"]["fill_mode"]), pkg)
+        self.pkg = pkg["package"]["package_id"]
+        self.p = pkg["order"]["order_id"]
+        self.h = self.one("SELECT order_id FROM orders WHERE parent_order_id=?", (self.p,))["order_id"]
+        self.bar(600)                                                    # 10 % x 600 = 60 shares: 60 x 3 // 300 = 0, the calls wait
+        self.assertEqual((("PARTIAL", 60, 300), ("WAITING_PARENT", 0, 3)), (self.facts(self.p), self.facts(self.h)))
+
+    def bar(self, vol: int) -> None:
+        """The next completed 1-minute bar printing 98.90 (it crosses the 99.00 limit) with ``vol`` shares: 10 % of it fills."""
+        self.rt.clock.advance(60)
+        now = self.rt.clock.epoch()
+        px = qprice("98.90")
+        bar = Bar1m(now - 60, px, px, px, px, vol)
+        self.rt.cache.put(QuoteRecord(instrument_id="ACME", provider="yahoo", source="Yahoo Finance chart (ACME)", method="direct", last=px, quote_time=now - 10,
+                                      fetched_at=now, delay_s=900, delay_label="up to 15 min delayed", currency="USD", session_group="US_EQUITY", bar=bar,
+                                      bars_tail=[bar]), now)
+        self.rt.matcher.on_quotes(["ACME"])
+
+    def facts(self, oid: str) -> tuple:
+        r = self.one("SELECT status, filled_qty, qty FROM orders WHERE order_id=?", (oid,))
+        return r["status"], int(r["filled_qty"]), int(r["qty"])
+
+    def test_g_a_leg_released_while_the_confirm_was_open_keeps_working(self):
+        self.bar(400)                                                    # 40 more: 100 x 3 // 300 = 1 call released for them
+        self.assertEqual(("WORKING", 0, 1), self.facts(self.h))
+        batch = "mc:9a9a9a9a9a9a"
+        st, out, _h = self.cancel([self.p, self.h], batch, book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual(([(self.p, None)], [], []), ([(x["order_id"], x.get("with")) for x in out["cancelled"]], out["skipped"], out["failed"]))
+        self.assertEqual([(self.h, "RELEASED", "WORKING", self.p)], [(x["order_id"], x["code"], x["status"], x["parent_order_id"]) for x in out["kept"]])
+        self.assertIn("100 shares", out["kept"][0]["message"])
+        self.assertEqual((("CANCELLED", 100, 300), ("WORKING", 0, 1)), (self.facts(self.p), self.facts(self.h)))
+        self.assertEqual([f"{batch}:{self.p}"], self.cancels(batch))      # the leg had no command of its own
+        # the same batch again: the same answer, nothing new
+        st, again, h = self.cancel([self.p, self.h], batch, book="P")
+        self.assertEqual((out["cancelled"], out["kept"], "1"), (again["cancelled"], again["kept"], h.get("X-Replayed")))
+        assert_integrity(self, self.rt, "full")
+
+    def test_h_the_shares_completed_while_the_confirm_was_open(self):
+        self.bar(50000)                                                  # the other 240 fill: all 3 calls released
+        self.assertEqual((("FILLED", 300, 300), ("WORKING", 0, 3)), (self.facts(self.p), self.facts(self.h)))
+        st, out, _h = self.cancel([self.p, self.h], "mc:9b9b9b9b9b9b", book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual(([], [(self.p, "NOT_OPEN")]), (out["cancelled"], [(x["order_id"], x["code"]) for x in out["skipped"]]))
+        self.assertEqual([(self.h, "PRIMARY_ENDED")], [(x["order_id"], x["code"]) for x in out["kept"]])
+        self.assertEqual(("WORKING", 0, 3), self.facts(self.h))
+        self.assertEqual([], self.cancels("mc:9b9b9b9b9b9b"))
+        assert_integrity(self, self.rt, "full")
+
+    def test_i_a_refused_primary_cancel_keeps_its_waiting_leg(self):
+        real = self.rt.bus.execute
+        p = self.p
+
+        def busy_for_the_primary(cmd):
+            if cmd.kind == "order.cancel" and (cmd.payload or {}).get("order_id") == p:
+                return Result(False, 503, {"error": {"code": "WRITER_BUSY", "message": "the writer is busy; retry", "details": {}}, "request_id": cmd.request_id},
+                              retry_after=1)
+            return real(cmd)
+        with mock.patch.object(self.rt.bus, "execute", busy_for_the_primary):
+            st, out, _h = self.cancel([self.p, self.h], "mc:9c9c9c9c9c9c", book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual([(self.p, "WRITER_BUSY", 503)], [(x["order_id"], x["code"], x["http"]) for x in out["failed"]])
+        self.assertEqual([(self.h, "PRIMARY_NOT_CANCELLED", "WAITING_PARENT")], [(x["order_id"], x["code"], x["status"]) for x in out["kept"]])
+        self.assertEqual(("WAITING_PARENT", 0, 3), self.facts(self.h))
+        self.bar(50000)                                                  # the primary still works: its shares fill and release the calls
+        self.assertEqual((("FILLED", 300, 300), ("WORKING", 0, 3)), (self.facts(self.p), self.facts(self.h)))
+        assert_integrity(self, self.rt, "full")
+
+    def test_j_a_leg_listed_before_its_primary_is_the_owners_own_cancel(self):
+        self.bar(400)                                                    # 1 call released
+        batch = "mc:9d9d9d9d9d9d"
+        st, out, _h = self.cancel([self.h, self.p], batch, book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual(([self.h, self.p], []), ([x["order_id"] for x in out["cancelled"]], out["kept"]))
+        self.assertEqual(sorted([f"{batch}:{self.h}", f"{batch}:{self.p}"]), self.cancels(batch))
+        self.assertEqual(("CANCELLED", "CANCELLED"), (self.facts(self.h)[0], self.facts(self.p)[0]))
+        # the primary alone (the x, or "Cancel selected" with it ticked alone) reports its released leg as kept, never cancels it
+        self.tearDown()
+        self.setUp()
+        self.bar(400)
+        st, out, _h = self.cancel([self.p], "mc:9e9e9e9e9e9e", book="P")
+        self.assertEqual(([(self.p, None)], [(self.h, "RELEASED")]), ([(x["order_id"], x.get("with")) for x in out["cancelled"]],
+                                                                       [(x["order_id"], x["code"]) for x in out["kept"]]))
+        self.assertEqual(("WORKING", 0, 1), self.facts(self.h))
         assert_integrity(self, self.rt, "full")
 
 

@@ -462,12 +462,13 @@
         return r;
       });
     },
-    /* Mutating call.  opts: {request_id, reconcile: account_id (orders re-GET on a lost response), retries}
+    /* Mutating call.  opts: {request_id, reconcile: account_id (orders re-GET on a lost response), match, retries}
      * - request_id: one per click (crypto.randomUUID), kept in T.api.pending until the call settles;
      * - 503 (Retry-After) and transient network errors retry the SAME id up to 3 times;
      * - a network error on an order submit with opts.reconcile re-GETs the account's orders (status=all) and either
      *   returns the order found under this request_id (recovered) or throws LostResponse(found=null) - the caller
-     *   keeps its button disabled until this settles;
+     *   keeps its button disabled until this settles; with opts.match(order, list) (1.0.7.2 third review) an order found under the id
+     *   whose terms do not match is never "recovered": the call fails 409 REQUEST_ID_REUSED instead (another order took the id);
      * - X-Replayed: 1 -> result.replayed = true and the toast "already submitted". */
     mutate: function (method, path, body, opts) {
       opts = opts || {};
@@ -493,6 +494,10 @@
                 var found = null;
                 list.forEach(function (o) { if (o && o.request_id === rid) { found = o; } });
                 delete T.api.pending[rid];
+                if (found && typeof opts.match === 'function' && !opts.match(found, list)) {
+                  throw new ApiError(409, 'REQUEST_ID_REUSED', 'request ' + rid + ' already carries ' + (found.order_id || 'an order') + ' with other terms',
+                                     { order_id: found.order_id || null }, null, {});
+                }
                 if (found) { return { order: found, recovered: true, request_id: rid }; }
                 throw new LostResponse(rid, null);
               }, function () {

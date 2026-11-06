@@ -221,6 +221,32 @@ class SingleLegTests(SmartSubmitBase):
             self.assertTrue(RID_RE.match(x), x)
         assert_integrity(self, rt, "full")
 
+    def test_o_the_moved_price_the_dialog_shows_is_the_one_accept_sends(self):
+        """Third review: a 409 PREVIEW_STALE carries the order's fresh preview, and that preview is STORED (it has a preview_id), so
+        "Accept & continue" sends the figures the dialog showed: a price that moved again while the dialog was open comes back stale and
+        asks again; unmoved, it fills."""
+        ticket = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 10, "order_type": "MARKET", "tif": "DAY"}
+        rid = f"st:{TICKET}:L1:r1"
+        smart = {"ticket": TICKET, "item": "L1", "clause": "buy 10 ACME"}
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(ticket, confirm_large=False))
+        self.assertEqual((200, D("100")), (st, D(pv["execution"]["expected_price"])), pv)                # the confirm: 10 x 100.00
+        print_acme(self.rt, "103.00", 30, self.now - 120, 50000)                                    # 3 % against the buy
+        st, out, _h = self.send(dict(ticket, preview_id=pv["preview_id"], confirm_large=False, smart=smart), rid)
+        self.assertEqual((409, "PREVIEW_STALE"), (st, out["error"]["code"]), out)
+        shown = out["error"]["details"]["preview"]                                                   # what the dialog shows
+        self.assertEqual(D("103"), D(shown["execution"]["expected_price"]))
+        self.assertTrue(str(shown.get("preview_id") or "").startswith("pv:"), shown.get("preview_id"))
+        self.assertIsNotNone(self.rt.previews.get(shown["preview_id"], self.rt.clock.epoch()))                # in the preview store
+        print_acme(self.rt, "106.00", 20, self.now - 120, 50000)                                    # moves again while the dialog is open
+        st, out, _h = self.send(dict(ticket, preview_id=shown["preview_id"], confirm_large=False, smart=smart), rid)   # Accept
+        self.assertEqual((409, "PREVIEW_STALE"), (st, out["error"]["code"]), out)                    # asks again: nothing placed
+        self.assertEqual([], self.q("SELECT order_id FROM orders"))
+        again = out["error"]["details"]["preview"]
+        st, out, _h = self.send(dict(ticket, preview_id=again["preview_id"], confirm_large=False, smart=smart), rid)   # Accept, unmoved
+        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
+        self.assertEqual([(10, D("106"))], [(int(f["qty"]), D(f["price"])) for f in self.q("SELECT qty, price FROM fills")])
+        assert_integrity(self, self.rt, "full")
+
 
 # ===== all-or-none combinations: every leg from one observation, or nothing ============================================================
 class AonComboTests(SmartSubmitBase):
@@ -502,6 +528,46 @@ class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
         self.assertEqual("primary " + p + " ended with 200 shares filled: floor(200 \u00d7 1 / 300) = 0, none of this leg was due",
                          self.q("SELECT note FROM order_events WHERE order_id=? ORDER BY rowid DESC LIMIT 1", (c,))[0]["note"])
         self.assertEqual({"ACME": 200}, self.positions())
+        assert_integrity(self, self.rt, "full")
+
+    def test_n_a_leg_that_ends_with_its_primary_is_said(self):
+        """Third review: a confirmed leg that ends with its primary is never silent.  The x (DELETE) names it in its answer
+        (``ended_with_it``, which the page's toast shows); a fill of an amended quantity the ratio does not fit, or the session close,
+        raises ONE INFO attention item (HEDGE_LEG_ENDED) naming it."""
+        def items():
+            return [(r["severity"], r["code"], r["ref_id"]) for r in self.q("SELECT severity, code, ref_id FROM attention WHERE code='HEDGE_LEG_ENDED' ORDER BY id")]
+        # the x: 300 shares + 1 call, 200 filled (200 x 1 // 300 = 0: the call waits)
+        p, c = self.package(300, 1)
+        self.bar(2000)
+        st, out, _h = self.call("DELETE", f"/api/orders/{p}?book=T", {}, "ui:x-names-the-leg-01")
+        self.assertEqual(200, st, out)
+        self.assertEqual([(c, "CANCELLED", "primary ended before it was due", "STO", 1, self.CALL)],
+                         [(x["order_id"], x["status"], x["reason"], x["side"], x["qty"], x["instrument_id"]) for x in out["ended_with_it"]])
+        self.assertEqual([], items())                                    # the owner's own cancel: said in its answer, no attention item
+        st, again, h = self.call("DELETE", f"/api/orders/{p}?book=T", {}, "ui:x-names-the-leg-01")
+        self.assertEqual(("1", out["ended_with_it"]), (h.get("X-Replayed"), again["ended_with_it"]))
+        # the session close ends the primary (DAY): one INFO item names the call
+        self.tearDown()
+        self.setUp()
+        p, c = self.package(300, 1)
+        self.bar(2000)
+        self.assertTrue(self.rt.lifecycle.tick(at="2026-10-20T16:00:01-04:00", only="EXPIRE_ORDERS")["ran"])
+        self.assertEqual(("EXPIRED", "CANCELLED"), (self.row(p)["status"], self.row(c)["status"]))
+        self.assertEqual([("INFO", "HEDGE_LEG_ENDED", p)], items())
+        msg = self.q("SELECT message FROM attention WHERE code='HEDGE_LEG_ENDED'")[0]["message"]
+        self.assertIn(c, msg)
+        self.assertIn("200 of 300 shares filled", msg)
+        assert_integrity(self, self.rt, "full")
+        # a fill ends the primary: 300 + 1 call amended to 250 shares (250 x 0.00333333 is not whole: floor(250 x 0.00333333) = 0)
+        self.tearDown()
+        self.setUp()
+        p, c = self.package(300, 1)
+        st, out, _h = self.call("PATCH", f"/api/orders/{p}?book=T", {"qty": 250}, "ui:amend-250-0002")
+        self.assertEqual(200, st, out)
+        self.bar(50000)
+        self.assertEqual(("FILLED", "CANCELLED"), (self.row(p)["status"], self.row(c)["status"]))
+        self.assertEqual([("INFO", "HEDGE_LEG_ENDED", p)], items())
+        self.assertEqual({"ACME": 250}, self.positions())
         assert_integrity(self, self.rt, "full")
 
 

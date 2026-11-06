@@ -700,9 +700,34 @@ def run_command(req: Request, kind: str, payload: dict, actor: str = "ui") -> Re
         attr = next((v for k, v in owner.items() if kind.startswith(k)), kind.split(".")[0])
         raise NotBuilt(PACKAGES.get(attr, "?"), attr, f"command {kind} has no handler in this build")
     res = bus.execute(Command(kind, payload, req.request_id or "", actor))
+    if not res.ok and kind in SHOWN_PREVIEW_KINDS and res.code in ("PREVIEW_STALE", "CONFIRM_REQUIRED"):
+        _store_shown_preview(req, res)
     if _REFUSAL_RECORDERS and not res.ok:
         _record_refusal(req, kind, payload, res)
     return res
+
+
+#: 1.0.7.2 third review: the order commands whose 409 PREVIEW_STALE / CONFIRM_REQUIRED carries the fresh preview the ticket then shows
+SHOWN_PREVIEW_KINDS = ("order.submit", "order.amend", "order.replace")
+
+
+def _store_shown_preview(req: Request, res: Result) -> None:
+    """The preview a 409 PREVIEW_STALE / CONFIRM_REQUIRED carries (``details.preview``, the order's terms validated now) is put in the
+    preview store, so it gets a ``preview_id``: the ticket's "Accept" / "Confirm" resends THAT id, and a price that moved again (more than
+    0.5 % against the owner) while the dialog was open, or a dialog left open past 120 s, comes back stale and asks again - never a
+    preview taken after the click.  In memory only (the store is the preview route's); a failure leaves the answer as it was."""
+    try:
+        err = res.body.get("error") if isinstance(res.body, dict) else None
+        details = err.get("details") if isinstance(err, dict) else None
+        pv = details.get("preview") if isinstance(details, dict) else None
+        if not isinstance(pv, dict) or pv.get("preview_id") or not pv.get("execution"):
+            return
+        from .orders_preview import preview_store
+        preview_store(req.rt).put(pv)
+    except Exception:   # noqa: BLE001 - the answer is unchanged; the ticket then takes its own fresh preview, as before
+        log = getattr(req.rt, "log", None)
+        if log:
+            log.exception("storing the preview of a %s answer failed", res.code)
 
 
 def ok_or_raise(res: Result) -> dict:

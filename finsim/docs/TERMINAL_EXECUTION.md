@@ -118,7 +118,9 @@ NAV falls by exactly the 1.00 commission.
 - `CONFIRM_REQUIRED`: the sweep-in the fill would need exceeds the confirm threshold (default USD 2,000,000.00) or the
   notional exceeds 25 % of the lifetime's NAV; resubmit the same request with `confirm_large: true`.
 - `PREVIEW_STALE`: the `preview_id` is unknown or older than 120 s, or the executable price moved more than 0.5 % against
-  you since the preview; the response carries the fresh preview and the difference.
+  you since the preview; the response carries the fresh preview and the difference. 1.0.7.2: that fresh preview is stored
+  (it has its own `preview_id`, as the `CONFIRM_REQUIRED` one does), and the tickets' "Accept" sends it: a price that moves
+  again while the dialog is open comes back stale and asks again, never filled at figures you did not see.
 - `QUOTE_STALE`: a MARKET / STOP / STOP_LIMIT / TRAILING_STOP submitted while the session is open against a quote that is
   not executable (a LIMIT may rest).
 - `INSUFFICIENT_FUNDS`: the worst-case need exceeds own available + Treasury available + PB headroom; the message carries
@@ -138,7 +140,10 @@ NAV falls by exactly the 1.00 commission.
   replace the shares are counted over the chain (what the replaced orders filled plus the replacement's fill, against
   what they filled plus its quantity), and the legs released before the replace are resized with it. When the primary
   ends (filled, cancelled or expired), a leg still waiting ends with it (cancelled: "primary ended unfilled" when no share
-  was bought, else "primary ended before it was due"), and a leg already released keeps working at its size.
+  was bought, else "primary ended before it was due"), and a leg already released keeps working at its size. Such a leg
+  is always said: cancelling the primary yourself names it in the answer (`ended_with_it`; Pending's x says so in its
+  confirm and its toast), and when a fill (an amended quantity the ratio does not fit) or the session close ends the
+  primary, one information item (`HEDGE_LEG_ENDED`) names the legs that ended with it.
 - **All-or-none (option-only, one underlying)**: every leg needs a fresh Cboe quote with displayed size for its whole
   remaining quantity in the **same** chain observation; otherwise nothing fills (`AON_SIZE`, `AON_STALE`) and every leg
   keeps working. The fill is one command for all legs with one option-margin recomputation; cancelling any leg cancels
@@ -174,11 +179,16 @@ NAV falls by exactly the 1.00 commission.
   order given, never in parallel, each with the request id `<batch id>:<order or package id>`. An order of an
   all-or-none package cancels its whole package once, and its other legs, listed or not, are reported with it. Any
   other order is cancelled itself, and a primary's legs still waiting end with it, reported with it whether listed or
-  not (one listed after its primary gets no command of its own). A leg already released for the shares the primary
-  bought keeps working; listed itself, it is cancelled by its own command. So the answer counts every order the batch
-  ended; Pending Trades lists the waiting legs in its confirm before anything is cancelled, and the released ones apart,
-  as "keeps working", outside the batch unless they are ticked. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is
-  reported with its code. The answer lists what was cancelled, skipped and failed. Resending the same batch after a
+  not. A hedge leg listed AFTER its own primary is listed with it and never gets a command of its own: still waiting
+  when its primary's cancel went through, it ended with it; released for shares bought (before the batch, or while the
+  confirm was open), or with a primary whose cancel did not go through (it had already ended, or it was refused), it
+  keeps working and is reported as kept (`RELEASED`, `PRIMARY_ENDED`, `PRIMARY_NOT_CANCELLED`), so a protective leg is
+  never cancelled for shares you hold unless you ticked it. A leg listed BEFORE its primary, or without it, is your own
+  tick and is cancelled by its own command. Pending Trades lists the waiting legs of a ticked primary in its confirm
+  ("ends with its primary") right after it, the released ones apart as "keeps working", and a leg you ticked before its
+  primary; "Cancel all open" and the Smart Ticket's "Cancel what this ticket sent" list every leg before its primary (the
+  confirm names them all). An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is reported with
+  its code. The answer lists what was cancelled, skipped, failed and kept working. Resending the same batch after a
   lost answer replays every cancel already made (`X-Replayed: 1`) and cancels nothing twice.
 - **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in
   `preview_id`, `confirm_large` or the Smart Ticket's `smart` note is the same order and is answered as its replay

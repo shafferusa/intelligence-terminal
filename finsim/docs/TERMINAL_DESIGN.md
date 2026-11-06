@@ -1583,7 +1583,11 @@ the slots no live job holds: each slot keeps the worker that took it, and a repl
 restart) first retires the dead one's pools, whose running download finishes and releases its own slot, so one
 underlying is never downloaded twice at once. The retired worker hands its pending quote changes to its replacement, and
 a download still running hands over its own when it ends; the live worker keeps no link to a dead one, so restarts never
-pile up dead workers. An order ticket on an option asks for its chain at REQUEST itself
+pile up dead workers. It also hands over the product refreshers the modules registered at bind time (debt data, the OTC
+option inputs, the CDS inputs and end-of-day job: the first worker took them), with their schedule, counters and
+back-off, before the replacement starts - its own `rfr` and `curves` jobs stay its own - and a refresher run queued on the
+dead worker's pool and cancelled with it clears its in-flight flag, so a restart never stops those inputs (1.0.7.2 third
+review). An order ticket on an option asks for its chain at REQUEST itself
 (`orders_preview._ask_for_quote`), so a held option's chain is not left a REFRESH behind the pinned ones. When the
 standard root of a chain cell shows no market and another root of that cell does, the quoted contract takes the
 cell (its root named on it) and the other goes to the cell's `alt`, which the chain page lists. The

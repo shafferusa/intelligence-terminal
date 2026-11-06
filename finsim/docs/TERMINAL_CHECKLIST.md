@@ -122,7 +122,7 @@ Start a scratch server (never the live home): `py -3.12 -m finsim serve --port 0
 | TRS templates / the TRS overlay offered without the TRS module | gated on WP-26 | strategies.py / hedges.py, WP-15 |
 | Dividend state invisible on a position | the drawer lists the dividends with their convention | api_views.py / positions.js, WP-15 |
 | Ticket CSS injected from ticket.js | open (cosmetic) | — |
-| 409 PREVIEW_STALE carries an unstored preview (one extra round trip) | open (works) | — |
+| 409 PREVIEW_STALE carries an unstored preview (one extra round trip) | closed 1.0.7.2: the preview a 409 carries is stored, and Accept sends it | — |
 
 ## 7. For WP-16 / the next release (nothing deployed by WP-15)
 

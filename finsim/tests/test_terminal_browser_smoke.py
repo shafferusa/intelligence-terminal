@@ -375,6 +375,30 @@ class BrowserSmokeTests(unittest.TestCase):
         """Every POST /api/orders (an order submit; not its preview, not a cancel) the page sent since ``since``."""
         return self._posts(since, "/api/orders")
 
+    def test_y_smart_ticket_records_a_sequential_package_as_sent_only_with_its_terms(self):
+        """1.0.7.2 third review: the page records an item as sent under its own request id (a reload or a second window got there first)
+        only when the orders under that id have the item's terms - a sequential package's option legs included: their type, limit and
+        size (through the ratio stored at 8 decimals, which a release never changes), so another call quantity under the same id is
+        another order, never "already submitted"."""
+        b, sid = self.browser, self.sid
+        b.wait(sid, "!!(window.T && T.pages && T.pages.smart && T.pages.smart.sameTerms)", timeout=30)
+        got = b.js(sid, """(function () {
+          var rid = 'st:a1b2c3d4e5f6:C1:r2', acct = 'F1:US_EXCHANGE', call = 'ACME261218C00065000';
+          var req = { account_id: acct, tif: 'DAY', package: { strategy_key: 'CUSTOM', legs: [
+            { instrument_id: 'ACME', side: 'BUY', qty: 200, order_type: 'LIMIT', limit_px: '50' },
+            { instrument_id: call, side: 'STO', qty: 3, order_type: 'MARKET' }] } };
+          function orders(calls, status, extra) {
+            return [Object.assign({ request_id: rid + ':H1', account_id: acct, instrument_id: call, side: 'STO', qty: status === 'WAITING_PARENT' ? calls : 1,
+                                    order_type: 'MARKET', limit_px: null, status: status, ratio: (calls / 200).toFixed(8), tif: 'DAY' }, extra || {}),
+                    { request_id: rid, account_id: acct, instrument_id: 'ACME', side: 'BUY', qty: 200, order_type: 'LIMIT', limit_px: '50.00', status: 'PARTIAL', tif: 'DAY' }];
+          }
+          var f = T.pages.smart.sameTerms;
+          return [f(req, orders(3, 'WAITING_PARENT'), rid), f(req, orders(2, 'WAITING_PARENT'), rid), f(req, orders(3, 'WORKING'), rid),
+                  f(req, orders(2, 'WORKING'), rid), f(req, orders(3, 'WAITING_PARENT', { order_type: 'LIMIT', limit_px: '1.00' }), rid)];
+        })()""")
+        # the same package (waiting, or 1 call released); 2 calls under the id (waiting or released); a limit on the call that was not sent
+        self.assertEqual([True, False, True, False, False], got)
+
     def test_z_smart_ticket_sends_only_after_the_confirm(self):
         """The Smart Ticket on the real server (named to run last: it leaves a working order and a draft behind).  A three-leg instruction
         (fictional ACME / WIDG, read on Enter) renders three legs with their flags; nothing is posted to /api/orders before the confirm -
@@ -509,10 +533,24 @@ class BrowserSmokeTests(unittest.TestCase):
         sent = self._order_posts(since)
         self.assertEqual([(f"st:{ticket}:L1:r2", 409)], [(x["rid"], x["status"]) for x in sent])     # the item's revision 2 (leg 1 read again)
         self.assertTrue(sent[0]["body"].get("preview_id"))
+        # third review: the dialog shows the server's figures at 257.50 - a STORED preview, whose id "Accept & continue" sends - so a price
+        # that moves again while the dialog is open (270.00: 4.85 % more against the buy) comes back stale and asks again
+        self.assertIn("2,575.00", b.js(sid, "document.querySelector('#modal-root .modal').innerText"))
+        widg("270.00", 5)
+        b.js(sid, "document.querySelector('#smart-accept').click(); true")
+        b.wait(sid, "!!document.querySelector('#smart-accept') && /moved/.test(document.querySelector('#modal-root .modal').innerText)", timeout=40)
+        for _ in range(100):                                                      # the second answer is in (the dialog asks again)
+            sent = self._order_posts(since)
+            if len(sent) == 2 and sent[1]["status"]:
+                break
+            b.pump(0.2)
+        self.assertEqual([(f"st:{ticket}:L1:r2", 409)] * 2, [(x["rid"], x["status"]) for x in sent])
+        self.assertTrue(sent[1]["body"].get("preview_id"))
+        self.assertNotEqual(sent[0]["body"]["preview_id"], sent[1]["body"]["preview_id"])          # the preview the dialog showed
         b.js(sid, "document.querySelector('#smart-stop').click(); true")
         b.wait(sid, "!document.querySelector('#smart-stop') && /stopped/.test(document.querySelector('#smart-status').innerText)", timeout=15)
         b.pump(0.5)
-        self.assertEqual([(f"st:{ticket}:L1:r2", 409)], [(x["rid"], x["status"]) for x in self._order_posts(since)])
+        self.assertEqual([(f"st:{ticket}:L1:r2", 409)] * 2, [(x["rid"], x["status"]) for x in self._order_posts(since)])
         with rt.db.reader() as conn:
             self.assertEqual(0, conn.execute("SELECT COUNT(*) FROM orders WHERE request_id=?", (f"st:{ticket}:L1:r2",)).fetchone()[0])
         self.assertEqual([], [e for e in b.errors(sid, since) if not ("409" in e and "/api/orders" in e)])

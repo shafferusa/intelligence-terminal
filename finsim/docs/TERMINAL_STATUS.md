@@ -92,7 +92,7 @@ dividends, WP-21 private credit, WP-23 lifetimes/reset, WP-26 TRS/XCCY); the ser
 2. `accounting.pb_headroom_c` counts a positive swap PV as long market value (WP-09 observation; swaps not built yet).
 3. `private.reseed` is not wired into the housekeeping job (WP-19 ask).
 4. The 409 PREVIEW_STALE body carries an unstored preview (no preview_id), so the ticket's Accept re-previews first (WP-13
-   note) — works, one extra round trip.
+   note) — works, one extra round trip. Closed in 1.0.7.2: the preview a 409 carries is stored and Accept sends it.
 5. Ticket CSS is injected from `ticket.js` rather than `terminal.css` (cosmetic).
 6. `accounting.py` is 1,344 lines (over the ~900 guideline; a split needs a new module).
 7. The CME/SIFMA calendar is approximated by the NYSE list (decisions s7.2, stated on screen).

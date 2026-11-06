@@ -124,6 +124,12 @@ Each leg and combination carries flags.
 | information | TIF_DEFAULT, BOOK_SELECTED, BOOK_FROM_SCOPE (opening phrase), TYPE_FROM_AT, STRATEGY_EXPANDED, STRATEGY_SIDE_CONVENTION, COMBO_FILL_MODE |
 
 - **Choices.** A choice is the replacement text of the words its flag names: the order, the combination, or both orders for a covered-call hint. Picking one puts that text in the instruction and reads it again; nothing is applied by itself.
+- **A choice changes only the order it is on.** Read again with the whole instruction, every other order keeps its side, book, account and grouping, and the order the choice is on keeps its book and account (unless the choice is that book or account). Where that needs it, the choice also writes out what those orders had inherited, in plain words, and covers them:
+  - a side carried from the order before ("short 100 WIDG in the Fund book and 1 ACME Dec 18 2026 240/250 call spread": "buy 1 ACME ... call spread in the Fund book");
+  - the orders after it that carry its side keep their own ("... and short 1 ACME ... put spread in the Institutional book");
+  - a book or account phrase that would land in the closing phrase of the last order, and so apply to every order naming none, is matched by the others' own ("buy 3 WIDG ... calls in the Personal book and buy 1 ACME ... at I1:PB_MS in the Institutional book").
+  - The opening part of a split ("stc 2 + sto 1") names the account the order was read in, so it stays where the calls are held.
+  - A choice that cannot keep the other orders as they were is not offered: a side for the first of two orders without one would carry into the second.
 - **Actions.** An action runs an existing step and then reads the text again: "Look it up", "Load the chain", or the product's own ticket.
 
 ## The route

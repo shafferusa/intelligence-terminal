@@ -1690,7 +1690,8 @@ def order_detail(services, conn, order_id: str, *, review: bool = False, now: Op
         d["package"] = {"package_id": raw["package_id"], "strategy_key": skey, "fill_mode": _get(hp, "fill_mode"), "strategy_words": code_words(skey),
                         "fill_mode_words": code_words(_get(hp, "fill_mode")), "state": state, "state_words": words, "stored_status": _get(hp, "status"),
                         "legs": [dict({"order_id": l["order_id"], "instrument_id": l["instrument_id"], "side": l["side"], "qty": int(l["qty"]),
-                                       "filled_qty": int(l["filled_qty"] or 0), "status": l["status"], "type_words": type_words(l)}, **order_stage(l, now))
+                                       "filled_qty": int(l["filled_qty"] or 0), "status": l["status"], "type_words": type_words(l),
+                                       "parent_order_id": _get(l, "parent_order_id")}, **order_stage(l, now))
                                  for l in legs]}
     else:
         d["package"] = None
