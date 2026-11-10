@@ -453,6 +453,69 @@ class Fuzz(unittest.TestCase):
                 self.assertTrue(0 <= c["span"][0] <= c["span"][1] <= len(out["text"]), t)
 
 
+class FifthReviewGrammar(unittest.TestCase):
+    """1.0.7.2 fifth review, the pure layer: a number written before "limit" is the "225 limit" price only when it is none of the
+    contract's words (a year or a day typed after a month, a roll's target strike) and no price follows the word; a connector alone
+    between two groups is a separator, never an order; an account typed with "at" / "in" has that word in its span; a book phrase keeps
+    the span of its book words alone (``book_span``)."""
+
+    def test_a_year_or_day_typed_before_limit_is_never_the_price(self):
+        for text, want_exp, want_price in (("buy 2 ACME 240c Dec 18 2026 limit", {"m": 12, "d": 18, "y": 2026}, None),
+                                           ("buy 2 ACME 240c Dec 18 2026 limit 2.50", {"m": 12, "d": 18, "y": 2026}, "2.50"),
+                                           ("buy 2 WIDG 45c Dec 18 2026 lmt", {"m": 12, "d": 18, "y": 2026}, None),
+                                           ("buy 2 ACME 240c Dec 18 limit 2.50", {"m": 12, "d": 18, "y": None}, "2.50"),
+                                           ("buy 2 ACME 240c 18 Dec 2026 limit", {"m": 12, "d": 18, "y": 2026}, None),
+                                           ("buy 2 ACME Dec 18 2026 240 calls 2.50 limit", {"m": 12, "d": 18, "y": 2026}, "2.50"),
+                                           ("buy 2 ACME 240c Dec 18 2026 together limit 0.50", {"m": 12, "d": 18, "y": 2026}, "0.50")):
+            with self.subTest(text=text):
+                c = clause(text)
+                self.assertEqual(want_exp, c["option"]["expiry"])
+                p = c["mods"]["price"]
+                self.assertEqual(("LIMIT", want_price), (p["type"], p.get("limit")))
+                self.assertEqual([], c["unparsed"])
+                if want_price is None:                                # a bare "limit": MISSING_PRICE, never a price the owner did not type
+                    self.assertIn("MISSING_PRICE", codes(c))
+        self.assertEqual(("LIMIT", "225"), (clause("buy 100 ACME 225 limit")["mods"]["price"]["type"], clause("buy 100 ACME 225 limit")["mods"]["price"]["limit"]))
+        c = clause("buy 100 ACME 225 limit 226")                      # a price after the word is the price: the number before it is not read
+        self.assertEqual("226", c["mods"]["price"]["limit"])
+        self.assertTrue(c["unparsed"])
+
+    def test_a_roll_target_strike_typed_before_limit_is_the_strike(self):
+        for text, strike, price in (("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260 limit 1.20", "260", "1.20"),
+                                    ("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260 limit", "260", None),
+                                    ("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 limit 1.20", None, "1.20"),
+                                    ("roll 3 ACME Dec 18 2026 250 calls to 260 limit", "260", None),
+                                    ("roll 1 WIDG Dec 2026 45 calls to Dec 2026 35 aon limit 1.00", "35", "1.00")):
+            with self.subTest(text=text):
+                c = clause(text)
+                self.assertEqual("roll", c["kind"])
+                self.assertEqual(strike, c["roll_to"]["strike"])
+                self.assertEqual(price, c["mods"]["price"].get("limit"))
+                self.assertEqual([], c["unparsed"])
+        self.assertEqual({"m": 1, "d": 15, "y": 2027}, clause("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 limit 1.20")["roll_to"]["expiry"])
+
+    def test_a_connector_alone_between_groups_is_a_separator(self):
+        for text in ("(buy 50 WIDG and sell 1 WIDG Nov 20 2026 45 call) then (buy 100 ACME, sell 1 ACME Dec 18 2026 260 call)",
+                     "(200 WIDG), (buy 100 ACME, sell 1 ACME Dec 18 2026 260 call)", "(buy 100 ACME) and (sell 1 ACME Dec 18 2026 260 call)"):
+            with self.subTest(text=text):
+                out = st.parse(text)
+                self.assertFalse([f for f in out["flags"] if f["code"] == "UNPARSED_TEXT" and f["text"].startswith(("'then'", "','", "'and'"))], out["flags"])
+                self.assertEqual(2, len(out["groups"]))
+        segs, _g, _s = st.split_clauses(st.tokenize("buy 100 ACME and; sell 50 WIDG"))
+        self.assertEqual(["buy 100 ACME and", "sell 50 WIDG"], [" ".join(t.text for t in s["tokens"]) for s in segs])
+
+    def test_account_and_book_spans(self):
+        text = "sell 2 ACME Dec 18 2026 250 calls in the Institutional book at us exchange"
+        c = clause(text)
+        acct, scope = c["mods"]["account"], c["mods"]["scope"]
+        self.assertEqual("at us exchange", text[acct["span"][0]:acct["span"][1]])            # the account choice replaces it whole
+        self.assertEqual("in the Institutional book", text[scope["book_span"][0]:scope["book_span"][1]])
+        self.assertEqual("in the Institutional book at us exchange", text[scope["span"][0]:scope["span"][1]])
+        text = "buy 100 ACME at pb ms"
+        a = clause(text)["mods"]["account"]
+        self.assertEqual("at pb ms", text[a["span"][0]:a["span"][1]])
+
+
 class Determinism(unittest.TestCase):
     def test_corpus_twice_in_process(self):
         self.assertEqual(corpus_digest(), corpus_digest())

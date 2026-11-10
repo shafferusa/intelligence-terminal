@@ -1047,9 +1047,18 @@ def register_routes(r) -> None:
                 report(cancelled, dict({"order_id": oid, "status": (out.get("order") or {}).get("status") or "CANCELLED"},
                                        **({"package_id": package_id} if package_id else {})))
                 # R3: the legs still waiting for this shares order ended with it: said, listed or not (a listed one at its own turn); third
-                # review: a leg it had released keeps working - said as kept (Pending listed it as "keeps working"), never cancelled here
-                for k in sorted(k for k, r in kids.items() if r["primary"] == oid and k not in pos and k not in reported):
-                    settle(k, "with", kids[k]["package_id"])
+                # review: a leg it had released keeps working - said as kept (Pending listed it as "keeps working"), never cancelled here.
+                # Fifth review: the same batch sent again (its cancel replayed) says the legs that cancel ended too - the batch's one read
+                # finds them already ended - so a retry after a lost answer gives the first answer
+                mine = {k: r for k, r in kids.items() if r["primary"] == oid}
+                if res.replayed:
+                    with rt.db.reader() as conn:
+                        ended = [e["order_id"] for e in ended_with_primary(conn, oid)]
+                        for r in (conn.execute(f"SELECT order_id, package_id FROM orders WHERE order_id IN ({','.join('?' for _ in ended)})", ended).fetchall()
+                                  if ended else []):
+                            mine.setdefault(r["order_id"], {"package_id": r["package_id"], "primary": oid})
+                for k in sorted(k for k in mine if k not in pos and k not in reported):
+                    settle(k, "with", mine[k]["package_id"])
             elif res.code == "NOT_OPEN":
                 outcome[oid] = "ended"
                 report(skipped, {"order_id": oid, "code": "NOT_OPEN", "message": res.message or f"order {oid} had already ended"})

@@ -481,6 +481,75 @@ def _open_borrow(ctx: TxContext, services, vo: ValidatedOrder, order_id: str) ->
     return {"borrow_id": borrow_id, "locate": _as_dict(vo.locate)}
 
 
+def _chain_head(conn, order_id: Optional[str]):
+    """The row of the order that works now in ``order_id``'s replace chain (``replaced_by_order_id`` followed), or None."""
+    r = _order_raw(conn, order_id) if order_id else None
+    seen = set()
+    while r is not None and r["order_id"] not in seen:
+        seen.add(r["order_id"])
+        nxt = _row_get(r, "replaced_by_order_id")
+        r2 = _order_raw(conn, nxt) if nxt else None
+        if r2 is None:
+            break
+        r = r2
+    return r
+
+
+def _chain_legs(conn, primary_order_id: str) -> List[str]:
+    """The open hedge legs of a shares order and of the orders it replaced (a leg released before a re-price stays with the order that
+    released it)."""
+    ids = [r["order_id"] for r in execution._primary_chain(conn, primary_order_id)] or [primary_order_id]
+    return [r["order_id"] for r in conn.execute(f"SELECT order_id FROM orders WHERE parent_order_id IN ({','.join('?' for _ in ids)}) AND status IN"
+                                                 " ('WAITING_PARENT','WORKING','PARTIAL','SUSPENDED') ORDER BY order_id", ids).fetchall()]
+
+
+def _follow_primary(ctx: TxContext, prow, leg_ids: Iterable[str], note: Optional[str]) -> List[str]:
+    """1.0.7.2 fifth review: the open hedge legs ``leg_ids`` take their shares order's lifetime - time in force, expiry, good-till date and
+    next-session start - so a leg never ends on a clock of its own while its shares order still buys (an amend or a re-price that keeps
+    the shares order working longer keeps its legs with it; a GTD or next-session package's legs live as long as its shares).  ``note``:
+    the order event written on each leg changed (None at the legs' creation).  Returns the legs changed."""
+    conn = ctx.conn
+    want = (str(prow["tif"]), int(prow["expires_ts"]), _row_get(prow, "gtd_date"), _row_get(prow, "activate_ts"))
+    cols = _order_cols(conn)
+    changed = []
+    for lid in leg_ids:
+        r = _order_raw(conn, lid)
+        if r is None or r["status"] not in ("WAITING_PARENT", "WORKING", "PARTIAL", "SUSPENDED"):
+            continue
+        if (str(r["tif"]), int(r["expires_ts"]), _row_get(r, "gtd_date"), _row_get(r, "activate_ts")) == want:
+            continue
+        conn.execute("UPDATE orders SET tif=?, expires_ts=? WHERE order_id=?", (want[0], want[1], lid))
+        if "gtd_date" in cols and "activate_ts" in cols:
+            conn.execute("UPDATE orders SET gtd_date=?, activate_ts=? WHERE order_id=?", (want[2], want[3], lid))
+        if note:
+            conn.execute("UPDATE orders SET updated_ts=? WHERE order_id=?", (ctx.ts, lid))
+            _order_event(conn, lid, ctx.ts, r["status"], r["status"], note)
+        changed.append(lid)
+    return changed
+
+
+def _held_leg(services, conn, r, now: int):
+    """1.0.7.2 fifth review: the live shares order a WAITING_PARENT hedge leg waits for, when that order still works and the leg's own
+    contract has not ended - such a leg ends with its shares order (``execution.resize_hedge_children``), never on its own clock - else
+    None."""
+    if r["status"] != "WAITING_PARENT" or not r["parent_order_id"] or r["fill_mode"] == "AON":
+        return None
+    head = _chain_head(conn, r["parent_order_id"])
+    if head is None or head["status"] not in LIVE_STATUSES or _contract_ended(services, conn, r, now):
+        return None
+    return head
+
+
+def _contract_ended(services, conn, r, now: int) -> bool:
+    """Whether an order's own contract has ended (no longer ACTIVE, or past its expiry date) - what EXPIRE_ORDERS reads as due besides
+    the order's own clock (fifth review: the targeted expiry reads it too, so such an order is never refused as not yet expired)."""
+    inst = services.instruments.get(r["instrument_id"], conn)
+    if inst is None:
+        return False
+    today = ny_of(now).date().isoformat()
+    return str(getattr(inst, "status", "ACTIVE") or "ACTIVE") != "ACTIVE" or bool(getattr(inst, "expiry", None) and str(inst.expiry)[:10] < today)
+
+
 def create_hedge_children(ctx: TxContext, services, primary_order_id: str, legs: List[dict], candidate_id: str, strategy_key: Optional[str] = None) -> str:
     """§10.9 sequential packages: a ``hedge_packages`` row for the primary and one WAITING_PARENT child order per leg
     (``{instrument_id, side, qty, order_type?, limit_px?}``) with ``ratio = leg qty / primary qty``; the children are sized
@@ -505,6 +574,9 @@ def create_hedge_children(ctx: TxContext, services, primary_order_id: str, legs:
         vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, rest_ok=True, queue_unfunded=True)
         ratio = (Decimal(int(leg["qty"])) / Decimal(pqty)).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_EVEN).normalize()
         oid = _insert_order(ctx, vo, f"{praw['request_id']}:H{i + 1}", status="WAITING_PARENT", package_id=pid, parent_order_id=primary_order_id, ratio=ratio)
+        # 1.0.7.2 fifth review: a leg lives exactly as long as its shares order - its expiry, good-till date and next-session start too
+        # (a GTD or next-session primary's leg never expires on a day of its own)
+        _follow_primary(ctx, praw, [oid], None)
         _order_event(conn, oid, ctx.ts, None, "WAITING_PARENT", f"hedge leg of {primary_order_id} ({candidate_id}): {_summary(vo)}, ratio {ratio}", vo.rec)
         ctx.event("ORDER_SUBMITTED", account_id=vo.account_id, instrument_id=vo.inst.instrument_id, ref_type="order", ref_id=oid, side=vo.side, qty=vo.qty,
                   order_type=vo.order_type, tif=vo.tif, package_id=pid, parent_order_id=primary_order_id, ratio=str(ratio), status="WAITING_PARENT")
@@ -829,15 +901,26 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
         rows = conn.execute("SELECT o.* FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id WHERE o.status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')"
                             " AND (o.expires_ts < ? OR i.status <> 'ACTIVE' OR (i.expiry IS NOT NULL AND i.expiry < ?)) ORDER BY o.order_id",
                             (ctx.ts, ny_of(ctx.ts).date().isoformat())).fetchall()
-    out = []
-    for r in rows:
+    out, kept = [], []
+    for r0 in rows:
+        # 1.0.7.2 fifth review: each order as it is now (a shares order expired before its waiting legs has already ended them)
+        r = r0 if oid else _order_raw(conn, r0["order_id"])
+        if r is None:
+            continue
         if r["status"] not in LIVE_STATUSES:
             if oid:
                 raise ConflictError("NOT_OPEN", f"order {r['order_id']} is {r['status']}", {"status": r["status"]})
             continue
-        due = ctx.ts > int(r["expires_ts"])
+        due = ctx.ts > int(r["expires_ts"]) or _contract_ended(services, conn, r, ctx.ts)
         if oid and not due and not payload.get("force"):
             raise ConflictError("NOT_EXPIRED", f"order {r['order_id']} expires at {ny_of(int(r['expires_ts'])).strftime('%Y-%m-%d %H:%M ET')}", {"expires_ts": int(r["expires_ts"])})
+        # fifth review: a hedge leg still waiting for a shares order that works is never expired on its own clock - it ends with that
+        # order (``execution.resize_hedge_children``); only its own contract's end (or a forced expiry) ends it first, and that is said
+        head = None if payload.get("force") else _held_leg(services, conn, r, ctx.ts)
+        if head is not None:
+            kept.append({"order_id": r["order_id"], "parent_order_id": head["order_id"],
+                         "reason": f"waits for its shares order {head['order_id']} ({str(head['status']).lower()}), which still works: it ends with that order"})
+            continue
         gtd = _row_get(r, "gtd_date")
         if gtd:                                          # OMS-11: a good-till-date order
             why = f"GTD date reached (good till {gtd})"
@@ -849,7 +932,26 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
             out.extend(_close_package(ctx, services, r["package_id"], "EXPIRED", why, "ORDER_EXPIRED"))
         else:
             out.append(_close_order(ctx, services, r, "EXPIRED", why, "ORDER_EXPIRED"))
-    return {"expired": out}
+            if r["parent_order_id"]:
+                _say_leg_ended(ctx, r, why)
+    res = {"expired": out}
+    if kept:
+        res["kept"] = kept
+    return res
+
+
+def _say_leg_ended(ctx: TxContext, r, why: str) -> None:
+    """1.0.7.2 fifth review: a hedge leg that expired while its shares order (the head of its replace chain) still works - its own
+    contract ended, or a forced expiry - is said by ONE INFO item (HEDGE_LEG_ENDED): the shares bought from then on have no such leg."""
+    conn = ctx.conn
+    head = _chain_head(conn, r["parent_order_id"])
+    if head is None or head["status"] not in LIVE_STATUSES or ctx.ts > int(head["expires_ts"]):
+        return
+    side = str(r["side"]).replace("_", " ").lower()
+    ctx.attention("INFO", "orders", "HEDGE_LEG_ENDED",
+                  f"the hedge leg {r['order_id']} {side} {int(r['qty']):,} {r['instrument_id']} expired ({why}) while its shares order {head['order_id']} still works"
+                  f" ({str(head['status']).lower()}): the shares it buys from now on are not hedged by this leg",
+                  {"account_id": r["account_id"], "ref_type": "order", "ref_id": head["order_id"], "legs": [r["order_id"]]})
 
 
 def h_resume(ctx: TxContext, payload: dict) -> dict:
@@ -1205,6 +1307,12 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
     count = int(_row_get(_order_raw(conn, oid), "amend_count", 0) or 0)
     text = "AMENDED " + "; ".join(f"{w} {a} -> {b}" for w, a, b in changes)
     _order_event(conn, oid, ctx.ts, raw["status"], raw["status"], text, vo.rec)
+    follow: List[str] = []
+    if tif_changed and not raw["parent_order_id"]:
+        # 1.0.7.2 fifth review: a shares order's hedge legs keep its time in force (and expiry): one kept working past the close keeps
+        # its legs with it, never leaving them to expire on their own clock while it still buys
+        follow = _follow_primary(ctx, _order_raw(conn, oid), _chain_legs(conn, oid),
+                                 f"its shares order {oid} was amended ({changes[-1][1]} -> {changes[-1][2]}): this leg keeps its time in force")
     ctx.event("ORDER_AMENDED", account_id=raw["account_id"], instrument_id=raw["instrument_id"], ref_type="order", ref_id=oid, amend_count=count,
               changes=[{"field": w, "from": a, "to": b} for w, a, b in changes], expires_ts=expires)
     fills, sweeps, dec = [], [], None
@@ -1216,8 +1324,11 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
         dec = d.to_dict()
         if fr is not None:
             fills, sweeps = [fr.to_dict()], _sweeps_for(conn, [fr.fill_id])
-    return {"order": order_view(conn, oid), "changes": [{"field": w, "from": a, "to": b} for w, a, b in changes], "amend_count": count, "event": text,
-            "decision": dec, "fills": fills, "sweeps": sweeps, "warnings": vo.warnings, "preview": vo.preview}
+    out = {"order": order_view(conn, oid), "changes": [{"field": w, "from": a, "to": b} for w, a, b in changes], "amend_count": count, "event": text,
+           "decision": dec, "fills": fills, "sweeps": sweeps, "warnings": vo.warnings, "preview": vo.preview}
+    if follow:
+        out["hedge_legs_follow"] = follow
+    return out
 
 
 def _date_or_none(v):
@@ -1277,6 +1388,12 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
             _order_event(conn, c, ctx.ts, "WAITING_PARENT", "WAITING_PARENT", f"its primary {oid} was replaced by {new_id}: it now waits for {new_id}")
     if old["package_id"]:
         conn.execute("UPDATE hedge_packages SET primary_order_id=? WHERE package_id=? AND primary_order_id=?", (new_id, old["package_id"], oid))
+    # 1.0.7.2 fifth review: the hedge legs (waiting, and released ones of the orders it replaced) keep the replacement's time in force
+    follow: List[str] = []
+    if not old["parent_order_id"]:
+        nrow = _order_raw(conn, new_id)
+        words = tif_label(tif_of_row(nrow), _date_or_none(_row_get(nrow, "gtd_date")), _row_get(nrow, "activate_ts"))
+        follow = _follow_primary(ctx, nrow, _chain_legs(conn, new_id), f"its shares order {oid} was replaced by {new_id} ({words}): this leg keeps its time in force")
     reason = f"replaced by {new_id}"
     conn.execute("UPDATE orders SET status='CANCELLED', reason=?, replaced_by_order_id=?, updated_ts=? WHERE order_id=?", (reason, new_id, ctx.ts, oid))
     _order_event(conn, oid, ctx.ts, old["status"], "CANCELLED", reason + (f"; the borrow {old['borrow_id']} moves to {new_id}" if old["borrow_id"] else ""))
@@ -1288,6 +1405,8 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
               tif=vo.tif, expires_ts=vo.expires_ts, package_id=old["package_id"], limit_px=_s(vo.limit_px), stop_px=_s(vo.stop_px), replaces_order_id=oid)
     out = {"replaced": None, "fills": [], "sweeps": [], "decision": None, "preview": vo.preview, "warnings": vo.warnings, "borrow_id": old["borrow_id"],
            "hedge_legs_moved": moved}
+    if follow:
+        out["hedge_legs_follow"] = follow
     if wait:
         _order_event(conn, new_id, ctx.ts, None, "SUSPENDED", f"{note}; queued, {wait['reason']}: it executes automatically when cash frees up", vo.rec)
         ctx.event("ORDER_SUBMITTED", status="SUSPENDED", reason=wait["reason"], **ev)

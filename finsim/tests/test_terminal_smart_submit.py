@@ -617,6 +617,111 @@ class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
         assert_integrity(self, self.rt, "full")
 
 
+class HedgeLegLifetimeTests(SmartSubmitBase):
+    """1.0.7.2 fifth review: a sequential package's hedge legs live exactly as long as their shares order.  BUY 300 ACME limit 99 (below the
+    100.00 print: it rests) + BTO 3 Dec 18 2026 95 puts limit 1.00 (below the 2.10 bid: they rest once released), DAY, as the Smart Ticket
+    sends it.  A shares order amended or re-priced to a longer time in force (GTC, next session) takes its legs with it - their time in
+    force, expiry, good-till date and next-session start - so at the close the puts still wait, and the next session they are released
+    as the shares fill.  A waiting leg is never expired on its own clock while its shares order works (a leg left with an older expiry is
+    kept, then takes its shares order's lifetime when released); a leg whose own contract ends while its shares order still works ends,
+    and ONE INFO item (HEDGE_LEG_ENDED) names it and the shares order."""
+    PUT = acme("P", 95)
+    bar = ReleaseAfterAmendOrReplaceTests.bar
+    row = ReleaseAfterAmendOrReplaceTests.row
+    positions = ReleaseAfterAmendOrReplaceTests.positions
+
+    def package(self, tif: str = "DAY"):
+        primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00", "tif": tif}
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
+        self.assertEqual(200, st, pv)
+        st, out, _h = self.combo(1, [leg("ACME", "BUY", 300, order_type="LIMIT", limit_px="99.00"), leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px="1.00")],
+                                 clause="buy 300 ACME limit 99 and buy 3 ACME Dec 18 2026 95 puts limit 1 as a package", preview_id=pv["preview_id"], tif=tif)
+        self.assertEqual(200, st, out)
+        rid = f"st:{TICKET}:C1:r1"
+        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
+        h = self.q("SELECT * FROM orders WHERE request_id=?", (rid + ":H1",))[0]
+        self.assertEqual(("WORKING", tif, "WAITING_PARENT", tif, int(p["expires_ts"])), (p["status"], p["tif"], h["status"], h["tif"], int(h["expires_ts"])))
+        return p["order_id"], h["order_id"]
+
+    def lifetime(self, oid: str) -> tuple:
+        r = self.row(oid)
+        return r["tif"], int(r["expires_ts"]), r.get("gtd_date"), r.get("activate_ts")
+
+    def items(self) -> list:
+        return [(r["ref_id"], r["message"]) for r in self.q("SELECT ref_id, message FROM attention WHERE code='HEDGE_LEG_ENDED' ORDER BY id")]
+
+    def close_then_next_session(self) -> None:
+        """The 16:00 close (EXPIRE_ORDERS), then Wed 2026-10-21 10:00 ET: a completed bar printing 98.90 (it crosses the 99.00 limit)."""
+        self.assertTrue(self.rt.lifecycle.tick(at="2026-10-20T16:00:01-04:00", only="EXPIRE_ORDERS")["ran"] is not None)
+        self.rt.clock.set("2026-10-21T10:00:00-04:00")
+        now = self.rt.clock.epoch()
+        print_acme(self.rt, "98.90", 10, now - 60, 50000)
+        self.rt.matcher.on_quotes(["ACME"])
+
+    def test_q_a_shares_order_kept_working_longer_keeps_its_waiting_legs(self):
+        done = False
+        for how, body in (("amend", {"tif": "GTC"}), ("replace", {"limit_px": "99.00", "tif": "GTC"}), ("replace", {"limit_px": "99.00", "tif": "NEXT_SESSION"})):
+            with self.subTest(how=how, tif=body["tif"]):
+                if done:
+                    self.tearDown()
+                    self.setUp()
+                done = True
+                p, h = self.package()
+                if how == "amend":
+                    st, out, _h = self.call("PATCH", f"/api/orders/{p}?book=T", body, "ui:st5-life-amend-01")
+                else:
+                    st, out, _h = self.call("POST", f"/api/orders/{p}/replace?book=T", body, f"ui:st5-life-repl-{body['tif'][:3].lower()}")
+                self.assertEqual(200, st, out)
+                p = out["order"]["order_id"]
+                self.assertEqual([h], out["hedge_legs_follow"])
+                self.assertEqual(self.lifetime(p), self.lifetime(h))          # the leg keeps its shares order's lifetime
+                self.assertIn(f"keeps its time in force", self.q("SELECT note FROM order_events WHERE order_id=? ORDER BY id DESC LIMIT 1", (h,))[0]["note"])
+                self.close_then_next_session()
+                self.assertEqual(("FILLED", 300), (self.row(p)["status"], int(self.row(p)["filled_qty"])))
+                self.assertEqual(("WORKING", 3, p), (self.row(h)["status"], int(self.row(h)["qty"]), self.row(h)["parent_order_id"]))
+                self.assertEqual([], self.items())
+                self.assertEqual({"ACME": 300}, self.positions())
+                assert_integrity(self, self.rt, "full")
+
+    def test_r_a_waiting_leg_is_never_expired_on_its_own_clock_while_its_shares_order_works(self):
+        p, h = self.package()
+        # a package whose shares order was given a longer time in force before this rule (fixture only: the leg keeps today's DAY expiry)
+        with self.rt.db.writer() as tx:
+            tx.conn.execute("UPDATE orders SET tif='GTC', expires_ts=expires_ts + 7776000 WHERE order_id=?", (p,))
+        self.close_then_next_session()
+        self.assertEqual(("FILLED", "WORKING", 3), (self.row(p)["status"], self.row(h)["status"], int(self.row(h)["qty"])))
+        self.assertEqual(self.lifetime(p)[:2], self.lifetime(h)[:2])          # released: it took its shares order's lifetime
+        self.assertEqual([], [r for r in self.q("SELECT key, status FROM jobs_done WHERE job='EXPIRE_ORDERS' AND key=?", (h,)) if r["status"] == "DONE"])
+        self.assertTrue(self.rt.lifecycle.tick(at="2026-10-21T16:00:01-04:00", only="EXPIRE_ORDERS")["ran"] is not None)
+        self.assertEqual("WORKING", self.row(h)["status"])                     # GTC now: the close of the day it was released ends nothing
+        assert_integrity(self, self.rt, "full")
+
+    def test_s_a_leg_whose_own_contract_ends_while_its_shares_order_works_is_said(self):
+        p, h = self.package("GTC")
+        self.assertTrue(self.rt.lifecycle.tick(at="2026-12-21T10:00:00-05:00", only="EXPIRE_ORDERS")["ran"] is not None)
+        self.assertEqual(("WORKING", "EXPIRED"), (self.row(p)["status"], self.row(h)["status"]))
+        (ref, msg), = self.items()
+        self.assertEqual(p, ref)
+        for s in (h, p, "expired", "still works", "not hedged by this leg"):
+            self.assertIn(s, msg)
+        assert_integrity(self, self.rt, "full")
+
+    def test_t_a_year_typed_before_limit_is_never_sent_as_the_price(self):
+        out = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": "buy 2 ACME 105c Dec 18 2026 limit", "book": "T"})[1]
+        leg_ = out["legs"][0]
+        self.assertEqual((None, "MISSING_PRICE"), (leg_["request"], "MISSING_PRICE" if "MISSING_PRICE" in [f["code"] for f in leg_["flags"]] else None))
+        self.assertNotIn("YEAR_INFERRED", [f["code"] for f in leg_["flags"]])
+        out = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": "buy 2 ACME 105c Dec 18 2026 limit 2.80", "book": "T"})[1]
+        req = out["legs"][0]["request"]
+        self.assertEqual(("LIMIT", "2.80", acme("C", 105)), (req["order_type"], req["limit_px"], req["instrument_id"]))
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(req))
+        self.assertEqual(200, st, pv)
+        st, res, _h = self.send(dict(req, preview_id=pv["preview_id"]), f"st:{TICKET}:L1:r1")
+        self.assertEqual((200, "FILLED"), (st, res["order"]["status"]), res)
+        self.assertEqual([(2, "2.75")], [(int(f["qty"]), str(qprice(f["price"]))) for f in res["fills"]])   # at the 2.75 ask, within the 2.80 typed
+        assert_integrity(self, self.rt, "full")
+
+
 class ReadAgainTests(SmartSubmitBase):
     def test_i_a_closing_leg_sent_then_read_again_is_the_order_that_went(self):
         """1.0.7.2 review R2: 'buy 2 ... calls' while short 2 reads buy to close; once that order is working (or filled), the same words

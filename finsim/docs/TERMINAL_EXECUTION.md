@@ -143,7 +143,13 @@ NAV falls by exactly the 1.00 commission.
   was bought, else "primary ended before it was due"), and a leg already released keeps working at its size. Such a leg
   is always said: cancelling the primary yourself names it in the answer (`ended_with_it`; Pending's x says so in its
   confirm and its toast), and when a fill (an amended quantity the ratio does not fit) or the session close ends the
-  primary, one information item (`HEDGE_LEG_ENDED`) names the legs that ended with it.
+  primary, one information item (`HEDGE_LEG_ENDED`) names the legs that ended with it. 1.0.7.2 fifth review: a leg lives
+  exactly as long as its primary - it takes the primary's time in force, expiry, good-till date and next-session start when
+  it is created, and again when the primary is amended or re-priced (replace) to another time in force (a DAY package kept
+  working as GTC keeps its waiting puts with it to the next session, where they are released as the shares fill). A leg
+  still waiting is never expired on its own clock while its primary works (a leg left with an older expiry is kept, and
+  takes the primary's lifetime when released); only its own contract's end (or a forced expiry) ends it first, and then one
+  `HEDGE_LEG_ENDED` item names it and the primary that still works.
 - **All-or-none (option-only, one underlying)**: every leg needs a fresh Cboe quote with displayed size for its whole
   remaining quantity in the **same** chain observation; otherwise nothing fills (`AON_SIZE`, `AON_STALE`) and every leg
   keeps working. The fill is one command for all legs with one option-margin recomputation; cancelling any leg cancels
@@ -195,7 +201,10 @@ NAV falls by exactly the 1.00 commission.
   Ticket's "Cancel what this ticket sent" list every leg before its primary (the confirm names them all) and keep a
   primary with its legs in one batch of 500. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is reported with
   its code. The answer lists what was cancelled, skipped, failed and kept working. Resending the same batch after a
-  lost answer replays every cancel already made (`X-Replayed: 1`) and cancels nothing twice.
+  lost answer replays every cancel already made (`X-Replayed: 1`), cancels nothing twice and gives the same answer -
+  fifth review: the legs that ended with a listed primary are named again (`with: primary`), listed or not. The Smart
+  Ticket's confirm says, for a leg whose primary is not listed, whether that primary (or the order that replaced it)
+  still works (kept) or has ended (the leg is cancelled now).
 - **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in
   `preview_id`, `confirm_large` or the Smart Ticket's `smart` note is the same order and is answered as its replay
   (`X-Replayed: 1`, the order that was placed): every send takes a fresh preview first. Any other difference is still

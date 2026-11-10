@@ -616,9 +616,14 @@ class ExpireOrders(Job):
     def due(self, conn, clock, cal, sessions) -> List[str]:
         now = clock.epoch()
         today = clock.today().isoformat()
+        # 1.0.7.2 fifth review: a hedge leg still waiting for a shares order that works (its own contract live) is not due on its own clock:
+        # it ends with that order (orders.h_expire keeps it the same way)
         rows = conn.execute("SELECT o.order_id FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id JOIN accounts a ON a.account_id=o.account_id"
                             " JOIN lifetimes l ON l.lifetime_id=a.lifetime_id WHERE o.status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT') AND l.status='OPEN'"
-                            " AND (o.expires_ts < ? OR i.status <> 'ACTIVE' OR (i.expiry IS NOT NULL AND i.expiry < ?)) ORDER BY o.order_id", (now, today)).fetchall()
+                            " AND (o.expires_ts < ? OR i.status <> 'ACTIVE' OR (i.expiry IS NOT NULL AND i.expiry < ?))"
+                            " AND NOT (o.status='WAITING_PARENT' AND o.parent_order_id IS NOT NULL AND o.fill_mode <> 'AON' AND i.status='ACTIVE'"
+                            " AND (i.expiry IS NULL OR i.expiry >= ?) AND EXISTS (SELECT 1 FROM orders p WHERE p.order_id=o.parent_order_id"
+                            " AND p.status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT'))) ORDER BY o.order_id", (now, today, today)).fetchall()
         return self.filter_done(conn, [r["order_id"] for r in rows])
 
     def payload(self, key: str) -> dict:
@@ -635,6 +640,10 @@ class ExpireOrders(Job):
             return {"status": "DONE", "note": f"already {row['status']}", "posted": False}
         out = orders.h_expire(ctx, {"order_id": key})
         expired = out.get("expired") or []
+        if not expired and out.get("kept"):
+            # fifth review: a hedge leg waiting for a shares order that still works - not due on its own clock; looked at again only if it
+            # becomes due another way (released, or its shares order ended)
+            return {"status": "SKIPPED", "quiet": True, "note": f"kept: {(out['kept'][0] or {}).get('reason') or 'it waits for its shares order'}", "posted": False}
         return {"status": "DONE", "note": f"EXPIRED ({len(expired)} order{'s' if len(expired) != 1 else ''})", "expired": expired, "posted": True}
 
 

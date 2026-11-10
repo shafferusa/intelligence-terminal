@@ -717,7 +717,8 @@ def split_clauses(tokens: Sequence[Token], vocab: Optional[Vocab] = None) -> Tup
 
     def flush():
         nonlocal cur
-        if cur:
+        # 1.0.7.2 fifth review: a connector alone between two groups or separators ("(...) then (...)") is a separator, never an order
+        if cur and not all(_is_filler(t) for t in cur):
             segs.append({"tokens": cur, "group": open_group})
         cur = []
 
@@ -884,9 +885,18 @@ def _price_at(toks: Sequence[Token], k: int) -> Optional[Tuple[dict, int, List[d
             flags.append(_flag("MISSING_PRICE", "a stop limit needs its limit: 'stop 110 limit 109.50'", _span(t, t3)))
             return {"type": "STOP_LIMIT", "stop": p, "span": _span(t, t3), "bad": True}, q + 1, flags
         return {"type": "STOP", "stop": p, "span": _span(t, nxt)}, k + 2, flags
-    if t.kind == "num" and _is_word(nxt, "limit", "lmt") and _price_num(t) is not None:
+    if t.kind == "num" and _is_word(nxt, "limit", "lmt") and _price_num(t) is not None and not _price_follows(toks, k + 2):
+        # "225 limit" - but when a price follows the word ("2026 limit 2.50") the number after it is the price (fifth review)
         return {"type": "LIMIT", "limit": _price_num(t), "span": _span(t, nxt)}, k + 2, flags
     return None
+
+
+def _price_follows(toks: Sequence[Token], q: int) -> bool:
+    """Whether a price is written at ``q`` (after a "limit" / "lmt" word): a number, "at" / "@" and a number, or the bid / ask / mid."""
+    t = toks[q] if q < len(toks) else None
+    if _is_word(t, "at") or _is_punct(t, "@"):
+        t = toks[q + 1] if q + 1 < len(toks) else None
+    return _price_num(t) is not None or _phrase(t, "price") in ("BID", "ASK", "MID")
 
 
 def _tif_at(toks: Sequence[Token], k: int) -> Optional[Tuple[dict, int, List[dict]]]:
@@ -960,12 +970,14 @@ def _scope_at(toks: Sequence[Token], k: int, vocab: Vocab) -> Optional[Tuple[dic
         q2 += 1
     if not marker and not has_book_word:
         return None
-    scope = {"books": books, "span": _span(toks[k], toks[q2 - 1])}
+    # fifth review: ``book_span`` = the book words alone (a book choice replaces them and keeps an account named after them); an
+    # account typed with "at" / "in" / "," has that word in its span (an account choice replaces the whole phrase: never "at at pb ms")
+    scope = {"books": books, "span": _span(toks[k], toks[q2 - 1]), "book_span": _span(toks[k], toks[q2 - 1])}
     q3 = q2
     if q3 < n and (_is_word(toks[q3], "at", "in") or _is_punct(toks[q3], ",")):
         acct, q4 = _account_words(toks, q3 + 1)
         if acct is not None:
-            scope["account"] = acct
+            scope["account"] = dict(acct, span=[toks[q3].start, toks[q4 - 1].end])
             q3 = q4
     else:
         acct, q4 = _account_words(toks, q3)
@@ -1077,13 +1089,40 @@ def _is_term_token(t: Token) -> bool:
     return _is_punct(t, "/")
 
 
-def _collect_terms(toks: Sequence[Token], k: int) -> int:
+def _date_part(toks: Sequence[Token], e: int, k: int) -> bool:
+    """Whether the number at ``e`` belongs to a date typed before it (``k`` = where the terms start): a day right after a month, a
+    4-digit year 2000-2099 right after a month or a month and day ("Dec 18 2026", "18 Dec 2026", "Dec 2026", "Dec 18, 2026"), or a
+    2-digit year after "month day," ("Dec 18, 26")."""
+    t = toks[e]
+    prev = [toks[x] if x >= k else None for x in (e - 1, e - 2, e - 3)]
+    if _day_of(t) is not None and _month_of(prev[0]):
+        return True
+    if _year4_of(t) is not None:
+        if _month_of(prev[0]) or (_day_of(prev[0]) is not None and _month_of(prev[1])):
+            return True
+        if _is_punct(prev[0], ",") and _day_of(prev[1]) is not None and _month_of(prev[2]):
+            return True
+    v = _num(t)
+    if v and v["int"] and v["digits"] == 2 and not v["dollar"] and v["suffix"] is None and _is_punct(prev[0], ",") and _day_of(prev[1]) is not None \
+            and _month_of(prev[2]):
+        return True
+    return False
+
+
+def _collect_terms(toks: Sequence[Token], k: int, roll_to: bool = False) -> int:
+    """The end of the option terms that start at ``k``.  A number right before "limit" / "lmt" is the "225 limit" price only when it is
+    not one of the contract's words (fifth review): never a day or a year typed after a month ("Dec 18 2026 limit"), never the strike
+    of a roll's "to" part ("to Jan 15 2027 260 limit"), and never when a price follows the word ("... 260 limit 1.20")."""
     e, n = k, len(toks)
+    strike_seen = False
     while e < n:
         t = toks[e]
         if t.kind == "num" and _is_word(toks[e + 1] if e + 1 < n else None, "limit", "lmt"):
-            break
+            if not _date_part(toks, e, k) and not _price_follows(toks, e + 2) and not (roll_to and not strike_seen):
+                break
         if _is_term_token(t):
+            if t.kind in ("strikes", "strike_right") or (t.kind == "num" and not _date_part(toks, e, k)):
+                strike_seen = True
             e += 1
             continue
         if _is_punct(t, ",") and e > k and e + 1 < n and toks[e + 1].kind == "num" and _day_of(toks[e - 1]) is not None:
@@ -1496,7 +1535,7 @@ def parse_clause(tokens: Sequence[Token], text: str = "", vocab: Optional[Vocab]
                 roll_toks: List[Token] = []
                 k2 = e
                 if verb and verb["kind"] == "roll" and k2 < n and _is_word(toks[k2], "to"):
-                    e2 = _collect_terms(toks, k2 + 1)
+                    e2 = _collect_terms(toks, k2 + 1, roll_to=True)
                     roll_toks = toks[k2 + 1:e2]
                     r["_to_span"] = _span(toks[k2])
                     k2 = e2
@@ -1711,7 +1750,11 @@ def _unparsed_flags(r: dict, text: str, vocab: Vocab) -> List[dict]:
         choices = None
         num = re.fullmatch(r"\$?[0-9][0-9,]*\.?[0-9]*", words)
         inst = r["instrument"]
-        if num and inst is not None and inst["kind"] == "ticker" and r.get("option") is None and r.get("strategy") is None and r["mods"].get("price") is None                 and r.get("qty") is not None:
+        # fifth review: a number among an option's words (a month, call / put) is a strike or a date the terms did not read, never a price
+        optionish = re.search(r"(?i)\b(?:" + "|".join(sorted(set(MONTHS) | set(RIGHT_WORDS) | set(STRAT_WORDS), key=len, reverse=True)) + r")\b",
+                              text[r["span"][0]:r["span"][1]]) is not None
+        if num and inst is not None and inst["kind"] == "ticker" and r.get("option") is None and r.get("strategy") is None and r["mods"].get("price") is None \
+                and r.get("qty") is not None and not optionish:
             hint = f": a price needs a word ('limit {words.lstrip('$')}' or 'at {words.lstrip('$')}')"
             choices = [{"label": f"limit {words.lstrip('$')}", "clause": _edit(text, r["span"], [(sp[0], sp[0], "limit ")])}]
         out.append(_flag("UNPARSED_TEXT", f"'{words}' is not understood" + hint, r["span"] if choices else sp, choices))
@@ -2052,6 +2095,15 @@ def _bare_side(text: str) -> str:
     return t[m.end():] if m else t
 
 
+def _groupish(text: str) -> bool:
+    """Whether words hold a parenthesis or a group word (a choice that writes one is checked on the whole instruction: its run may reach
+    other orders)."""
+    try:
+        return any(_is_punct(t, "(", ")") or _phrase(t, "group") or _is_word(t, *GROUP_WORDS) for t in tokenize(normalise(text)[0]))
+    except Exception:   # noqa: BLE001 - words that cannot be read are checked whole
+        return True
+
+
 def _clause_words(text: Optional[str]) -> str:
     """A clause's words without spaces, commas, semicolons and parentheses around them (fourth review: the guard's re-read matches the
     orders a choice does not touch by their words)."""
@@ -2075,6 +2127,15 @@ def _widen(text: str, f: dict) -> None:
         out.append(dict(ch, clause=text[u0:a] + ch["clause"] + text[b:u1]))
     f["choices"] = out
     f["span"] = [u0, u1]
+
+
+def _date_words(iso: str) -> str:
+    """An ISO date in the words a clause reads anywhere ("2026-12-18" -> "Dec 18 2026"); the text itself when it is not a date."""
+    try:
+        d = date.fromisoformat(str(iso)[:10])
+    except ValueError:
+        return str(iso)
+    return f"{_month_words(d.month)} {d.day} {d.year}"
 
 
 def _nearest(values: Sequence, x) -> List:
@@ -2138,6 +2199,8 @@ class Resolver:
         self._pos: Dict[Tuple[str, str], dict] = {}
         self._sent: Dict[Tuple[str, str], List[dict]] = {}
         self._midnight = 0
+        self._fresh: Dict[tuple, tuple] = {}                 # fifth review: a chain's freshness, judged once per parse (shared with re-reads)
+        self._r2: Dict[tuple, str] = {}
 
     # ---- reads ---------------------------------------------------------------------------------------------------------------------
     def _lifetime(self, code: Optional[str]):
@@ -2201,10 +2264,15 @@ class Resolver:
 
     def _chain_info(self, under, snap, leg: dict, uid: str) -> dict:
         from .products.options import chain_freshness
-        try:
-            q, _age, reason = chain_freshness(self.s, snap, self.now, under)
-        except Exception as e:   # noqa: BLE001 - a freshness that cannot be judged is said, never guessed
-            q, reason = "unavailable", f"the chain's freshness could not be judged ({type(e).__name__})"
+        key = (uid, id(snap))
+        got = self._fresh.get(key)
+        if got is None:
+            try:
+                q, _age, reason = chain_freshness(self.s, snap, self.now, under)
+            except Exception as e:   # noqa: BLE001 - a freshness that cannot be judged is said, never guessed
+                q, reason = "unavailable", f"the chain's freshness could not be judged ({type(e).__name__})"
+            got = self._fresh[key] = (q, reason)
+        q, reason = got
         info = {"quality": q, "quote_time": getattr(snap, "quote_time", None), "fetched_at": getattr(snap, "fetched_at", None), "reason": reason}
         if q == "stale":
             leg["flags"].append(_flag("CHAIN_STALE", f"the {under.symbol} chain is stale: {reason}", leg["span"],
@@ -2347,7 +2415,16 @@ class Resolver:
                 return self._clause_edit(c, [(o["exp_span"][0], o["exp_span"][1], e)])
             spans = st.get("exp_spans") or ([st["exp_span"]] if st.get("exp_span") else [])
             if spans:
-                sp = spans[min(exp_index, len(spans) - 1)]
+                i = min(exp_index, len(spans) - 1)
+                sp = spans[i]
+                exps = st.get("expiries") or []
+                if len(spans) > 1:
+                    # fifth review: a calendar's expiries are typed "date/date"; a listed expiry goes in as words the reader takes after "/"
+                    # ("Dec 18 2026", never "2026-12-18": "2026/2026" reads as strikes), and never as the other leg's own expiry
+                    other = exps[1 - i] if len(exps) == 2 and i in (0, 1) else None
+                    if other is not None and self._resolve_date(other, self._snap(self._calendar_uid(c))) == e:
+                        return None
+                    e = _date_words(e)
                 return self._clause_edit(c, [(sp[0], sp[1], e)])
             return None
 
@@ -2433,6 +2510,10 @@ class Resolver:
         scope, src = None, "selected"
         if own and own.get("books"):
             scope, src = own, "own"
+        elif own and own.get("unknown"):
+            # fifth review: a book word that names no book leaves the order's book unread (no book, no account) - never the selected
+            # book - so every book offered for the word is a choice that settles it, not one that moves it
+            return [{"code": None, "src": "own", "scope": own, "n": 1, "rep": 0, "codes": [], "unread": True}]
         elif (c.get("carried_scope") or {}).get("books"):       # the book of the order whose side this clause carries (1.0.7.2 review)
             scope, src = c["carried_scope"], "carried"
         elif prefix and prefix.get("books"):
@@ -2833,8 +2914,16 @@ class Resolver:
                     except (ValueError, AttributeError):
                         other = None
                     if other and other in self.book_rows and other != leg["book"]:
-                        choices.append({"label": f"in the {self.book_rows[other].name}",
-                                        "clause": self._clause_edit(c, [(c["span"][1], c["span"][1], f" in the {self.vocab.first_word(other)} book")])})
+                        # fifth review: an order that names its own book has that book phrase replaced (a second one is DUPLICATE_FIELD);
+                        # one that names none gets the phrase at its end
+                        rep = f"in the {self.vocab.first_word(other)} book"
+                        sc = c["mods"].get("scope") or {}
+                        bs = sc.get("book_span") if sc.get("books") else None
+                        if bs and c["span"][0] <= bs[0] and bs[1] <= c["span"][1]:
+                            clause = self._clause_edit(c, [(bs[0], bs[1], rep)])
+                        else:
+                            clause = self._clause_edit(c, [(c["span"][1], c["span"][1], " " + rep)])
+                        choices.append({"label": f"in the {self.book_rows[other].name}", "clause": clause})
                     flags.append(_flag("ACCOUNT_NOT_IN_BOOK", f"account {named['id']} is not an open account of the {book} ({lid})", leg["span"], choices))
                     return None
             elif named.get("role") == "PB":
@@ -2844,8 +2933,9 @@ class Resolver:
                     return None
                 a = pbs[0]
                 if len(pbs) > 1:
+                    inside = bool(named.get("span")) and named["span"][0] >= c["span"][0] and named["span"][1] <= c["span"][1]
                     choices = [{"label": f"{x['name']} ({x['account_id']})",
-                                "clause": self._clause_edit(c, [(named["span"][0], named["span"][1], "at " + _account_words_of(x))])} for x in pbs[1:]]
+                                "clause": self._clause_edit(c, [(named["span"][0], named["span"][1], " at " + _account_words_of(x))])} for x in pbs[1:]] if inside else []
                     flags.append(_flag("ACCOUNT_CHOICE", f"{a['name']} picked; the {book} has other prime-broker accounts: "
                                        + ", ".join(x["account_id"] for x in pbs[1:]), leg["span"], choices))
             else:
@@ -2858,7 +2948,8 @@ class Resolver:
             leg["inferred"].append(f"account {a['account_id']} as named")
             if aware and held and a["account_id"] not in held:
                 hold_rows = [x for x in accts if x["account_id"] in held]
-                choices = [{"label": f"{x['name']} ({x['account_id']})", "clause": self._clause_edit(c, [(named["span"][0], named["span"][1], "at " + _account_words_of(x))])}
+                # fifth review: the account phrase is replaced whole, its "at" / "in" with it (never "at at pb ms")
+                choices = [{"label": f"{x['name']} ({x['account_id']})", "clause": self._clause_edit(c, [(named["span"][0], named["span"][1], " at " + _account_words_of(x))])}
                            for x in hold_rows] if named.get("span") and named["span"][0] >= c["span"][0] and named["span"][1] <= c["span"][1] else []
                 flags.append(_flag("ACCOUNT_CHOICE", f"the {book} holds {words} in another account ({self._held_words(held, con)}), not in {a['account_id']}: "
                                    "name the account that holds it, or write an opening side (bto, sto, short) to open a new position here", leg["span"],
@@ -3046,10 +3137,12 @@ class Resolver:
                 flags.append(_flag("SIDE_INFERRED", f"buy read as buy to cover: {-held:,} short held in {acct}", leg["span"]))
                 return "BUY_TO_COVER"
             if held < 0 and free > 0:
-                flags.append(_flag("SIDE_SPLIT", f"buy {q:,} but {free:,} short held: cover them and buy the rest, or cover only", leg["span"],
-                                   [{"label": f"cover {free:,} + buy {q - free:,}",
-                                     "clause": self._side_edit(c, "cover", free, leg, con) + " and " + self._side_edit(c, "buy", q - free, leg, con)},
-                                    {"label": f"cover {free:,} only", "clause": self._side_edit(c, "cover", free, leg, con)}]))
+                # fifth review: shares have no explicit side that opens a long ("buy" read here is a cover while the short is held), so a
+                # split "cover N + buy M" would stage a second cover: the cover alone is offered, the rest is bought once it has filled
+                flags.append(_flag("SIDE_SPLIT", f"buy {q:,} but {free:,} short held: cover them first; the other {q - free:,} can be bought once the cover"
+                                   " has filled", leg["span"],
+                                   [{"label": f"cover {free:,} only (buy the other {q - free:,} once the cover has filled)",
+                                     "clause": self._side_edit(c, "cover", free, leg, con)}]))
                 return None
             if held < 0:
                 closing("buy", None)
@@ -3348,7 +3441,52 @@ class Resolver:
                 got = str(smart.get("clause") or "").strip()
                 if got == want or _bare_side(got) == bare:
                     return r
+                # fifth review: a book phrase naming this order's own book, or an account phrase naming the account the order went to (the
+                # words a choice on another order writes out around it), never makes it another order
+                if self._r2_words(got, leg.get("book"), r["account_id"]) == self._r2_words(want, leg.get("book"), r["account_id"]):
+                    return r
         return None
+
+    def _r2_words(self, text: str, code: Optional[str], account_id: Optional[str]) -> str:
+        """R2's words of a clause (fifth review): lower case, one space between words, without a leading "buy" / "sell" (the side's
+        direction is compared on its own), without a book phrase that names ``code`` (the book the words are read in; R2 reads that book's
+        orders only) and without an account phrase that names exactly ``account_id`` (the account the order went to).  Pure: the clause
+        is read by the grammar."""
+        key = (text, code, account_id)
+        cache = self.__dict__.setdefault("_r2", {})
+        if key in cache:
+            return cache[key]
+        try:
+            toks = tokenize(normalise(text)[0])
+            drop: List[Sequence[int]] = []
+            k = 0
+            while k < len(toks):
+                t = toks[k]
+                got = _scope_at(toks, k, self.vocab) if (_is_word(t, "in", "for") or self.vocab.book_codes(t)) else None
+                if got is not None and not got[0].get("bad"):
+                    val, k2, _fl = got
+                    bks = val.get("books") or []
+                    if code and bks and all(len(x["codes"]) == 1 for x in bks) and [code] in [x["codes"] for x in bks] and val.get("book_span"):
+                        drop.append(val["book_span"])
+                    acct = val.get("account")
+                    if acct is not None and account_id and code and self._named_to_id(acct, code) == account_id:
+                        drop.append(acct["span"])
+                    k = max(k2, k + 1)
+                    continue
+                got = _account_at(toks, k) if (_is_word(t, "at", "in") or t.kind == "acct" or _phrase(t, "acct") or _is_word(t, "exchange", "pb")) else None
+                if got is not None:
+                    val, k2, _fl = got
+                    if account_id and code and self._named_to_id(val, code) == account_id:
+                        drop.append(val["span"])
+                    k = max(k2, k + 1)
+                    continue
+                k += 1
+            words = " ".join(t.text for t in toks if not any(s[0] <= t.start and t.end <= s[1] for s in drop)).lower()
+            out = _bare_side(words)
+        except Exception:   # noqa: BLE001 - words the grammar cannot read compare as themselves
+            out = "\x00" + str(text)
+        cache[key] = out
+        return out
 
     def _resolve_date(self, exp: Optional[dict], snap=None) -> Optional[str]:
         """An expiry's date the way ``_expiry`` reads it, without its flags: a date; a day with its year, or the first on or after today
@@ -4096,47 +4234,200 @@ class Resolver:
     PLACE_CODES = ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK")
 
     def _keep_others(self, tree: dict, legs: List[dict], combos: List[dict]) -> None:
-        """Every choice is re-read the way the page applies it (its text in place of the flag's span, then a new parse of the whole
-        instruction).  Third review (instructions of several orders, the pure parse): it must leave every OTHER order with the side, book,
-        account and grouping the parser read for it, and the order it is on with its book and account (unless the choice is about those).
-        Where it would not - a side word written into an order whose side, book and account are carried from the order before; the
-        orders after it that carry ITS side; a book or account phrase that lands in the closing phrase of the last order and so applies
-        to every order naming none - the choice also writes, in trader words, what those orders had inherited (the carried side word, "in
-        the X book", "at <account>"), its span widened over them; a choice that still cannot be read that way is not offered.  Fourth
-        review (every instruction, one order too): each choice kept is then RESOLVED as the page would re-read it (``_reads_alike``: the
-        positions, the accounts, the orders already sent, the packages), and offered only when every other order reads as before and the
-        order it is on stays in its book and account and joins no other order's package.  Pure, like the rest."""
+        """Every choice is re-read the way the page applies it (its text in place of the flag's span, then a new parse of the instruction).
+        Third review: where a choice would change another order's inherited side, book or account (a side word written into an order
+        that carries its side, book and account from the order before; the orders after it that carry ITS side; a book or account phrase
+        that lands in the closing phrase of the last order), the choice also writes out, in trader words, what those orders had inherited
+        (``_guard_flag``), its span widened over them.  Fourth and fifth reviews: each choice is then RESOLVED as the page would re-read
+        it (``_reads_alike``: the positions, the accounts, the orders already sent, the packages) and offered only when every order but
+        the one it is on reads exactly as before - matched by position, the orders it wrote out too - and never becomes sendable; when
+        the clause it is on is repeated per book ("in the Personal and Fund books"), the other books' orders of that clause read as
+        before too (a choice computed from one book's holding is written for that book alone: ``_split_choice``), unless the same words
+        are offered on them; the order it is on stays in its book and account (unless the choice is that book or account) and joins no
+        other order's package; and its words parse (no new word "not understood").  Fifth review, the parse budget: an instruction
+        whose orders fall into independent sections (each starting with its own side; no group; no closing phrase that reaches another
+        section) has each flag checked on its section alone - the opening phrase and that section's words, kept only when they read
+        those orders exactly as the whole instruction does - so the work grows with the section, not the instruction, and identical
+        sections are checked once.  Pure, like the rest."""
         if getattr(self, "_nested", False):
             return                                        # a re-read made by the guard itself offers no guard of its own
-        clauses = tree["clauses"]
-        old = None
-        facts0 = None
+        items = [(l, [l]) for l in legs] + [(cb, [legs[n - 1] for n in cb["legs"]]) for cb in combos]
+        offered: Dict[tuple, set] = {}                    # (span, words) -> the books of the orders those words are offered on
+        for it, its in items:
+            bks = {l["book"] for l in its}
+            for f in it["flags"]:
+                if f.get("span"):
+                    for ch in f.get("choices") or []:
+                        offered.setdefault((int(f["span"][0]), int(f["span"][1]), str(ch["clause"])), set()).update(bks)
+        plan = self._sections(tree)
+        readings: Dict[Any, Optional[dict]] = {}
         cache: Dict[tuple, tuple] = {}
         done: set = set()
-        for fl in [l["flags"] for l in legs] + [cb["flags"] for cb in combos]:
-            for f in fl:
+        for it, its in items:
+            for f in it["flags"]:
                 if id(f) in done or not f.get("choices") or not f.get("span"):
                     continue
                 done.add(id(f))
-                key = (f["code"], tuple(f["span"]), tuple(ch["clause"] for ch in f["choices"]))
+                own = {l["book"] for l in its}
+                span0 = (int(f["span"][0]), int(f["span"][1]))
+                chs0 = [{"label": str(ch["label"]), "clause": str(ch["clause"]), "_i": i} for i, ch in enumerate(f["choices"])]
+                books = tuple(frozenset(own | offered.get((span0[0], span0[1], ch["clause"]), set())) for ch in chs0)
+                sec = self._section_of(tree, plan, span0, chs0)
+                R = None
+                if sec is not None:
+                    if sec not in readings:
+                        readings[sec] = self._reading(tree, legs, combos, sec)
+                    R = readings[sec]
+                if R is None:
+                    if "whole" not in readings:
+                        readings["whole"] = self._reading(tree, legs, combos, None)
+                    R = readings["whole"]
+                shift = R["shift"]
+                s0 = (span0[0] + shift, span0[1] + shift)
+                key = (R["text"], f["code"], s0, tuple(ch["clause"] for ch in chs0), books)
                 if key not in cache:
-                    span, chs = f["span"], f["choices"]
-                    if len(clauses) > 1:
-                        if old is None:
-                            old = (self._contexts(tree), self._resolved_accounts(legs))
-                        span, chs = self._guard_flag(tree, old[0], old[1], f)
-                    if chs:
-                        if facts0 is None:
-                            facts0 = self._facts(legs, combos)
-                        place = f["code"] in self.PLACE_CODES
-                        chs = [ch for ch in chs if self._reads_alike(tree, facts0, span, ch["clause"], place)]
-                    cache[key] = (span, chs or None)
-                span, chs = cache[key]
-                f["span"] = list(span)
-                if chs:
-                    f["choices"] = [dict(ch) for ch in chs]
+                    cache[key] = R["res"]._check_flag(R, f["code"], s0, chs0, books)
+                span, kept = cache[key]
+                f["span"] = [int(span[0]) - shift, int(span[1]) - shift]
+                if kept:
+                    f["choices"] = [{"label": ch["label"], "clause": ch["clause"]} for ch in kept]
                 else:
                     f.pop("choices", None)
+
+    def _sections(self, tree: dict) -> Optional[tuple]:
+        """Fifth review: ``(sections, last_free, readable)`` - the clause ranges ``(lo, hi)`` that read independently (a section starts at an
+        order with its own side or verb; the clauses that carry a side, or have none, belong to the section before), whether a closing
+        book phrase written in the last section could reach no order before it (every one of them has a book of its own, carried, or from
+        the opening phrase), and per section whether it may be read alone (its last order's own book phrase would otherwise close the
+        section's reading for orders of it that name none) - or None when the instruction is read whole (a group, an account alone at the
+        end, a closing phrase that gives an order outside the last section its book)."""
+        cl = tree["clauses"]
+        if len(cl) < 2 or tree.get("groups"):
+            return None
+        starts = [i for i, c in enumerate(cl) if i == 0 or (c.get("verb") and not c["verb"].get("carried"))]
+        secs = [(s, (starts[k + 1] - 1) if k + 1 < len(starts) else len(cl) - 1) for k, s in enumerate(starts)]
+        if len(secs) < 2:
+            return None
+        pre = tree.get("prefix") or {}
+
+        def booked(c):
+            return bool((c["mods"].get("scope") or {}).get("books") or (c.get("carried_scope") or {}).get("books") or pre.get("books"))
+        last_free = all(booked(cl[i]) for i in range(secs[-1][0]))
+        suf = tree.get("suffix")
+        if suf is not None and (not (suf.get("scope") or {}).get("books") or not last_free):
+            return None
+        ok = []
+        for lo, hi in secs:
+            last_book = bool((cl[hi]["mods"].get("scope") or {}).get("books"))
+            ok.append(not (hi > lo and last_book and not all(booked(cl[i]) for i in range(lo, hi))))
+        return secs, last_free, ok
+
+    def _section_of(self, tree: dict, plan: Optional[tuple], span0: Sequence[int], chs0: List[dict]) -> Optional[tuple]:
+        """The section range a flag is checked on, or None (the whole instruction)."""
+        if plan is None:
+            return None
+        secs, last_free, ok = plan
+        cl = tree["clauses"]
+        touched = [i for i, c in enumerate(cl) if c["span"][0] < span0[1] and c["span"][1] > span0[0]]
+        if not touched or any(_groupish(ch["clause"]) for ch in chs0):
+            return None
+        k_lo = next((k for k, (s, e) in enumerate(secs) if s <= touched[0] <= e), None)
+        k_hi = next((k for k, (s, e) in enumerate(secs) if s <= touched[-1] <= e), None)
+        if k_lo is None or k_hi is None or (k_lo == 0 and k_hi == len(secs) - 1):
+            return None
+        if k_hi == len(secs) - 1 and not last_free:
+            return None
+        if not all(ok[k] for k in range(k_lo, k_hi + 1)):
+            return None
+        return secs[k_lo][0], secs[k_hi][1]
+
+    def _reading(self, tree: dict, legs: List[dict], combos: List[dict], sec: Optional[tuple]) -> Optional[dict]:
+        """What a flag's choices are checked against: the whole instruction as read (``sec`` None), or the section ``sec`` read alone (the
+        opening phrase, its words and the closing book phrase) - kept only when it reads exactly as the whole instruction read those
+        orders."""
+        books = list(self.vocab.books)
+        if sec is None:
+            res, t, text, shift, L, C = self, tree, self.text, 0, legs, combos
+        else:
+            lo, hi = sec
+            cl = tree["clauses"]
+            a, b = int(cl[lo]["span"][0]), int(cl[hi]["span"][1])
+            pre = tree.get("prefix")
+            head = (self.text[pre["span"][0]:pre["span"][1]] + " ") if pre else ""
+            # a closing book phrase outside the section goes with it (as a phrase alone at its end), so an order a choice frees from the
+            # book it carried reads that phrase here as the whole instruction would
+            tail = ""
+            suf = tree.get("suffix") or {}
+            ssp = (suf.get("scope") or {}).get("span")
+            if ssp and not (a <= ssp[0] and ssp[1] <= b):
+                tail = "; " + self.text[ssp[0]:ssp[1]]
+                asp = (suf.get("account") or {}).get("span")
+                if asp and not (ssp[0] <= asp[0] and asp[1] <= ssp[1]):
+                    tail += " " + self.text[asp[0]:asp[1]]
+            text = head + self.text[a:b] + tail
+            shift = len(head) - a
+            try:
+                t = parse(text, books)
+                res = self._shadow()
+                res.run(t)
+            except SmartTicketError:
+                return None
+            L, C = res._last
+            if len(t["clauses"]) != hi - lo + 1:
+                return None
+            whole, part = self._facts(legs, combos), self._facts(L, C)
+            for k in range(hi - lo + 1):
+                x, y = whole.get(lo + k, []), part.get(k, [])
+                if [(f, g, r) for f, g, _p, r in x] != [(f, g, r) for f, g, _p, r in y] or any(p for _f, _g, p, _r in x + y):
+                    return None
+        return {"res": res, "tree": t, "text": text, "shift": shift, "facts": self._facts(L, C), "unparsed": self._unparsed_of(t, L, C),
+                "ctx": res._contexts(t) if len(t["clauses"]) > 1 else None, "accts": self._resolved_accounts(L)}
+
+    def _check_flag(self, R: dict, code: str, span0: Sequence[int], chs0: List[dict], books: tuple) -> tuple:
+        """``(span, kept choices)`` of one flag on reading ``R`` (``_keep_others``)."""
+        t = R["tree"]
+        span, chs = list(span0), [dict(ch) for ch in chs0]
+        if len(t["clauses"]) > 1:
+            span, chs = self._guard_flag(t, R["ctx"], R["accts"], {"code": code, "span": list(span0), "choices": chs})
+        place = code in self.PLACE_CODES
+        kept = []
+        for ch in chs or []:
+            bks = books[ch["_i"]]
+            if self._reads_alike(t, R, span0, span, ch["clause"], place, bks):
+                kept.append(ch)
+            elif [int(span[0]), int(span[1])] == [int(span0[0]), int(span0[1])]:
+                sp = self._split_choice(t, span0, ch["clause"], bks)
+                if sp is not None and self._reads_alike(t, R, span0, span, sp, place, bks):
+                    kept.append(dict(ch, clause=sp))
+        return (int(span[0]), int(span[1])), kept
+
+    def _split_choice(self, tree: dict, span0: Sequence[int], clause: str, own_books: frozenset) -> Optional[str]:
+        """Fifth review: a choice on ONE book's order of a clause repeated per book ("sell 300 WIDG in the Personal and Fund books"),
+        computed from that book's holding, written for that book alone while the clause stays as typed for the other books ("sell 300
+        WIDG in the Personal book; short 300 WIDG in the Fund book"); None when the clause cannot be written so."""
+        cl = tree["clauses"]
+        own = [i for i, c in enumerate(cl) if c["span"][0] < span0[1] and c["span"][1] > span0[0]]
+        if len(own) != 1:
+            return None
+        c = cl[own[0]]
+        if [int(c["span"][0]), int(c["span"][1])] != [int(span0[0]), int(span0[1])] or c["mods"].get("group") is not None \
+                or any(own[0] in g["clauses"] for g in tree.get("groups") or []):
+            return None
+        sc = c["mods"].get("scope") or {}
+        bks, bs = sc.get("books") or [], sc.get("book_span")
+        if len(bks) < 2 or not bs or any(len(x["codes"]) != 1 for x in bks):
+            return None
+        codes = [x["codes"][0] for x in bks]
+        mine, rest = [x for x in codes if x in own_books], [x for x in codes if x not in own_books]
+        if not mine or not rest:
+            return None
+        phrase = self.text[bs[0]:bs[1]]
+        p_mine, p_rest = self._book_phrase(mine), self._book_phrase(rest)
+        if not p_mine or not p_rest or phrase not in clause:
+            return None
+        t_mine = clause.replace(phrase, p_mine.strip())
+        t_rest = self._clause_edit(c, [(bs[0], bs[1], p_rest.strip())])
+        return (t_mine + "; " + t_rest) if codes[0] in mine else (t_rest + "; " + t_mine)
 
     def _shadow(self) -> "Resolver":
         """A resolver on the same connection, sharing this one's reads (positions, accounts, chains, the orders already sent), for a re-read
@@ -4148,8 +4439,8 @@ class Resolver:
 
     @staticmethod
     def _facts(legs: List[dict], combos: List[dict]) -> Dict[int, list]:
-        """Per clause: each leg's (book, account, side, quantity, contract, read as an order already sent), whether it can be sent, and the
-        clauses its combination joins it with."""
+        """Per clause: each leg's order body (book, account, side, quantity, contract, order type, prices, time in force, read as an order
+        already sent), whether it can be sent, the clauses its combination joins it with, and whether it has a request of its own."""
         of: Dict[int, dict] = {}
         for cb in combos:
             for n in cb["legs"]:
@@ -4159,17 +4450,29 @@ class Resolver:
             cb = of.get(l["n"])
             partners = frozenset(legs[m - 1]["_ci"] for m in cb["legs"]) - {l["_ci"]} if cb else frozenset()
             goes = l["request"] is not None and (cb is None or cb["request"] is not None)
-            fact = (l["book"], l["account_id"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), any(f["code"] == "ALREADY_SENT" for f in l["flags"]))
-            out.setdefault(l["_ci"], []).append((fact, goes, partners))
+            fact = (l["book"], l["account_id"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), l.get("order_type"), l.get("limit_px"),
+                    l.get("stop_px"), l.get("trail_amt"), l.get("trail_pct"), l.get("tif"), l.get("gtd_date"),
+                    any(f["code"] == "ALREADY_SENT" for f in l["flags"]))
+            out.setdefault(l["_ci"], []).append((fact, goes, partners, l["request"] is not None))
         return out
 
-    def _reads_alike(self, tree: dict, facts0: Dict[int, list], span: Sequence[int], clause: str, place: bool) -> bool:
-        """Fourth review: whether the instruction a choice gives, RESOLVED as the page re-reads it, leaves every OTHER order as it was read
-        - the same book, account, side, quantity and contract, the same reading as an order already sent (R2), the same package, never
-        newly sendable - and the order it is on in its own book and account (unless the choice is about those, ``place``) and in no
-        package with an order it was not with.  A re-read the parser refuses stages nothing: that choice stays."""
+    @staticmethod
+    def _unparsed_of(tree: dict, legs: List[dict], combos: List[dict]) -> frozenset:
+        """The words a reading does not understand (its UNPARSED_TEXT flags)."""
+        fl = ([f for l in legs for f in l["flags"]] + [f for cb in combos for f in cb["flags"]] + list(tree.get("flags") or [])
+              + list((tree.get("prefix") or {}).get("flags") or []) + list((tree.get("suffix") or {}).get("flags") or []))
+        return frozenset(f["text"] for f in fl if f["code"] == "UNPARSED_TEXT")
+
+    def _reads_alike(self, tree: dict, R: dict, span0: Sequence[int], span: Sequence[int], clause: str, place: bool, own_books: frozenset) -> bool:
+        """Fourth and fifth reviews: whether the instruction a choice gives, RESOLVED as the page re-reads it, leaves every order but the
+        one it is on as it was read - matched by position (the orders before and after the words it replaces keep their words; the
+        orders it wrote out keep their place in it), each with the same order body, the same reading as an order already sent (R2) and
+        the same package, never newly sendable (a leg whose only blocker was its package with the order the choice fixes excepted);
+        the other books' orders of the clause it is on read as before (unless the same words are offered on them: ``own_books``); the
+        order it is on stays in its book and account (unless the choice is about those, ``place``) and joins no other order's package;
+        and its words parse (no new word "not understood").  ``span0`` = the words the flag is on, ``span`` = the words the choice
+        replaces (wider when the guard wrote orders out).  A re-read the parser refuses stages nothing: that choice stays."""
         a, b = int(span[0]), int(span[1])
-        n = len(clause)
         try:
             t2 = parse(self.text[:a] + clause + self.text[b:], list(self.vocab.books))
             sh = self._shadow()
@@ -4177,46 +4480,68 @@ class Resolver:
         except SmartTicketError:
             return True
         legs2, combos2 = sh._last
-        facts2 = self._facts(legs2, combos2)
-        # the orders before the choice's words and after them are the re-read's first and last clauses, in order, with the same words
-        # (spaces, commas, semicolons and parentheses aside: a parenthesis written by a choice can move a comma into the clause before it)
+        if self._unparsed_of(t2, legs2, combos2) - R["unparsed"]:
+            return False
+        facts0, facts2 = R["facts"], self._facts(legs2, combos2)
         cl0, cl2 = tree["clauses"], t2["clauses"]
+        own = [i for i, c in enumerate(cl0) if c["span"][0] < span0[1] and c["span"][1] > span0[0]]
         before = [i for i, c in enumerate(cl0) if c["span"][1] <= a]
         after = [i for i, c in enumerate(cl0) if c["span"][0] >= b]
-        if len(cl2) < len(before) + len(after):
+        region = [i for i in range(len(cl0)) if i not in before and i not in after]
+        lead = [i for i in region if not own or i < own[0]]
+        trail = [i for i in region if own and i > own[-1]]
+        m: Dict[int, int] = {}
+        for k, i in enumerate(before):
+            m[i] = k
+        for k, i in enumerate(after):
+            m[i] = len(cl2) - len(after) + k
+        mid = list(range(len(before), len(cl2) - len(after)))
+        if len(mid) < len(lead) + len(trail) + (1 if own else 0):
             return False
-        same: Dict[int, int] = {}                         # a clause of the re-read -> the one of this reading it is
-        for i, j in list(zip(before, range(len(before)))) + list(zip(after, range(len(cl2) - len(after), len(cl2)))):
-            if _clause_words(cl0[i].get("text")) != _clause_words(cl2[j].get("text")):
+        for k, i in enumerate(lead):
+            m[i] = mid[k]
+        for k, i in enumerate(trail):
+            m[i] = mid[len(mid) - len(trail) + k]
+        mine = mid[len(lead):len(mid) - len(trail)]
+        for i in before + after:
+            if _clause_words(cl0[i].get("text")) != _clause_words(cl2[m[i]].get("text")):
                 return False
-            same[j] = i
-        region0 = {i for i in range(len(cl0)) if i not in before and i not in after}
-        region2 = {j for j in range(len(cl2)) if j not in same}
+        inv = {j: i for i, j in m.items()}
 
         def k0(i):
-            return "IN" if i in region0 else i
+            return "IN" if i in own else i
 
         def k2(j):
-            return same.get(j, "IN")
-        for j, i in same.items():
+            return inv.get(j, "IN")
+        for i, j in m.items():
             old, new = facts0.get(i, []), facts2.get(j, [])
             if len(old) != len(new):
                 return False
-            for (f0, g0, p0), (f2, g2, p2) in zip(old, new):
-                if f0 != f2 or (g2 and not g0) or {k0(x) for x in p0} != {k2(x) for x in p2}:
+            for (f0, g0, p0, r0), (f2, g2, p2, _r2) in zip(old, new):
+                q0 = {k0(x) for x in p0}
+                if f0 != f2 or q0 != {k2(x) for x in p2}:
                     return False
-        mine0 = [x for i in sorted(region0) for x in facts0.get(i, [])]
-        mine2 = [x for j in sorted(region2) for x in facts2.get(j, [])]
+                if g2 and not g0 and not (r0 and "IN" in q0):
+                    return False                          # newly sendable (a package partner the choice completes excepted)
+        mine0 = [x for i in own for x in facts0.get(i, [])]
+        mine2 = [x for j in mine for x in facts2.get(j, [])]
+        others = {x[0][0] for x in mine0} - set(own_books) - {None}
+        o0 = sorted(((x[0], x[1]) for x in mine0 if x[0][0] in others), key=repr)
+        o2 = sorted(((x[0], x[1]) for x in mine2 if x[0][0] in others), key=repr)
+        if [x[0] for x in o0] != [x[0] for x in o2] or any(g and (f, True) not in o0 for f, g in o2):
+            return False                                  # another book's order of the same clause changed, or became sendable
+        my0 = [x for x in mine0 if x[0][0] not in others]
+        my2 = [x for x in mine2 if x[0][0] not in others]
         if not place:                                     # a book or account not read yet (ambiguous, unknown) is settled, never moved
-            where = {(f[0], f[1]) for f, _g, _p in mine0}
-            books = {w[0] for w in where}
-            book_known = bool(where) and None not in books
+            where = {(x[0][0], x[0][1]) for x in my0}
+            bks = {w[0] for w in where}
+            book_known = bool(where) and None not in bks
             acct_known = book_known and all(w[1] is not None for w in where)
-            for f, g, _p in mine2:
-                if g and ((book_known and f[0] not in books) or (acct_known and (f[0], f[1]) not in where)):
+            for f, _g, _p, _r in my2:
+                if (book_known and f[0] not in bks) or (acct_known and f[1] is not None and (f[0], f[1]) not in where):
                     return False
-        joined0 = {k0(x) for _f, _g, ps in mine0 for x in ps} - {"IN"}
-        joined2 = {k2(x) for _f, _g, ps in mine2 for x in ps} - {"IN"}
+        joined0 = {k0(p) for x in my0 for p in x[2]} - {"IN"}
+        joined2 = {k2(p) for x in my2 for p in x[2]} - {"IN"}
         return joined2 <= joined0
 
     def _contexts(self, tree: dict) -> List[dict]:
@@ -4336,7 +4661,7 @@ class Resolver:
         if not kept:
             return f["span"], None
         u0, u1 = min(g[0] for _ch, g in kept), max(g[1] for _ch, g in kept)
-        return [u0, u1], [{"label": ch["label"], "clause": self.text[u0:a] + t + self.text[b:u1]} for ch, (a, b, t) in kept]
+        return [u0, u1], [{"label": ch["label"], "clause": self.text[u0:a] + t + self.text[b:u1], "_i": ch.get("_i")} for ch, (a, b, t) in kept]
 
     def _guard_choice(self, ctx0: List[dict], res0: Dict[int, dict], touched: List[int], a: int, b: int, text: str, place: bool) -> Optional[tuple]:
         """One choice: ``(start, end, text)`` that re-reads every other order as the parser read it (a widened span when orders around it
@@ -4392,7 +4717,9 @@ class Resolver:
             if asp:
                 changes.append(("out", i, j, asp))
         if not place:
-            pairs = [(touched[0], j) for j in subs] if len(touched) == 1 else (list(zip(touched, subs)) if len(touched) == len(subs) else [])
+            if len(touched) > 1 and len(touched) != len(subs):
+                return None                               # fifth review: the orders it is on cannot be matched one to one: never offered
+            pairs = [(touched[0], j) for j in subs] if len(touched) == 1 else list(zip(touched, subs))
             for i, j in pairs:
                 asp = self._aspects(ctx0[i], res0.get(i), ctx2[j], False)
                 if asp:

@@ -462,6 +462,50 @@ class ListedWithItsPrimaryTests(MassCancelBase):
         self.assertEqual((("FILLED", 300, 300), ("WORKING", 0, 3)), (self.facts(self.p), self.facts(self.h)))
         assert_integrity(self, self.rt, "full")
 
+    def test_n_the_same_batch_sent_again_names_the_legs_that_ended_with_its_listed_primary(self):
+        """Fifth review (the property seeds B5 730148, 730212, 730695, ...): a batch that lists the shares order alone ends its waiting
+        leg with it and says so (``with: primary``); the same batch sent again under its own id - a retry after a lost answer - replays
+        every cancel, does nothing new and gives the same answer, the leg that ended with the shares order named again."""
+        st, first, _h = self.cancel([self.p], "mc:9n9n9n9n9n9n", book="P")
+        self.assertEqual(200, st, first)
+        self.assertEqual([(self.p, None), (self.h, "primary")], [(x["order_id"], x.get("with")) for x in first["cancelled"]])
+        self.assertEqual(("CANCELLED", "primary ended before it was due"), tuple(self.one("SELECT status, reason FROM orders WHERE order_id=?", (self.h,)).values()))
+        commands = self.one("SELECT COUNT(*) n FROM commands")["n"]
+        st, again, h = self.cancel([self.p], "mc:9n9n9n9n9n9n", book="P")
+        self.assertEqual((200, "1", commands), (st, h.get("X-Replayed"), self.one("SELECT COUNT(*) n FROM commands")["n"]))
+        lists = ("cancelled", "skipped", "failed", "kept")
+        self.assertEqual({k: first[k] for k in lists}, {k: again[k] for k in lists})
+        assert_integrity(self, self.rt, "full")
+
+    def test_o_a_leg_a_fill_ends_between_the_batchs_commands_is_said_and_skipped(self):
+        """Fifth review (the property seeds B4 34, 46, 68 ...): a fill between two of the batch's commands completes the shares order (its
+        quantity amended to 90 of the 300 confirmed: floor(90 x 3 / 300) = 0, so the calls were never due) and so ends the waiting calls;
+        the batch then answers them "skipped: had already ended" - it did not end them - and ONE HEDGE_LEG_ENDED item names them."""
+        st, out, _h = self.rt.router.handle("PATCH", f"/api/orders/{self.p}?book=P", None, {"qty": 90, "request_id": "ui:mc-test-am-o01"}, "127.0.0.1", None)
+        self.assertEqual(200, st, out)
+        self.assertEqual(90, self.facts(self.p)[2])
+        real = self.rt.bus.execute
+        a, h = self.pA, self.h
+
+        def fill_between(cmd):
+            if cmd.kind == "order.cancel" and (cmd.payload or {}).get("order_id") == a:
+                res = real(cmd)
+                self.bar(600)                                            # 30 more shares: the primary completes (90 of 90)
+                return res
+            return real(cmd)
+        with mock.patch.object(self.rt.bus, "execute", fill_between):
+            st, out, _h = self.cancel([a, h], "mc:9o9o9o9o9o9o", book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual(("FILLED", 90, 90), self.facts(self.p))
+        self.assertEqual([(a, None)], [(x["order_id"], x.get("with")) for x in out["cancelled"]])
+        self.assertEqual([(h, "NOT_OPEN")], [(x["order_id"], x["code"]) for x in out["skipped"]])
+        self.assertEqual(("CANCELLED", "primary ended before it was due"), tuple(self.one("SELECT status, reason FROM orders WHERE order_id=?", (h,)).values()))
+        items = self.q("SELECT ref_id, message FROM attention WHERE code='HEDGE_LEG_ENDED'")
+        self.assertEqual([self.p], [r["ref_id"] for r in items])
+        self.assertIn(h, items[0]["message"])
+        self.assertEqual(["mc:9o9o9o9o9o9o:" + a], self.cancels("mc:9o9o9o9o9o9o"))
+        assert_integrity(self, self.rt, "full")
+
     def test_m_a_leg_sent_alone_is_kept_while_its_shares_order_works(self):
         # the Smart Ticket's "Cancel what this ticket sent" after the shares order was re-priced in Pending: only the leg carries the
         # ticket's request id, so the leg is listed alone; it is kept while the replacement works, and released when it fills

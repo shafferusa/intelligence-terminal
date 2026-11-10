@@ -473,11 +473,25 @@
     }
     return Array.isArray(r.leg.span) ? r.leg.span : null;
   }
+  /* fifth review: words the owner changed since the last read are kept - the choice goes into the text in the bar, where the words it
+     replaces are still the ones read (the change was before them or after them); when the owner changed those very words, nothing is
+     put in and the text is to be read again first */
   function choose(S, r, f, ch) {
-    var text = S.parsed && typeof S.parsed.text === 'string' ? S.parsed.text : ui.bar.value;
+    var read = S.parsed && typeof S.parsed.text === 'string' ? S.parsed.text : ui.bar.value;
     var sp = spanOf(S, r, f, ch);
     var a = sp ? Number(sp[0]) : -1, b = sp ? Number(sp[1]) : -1;
-    if (!(a >= 0 && b >= a && b <= text.length) || typeof ch.clause !== 'string') { say(S, 'this alternative has no place in the text to go to', 'err'); return; }
+    if (!(a >= 0 && b >= a && b <= read.length) || typeof ch.clause !== 'string') { say(S, 'this alternative has no place in the text to go to', 'err'); return; }
+    var bar = ui.bar.value, text = read;
+    if (S.parsedFrom != null && bar !== S.parsedFrom) {
+      var tail = read.length - a;
+      if (S.parsedFrom === read && bar.slice(0, b) === read.slice(0, b)) { text = bar; }                       /* changed after these words */
+      else if (S.parsedFrom === read && bar.length >= tail && bar.slice(bar.length - tail) === read.slice(a)) {  /* changed before them */
+        var shift = bar.length - read.length; text = bar; a += shift; b += shift;
+      } else {
+        say(S, 'the words of this order changed since they were read: press Enter to read the text again, then pick the alternative', 'err');
+        return;
+      }
+    }
     var next = text.slice(0, a) + ch.clause + text.slice(b);
     ui.bar.value = next; S.text = next;
     say(S, 'alternative "' + short(ch.label || ch.clause, 60) + '" put in the text; reading it again ...');
@@ -1119,9 +1133,14 @@
   }
   function post(S, it, body, rid) {
     var opts = { request_id: rid };
+    var lostHit = null;
     /* third review: a lost answer of a single order is recovered only when the order under its id has this item's terms (else the
-       answer is REQUEST_ID_REUSED, handled below like the server's own) */
-    if (it.kind === 'leg') { opts.reconcile = body.account_id; opts.match = function (o, list) { return sameTerms(it.req || body, list, rid); }; }
+       answer is REQUEST_ID_REUSED, handled below); fifth review: that answer comes from this page's own look-up after a lost answer
+       (lostHit), not from the server - the order found may be this item's own, so it is named and nothing more is sent */
+    if (it.kind === 'leg') {
+      opts.reconcile = body.account_id;
+      opts.match = function (o, list) { var ok = sameTerms(it.req || body, list, rid); if (!ok) { lostHit = o; } return ok; };
+    }
     return T.api.post('/api/orders' + bookQ(it.book), body, opts).then(function (res) {
       return record(S, it, rid, res);
     }, function (e) {
@@ -1133,7 +1152,7 @@
       /* R1 (1.0.7.2 review): this ticket's own request id already carries an order (a reload or a second window between the send and
          its answer): it is looked up; second review: recorded as sent ("already submitted") only when that order has THIS item's terms
          - the server replays the same terms itself, so a 409 means another window sent other terms under the id - else refused */
-      if (e && e.code === 'REQUEST_ID_REUSED' && String(rid).indexOf('st:' + S.ticket + ':') === 0) { return reconcileCombo(S, it, rid, body, e); }
+      if (e && e.code === 'REQUEST_ID_REUSED' && String(rid).indexOf('st:' + S.ticket + ':') === 0) { return reconcileCombo(S, it, rid, body, lostHit ? null : e); }
       var d = detailsOf(e);
       if (e && e.code === 'PREVIEW_STALE') { return askStale(S, it, body, rid, e, d); }
       if (e && e.code === 'CONFIRM_REQUIRED') { return askConfirm(S, it, body, rid, e, d); }
@@ -1155,6 +1174,13 @@
       var hit = by[rid] || by[rid + ':L1'] || by[rid + ':H1'] || null;
       if (hit && sameTerms(it.req || body, list, rid)) {
         return record(S, it, rid, { order: hit, package: { package_id: hit.package_id, status: hit.status }, recovered: true, replayed: true });
+      }
+      if (hit && !err) {
+        /* fifth review: a lost answer (not the server's refusal): the order under this item's own request id may be the one this page
+           just placed, so it is named and nothing more is sent - never "nothing was sent", never a new revision that would place it twice */
+        it.result = { state: 'lost', text: 'lost answer: request ' + rid + ' carries ' + (hit.order_id || 'an order') + ' (' + orderWords(hit) + '), whose terms do not read as' +
+                      ' this item\'s here - check it in Pending Trades; nothing more is sent for this item', blockers: [{ code: 'LOST_ANSWER', message: 'request ' + rid + ' carries ' + (hit.order_id || 'an order') }] };
+        return 'stop';
       }
       if (hit) {
         /* another order (other terms) already went under this id: nothing of THIS item was placed; its revision moves on so that sending it
@@ -1181,12 +1207,17 @@
     if (!req) { return false; }
     var by = {}; (orders || []).forEach(function (o) { if (o && typeof o.request_id === 'string') { by[o.request_id] = o; } });
     function px(a, b) { return (a == null || a === '') ? (b == null || b === '') : (b != null && b !== '' && Number(a) === Number(b)); }
+    /* fifth review: the server keeps a trail percent to 0.01 (half-even): a typed 2.555 is stored 2.56 */
+    function pct(a, b) { return (a == null || a === '') ? (b == null || b === '') : (b != null && b !== '' && Math.abs(Number(a) - Number(b)) <= 0.005 + 1e-9); }
     function tifOf(o) { return o.gtd_date ? 'GTD' : (o.activate_ts != null ? 'NEXT_SESSION' : o.tif); }
     function one(o, r, sized) {
       if (!o || o.account_id !== req.account_id || o.instrument_id !== r.instrument_id || o.side !== r.side) { return false; }
       if (!sized) { return true; }
-      return Number(o.qty) === Number(r.qty) && o.order_type === (r.order_type || 'MARKET') && px(o.limit_px, r.limit_px) && px(o.stop_px, r.stop_px) &&
-        px(o.trail_amt, r.trail_amt) && px(o.trail_pct, r.trail_pct) && tifOf(o) === (req.tif || 'DAY') && (req.tif !== 'GTD' || String(o.gtd_date || '').slice(0, 10) === req.gtd_date);
+      var type = r.order_type || 'MARKET';
+      /* fifth review: a trailing stop's stop_px is the server's own level (the reference less the trail, ratcheting), never typed: its
+         trail is compared, not its stop */
+      return Number(o.qty) === Number(r.qty) && o.order_type === type && px(o.limit_px, r.limit_px) && (type === 'TRAILING_STOP' || px(o.stop_px, r.stop_px)) &&
+        px(o.trail_amt, r.trail_amt) && pct(o.trail_pct, r.trail_pct) && tifOf(o) === (req.tif || 'DAY') && (req.tif !== 'GTD' || String(o.gtd_date || '').slice(0, 10) === req.gtd_date);
     }
     var pl = req.package && Array.isArray(req.package.legs) ? req.package.legs : null;
     if (!pl) { return one(by[rid], req, true); }
@@ -1276,7 +1307,22 @@
       if (v !== 'confirm') { it.result = { state: 'stopped', text: 'not sent: you stopped at the large-order confirmation' }; return 'stop'; }
       var again = Object.assign({}, body, { confirm_large: true });
       if (d.preview && d.preview.preview_id) { again.preview_id = d.preview.preview_id; }
-      return post(S, it, again, rid);
+      if (!isAon(it)) { return post(S, it, again, rid); }
+      /* fifth review: an all-or-none combination carries no preview id (its legs fill at their bid / ask), so after the large-order dialog
+         (however long it stayed open) it is held to the net cash its confirm listed again, on a fresh package preview: moved against the
+         owner or listed too long ago, it is not sent and stays staged with its new figures, as in sendOne */
+      return fresh(S, it).then(function (fr) {
+        if (fr.blockers && fr.blockers.length) {
+          it.result = { state: 'refused', text: 'not sent: the fresh preview refuses it: ' + (fr.blockers[0].message || 'not accepted'), blockers: fr.blockers };
+          return 'stop';
+        }
+        var why = aonMoved(it, fr.spec);
+        if (why) {
+          it.result = { state: 'skipped', text: 'not sent: ' + why + '; it stays staged with its new figures - submit it again to confirm them' };
+          return 'skip';
+        }
+        return post(S, it, again, rid);
+      });
     });
   }
 
@@ -1295,6 +1341,22 @@
     }
     return page(0);
   }
+  /* fifth review: whether a shares order still works - open now, or replaced (a re-price) by an order that is open now - read from the
+     account's open orders, else from the order itself and the orders that replaced it (``replaced_by_order_id``, 20 at most) */
+  function shareOrderWorks(id, openAll) {
+    var seen = {};
+    function look(oid, n) {
+      if (!oid || seen[oid] || n > 20) { return Promise.resolve(false); }
+      seen[oid] = true;
+      if (openAll[oid]) { return Promise.resolve(true); }
+      return T.api.get('/api/orders/' + encodeURIComponent(oid)).then(function (o) {
+        var st2 = o && o.status;
+        if (st2 === 'WORKING' || st2 === 'PARTIAL' || st2 === 'SUSPENDED' || st2 === 'WAITING_PARENT') { return true; }
+        return o && o.replaced_by_order_id ? look(o.replaced_by_order_id, n + 1) : false;
+      }, function () { return true; });                     /* not read: said as kept (the server decides, and says so in its answer) */
+    }
+    return look(id, 0);
+  }
   function cancelSent() {
     var S = st; if (!S || S.dead || S.sending) { return; }
     var prefix = 'st:' + S.ticket + ':';
@@ -1303,24 +1365,35 @@
     var accts = Object.keys(bookOf).sort();
     if (!accts.length) { say(S, 'this ticket has sent nothing yet'); return; }
     say(S, 'looking for the open orders of ticket ' + S.ticket + ' ...');
+    var openAll = {};
     Promise.all(accts.map(function (a) {
       return openOrdersOf(a).then(function (rows) {
+        rows.forEach(function (o) { if (o && o.order_id) { openAll[o.order_id] = o; } });
         return rows.filter(function (o) { return o && typeof o.request_id === 'string' && o.request_id.indexOf(prefix) === 0; })
           .map(function (o) { return Object.assign({}, o, { book: bookOf[a] }); });
       });
     })).then(function (lists) {
-      if (S.dead) { return; }
+      if (S.dead) { return null; }
       var open = [].concat.apply([], lists);
+      var ids = {}; open.forEach(function (o) { ids[o.order_id] = true; });
+      /* fifth review: a hedge leg whose shares order is not listed is kept only while that order (or the order that replaced it: a
+         re-price in Pending Trades no longer carries this ticket's id) still works; once it has ended (filled, cancelled) the leg is
+         cancelled like any order listed - each note says which, from the shares order's own state */
+      return Promise.all(open.filter(function (o) { return o.parent_order_id && !ids[o.parent_order_id]; }).map(function (o) {
+        return shareOrderWorks(o.parent_order_id, openAll).then(function (live) { o.$shareLive = live; });
+      })).then(function () { return open; });
+    }).then(function (open) {
+      if (S.dead || open == null) { return; }
       if (!open.length) { say(S, 'nothing this ticket sent is still open'); return; }
       var ids = {}; open.forEach(function (o) { ids[o.order_id] = true; });
-      /* fourth review: a hedge leg whose shares order is not listed (re-priced or replaced in Pending Trades, so it no longer carries this
-         ticket's request id) is not cancelled while that order works - the server keeps it; said here before the confirm */
-      var held = open.filter(function (o) { return o.parent_order_id && !ids[o.parent_order_id]; });
+      var held = open.filter(function (o) { return o.parent_order_id && !ids[o.parent_order_id] && o.$shareLive; });
       var body = T.h('div', { class: 'smart-dialog' }, T.h('div', null, 'Cancel ' + plural(open.length, 'open order') + ' that ticket ' + S.ticket + ' sent?'));
       var ul = T.h('ul', { class: 'mono' });
       open.slice(0, 12).forEach(function (o) {
         var note = '';
-        if (o.parent_order_id && !ids[o.parent_order_id]) {
+        if (o.parent_order_id && !ids[o.parent_order_id] && !o.$shareLive) {
+          note = ' (its shares order has ended: cancelled now)';
+        } else if (o.parent_order_id && !ids[o.parent_order_id]) {
           note = o.status === 'WAITING_PARENT' ? ' (kept: it waits for its shares order, which no longer carries this ticket\'s id - re-priced or replaced in Pending Trades; cancel that order there and this leg ends with it)'
             : ' (kept while its shares order still works)';
         } else if (o.parent_order_id) {

@@ -613,7 +613,11 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertEqual(1, src.count(submit))
         self.assertEqual("post", _enclosing(fns, src.index(submit)))
         others = sorted(set(re.findall(r"'/api/orders[^']*'", src)))
-        self.assertEqual(["'/api/orders'", "'/api/orders/cancel'", "'/api/orders/preview'"], others)
+        self.assertEqual(["'/api/orders'", "'/api/orders/'", "'/api/orders/cancel'", "'/api/orders/preview'"], others)
+        # fifth review: '/api/orders/' + id is only READ (a shares order's own state, for the cancel confirm's notes)
+        self.assertEqual(["look"], [_enclosing(fns, m.start()) for m in re.finditer(r"'/api/orders/' \+", src)])
+        self.assertEqual("shareOrderWorks", _enclosing(fns, src.index("function look(oid, n) {") - 1))    # look() is shareOrderWorks' own
+        self.assertIn("return T.api.get('/api/orders/' + encodeURIComponent(oid)).then(function (o) {", src)
         # post() is called only by the send loop: a send, the moved-price Accept and the large-order Confirm
         callers = sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])post\(S, it, ", src)})
         self.assertEqual(["askConfirm", "askStale", "sendOne"], callers)
@@ -646,7 +650,8 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertIn("var stop = h.el.querySelector('#smart-stop');", src)
         # a single order reconciles a lost answer through T.api (status=all) - third review: only when the order under its id has its
         # terms (else REQUEST_ID_REUSED); a combination looks up rid, rid:L1 and rid:H1 itself and records its own order, never a waiting leg
-        self.assertIn("if (it.kind === 'leg') { opts.reconcile = body.account_id; opts.match = function (o, list) { return sameTerms(it.req || body, list, rid); }; }", src)
+        self.assertIn("opts.match = function (o, list) { var ok = sameTerms(it.req || body, list, rid); if (!ok) { lostHit = o; } return ok; };", src)
+        self.assertIn("return reconcileCombo(S, it, rid, body, lostHit ? null : e); }", src)
         self.assertIn("var hit = by[rid] || by[rid + ':L1'] || by[rid + ':H1'] || null;", src)
         self.assertIn("if (found && typeof opts.match === 'function' && !opts.match(found, list)) {", read(os.path.join(STATIC, "core.js")))
         # the docked ticket opens only on the order's account page, never on #/smart
@@ -708,6 +713,25 @@ class SmartTicketShellTests(unittest.TestCase):
             ap = f.read()
         self.assertIn('body["previewed_at"] = int(req.rt.clock.epoch())', ap)
         self.assertIn('body["stale_rule"] = {"moved_pct": str(config.PRICE_MOVED_PCT), "ttl_s": int(config.PREVIEW_TTL_S)}', ap)
+
+    def test_smart_fifth_review(self):
+        """1.0.7.2 fifth review: an all-or-none combination is held to its confirm after the large-order question too (askConfirm takes a
+        fresh package preview and the same check as sendOne); a choice goes into the text in the bar only where its own words are unchanged
+        since the last read; a trailing stop is matched on its trail (its stop is the server's level), a trail percent as the server keeps
+        it; a lost answer whose order does not read as the item's is named, never "nothing was sent" with a new revision; the cancel
+        confirm words an unlisted hedge leg from its shares order's own state."""
+        src = read(SMART)
+        fns = _functions(src)
+        self.assertEqual(["askConfirm", "sendOne"], sorted(_enclosing(fns, m.start()) for m in re.finditer(r"var why = aonMoved\(it, fr\.spec\);", src)))
+        self.assertEqual("askConfirm", _enclosing(fns, src.index("if (!isAon(it)) { return post(S, it, again, rid); }")))
+        self.assertEqual("choose", _enclosing(fns, src.index("if (S.parsedFrom != null && bar !== S.parsedFrom) {")))
+        self.assertIn("say(S, 'the words of this order changed since they were read: press Enter to read the text again, then pick the alternative', 'err');", src)
+        self.assertIn("(type === 'TRAILING_STOP' || px(o.stop_px, r.stop_px))", src)
+        self.assertIn("pct(o.trail_pct, r.trail_pct)", src)
+        self.assertEqual("reconcileCombo", _enclosing(fns, src.index("if (hit && !err) {")))
+        self.assertNotIn("bumpRev", src[src.index("if (hit && !err) {"):src.index("if (hit) {", src.index("if (hit && !err) {"))])
+        self.assertEqual("cancelSent", _enclosing(fns, src.index("note = ' (its shares order has ended: cancelled now)';")))
+        self.assertIn("return shareOrderWorks(o.parent_order_id, openAll).then(function (live) { o.$shareLive = live; });", src)
 
     def test_smart_css_uses_the_tokens_only(self):
         css = read(NEW_CSS)

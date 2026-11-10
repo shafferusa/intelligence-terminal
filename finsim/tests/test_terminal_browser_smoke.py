@@ -96,6 +96,11 @@ PAGE_STATE = """(function () {
 })()"""
 
 
+#: the ticket id the Smart Ticket page names in its header (its draft is dropped once every order went)
+TICKET_OF_PAGE = ("(function () { var s = (document.querySelector('.smart-page .sub') || {}).textContent || ''; var m = /ticket ([0-9a-f]{12})/.exec(s);"
+                  " return m ? m[1] : null; })()")
+
+
 def _seed(home: str, clock: FakeClock, fp: FakeProvider) -> dict:
     """The Fund Book's few rows, booked through the routes the UI uses on a runtime that is then closed; returns the ids."""
     rt = _server.build_runtime(home, os.path.join(home, "terminal.db"), clock=clock, offline=True, fake_provider=fp, log=_Log(), books=[FUND],
@@ -376,15 +381,15 @@ class BrowserSmokeTests(unittest.TestCase):
         """Every POST /api/orders (an order submit; not its preview, not a cancel) the page sent since ``since``."""
         return self._posts(since, "/api/orders")
 
-    def _served_chain(self, moved=None) -> None:
+    def _served_chain(self, moved=None, size: int = 20) -> None:
         """The invented ACME chain observed now in the served runtime (as its quote worker caches a fetched chain), ``moved`` {(expiry,
-        right, strike): (bid, ask)} replacing those rows' quotes."""
+        right, strike): (bid, ask)} replacing those rows' quotes, ``size`` contracts displayed on every bid and ask."""
         rt, fp = self.server.rt, self.server.fp
         now = int(rt.clock.epoch())
         rows = []
         for e, r, k, bid, ask in ACME_CHAIN:
             bid, ask = (moved or {}).get((e, r, k), (bid, ask))
-            rows.append(ChainRow(occ_symbol("ACME", date.fromisoformat(e), r, Decimal(str(k))), e, r, qprice(k), qprice(bid), qprice(ask), 20, 20, None, None, 0.30,
+            rows.append(ChainRow(occ_symbol("ACME", date.fromisoformat(e), r, Decimal(str(k))), e, r, qprice(k), qprice(bid), qprice(ask), size, size, None, None, 0.30,
                                  None, None, None, None, 100, 10))
         under = ChainUnderlying(symbol="ACME", last=qprice("60.00"), bid=None, ask=None, bid_size=None, ask_size=None, last_trade_time=now - 60, prev_close=None, iv30=0.30)
         snap = ChainSnapshot(underlying_id="ACME", cboe_symbol="ACME", underlying=under, contracts=rows, fetched_at=now, quote_time=now - 60, n_raw=len(rows))
@@ -484,6 +489,140 @@ class BrowserSmokeTests(unittest.TestCase):
         b.pump(0.8)
         self.assertEqual([], b.errors(sid, since))
         self.assertEqual([], b.http_errors(sid, since))
+
+    def test_xb_smart_ticket_fifth_review(self):
+        """1.0.7.2 fifth review, on the real server.  (a) A choice goes into the text in the bar: an unread edit of ANOTHER order is kept,
+        and a choice whose own words were edited since the last read is refused (read again first).  (b) An all-or-none combination
+        that first asks the large-order question is held to its confirm after that dialog too: moved against the owner while the dialog
+        was open, "Confirm and send" sends nothing and it stays staged.  (c) "Cancel what this ticket sent" says a released hedge leg
+        whose shares order has ENDED (filled) is cancelled now - never "kept" - and the batch cancels it.  (d) A lost answer of a
+        trailing stop is recovered as the item's own order (its stop is the server's level, never compared), never sent twice; the
+        page's term check reads a trail percent as the server keeps it (0.01).  The orders are cleaned up for the tests after it."""
+        b, sid = self.browser, self.sid
+        rt = self.server.rt
+        status = "document.querySelector('#smart-status').innerText"
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); true")
+        self._served_chain()
+        since = b.mark()
+        self.visit("#/smart", "text")
+        # (a) the unread edit of the WIDG order survives the ACME order's own choice
+        b.js(sid, "(function () { var t = document.querySelector('#smart-text'); t.focus(); t.value = %s; t.dispatchEvent(new Event('input', { bubbles: true }));"
+                  " return true; })()" % json.dumps("buy 1,5k ACME; buy 100 WIDG limit 250"))
+        self._press("Enter", 13)
+        b.wait(sid, "/^read 2 leg/.test(%s)" % status, timeout=30)
+
+        def pick(edit: str) -> str:
+            b.js(sid, "(function () { var t = document.querySelector('#smart-text'); t.value = %s; t.dispatchEvent(new Event('input', { bubbles: true })); return true; })()"
+                 % json.dumps(edit))
+            b.pump(0.3)
+            return b.js(sid, """(function () {
+              var chips = Array.prototype.filter.call(document.querySelectorAll('#smart-grid .smart-chip[data-act="flag"][data-n="1"]'),
+                function (x) { return /not a quantity FinSim reads/.test(x.title || ''); });
+              if (!chips.length) { return 'no chip'; }
+              chips[0].click();
+              var btn = Array.prototype.filter.call(document.querySelectorAll('#modal-root .modal button'), function (x) { return /^1\\.5k \\(the comma/.test(x.innerText); })[0];
+              if (!btn) { return 'no choice'; }
+              btn.click(); return 'ok';
+            })()""")
+        self.assertEqual("ok", pick("buy 1,5k ACME; buy 10 WIDG limit 250"))
+        b.wait(sid, "/^read 2 leg/.test(%s) && document.querySelector('#smart-text').value.indexOf('1.5k') >= 0" % status, timeout=30)
+        self.assertEqual("buy 1.5k ACME; buy 10 WIDG limit 250", b.js(sid, "document.querySelector('#smart-text').value"))
+        b.js(sid, "(function () { var t = document.querySelector('#smart-text'); t.value = %s; t.dispatchEvent(new Event('input', { bubbles: true })); return true; })()"
+             % json.dumps("buy 1,5k ACME; buy 100 WIDG limit 250"))
+        self._press("Enter", 13)
+        b.wait(sid, "/^read 2 leg/.test(%s) && document.querySelector('#smart-text').value.indexOf('1,5k') >= 0" % status, timeout=30)
+        self.assertEqual("ok", pick("buy 1,6k ACME; buy 100 WIDG limit 250"))      # the chip's own words changed: nothing is put in
+        b.wait(sid, "/changed since they were read/.test(%s)" % status, timeout=10)
+        self.assertEqual("buy 1,6k ACME; buy 100 WIDG limit 250", b.js(sid, "document.querySelector('#smart-text').value"))
+        # (b) a large all-or-none combination: the large-order dialog first, then the price moves while it is open
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); true")
+        self._served_chain(size=100000)
+        since = b.mark()
+        self._smart_read("buy 25000 ACME Dec 18 2026 60/65 call spread", 2)
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "!!document.querySelector('#smart-confirm-large')", timeout=40)
+        self._served_chain({("2026-12-18", "C", 60): ("4.10", "4.30"), ("2026-12-18", "C", 65): ("0.50", "0.60")}, size=100000)
+        b.js(sid, "document.querySelector('#smart-confirm-large').click(); true")
+        b.wait(sid, "/^sent 0 of 1, skipped 1/.test(%s)" % status, timeout=40)
+        self.assertIn("its net cash moved", b.js(sid, status))
+        self.assertEqual([409], [x["status"] for x in self._order_posts(since)])      # only the post the large-order question answered
+        ticket = b.js(sid, TICKET_OF_PAGE)
+        with rt.db.reader() as conn:
+            self.assertEqual(0, conn.execute("SELECT COUNT(*) FROM orders WHERE request_id LIKE ?", (f"st:{ticket}:%",)).fetchone()[0])
+        self._served_chain()
+        # (c) the shares fill at once and release their puts; the shares order is not listed (it ended): the puts are cancelled now
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); true")
+        self.visit("#/smart", "text")
+        since = b.mark()
+        self._smart_read("buy 300 ACME limit 61 and buy 3 ACME Dec 18 2026 55 puts limit 1.00 as a package", 2)
+        ticket = b.js(sid, TICKET_OF_PAGE)
+        self.assertTrue(ticket, "the page names its ticket id")
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "/^all 1 order sent/.test(%s)" % status, timeout=40)
+        with rt.db.reader() as conn:
+            rows = {r["request_id"]: dict(r) for r in conn.execute("SELECT order_id, request_id, status, qty FROM orders WHERE request_id LIKE ?", (f"st:{ticket}:%",))}
+        shares = next(r for k, r in rows.items() if not k.endswith(":H1"))
+        puts = next(r for k, r in rows.items() if k.endswith(":H1"))
+        self.assertEqual(("FILLED", "WORKING", 3), (shares["status"], puts["status"], int(puts["qty"])))
+        b.js(sid, "document.querySelector('#smart-cancel-sent').click(); true")
+        b.wait(sid, "Array.prototype.some.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return /^Cancel \\d+ order/.test(x.innerText); })",
+               timeout=20)
+        line = next((ln for ln in b.js(sid, "document.querySelector('#modal-root .modal').innerText").splitlines() if puts["order_id"] in ln), "")
+        self.assertIn("its shares order has ended: cancelled now", line)
+        self.assertNotIn("kept", line)
+        b.js(sid, "Array.prototype.filter.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return /^Cancel \\d+ order/.test(x.innerText); })[0].click(); true")
+        b.wait(sid, "/^cancelled 1/.test(%s)" % status, timeout=20)
+        with rt.db.reader() as conn:
+            self.assertEqual("CANCELLED", conn.execute("SELECT status FROM orders WHERE order_id=?", (puts["order_id"],)).fetchone()[0])
+        # (d) the answer of a trailing stop's send is lost after the server placed it: the page finds it under its own request id
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); true")
+        self.visit("#/smart", "text")
+        self._smart_read("buy 10 WIDG trail 2.5%", 1)
+        b.js(sid, """(function () {
+          if (!window.__realFetch) { window.__realFetch = window.fetch; }
+          var real = window.__realFetch; window.__lost = 0;
+          window.fetch = function (url, init) {
+            var u = String(url && url.url ? url.url : url), m = String((init && init.method) || 'GET').toUpperCase();
+            if (!window.__lost && m === 'POST' && /\\/api\\/orders(\\?|$)/.test(u)) {
+              window.__lost = 1;
+              return real.apply(this, arguments).then(function () { throw new TypeError('Failed to fetch (answer lost)'); });
+            }
+            return real.apply(this, arguments);
+          };
+          return true;
+        })()""")
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "/^(all \\d+ order|sent \\d+ of)/.test(%s)" % status, timeout=60)
+        b.js(sid, "window.fetch = window.__realFetch; true")
+        said = b.js(sid, status) + " | " + b.js(sid, "document.querySelector('#smart-grid').innerText")
+        self.assertNotIn("nothing was sent", said)
+        with rt.db.reader() as conn:
+            placed = [dict(r) for r in conn.execute("SELECT order_id, request_id, order_type, trail_pct, stop_px, status FROM orders WHERE order_type='TRAILING_STOP'"
+                                                    " AND instrument_id='WIDG' AND status='WORKING'").fetchall()]
+        self.assertEqual(1, len(placed), placed)
+        got = b.js(sid, """(function () {
+          var f = T.pages.smart.sameTerms, rid = 'st:a1b2c3d4e5f6:L1:r1', acct = 'F1:US_EXCHANGE';
+          function req(extra) { return Object.assign({ account_id: acct, instrument_id: 'WIDG', side: 'BUY', qty: 10, order_type: 'TRAILING_STOP', tif: 'DAY' }, extra); }
+          function row(extra) { return [Object.assign({ request_id: rid, account_id: acct, instrument_id: 'WIDG', side: 'BUY', qty: 10, order_type: 'TRAILING_STOP',
+                                                        tif: 'DAY', stop_px: '256.25', trail_amt: null, trail_pct: null, limit_px: null }, extra)]; }
+          return [f(req({ trail_pct: '2.5' }), row({ trail_pct: '2.50' }), rid), f(req({ trail_pct: '2.555' }), row({ trail_pct: '2.56' }), rid),
+                  f(req({ trail_amt: '1.5' }), row({ trail_amt: '1.50', stop_px: '251.50' }), rid), f(req({ trail_pct: '2.5' }), row({ trail_pct: '3.00' }), rid),
+                  f(Object.assign(req({}), { order_type: 'STOP', stop_px: '260' }), row({ order_type: 'STOP', stop_px: '261.00' }), rid)];
+        })()""")
+        self.assertEqual([True, True, True, False, False], got)
+        # clean up for the tests after this one
+        for o in placed:
+            st_, out, _h = rt.router.handle("DELETE", f"/api/orders/{o['order_id']}?book=F", None, {"request_id": f"ui:smoke-5x-{o['order_id']}"}, "127.0.0.1", None)
+            self.assertEqual(200, st_, out)
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); location.hash = '#/dashboard'; true")
+        b.pump(0.8)
+        self.assertEqual([], [e for e in b.errors(sid, since) if not ("409" in e and "/api/orders" in e) and "Failed to fetch" not in e])
 
     def test_y_smart_ticket_records_a_sequential_package_as_sent_only_with_its_terms(self):
         """1.0.7.2 third review: the page records an item as sent under its own request id (a reload or a second window got there first)

@@ -849,6 +849,571 @@ class ChoicesFourthReview(_ResolverBase):
         self.assertEqual([("STO", 2)], [(l["side"], l["qty"]) for l in out["legs"] if self.goes(out, l)])
 
 
+# ===== 1.0.7.2 fifth review: the choice contract, the seeds of the review's property tests replayed ======================================
+FIFTH_BOOKS = [tuple(b) for b in st.DEFAULT_BOOKS]                      # the books make_runtime(books="real") creates
+FIFTH_PLACE = ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK")
+FIFTH_SPLIT = re.compile(r"^(btc|bto|stc|sto|cover|buy|sell|short) ([\d,]+)(?: \+ (btc|bto|stc|sto|cover|buy|sell|short) ([\d,]+))?(?: only)?$")
+FIFTH_SIDE = {"btc": "BTC", "bto": "BTO", "stc": "STC", "sto": "STO", "cover": "BUY_TO_COVER", "short": "SELL_SHORT", "sell": "SELL", "buy": "BUY"}
+FIFTH_YEAR = r"(?i)\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? \d{1,2}(st|nd|rd|th)?,? "
+#: the cases of the fifth review's property test of the Smart Ticket's choices (seeds 501-504) that broke the choice contract on 8df9869:
+#: (seed, case, selected book, text) - the world of ``ChoicesFifthReview`` (B)
+PROP5_SEED_TEXTS = (
+    (501, 33, 'I', 'buy 2 ACME Dec 18 2026 240 call at us exchange limit 1.00 and (3 ACME Dec 18 2026 240 calls gtc) and sell 400 WIDG in the Personal and Fund books at us exchange'),
+    (501, 39, 'F', 'short 5 WIDG in the Fund book at I1:PB_MS as a package and buy 1 ACME Dec 18 2026 220/230/240 put butterfly in the Fund book at us exchange limit 1.00 and (4 ACME Dec 18 2026 220 put in the Institutional book at I1:PB_MS at 2.10 as a package)'),
+    (501, 45, 'F', 'at pb ms: buy 1 ACME Dec 18 2026 220/230/240 put butterfly limit 1.00 as a package; buy 200 LOTX in the Personal book at us exchange gtc as a package, sell 1 ACME Dec 18 2026 210/220 put spread in the Personal book at I1:PB_MS limit 1.00'),
+    (501, 51, 'I', 'buy 2 WIDG in the Fund book at I1:PB_MS at 2.10'),
+    (501, 54, 'P', 'sell 4 ACME Dec 18 2026 210 calls; cover 1 ACME Dec 18 2026 220 calls in the Fund book gtc as a package and 4 ACME Dec 18 2026 250 calls in the Fund and Institutional books limit 1.00'),
+    (501, 60, 'F', 'stc 2 WIDG Dec 18 2026 40 put in the Personal book at I1:PB_MS'),
+    (501, 77, 'P', 'sell 200 WIDG in the Personal and Fund books limit 41, stc 4 ACME Dec 18 2026 260 put in the Fund and Institutional books at I1:PB_MS, cover 2 ACME Dec 18 2026 240 calls in the Fund and Institutional books'),
+    (502, 1, 'F', 'collar 200 ACME Dec 18 2026 35/45 in the Personal book at I1:PB_MS at 2.10; 5 GIZM'),
+    (502, 2, 'F', 'in the Institutional book: short 5 ACME; 1 ACME Dec 18 2026 240 calls limit 41 as a package and (1 ACME Dec 18 2026 240 calls in the Personal book limit 1.00)'),
+    (502, 30, 'I', 'sell 200 WIDG in the Fund book at I1:PB_MS gtc and (covered call 300 WIDG Dec 18 2026 45 in the Fund book at I1:PB_MS gtc); 3 ACME Dec 18 2026 260 calls in the Fund book limit 41'),
+    (502, 31, 'F', 'buy write 1 contract WIDG Dec 18 2026 45 in the Personal book at us exchange at 2.10 and buy 400 WIDG'),
+    (502, 36, 'F', '(cover 2 WIDG Dec 18 2026 40 calls) and 3 ACME Dec 18 2026 220 call in the Institutional book and sell 4 ACME Dec 18 2026 215 call in the Fund book gtc and covered call 100 WIDG Dec 18 2026 45 in the Fund book at I1:PB_MS limit 1.00'),
+    (502, 54, 'P', 'stc 3 ACME Dec 18 2026 220 put in the Personal book limit 1.00, buy 3 ZORB at us exchange limit 41 and stc 1 ACME Dec 18 2026 260 put in the Personal book at I1:PB_MS and buy 2 ACME Dec 18 2026 240 put at pb ms'),
+    (502, 66, 'P', 'buy 3 ACME Dec 18 2026 220 calls at us exchange limit 41 and stc 1 WIDG Dec 18 2026 40 calls in the Personal book at I1:PB_MS limit 1.00 as a package and sell 3 ACME Dec 18 2026 210 put limit 41'),
+    (503, 1, 'P', '(short 3 ACME Dec 18 2026 260 calls gtc); 2 ACME Dec 18 2026 210 call in the Personal book at I1:PB_MS, 4 ACME Dec 18 2026 210 call'),
+    (503, 40, 'P', 'sell 1 ACME Dec 18 2026 240/250 call spread in the Personal and Institutional books at I1:PB_MS at 2.10 as a package and 150 GIZM in the Fund book at I1:PB_MS as a package and bto 3 WIDG Dec 18 2026 40 put in the Personal book at us exchange'),
+    (503, 53, 'I', 'short 2 ACME Dec 18 2026 210 call in the Fund book limit 41 as a package, collar 200 ACME Dec 18 2026 220/260 in the Personal and Fund books gtc and stc 1 ACME Dec 18 2026 220 call in the Personal book limit 41'),
+    (503, 63, 'I', 'buy write 1 contract WIDG Dec 18 2026 45 in the Fund and Institutional books at 2.10 and sell 400 ZORB in the Fund book at I1:PB_MS limit 41'),
+    (503, 65, 'I', 'buy 2 ACME Dec 18 2026 210 put in the Fund book at us exchange limit 41 and sell 4 ACME Dec 18 2026 260 put at I1:PB_MS gtc as a package and buy write 200 WIDG Dec 18 2026 45 in the Personal book at I1:PB_MS'),
+    (503, 66, 'I', 'in the Fund book: sell 1 ACME Dec 18 2026 210 calls gtc; sell 1 ACME Dec 18 2026 220/230/240 put butterfly in the Personal book at I1:PB_MS at 2.10 and buy 1 ACME Dec 18 2026 240/250 call spread in the Fund book'),
+    (503, 71, 'P', 'bto 2 ACME Dec 18 2026 260 put in the Institutional book at I1:PB_MS limit 41 as a package and short 3 WIDG Dec 18 2026 45 calls in the Personal and Institutional books at us exchange gtc; buy 1 ACME Dec 18 2026 210/220 put spread'),
+    (503, 75, 'F', 'sto 4 ACME Dec 18 2026 220 put at I1:PB_MS and collar 100 ACME Dec 18 2026 220/260 in the Fund book at I1:PB_MS at 2.10 and btc 4 ACME Dec 18 2026 260 calls in the Personal and Institutional books at I1:PB_MS'),
+    (503, 79, 'F', 'buy 1 ACME Dec 18 2026 250 calls in the Personal and Institutional books and bto 2 ACME Dec 18 2026 240 calls in the Fund book at I1:PB_MS; 300 GIZM in the Personal book at us exchange at 2.10'),
+    (504, 4, 'P', 'buy 1 ACME Dec 18 2026 220/230/240 put butterfly at pb ms limit 1.00, buy 300 ZORB at pb ms limit 1.00 as a package and sto 4 ACME Dec 18 2026 260 call in the Personal book at I1:PB_MS'),
+    (504, 23, 'P', 'short 150 GIZM in the Fund book at I1:PB_MS gtc and bto 150 LOTX at pb ms, sell 1 ACME Dec 18 2026 210/220 put spread in the Institutional book at I1:PB_MS as a package; 3 ACME Dec 18 2026 240 calls at us exchange'),
+    (504, 27, 'P', 'in the Institutional book: sell 2 ACME Dec 18 2026 220 put in the Fund book at I1:PB_MS limit 1.00 and buy 1 ACME Dec 18 2026 210/220 put spread'),
+    (504, 30, 'F', 'buy 2 ACME Dec 18 2026 240 calls at pb ms at 2.10; buy 1 LOTX in the Institutional book and bto 2 ACME Dec 18 2026 215 calls in the Fund book at I1:PB_MS as a package'),
+    (504, 39, 'F', 'sell 3 ACME Dec 18 2026 250 calls in the Personal book at I1:PB_MS as a package, stc 400 GIZM as a package and 200 LOTX at us exchange and bto 2 ACME Dec 18 2026 220 call at us exchange limit 41'),
+    (504, 48, 'P', 'buy 2 ACME Dec 18 2026 215 calls in the Fund book at I1:PB_MS limit 41'),
+    (504, 62, 'I', 'short 3 WIDG Dec 18 2026 45 calls at I1:PB_MS gtc and 1 LOTX in the Personal book at I1:PB_MS limit 41'),
+    (504, 63, 'I', 'sto 5 WIDG in the Institutional book at I1:PB_MS; sto 3 ACME Dec 18 2026 260 calls in the Fund book and 2 ACME Dec 18 2026 215 calls in the Fund book at I1:PB_MS'),
+    (504, 69, 'I', 'buy 150 WIDG in the Personal book at pb ms; bto 1 ACME Dec 18 2026 250 calls in the Fund book at I1:PB_MS; (buy 200 ZORB at I1:PB_MS limit 1.00)'),
+)
+#: the seeds the fifth review's generative test of the parse and its choices reported (P8 words not understood, P4 / P5 an order moved,
+#: P9 a typed year read as the limit), and the six it reported once a fix inside a package was offered: (seed, world, selected book, the
+#: texts it walked - the instruction, then the text after each choice it applied on 8df9869)
+PT5_SEED_TEXTS = (
+    (525263, 'A', 'F', (                                       # found by this fix's own 12,000-case run: a closing phrase in a later order
+        'cover 1,000 WIDG in the Fund book, and 2 WIDG 50p Nov 2026, close all GIZM in the Institutional book',
+        'cover 1,000 WIDG in the Fund book, and 2 WIDG 45p Nov 2026, close all GIZM in the Institutional book',
+    )),
+    (520091, 'A', 'P', (
+        'collar 100 GIZM Dec 18 2026 45/55; covered call 300 GIZM Dec 18 2026 55 limit 0.50 in the Institutional book',
+        'collar 100 GIZM Dec 18 2026 45/55 at pb ms; covered call 300 GIZM Dec 18 2026 55 limit 0.50 in the Institutional book at us exchange',
+        'collar 100 GIZM Dec 18 2026 45/55 at pb ms; covered call 300 GIZM Dec 18 2026 0.50 in the Institutional book at us exchange',
+    )),
+    (520130, 'B', 'P', (
+        'cover 300 GIZM in the Institutional book, and buy write 400 GIZM Dec 2026 50 in the Personal book',
+        'cover 300 GIZM in the Institutional book at us exchange, and buy write 400 GIZM Dec 2026 50 in the Personal book',
+    )),
+    (520300, 'B', 'P', (
+        'sell 3 ACME Dec 18 2026 250 calls in the Institutional book and buy 1 GIZM Dec 18 2026 55 put',
+        'sell 3 ACME Dec 18 2026 250 calls in the Institutional book at us exchange and buy 1 GIZM Dec 18 2026 55 put',
+        'sell 3 ACME Dec 18 2026 250 calls in the Institutional book at at pb ms and buy 1 GIZM Dec 18 2026 55 put',
+    )),
+    (520370, 'B', 'P', (
+        'bto 3 contracts ACME Jan 15 2027 240 puts limit in F day and covered call 300 WIDG Dec 18 2026 45 in the Institutional book, buy 2 ACME Dec 18 2026 240 calls; buy to close all ACME Dec 18 230 put',
+        'bto 3 contracts ACME Jan 15 2027 240 puts limit in F day and covered call 200 WIDG Dec 18 2026 45 in the Institutional book, buy 2 ACME Dec 18 2026 240 calls; buy to close all ACME Dec 18 230 put',
+        'bto 3 contracts ACME Jan 15 2027 240 puts limit in F day and covered call 200 WIDG Dec 18 2026 45 in the Institutional book at us exchange, buy 2 ACME Dec 18 2026 240 calls; buy to close all ACME Dec 18 230 put',
+    )),
+    (520901, 'A', 'F', (
+        "sell 3 ACME Dec 18 2026 250 calls in the Institutional book then sell short halfx ACME Dec 18 '26 250 put",
+        "sell 3 ACME Dec 18 2026 250 calls in the Institutional book at us exchange then sell short halfx ACME Dec 18 '26 250 put",
+        "sell 3 ACME Dec 18 2026 250 calls in the Institutional book at at pb ms then sell short halfx ACME Dec 18 '26 250 put",
+    )),
+    (520929, 'A', 'P', (
+        'bto 50 WIDG in the Fund book and collar 100 GIZM Dec 2026 45/50 in the Institutional book',
+        'bto 50 WIDG in the Fund book and collar 100 GIZM Dec 2026 45/50 in the Institutional book at us exchange',
+    )),
+    (520974, 'B', 'P', (
+        'sto 150 acme and close 100 GIZM; 100 lots WIDG day limit 3.10, and cover 300 GIZM in the Institutional book',
+        'sto 150 acme and close 100 GIZM at pb ms; 100 lots WIDG day limit 3.10 at pb ms, and cover 300 GIZM in the Institutional book at us exchange',
+        'sto 150 acme in the Institutional book at us exchange and close 100 GIZM at pb ms in the Institutional book; 100 lots WIDG day limit 3.10 at pb ms in the Institutional book, and cover 300 GIZM in the Institutional book at at pb ms',
+    )),
+    (521065, 'A', 'P', (
+        "cover 300 GIZM in the Institutional book and collar 100 ACME Dec 18 '26 210/250 aon at market in the Personal book in the Fund book",
+        "cover 300 GIZM in the Institutional book at us exchange and collar 100 ACME Dec 18 '26 210/250 aon at market in the Personal book in the Fund book",
+    )),
+    (521624, 'B', 'F', (
+        'sell to open 2.5 lots ACME at 2.50, sell 2 ACME Dec 18 2026 250 calls in the Institutional book',
+        'sell to open 2.5 lots ACME at 2.50, sell 2 ACME Dec 18 2026 250 calls in the Institutional book at us exchange',
+        'short 2.5 lots ACME at 2.50, sell 2 ACME Dec 18 2026 250 calls in the Institutional book at us exchange',
+    )),
+    (521816, 'B', 'P', (
+        'sell 2 ACME Dec 18 2026 250 calls in the Institutional book then roll 1 WIDG Dec 18 45 calls to Nov 20 2026 40 gtd Dec 18 2026 at pb',
+        'sell 2 ACME Dec 18 2026 250 calls in the Institutional book at us exchange then roll 1 WIDG Dec 18 45 calls to Nov 20 2026 40 gtd Dec 18 2026 at pb',
+    )),
+    (521841, 'A', 'P', (
+        'buy 50 GIZM in the Institutional book then roll 3 GIZM Dec 2026 45 puts to Dec 2026 55',
+        'buy 50 GIZM in the Institutional book at us exchange then roll 3 GIZM Dec 2026 45 puts to Dec 2026 55',
+    )),
+    (521162, 'B', 'F', (
+        '2 ACME Jan 15 2027/Dec 19 2026 200 put calendar at us exchange in the Personal book gtd Dec 18 2026 and bto 100 ACME in the Fund book',
+        '2 ACME Jan 15 2027/2026-12-18 200 put calendar at us exchange in the Personal book gtd Dec 18 2026 and bto 100 ACME in the Fund book',
+        'buy 2 ACME Jan 15 2027/2026-12-18 200 put calendar at us exchange in the Personal book gtd Dec 18 2026 and bto 100 ACME in the Fund book',
+    )),
+    (521996, 'B', 'P', (
+        "roll ACME Dec 19 2026 230 calls to Dec 18 '26 250 2.50 limit, and 1 ACME Dec 18/Dec 19 2026 240 put calendar at P1:US_EXCHANGE limit 225",
+        "roll ACME 2027-01-15 230 calls to Dec 18 '26 250 2.50 limit, and 1 ACME Dec 18/Dec 19 2026 240 put calendar at P1:US_EXCHANGE limit 225",
+        "roll ACME 2027-01-15 230 calls to Dec 18 '26 250 2.50 limit, and sell 1 ACME Dec 18/Dec 19 2026 240 put calendar at P1:US_EXCHANGE limit 225",
+    )),
+    (521313, 'A', 'F', (
+        '(200 WIDG), buy 100 ACME, sell 1 ACME Dec 18 2026 260 call',
+    )),
+    (520120, 'B', 'P', (
+        'in the Fund book: buy to cover 2.5 lots WIDG at pb ms in the Fund book, and halfx ACME Dec 2026 240 call at us exchange gtd Dec 18 2026',
+    )),
+    (531068, 'B', 'P', (
+        'roll ACME 12/18/26 245 calls to Dec 18 200 and roll 1 WIDG Dec 2026 45 calls to Dec 2026 35 aon limit 1.00, and sell 2x GIZM Dec 2026 50 put, sto 2 GIZM Dec 18 2026/Dec 18 2026 45 call calendar at 1.20',
+        'roll ACME 12/18/26 245 calls to Dec 18 200 and roll 1 WIDG Dec 2026 45 calls to Dec 2026 35 limit 1.00, and sell 2x GIZM Dec 2026 50 put, sto 2 GIZM Dec 18 2026/Dec 18 2026 45 call calendar at 1.20',
+    )),
+    (531121, 'A', 'P', (
+        '10 contracts WIDG 40p Dec 18 2026 together limit 0.50 in the Fund book',
+        'sell 10 contracts WIDG 40p Dec 18 2026 together limit 0.50 in the Fund book',
+    )),
+    (525800, 'B', 'P', (
+        'buy to cover 20 WIDG then (close 100 GIZM in the Fund book) then buy 100 ACME, sell 1 ACME Dec 18 2026 260 call good till cancelled, in the Institutional book at pb ms',
+    )),
+    (522146, 'B', 'P', (
+        '(sell 1 ACME Jan 15 2027/Dec 19 2026 210 call calendar at 1.20 and sell short 300 lots LOTX limit 1.00 gtd Dec 18 2026 in F)',
+        '(sell 1 ACME Jan 15 2027/2026-12-18 210 call calendar at 1.20 and sell short 300 lots LOTX limit 1.00 gtd Dec 18 2026 in F)',
+    )),
+    (522608, 'B', 'F', (
+        'stc 1 ACME Dec 18 2026/Dec 19 2026 210 put calendar, and buy 1,5000 ACME limit 225',
+    )),
+    (523301, 'A', 'P', (
+        'at pb ms: buy 2 ACME Dec 18/Dec 19 2026 215 put calendar and bto 150 ACME together at pb ms',
+        'at pb ms: buy 2 ACME Dec 18/Dec 19 2026 215 put calendar and buy 150 ACME together at pb ms',
+    )),
+    (526009, 'A', 'P', (
+        '(bto 3 ACME 2026-12-18 215 put at the mid in F and sell short 1 ACME Jan 2027/Dec 19 2026 215 call calendar limit 3.10 day)',
+    )),
+    (526287, 'A', 'F', (
+        'buy to close 200 WIDG gtc in the Foo book; buy all ACME Dec 18 2026 250 calls, cover 2 ACME Dec 18/Dec 19 2026 260 call calendar then btc 3x GIZM Dec 2026 50 puts 2.50 limit in the Personal book',
+        'buy to close 200 WIDG gtc in the Foo book; close all ACME Dec 18 2026 250 calls, cover 2 ACME Dec 18/Dec 19 2026 260 call calendar then btc 3x GIZM Dec 2026 50 puts 2.50 limit in the Personal book',
+        'buy to close 200 WIDG gtc in the Foo book; close all ACME Dec 18 2026 250 calls, cover 2 ACME Dec 18/2027-01-15 260 call calendar then btc 3x GIZM Dec 2026 50 puts 2.50 limit in the Personal book',
+    )),
+    (527250, 'B', 'I', (
+        'in the Institutional book at pb: covered call 100 ACME 12/18/26 250 and bto 2 ACME Dec 18 2026/Dec 19 2026 245 put calendar',
+    )),
+    (528342, 'B', 'P', (
+        'buy half WIDG Dec 2026 45 put, cover 2 ACME Jan 2027/Dec 19 2026 240 put calendar limit in the Foo book',
+        'buy half WIDG Dec 2026 45 put, cover 2 ACME Jan 2027/2027-01-15 240 put calendar limit in the Foo book',
+    )),
+    (528670, 'B', 'P', (
+        'in the Institutional book: bto 2 ACME Dec 18/Dec 19 2026 215 put calendar and cover 3 GIZM Dec 2026 45/50/55 condor in the Foo book limit',
+        'in the Institutional book: bto 2 ACME Dec 18/Dec 19 2026 215 put calendar and cover 3 GIZM Dec 2026 45/50/55 condor in the Institutional book limit',
+        'in the Institutional book: bto 2 ACME Dec 18/2027-01-15 215 put calendar and cover 3 GIZM Dec 2026 45/50/55 condor in the Institutional book limit',
+    )),
+    (528789, 'A', 'P', (
+        'sell 1 ACME Dec 18 2026/Dec 19 2026 240 put calendar; buy 1 ACME Dec 18 2026 215 call',
+        'sell 1 ACME Dec 18 2026/2027-01-15 240 put calendar; buy 1 ACME Dec 18 2026 215 call',
+    )),
+    (522070, 'B', 'F', (
+        'cover 300 GIZM in the Institutional book',
+        'cover 300 GIZM in the Institutional book at us exchange',
+    )),
+    (520183, 'A', 'P', (
+        'bto 1 GIZM Dec 2026 50/55 strangle day in the Personal book, buy 3 acme, and (short 3 WIDG Dec 2026 45 puts in F and short 3x WIDG Dec 2026 35 put at F1:US_EXCHANGE in the Fund book)',
+        'bto 1 GIZM Dec 2026 50/55 strangle day in the Personal book, buy 3 acme, and (sto 3 WIDG Dec 2026 45 puts in F and short 3x WIDG Dec 2026 35 put at F1:US_EXCHANGE in the Fund book)',
+    )),
+    (520339, 'A', 'P', (
+        'short 100 contracts LOTX in the Institutional book limit then sell to open 3 WIDG Dec 2026 35/50 call spread at 41, and sto 1 lots ACME 2.50 limit and stc 10 ACME Dec 2026 215 puts aon',
+        'short 100 contracts LOTX in the Institutional book limit then sell to open 3 WIDG Dec 2026 35/50 call spread at 41, and short 1 lots ACME 2.50 limit and stc 10 ACME Dec 2026 215 puts aon',
+        'short 100 LOTX in the Institutional book limit then sell to open 3 WIDG Dec 2026 35/50 call spread at 41, and short 1 lots ACME 2.50 limit and stc 10 ACME Dec 2026 215 puts aon',
+    )),
+    (520409, 'A', 'P', (
+        '(sell 1 ACME Jan 2027/Dec 18 240 put calendar and btc 150 ACME together at P1:US_EXCHANGE in the Personal book)',
+    )),
+    (521405, 'A', 'F', (
+        "(buy write 200 ACME Dec 18 260 day at 1.20, collar 100 ACME Dec 18 '26 215/245 together at 2.50)",
+        "(buy write 200 ACME Dec 18 260 day at 1.20, collar 100 ACME Dec 18 '26 215/240 together at 2.50)",
+        "(buy write 200 ACME Dec 18 260 day at 1.20, collar 100 ACME Dec 18 '26 215/240 together)",
+    )),
+    (521678, 'B', 'F', (
+        '(buy write 100 contracts ACME 12/18/26 240 limit 1.00 and cover 1x ACME Dec 2026 200 call)',
+        '(buy write 10000 ACME 12/18/26 240 limit 1.00 and cover 1x ACME Dec 2026 200 call)',
+        '(buy write 10000 ACME 12/18/26 240 and cover 1x ACME Dec 2026 200 call)',
+    )),
+    (521971, 'A', 'P', (
+        '(cover 3x ACME Dec 2026 210 calls and bto 5x ACME 12/18/26 240 call)',
+    )),
+)
+
+
+def _fifth_goes(out, l) -> bool:
+    return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+
+
+def _fifth_body(l) -> tuple:
+    return (l["book"], l["account_id"], l["side"], l["qty"], l["instrument"].get("id"), l["order_type"], l["limit_px"], l["stop_px"], l["trail_amt"],
+            l["trail_pct"], l["tif"], l["gtd_date"], "ALREADY_SENT" in codes(l["flags"]))
+
+
+def _fifth_unparsed(out) -> set:
+    return {f["text"] for f in [f for l in out["legs"] for f in l["flags"]] + [f for c in out["combos"] for f in c["flags"]] + out["flags"]
+            if f["code"] == "UNPARSED_TEXT"}
+
+
+def choice_contract(out, item, f, ch, out2, books=FIFTH_BOOKS) -> list:
+    """What a choice applied as the page applies it changed beyond the order it is on (1.0.7.2 fifth review; an empty list when nothing):
+    C1 every order outside the clause(s) it is on, matched by position, keeps its order body and package and never becomes sendable (a
+    leg whose own request stood and whose package with the choice's order the choice completes excepted); C2 the other books' orders of a
+    clause repeated per book read as before, unless the same words are offered on them; C3 the order it is on stays in its account (an
+    account or book choice excepted); C4 its words parse; C5 a split's label stages exactly those sides and quantities, "in the X Book"
+    stages book X; C6 no limit staged is the year of a typed date."""
+    probs = []
+    new_words = _fifth_unparsed(out2) - _fifth_unparsed(out)
+    if new_words:
+        probs.append(f"C4 words not understood after the choice: {sorted(new_words)[:3]}")
+    for l in out2["legs"]:
+        px = str(l.get("limit_px") or "")
+        if _fifth_goes(out2, l) and re.fullmatch(r"20\d\d", px) and re.search(FIFTH_YEAR + px + r"\b", out2["text"]):
+            probs.append(f"C6 leg {l['n']} is sendable at LIMIT {px}, the year of its typed date")
+    cl0, cl2 = st.parse(out["text"], books)["clauses"], st.parse(out2["text"], books)["clauses"]
+    ix0 = {tuple(c["span"]): i for i, c in enumerate(cl0)}
+    ix2 = {tuple(c["span"]): i for i, c in enumerate(cl2)}
+    ci0 = {l["n"]: ix0.get(tuple(l["span"])) for l in out["legs"]}
+    ci2 = {l["n"]: ix2.get(tuple(l["span"])) for l in out2["legs"]}
+    if None in ci0.values() or None in ci2.values():
+        return probs
+    own = set(item["legs"]) if "fill_mode" in item else {item["n"]}
+    if f["code"] == "COVER_HINT":
+        m = re.search(r"legs (\d+) and (\d+)", f["text"])
+        own |= {int(m.group(1)), int(m.group(2))} if m else set()
+    own_ci = sorted({ci0[n] for n in own})
+    lo, hi = own_ci[0], own_ci[-1]
+    before, after = list(range(lo)), list(range(hi + 1, len(cl0)))
+    if len(cl2) < len(before) + len(after) + 1:
+        return probs + ["C1 the other orders cannot be matched one to one"]
+    m02 = {i: i for i in before}
+    for k, i in enumerate(reversed(after)):
+        m02[i] = len(cl2) - 1 - k
+    inv = {j: i for i, j in m02.items()}
+    mid2 = [j for j in range(len(cl2)) if j not in inv]
+    of0 = {n: cb for cb in out["combos"] for n in cb["legs"]}
+    of2 = {n: cb for cb in out2["combos"] for n in cb["legs"]}
+
+    def p0(x):
+        return frozenset(ci0[m] if ci0[m] in m02 else "IN" for m in of0[x["n"]]["legs"] if m != x["n"]) if x["n"] in of0 else frozenset()
+
+    def p2(y):
+        return frozenset(inv.get(ci2[m], "IN") for m in of2[y["n"]]["legs"] if m != y["n"]) if y["n"] in of2 else frozenset()
+
+    def offered_too(x):
+        for it in (x, of0.get(x["n"])):
+            for g in (it or {}).get("flags") or []:
+                if any(c["clause"] == ch["clause"] for c in g.get("choices") or []):
+                    return True
+        return False
+    by0, by2 = {}, {}
+    for l in out["legs"]:
+        by0.setdefault(ci0[l["n"]], []).append(l)
+    for l in out2["legs"]:
+        by2.setdefault(ci2[l["n"]], []).append(l)
+    for i, j in m02.items():                                                              # C1
+        x0, y0 = by0.get(i, []), by2.get(j, [])
+        if len(x0) != len(y0):
+            probs.append(f"C1 order {i + 1} has {len(x0)} -> {len(y0)} legs")
+            continue
+        for x, y in zip(x0, y0):
+            if offered_too(x):
+                continue
+            if _fifth_body(x) != _fifth_body(y):
+                probs.append(f"C1 leg {x['n']} {_fifth_body(x)} -> {_fifth_body(y)}")
+            if _fifth_goes(out2, y) and not _fifth_goes(out, x) and not (x["request"] is not None and "IN" in p0(x)):
+                probs.append(f"C1 leg {x['n']} {_fifth_body(x)} becomes sendable")
+            if p0(x) != p2(y):
+                probs.append(f"C1 leg {x['n']} package {sorted(map(str, p0(x)))} -> {sorted(map(str, p2(y)))}")
+    own_books = {l["book"] for l in out["legs"] if l["n"] in own}
+    if f["code"] not in FIFTH_PLACE and None not in own_books:                           # C2
+        others = [l for i in own_ci for l in by0.get(i, []) if l["n"] not in own and l["book"] not in own_books]
+        skip = {l["book"] for l in others if offered_too(l)}
+        was = sorted(((_fifth_body(l), _fifth_goes(out, l)) for l in others if l["book"] not in skip), key=repr)
+        now = sorted(((_fifth_body(l), _fifth_goes(out2, l)) for j in mid2 for l in by2.get(j, []) if l["book"] not in own_books and l["book"] not in skip), key=repr)
+        if [x[0] for x in was] != [x[0] for x in now] or any(g and (fa, True) not in was for fa, g in now):
+            probs.append(f"C2 another book's order {was} -> {now}")
+    mine = [l for j in mid2 for l in by2.get(j, []) if l["book"] in own_books]
+    where = {(l["book"], l["account_id"]) for l in out["legs"] if l["n"] in own}
+    if f["code"] not in FIFTH_PLACE and where and all(w[0] and w[1] for w in where):       # C3
+        for l in mine:
+            if _fifth_goes(out2, l) and (l["book"], l["account_id"]) not in where:
+                probs.append(f"C3 the order the choice is on moved to {l['book']} {l['account_id']} (read in {sorted(where)})")
+    m = FIFTH_SPLIT.match(ch["label"].split(" (")[0])                                    # C5
+    if m and f["code"] in ("SIDE_SPLIT", "WOULD_OVERSELL", "ALREADY_CLOSING") and len(own_books) == 1:
+        want = [(FIFTH_SIDE[m.group(1)], int(m.group(2).replace(",", "")))] + ([(FIFTH_SIDE[m.group(3)], int(m.group(4).replace(",", "")))] if m.group(3) else [])
+        got = [(l["side"], l["qty"]) for l in mine]
+        if got != want and got != [({"BUY": "BTO", "SELL": "STO"}.get(s, s), q) for s, q in want]:
+            probs.append(f"C5 {ch['label']!r} stages {got}")
+    bm = re.match(r"in the (\w+) Book$", ch["label"])
+    if f["code"] == "ACCOUNT_NOT_IN_BOOK" and bm and not any(l["book"] not in own_books for i in own_ci for l in by0.get(i, [])):
+        code = next((c for c, name, _p in books if name.split()[0] == bm.group(1)), None)
+        moved = [l for j in mid2 for l in by2.get(j, [])]
+        bad = sorted({str(l["book"]) for l in moved} - {code}) if moved else ["(no leg)"]
+        if bad:
+            probs.append(f"C5 {ch['label']!r} stages the order in {bad}")
+    return probs
+
+
+class _FifthReviewBase(_ResolverBase):
+    WORLD_KIND = "B"
+    SENT = (("O-ST5-BTC", "st:5b5b5b5b5b01:L2:r1", C240, "BTC", 2, "2 ACME Dec 18 2026 240 calls"),
+            ("O-ST5-STC", "st:5b5b5b5b5b02:L2:r1", C250, "STC", 3, "3 ACME Dec 18 2026 250 calls"))
+    #: world A's two working closing orders (fictional ids): a buy to close of the Personal book's 2 short Dec-18 240 calls, a sell to close
+    #: of 2 of the Dec-18 250 calls held at I1:PB_MS
+    WORKING_A = [{"order_id": "O-ST5-W2", "request_id": "test:st5-working-2", "account_id": P, "instrument_id": C240, "side": "BTC", "qty": 2,
+                  "order_type": "LIMIT", "limit_px": "1.00", "tif": "DAY", "status": "WORKING", "session_group": "US_EQUITY_OPTIONS"},
+                 {"order_id": "O-ST5-W3", "request_id": "test:st5-working-3", "account_id": PB, "instrument_id": C250, "side": "STC", "qty": 2,
+                  "order_type": "LIMIT", "limit_px": "9.00", "tif": "DAY", "status": "WORKING", "session_group": "US_EQUITY_OPTIONS"}]
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp, cls.rt = cls._make()
+        world = dict(corpus.WORLD)
+        world["chains"] = list(corpus.WORLD["chains"]) + [{"underlying": "WIDG", "cboe": "WIDG", "spot": 40, "expiries": ("2026-11-20", corpus.DEC),
+                                                           "strikes": (35, 40, 45), "skip": (), "age_s": 30, "trade_time": corpus.TRADE_TIME, "extra": ()}]
+        if cls.WORLD_KIND == "A":
+            world["positions"] = list(corpus.WORLD["positions"]) + [(F, "WIDG", "SHORT", 100, "40")]
+            world["working"] = list(corpus.WORLD["working"]) + cls.WORKING_A
+        else:
+            world["positions"] = ([x for x in corpus.WORLD["positions"] if not (x[0] == P and x[1] in (C240, C250))]
+                                  + [(F, "WIDG", "SHORT", 100, "40"), (PB, "WIDG", "LONG", 200, "40")])
+        build_world(unittest.TestCase(), cls.rt, world)
+        if cls.WORLD_KIND == "B":
+            now = int(cls.rt.clock.epoch())
+            with cls.rt.db.writer() as tx:                           # fixture only: two Smart Ticket orders sent and filled today
+                for oid, rid, iid, side, qty, clause in cls.SENT:
+                    payload = json.dumps({"account_id": P, "instrument_id": iid, "side": side, "qty": qty, "order_type": "MARKET", "tif": "DAY",
+                                          "smart": {"ticket": rid.split(":")[1], "item": "L2", "clause": clause}}, sort_keys=True)
+                    tx.conn.execute("INSERT INTO commands(request_id, kind, actor, payload_json, payload_sha256, result_json, http_status, started_ts, finished_ts,"
+                                    " duration_ms, app_version, state_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                                    (rid, "order.submit", "ui", payload, "0" * 64, "{}", 200, now, now, 1, "test", 0))
+                    tx.conn.execute("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, filled_qty, order_type, tif, status, session_group,"
+                                    " created_ts, updated_ts, expires_ts, preview_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'{}')",
+                                    (oid, rid, P, iid, side, qty, qty, "MARKET", "DAY", "FILLED", "US_EQUITY_OPTIONS", now, now, now + 7200))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rt.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def find(self, out, code, label, book=None):
+        for item in out["legs"] + out["combos"]:
+            if book is not None and item.get("book") != book:
+                continue
+            for f in item["flags"]:
+                for ch in (f.get("choices") or []) if f["code"] == code else []:
+                    if label in ch["label"]:
+                        return item, f, ch
+        self.fail(f"no {code} choice labelled {label!r}" + (f" on the {book} order" if book else "") + f" on {out['text']!r}: "
+                  + json.dumps([(l["n"], l["book"], [(x["code"], [c["label"] for c in x.get("choices") or []]) for x in l["flags"]]) for l in out["legs"]])[:3000])
+
+    def apply(self, out, f, ch, book):
+        a, b = f["span"]
+        return self.parse(out["text"][:a] + ch["clause"] + out["text"][b:], book)
+
+    def every_choice_keeps_the_contract(self, rows) -> tuple:
+        """Every choice offered on each ``(label, book, text)``, applied as the page applies it, checked with ``choice_contract``."""
+        problems, applied = [], 0
+        for label, book, text in rows:
+            out = self.parse(text, book)
+            seen = set()
+            for item in out["legs"] + out["combos"]:
+                for f in item["flags"]:
+                    for ch in f.get("choices") or []:
+                        key = (f["code"], tuple(f["span"]), ch["clause"], item.get("n"), tuple(item["legs"]) if isinstance(item.get("legs"), list) else None)
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        try:
+                            out2 = self.apply(out, f, ch, book)
+                        except st.SmartTicketError:
+                            continue
+                        applied += 1
+                        for p in choice_contract(out, item, f, ch, out2):
+                            problems.append(f"{label} book {book}: {text!r}\n    {f['code']} {ch['label']!r} -> {ch['clause']!r}\n    {p}")
+        return problems, applied
+
+
+class ChoicesFifthReview(_FifthReviewBase):
+    """1.0.7.2 fifth review (world B: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, 200 WIDG long at I1:PB_MS, the Personal
+    book's Dec-18 240 / 250 calls closed today by two Smart Ticket orders): an order already sent keeps its reading when a choice on
+    another order writes out its book or account (R2 reads a book phrase naming its own book, and an account phrase naming the account it
+    went to, as the same words); a choice on one book's order of a clause repeated per book is written for that book alone; the shares
+    split offers the cover alone; a book choice replaces the order's own book phrase; a fix inside a package and every book an unknown
+    book word may mean are offered; an account typed with "at" is replaced whole; the cover hint keeps the pair in the account it was
+    read in; and every case the review's property tests reported keeps the choice contract."""
+
+    def test_an_order_already_sent_keeps_its_reading_when_a_choice_writes_out_its_book_or_account(self):
+        for text, code, label, iid, side, want in (
+                ("buy 300 GIZM in the Personal book and 2 ACME Dec 18 2026 240 calls", "SIDE_SPLIT", "cover 200 only", C240, "BTC",
+                 "cover 200 GIZM in the Personal book and buy 2 ACME Dec 18 2026 240 calls"),
+                ("buy 300 GIZM at us exchange and 2 ACME Dec 18 2026 240 calls", "SIDE_SPLIT", "cover 200 only", C240, "BTC", None),
+                ("sell 400 WIDG in the Personal book and 3 ACME Dec 18 2026 250 calls", "WOULD_OVERSELL", "sell 200 + short 200", C250, "STC", None),
+                ("buy 2 ACME Dec 18 2026 240 calls and buy 1 ACME Dec 18 2026 240/250 call spread at I1:PB_MS", "ACCOUNT_NOT_IN_BOOK", "in the Institutional Book",
+                 C240, "BTC", "buy 2 ACME Dec 18 2026 240 calls in the Personal book and buy 1 ACME Dec 18 2026 240/250 call spread at I1:PB_MS in the Institutional book")):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                item, f, ch = self.find(out, code, label)
+                if want is not None:
+                    self.assertTrue(ch["clause"].startswith(want) or ch["clause"] == want, ch["clause"])
+                out2 = self.apply(out, f, ch, "P")
+                sent = [l for l in out2["legs"] if l["instrument"].get("id") == iid and l["combo"] is None]
+                self.assertEqual([(side, True)], [(l["side"], "ALREADY_SENT" in codes(l["flags"])) for l in sent], out2["text"])
+                self.assertEqual([], choice_contract(out, item, f, ch, out2))
+        # R2 itself: the words with a book phrase naming their own book (one or several) or the account they went to read as the order sent
+        for text in ("buy 2 ACME Dec 18 2026 240 calls in the Personal book", "buy 2 ACME Dec 18 2026 240 calls at us exchange",
+                     "buy 2 ACME Dec 18 2026 240 calls in the Personal and Fund books", "buy 100 WIDG and 2 ACME Dec 18 2026 240 calls in the Personal book"):
+            leg = next(l for l in self.parse(text, "P")["legs"] if l["book"] == "P" and l["instrument"].get("id") == C240)
+            self.assertEqual(("BTC", True), (leg["side"], "ALREADY_SENT" in codes(leg["flags"])), text)
+        leg = self.one("buy 2 ACME Dec 18 2026 240 calls at pb ms", "P")                   # another account: another order
+        self.assertNotIn("ALREADY_SENT", codes(leg["flags"]))
+
+    def test_a_choice_on_one_books_order_is_written_for_that_book_alone(self):
+        for text, code, label, on, other, want in (
+                ("sell 300 WIDG in the Personal and Fund books", "WOULD_OVERSELL", "short 300", "F", "P", "sell 300 WIDG in the Personal book; short 300 WIDG in the Fund book"),
+                ("sell 300 WIDG in the Personal and Fund books", "WOULD_OVERSELL", "sell 200 + short 100", "P", "F",
+                 "sell 200 WIDG in the Personal book and short 100 WIDG in the Personal book; sell 300 WIDG in the Fund book"),
+                ("sell 3 ACME Dec 18 2026 250 calls in the Personal and Institutional books", "SIDE_SPLIT", "stc 2 only", "I", "P",
+                 "sell 3 ACME Dec 18 2026 250 calls in the Personal book; stc 2 ACME Dec 18 2026 250 calls in the Institutional book")):
+            with self.subTest(text=text, label=label):
+                out = self.parse(text, "P")
+                item, f, ch = self.find(out, code, label, on)
+                self.assertEqual(want, ch["clause"])
+                out2 = self.apply(out, f, ch, "P")
+                was = sorted((l["side"] or "", l["qty"] or 0, l["account_id"] or "", _fifth_goes(out, l)) for l in out["legs"] if l["book"] == other)
+                now = sorted((l["side"] or "", l["qty"] or 0, l["account_id"] or "", _fifth_goes(out2, l)) for l in out2["legs"] if l["book"] == other)
+                self.assertEqual(was, now)
+                self.assertEqual([], choice_contract(out, item, f, ch, out2))
+
+    def test_the_shares_split_offers_the_cover_alone(self):
+        for text, book, label, cover in (("buy 300 GIZM", "P", "cover 200 only (buy the other 100 once the cover has filled)", 200),
+                                         ("buy 400 WIDG", "F", "cover 100 only (buy the other 300 once the cover has filled)", 100)):
+            with self.subTest(text=text):
+                leg = self.one(text, book)
+                f = flag(leg, "SIDE_SPLIT")
+                self.assertEqual([label], [c["label"] for c in f["choices"]])
+                self.assertEqual([("BUY_TO_COVER", cover)], [(l["side"], l["qty"]) for l in self.parse(f["choices"][0]["clause"], book)["legs"]])
+        # the option split names explicit sides and stages exactly them
+        f = flag(self.one("sell 3 ACME Dec 18 2026 250 calls in the Institutional book", "P"), "SIDE_SPLIT")
+        self.assertEqual([("STC", 2), ("STO", 1)], [(l["side"], l["qty"]) for l in self.parse(f["choices"][0]["clause"], "P")["legs"]])
+
+    def test_a_book_choice_replaces_the_orders_own_book_phrase(self):
+        for text, want in (("buy 4 ACME Dec 18 2026 220 put at I1:PB_MS", "buy 4 ACME Dec 18 2026 220 put at I1:PB_MS in the Institutional book"),
+                           ("buy 4 ACME Dec 18 2026 220 put in the Personal book at I1:PB_MS", "buy 4 ACME Dec 18 2026 220 put in the Institutional book at I1:PB_MS"),
+                           ("sell 2 ACME Dec 18 2026 260 call in the Fund book at I1:PB_MS gtc", "sell 2 ACME Dec 18 2026 260 call in the Institutional book at I1:PB_MS gtc")):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                _item, f, ch = self.find(out, "ACCOUNT_NOT_IN_BOOK", "in the Institutional Book")
+                self.assertEqual(want, ch["clause"])
+                out2 = self.apply(out, f, ch, "P")
+                self.assertEqual([("I", PB, False)], [(l["book"], l["account_id"], "DUPLICATE_FIELD" in codes(l["flags"])) for l in out2["legs"]])
+
+    def test_a_fix_inside_a_package_and_every_book_an_unknown_word_may_mean_are_offered(self):
+        for text in ("(buy 1 ACME Dec 18 2026 240 call, sell 1 ACME Dec 18 2026 215 call)", "buy 1 ACME Dec 18 2026 240 call, sell 1 ACME Dec 18 2026 215 call as a package"):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                item, f, ch = self.find(out, "STRIKE_NOT_LISTED", "210 call")
+                self.assertEqual(["210 call", "220 call"], [c["label"] for c in f["choices"]])
+                out2 = self.apply(out, f, ch, "P")
+                self.assertEqual(1, len([c for c in out2["combos"] if c["request"] is not None]), out2["text"])     # the package typed, completed
+                self.assertEqual([], choice_contract(out, item, f, ch, out2))
+        leg = self.one("buy 100 ACME in the Fnd book", "P")
+        self.assertEqual((None, None), (leg["book"], leg["request"]))                     # unread: never the selected book
+        f = flag(leg, "UNPARSED_TEXT")
+        self.assertEqual(["the Personal Book", "the Fund Book", "the Institutional Book"], [c["label"] for c in f["choices"]])
+        self.assertEqual(["F"], [l["book"] for l in self.parse(f["choices"][1]["clause"], "P")["legs"]])
+
+    def test_an_account_typed_with_at_is_replaced_whole(self):
+        for text, want in (("sell 2 ACME Dec 18 2026 250 calls in the Institutional book at us exchange", ("STC", PB)),
+                           ("cover 50 GIZM in the Institutional book at us exchange", ("BUY_TO_COVER", PB))):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                _item, f, ch = self.find(out, "ACCOUNT_CHOICE", "(I1:PB_MS)")
+                self.assertNotIn("at at", ch["clause"])
+                out2 = self.apply(out, f, ch, "P")
+                self.assertEqual([want + (True,)], [(l["side"], l["account_id"], _fifth_goes(out2, l)) for l in out2["legs"]], out2["text"])
+                self.assertEqual(set(), _fifth_unparsed(out2))
+        # twice in a row: 'US Exchange' and then the prime-broker account
+        out = self.parse("cover 300 GIZM in the Institutional book", "P")
+        _item, f, ch = self.find(out, "ACCOUNT_CHOICE", "(I1:US_EXCHANGE)")
+        out = self.apply(out, f, ch, "P")
+        _item, f, ch = self.find(out, "ACCOUNT_CHOICE", "(I1:PB_MS)")
+        self.assertEqual("cover 300 GIZM in the Institutional book at pb ms", ch["clause"])
+
+    def test_the_cover_hint_keeps_the_pair_in_the_account_it_was_read_in(self):
+        text = "buy 50 WIDG then (close 100 GIZM in the Fund book) then buy 100 ACME, sell 1 ACME Dec 18 2026 260 call, in the Institutional book at pb ms"
+        out = self.parse(text, "P")
+        self.assertEqual({PB}, {l["account_id"] for l in out["legs"] if (l["instrument"].get("id") or "").startswith("ACME")})
+        item, f, ch = self.find(out, "COVER_HINT", "group them")
+        out2 = self.apply(out, f, ch, "P")
+        pair = [l for l in out2["legs"] if (l["instrument"].get("id") or "").startswith("ACME")]
+        self.assertEqual(({PB}, set()), ({l["account_id"] for l in pair}, _fifth_unparsed(out2)), out2["text"])
+        self.assertEqual(["SEQUENTIAL"], [c["fill_mode"] for c in out2["combos"] if c["request"] is not None])
+        self.assertEqual([], choice_contract(out, item, f, ch, out2))
+
+    def test_every_case_the_reviews_property_tests_reported_keeps_the_choice_contract(self):
+        rows = [(f"seed {seed} case {case}", book, text) for seed, case, book, text in PROP5_SEED_TEXTS]
+        rows += [(f"seed {seed} step {k}", book, t) for seed, world, book, texts in PT5_SEED_TEXTS if world == "B" for k, t in enumerate(texts)]
+        problems, applied = self.every_choice_keeps_the_contract(rows)
+        self.assertEqual([], problems, f"{len(problems)} of {applied} applied choices break the choice contract:\n" + "\n".join(problems[:20]))
+        self.assertGreater(applied, 150)
+
+
+class ChoicesFifthReviewWorldA(_FifthReviewBase):
+    """1.0.7.2 fifth review (world A: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, two working closing orders): a year or a
+    roll's target strike typed before "limit" is never the price; a calendar's listed-expiry choices parse and never repeat the other
+    leg's expiry; the cover hint after a parenthesis and a connector parses; and every world-A case the review's property test reported
+    keeps the choice contract."""
+    WORLD_KIND = "A"
+
+    def test_a_year_or_a_roll_strike_typed_before_limit_is_never_the_price(self):
+        for text, book, req in (("buy 2 ACME 240c Dec 18 2026 limit", "F", None), ("buy 2 ACME 240c Dec 18 2026 limit 2.50", "F", ("LIMIT", "2.50")),
+                                ("buy 2 WIDG 45c Dec 18 2026 lmt", "F", None), ("sell 2 ACME 250c Dec 18 2026 limit", "P", None)):
+            with self.subTest(text=text):
+                out = self.parse(text, book)
+                self.assertEqual(1, len(out["legs"]))
+                l = out["legs"][0]
+                self.assertNotIn("YEAR_INFERRED", codes(l["flags"]))
+                self.assertEqual(req, (l["request"]["order_type"], l["request"]["limit_px"]) if l["request"] else None)
+                if req is None:
+                    self.assertIn("MISSING_PRICE", codes(l["flags"]))
+        out = self.parse("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260 limit 1.20", "P")
+        self.assertEqual([C250, "ACME270115C00260000"], [l["instrument"].get("id") for l in out["legs"]])
+        f = flag(out["combos"][0], "LIMIT_IN_AON")
+        drop = next(c for c in f["choices"] if c["label"].startswith("drop the limits"))
+        self.assertEqual("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260", drop["clause"])
+        out = self.parse("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260 limit", "P")
+        self.assertEqual([C250, "ACME270115C00260000"], [l["instrument"].get("id") for l in out["legs"]])
+
+    def test_a_calendars_expiry_choices_parse(self):
+        for text in ("buy 1 ACME Dec 18 2026/Dec 19 2026 240 call calendar", "sell 1 ACME Jan 15 2027/Dec 19 2026 200 put calendar"):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                offered = [(f, c) for l in out["legs"] for f in l["flags"] if f["code"] == "EXPIRY_NOT_LISTED" for c in f.get("choices") or []]
+                self.assertTrue(offered, out["legs"])
+                for f, c in offered:
+                    self.assertNotIn("-", c["clause"].split("calendar")[0].split(" ACME ")[1])      # the date in words, never ISO after "/"
+                    out2 = self.apply(out, f, c, "P")
+                    self.assertEqual(set(), _fifth_unparsed(out2), c["clause"])
+                    self.assertNotIn("a calendar takes two different expiries", json.dumps(out2))
+
+    def test_the_cover_hint_after_a_parenthesis_and_a_connector_parses(self):
+        out = self.parse("(buy 50 WIDG and sell 1 WIDG Nov 20 2026 45 call) then buy 100 ACME, sell 1 ACME Dec 18 2026 260 call", "F")
+        item, f, ch = self.find(out, "COVER_HINT", "group them")
+        out2 = self.apply(out, f, ch, "F")
+        self.assertEqual(set(), _fifth_unparsed(out2))
+        self.assertEqual([], choice_contract(out, item, f, ch, out2))
+
+    def test_every_case_the_reviews_property_test_reported_keeps_the_choice_contract(self):
+        rows = [(f"seed {seed} step {k}", book, t) for seed, world, book, texts in PT5_SEED_TEXTS if world == "A" for k, t in enumerate(texts)]
+        problems, applied = self.every_choice_keeps_the_contract(rows)
+        self.assertEqual([], problems, f"{len(problems)} of {applied} applied choices break the choice contract:\n" + "\n".join(problems[:20]))
+        self.assertGreater(applied, 40)
+
+
 # ===== the route on a full runtime: registration, 400s, the corpus and the purity proof ================================================
 def _build_full(tmp):
     os.environ[config.HOME_ENV] = tmp
@@ -926,6 +1491,22 @@ class Route(unittest.TestCase):
             self.assertEqual((200, 20, 5), (status, len(out["legs"]), len(out["combos"])))
         sys.stderr.write(f"\nsmart ticket: a 20-leg parse took {best:.1f} ms (limit 300 ms)\n")
         self.assertLess(best, 300.0)
+        # fifth review: the budget holds when the 20 legs offer choices (each one checked as re-read): a split offered on every order,
+        # and the same with an order that carries its side after each one
+        for text in ("; ".join(["sell 3 ACME Dec 18 2026 250 calls in the Institutional book"] * 20),
+                     "; ".join(["sell 3 ACME Dec 18 2026 250 calls in the Institutional book and 3 ACME Dec 18 2026 250 calls"] * 10)):
+            self.post({"text": text, "book": "P"})
+            best = None
+            for _ in range(3):
+                t0 = time.perf_counter()
+                status, out, _h = self.post({"text": text, "book": "P"}, "?book=P")
+                ms = (time.perf_counter() - t0) * 1000.0
+                best = ms if best is None else min(best, ms)
+            n = sum(len(f.get("choices") or []) for it in out["legs"] + out["combos"] for f in it["flags"])
+            self.assertEqual((200, 20), (status, len(out["legs"])))
+            self.assertGreaterEqual(n, 40)
+            sys.stderr.write(f"smart ticket: a 20-leg parse offering {n} choices took {best:.1f} ms (limit 300 ms)\n")
+            self.assertLess(best, 300.0)
 
     def test_corpus_through_the_route_is_pure(self):
         """THE PURITY PROOF (CHANGE_PLAN 2.6) over the whole corpus, and every case's expectation on the same pass."""

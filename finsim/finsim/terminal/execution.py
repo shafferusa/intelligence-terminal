@@ -995,6 +995,14 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
         if target > 0 and target > filled and not (target == int(r["qty"]) and r["status"] != "WAITING_PARENT"):
             status = "WORKING" if filled == 0 else "PARTIAL"
             conn.execute("UPDATE orders SET qty=?, status=?, updated_ts=? WHERE order_id=?", (target, status, ctx.ts, r["order_id"]))
+            head = chain[0] if chain else None
+            if r["status"] == "WAITING_PARENT" and head is not None and int(r["expires_ts"]) < int(head["expires_ts"]):
+                # fifth review: a leg released for its shares lives as long as its shares order (a leg left with an older expiry - its
+                # shares order given a longer time in force before this rule - is never released only to expire at the next look)
+                keys = set(r.keys())
+                conn.execute("UPDATE orders SET tif=?, expires_ts=? WHERE order_id=?", (head["tif"], int(head["expires_ts"]), r["order_id"]))
+                if "gtd_date" in keys and "activate_ts" in keys:
+                    conn.execute("UPDATE orders SET gtd_date=?, activate_ts=? WHERE order_id=?", (head["gtd_date"], head["activate_ts"], r["order_id"]))
             conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
                          (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = {how} after the primary's fill"))
             ctx.event("ORDER_RESUMED" if r["status"] == "WAITING_PARENT" else "ORDER_RESIZED", account_id=r["account_id"], instrument_id=r["instrument_id"],
