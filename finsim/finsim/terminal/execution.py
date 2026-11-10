@@ -912,6 +912,30 @@ def _primary_chain(conn, primary_order_id: str) -> list:
     return out
 
 
+def _own_tif(conn, order_id: str) -> bool:
+    """Whether the owner changed this order's time in force with its own amend (an ORDER_AMENDED record naming the field ``tif``)."""
+    for ev in conn.execute("SELECT payload_json FROM events WHERE type='ORDER_AMENDED' AND ref_type='order' AND ref_id=?", (order_id,)).fetchall():
+        try:
+            p = json.loads(ev["payload_json"] or "{}")
+        except (TypeError, ValueError):
+            continue
+        if isinstance(p, dict) and any(isinstance(c, dict) and c.get("field") == "tif" for c in (p.get("changes") or [])):
+            return True
+    return False
+
+
+def _may_lengthen(conn, r, head, now: int) -> bool:
+    """1.0.7.2 sixth review: whether a leg being released (again) may take its shares order's longer lifetime: never a next-session start
+    still to come (a released leg works now), and a leg already released whose time in force the owner set with its own amend keeps it -
+    unless its expiry has passed (re-opened after its session: it could never fill otherwise)."""
+    act = head["activate_ts"] if "activate_ts" in head.keys() else None
+    if act is not None and int(act) > now:
+        return False
+    if r["status"] == "WAITING_PARENT" or int(r["expires_ts"]) < now:
+        return True
+    return not _own_tif(conn, r["order_id"])
+
+
 def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_qty: int, primary_ended: bool = False) -> List[dict]:
     """Size the WAITING_PARENT / working children of a primary to ``floor(shares filled × leg qty / shares qty)``; a child whose target
     is still 0 keeps waiting; when the primary ends, a child still waiting is CANCELLED (nothing can release it any more), and a child
@@ -930,7 +954,10 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
     and the children of the orders it replaced (a leg released before the replace) are sized with it, so every leg is released in full
     once the package's shares have all filled.  The stored ratio is unchanged (1.0.7.1 reads it as before).  Third review: a confirmed
     leg that ends with its primary after a partial fill is said - the owner's own cancel names it in its answer; when a fill or the
-    session close ended the primary, ONE INFO attention item (HEDGE_LEG_ENDED) per primary names the legs."""
+    session close ended the primary, ONE INFO attention item (HEDGE_LEG_ENDED) per primary names the legs.  Sixth review: every leg a
+    fill releases - waiting, working, or filled and re-opened - whose expiry is earlier than its shares order's takes that order's
+    lifetime (``_may_lengthen``: only ever longer, never a next-session start still to come, an expiry the owner set on the leg kept while
+    it still lets the leg work), so a leg re-opened on a later day by shares kept working as GTC can still fill."""
     conn = ctx.conn
     out: List[dict] = []
     ended_due: List[Any] = []
@@ -996,15 +1023,23 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
             status = "WORKING" if filled == 0 else "PARTIAL"
             conn.execute("UPDATE orders SET qty=?, status=?, updated_ts=? WHERE order_id=?", (target, status, ctx.ts, r["order_id"]))
             head = chain[0] if chain else None
-            if r["status"] == "WAITING_PARENT" and head is not None and int(r["expires_ts"]) < int(head["expires_ts"]):
+            longer = ""
+            if head is not None and int(r["expires_ts"]) < int(head["expires_ts"]) and _may_lengthen(conn, r, head, ctx.ts):
                 # fifth review: a leg released for its shares lives as long as its shares order (a leg left with an older expiry - its
-                # shares order given a longer time in force before this rule - is never released only to expire at the next look)
+                # shares order given a longer time in force before this rule - is never released only to expire at the next look).
+                # Sixth review: so does a leg released AGAIN - a filled leg re-opened, or a working one grown, by a later fill of shares
+                # kept working longer (an amend or a re-price to GTC): never re-opened with an expiry already passed, where it could
+                # never fill.  Only ever lengthened, never queued for a later session, and a time in force the owner gave the leg with
+                # its own amend is kept while it still lets the leg work
                 keys = set(r.keys())
                 conn.execute("UPDATE orders SET tif=?, expires_ts=? WHERE order_id=?", (head["tif"], int(head["expires_ts"]), r["order_id"]))
                 if "gtd_date" in keys and "activate_ts" in keys:
                     conn.execute("UPDATE orders SET gtd_date=?, activate_ts=? WHERE order_id=?", (head["gtd_date"], head["activate_ts"], r["order_id"]))
+                if r["status"] != "WAITING_PARENT":
+                    gtd = head["gtd_date"] if "gtd_date" in keys else None
+                    longer = f"; it now lives as long as its shares order ({'GTD ' + str(gtd) if gtd else head['tif']})"
             conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
-                         (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = {how} after the primary's fill"))
+                         (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = {how} after the primary's fill{longer}"))
             ctx.event("ORDER_RESUMED" if r["status"] == "WAITING_PARENT" else "ORDER_RESIZED", account_id=r["account_id"], instrument_id=r["instrument_id"],
                       ref_type="order", ref_id=r["order_id"], qty=target, primary_filled=shares_filled, ratio=str(ratio))
             out.append({"order_id": r["order_id"], "status": status, "qty": target})

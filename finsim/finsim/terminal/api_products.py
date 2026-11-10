@@ -396,7 +396,9 @@ def _materialise_option(rt, iid) -> None:
 
 #: keys of an order body that never change the order itself: the preview it was checked against, the large-order confirmation and the
 #: Smart Ticket's note of the words typed
-RESEND_KEYS = ("preview_id", "confirm_large", "smart")
+#: sixth review: ``aon_confirmed`` (the confirmed figures an all-or-none combination is held to at its placement) is a check, as the
+#: preview id is, never a term of the order: a resend that differs only in it is the same order
+RESEND_KEYS = ("preview_id", "confirm_large", "smart", "aon_confirmed")
 
 
 def _resend_payload(rt, request_id: Optional[str], payload: dict) -> dict:

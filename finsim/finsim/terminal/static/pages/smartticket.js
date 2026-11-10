@@ -30,7 +30,10 @@
  *   all-or-none combination (no preview id: its legs fill at their bid / ask) is checked against the package preview its confirm
  *   listed - its net cash worse by more than the server's 0.5 % rule, or that preview older than 2 minutes on the server's clock
  *   (``previewed_at``), and it is not sent: it stays staged and selected with its new figures for the owner to confirm again, and the
- *   rest go on (as Skip would).  A lost answer is looked up
+ *   rest go on (as Skip would).  Sixth review: its POST carries those confirmed figures (aon_confirmed {net_cash, previewed_at}) and the
+ *   SERVER places it only when it fills at once within them - so the transport's resend of the same body (after a 503 or a dropped
+ *   connection) is held to the confirm as well, and a combination never rests to fill later at other prices; its refusal (409
+ *   AON_NOT_PLACED: nothing placed) leaves the item staged with the server's reason, as a skip.  A lost answer is looked up
  *   by its request id (a single order through T.api's reconcile, a combination by rid / rid:L1 / rid:H1) before anything else goes,
  *   and recorded as sent only when the orders there have the item's terms (a sequential package's option legs too: type, limit and
  *   size through their ratio; third review).
@@ -936,8 +939,11 @@
       if (money(tt.option_margin)) { f2.push('option margin ' + money(tt.option_margin)); }
       if (it.ppv) { f2.push('shares: ' + execWords(it.ppv)); }
       li.appendChild(T.h('div', { class: 'muted' }, 'the server\'s package preview: ' + (f2.length ? f2.join(' . ') : 'no totals')));
+      /* sixth review: the server holds it to these figures at its placement (aon_confirmed): it fills at once or nothing is placed - with no
+         net limit it is never left working to fill later at other prices */
       li.appendChild(T.h('div', { class: it.fill_mode === 'AON' ? 'smart-warn' : 'muted' }, it.fill_mode === 'AON' ? 'one combination: ' + AON_WORDS +
-        '; it goes only at the net cash listed here (at most 0.5 % worse) and within 2 minutes of this preview, else it stays staged for you to confirm again' :
+        '; it goes only at the net cash listed here (at most 0.5 % worse) and within 2 minutes of this preview, and only if it fills at once -' +
+        ' it is never left working to fill later at other prices; else nothing is placed and it stays staged for you to confirm again' :
         'one combination: the shares first, the options released as they fill'));
     }
     return li;
@@ -953,7 +959,8 @@
     body.appendChild(T.h('div', { class: 'hint' }, 'Ticket ' + S.ticket + '. Each order is checked again just before it is sent and goes with the preview listed here;' +
       ' a moved price or a large order asks you again (moved: more than 0.5 % against you since this preview, or this preview older than 2 minutes).' +
       (list.some(isAon) ? ' An all-or-none combination is held to the net cash listed here the same way: moved or older, it is not sent - it stays staged' +
-       ' with its new figures for you to confirm again, and the rest go on.' : '')));
+       ' with its new figures for you to confirm again, and the rest go on. The server holds it to those figures too, on every send and resend:' +
+       ' it is placed only if it fills at once within them.' : '')));
     var label = 'Send ' + plural(n, 'order');
     /* what the owner confirms is exactly what goes: no edit and no new reading while the confirm is open, and "Send" checks that every
        listed item is still staged with the same terms (else nothing is sent).  Second review: the preview each order was confirmed with
@@ -1040,6 +1047,11 @@
     var b = clone(it.req);
     var pid = it.cpv || (it.kind === 'leg' ? (fr.pv && fr.pv.preview_id) : (it.fill_mode === 'SEQUENTIAL' && fr.ppv ? fr.ppv.preview_id : null));
     if (pid && (it.kind === 'leg' || it.fill_mode === 'SEQUENTIAL')) { b.preview_id = pid; }
+    /* sixth review: an all-or-none combination carries the figures its confirm listed (the package preview's net cash and server time):
+       the server places it only when it fills now, all-or-none, at most 0.5 % worse than that net cash and within 2 minutes of that
+       preview - on every send and every resend of it (a busy writer's 503 or a dropped connection resends the same body) - else nothing
+       is placed (409 AON_NOT_PLACED) and it stays staged */
+    if (isAon(it) && it.cbase) { b.aon_confirmed = { net_cash: it.cbase.net, previewed_at: it.cbase.at }; }
     b.confirm_large = false;
     b.smart = { ticket: S.ticket, item: it.key, clause: clauseOf(it) };
     return b;
@@ -1156,6 +1168,12 @@
       var d = detailsOf(e);
       if (e && e.code === 'PREVIEW_STALE') { return askStale(S, it, body, rid, e, d); }
       if (e && e.code === 'CONFIRM_REQUIRED') { return askConfirm(S, it, body, rid, e, d); }
+      /* sixth review: the server held the all-or-none combination to its confirm and placed nothing (it moved, its preview is older than
+         2 minutes, or it cannot fill at once): it stays staged with its new figures, and the rest go on */
+      if (e && e.code === 'AON_NOT_PLACED') {
+        it.result = { state: 'skipped', text: T.api.describe(e) + ' - it stays staged with its new figures: submit it again to confirm them' };
+        return 'skip';
+      }
       it.result = { state: 'refused', text: 'refused: ' + T.api.describe(e), blockers: [blockerOf(e)] };
       if (e && e.status >= 500) { console.error('smart ticket submit', it.key, e); }
       return 'stop';

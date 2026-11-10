@@ -832,6 +832,14 @@
     st.package_spec = spec || null;
     send(body, rid, 'package');
   }
+  /* 1.0.7.2 sixth review: what an amend / replace of a shares order did to its hedge legs (the answer's hedge_legs_follow: the legs still
+     waiting take its time in force; hedge_legs_longer: legs already released for shares bought now work as long as it - never shortened) */
+  function hedgeLegsWords(res) {
+    var w = '', f = (res && res.hedge_legs_follow) || [], l = (res && res.hedge_legs_longer) || [];
+    if (f.length) { w += ' . waiting hedge leg' + (f.length > 1 ? 's ' : ' ') + f.join(', ') + ' take' + (f.length > 1 ? '' : 's') + ' the same time in force'; }
+    if (l.length) { w += ' . released hedge leg' + (l.length > 1 ? 's ' : ' ') + l.join(', ') + ' now work' + (l.length > 1 ? '' : 's') + ' as long as it (never shortened)'; }
+    return w;
+  }
   function send(body, rid, kind) {
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
     clearTimeout(st.reprev);
@@ -846,8 +854,8 @@
       st.submitting = false; st.result = res; st.result_kind = kind; st.preview = null; st.stale = null;
       paintResult(); paintPreview(); paintSubmit();
       paintStatus((res.replayed ? 'already submitted . ' : (res.recovered ? 'recovered after a lost response . ' : '')) + 'order ' + ((res.order && res.order.order_id) || (res.package && res.package.package_id) || '') + ' ' + ((res.order && res.order.status) || (res.package && res.package.status) || ''), 'ok');
-      if (kind === 'amend') { paintStatus('amended ' + ((res.order && res.order.order_id) || '') + ': ' + String(res.event || '').replace(/^AMENDED /, ''), 'ok'); }
-      if (kind === 'replace') { paintStatus('replaced ' + ((res.replaced && res.replaced.order_id) || '') + ' by ' + ((res.order && res.order.order_id) || '') + ' (' + String((res.order && res.order.status) || '').toLowerCase() + ')', 'ok'); }
+      if (kind === 'amend') { paintStatus('amended ' + ((res.order && res.order.order_id) || '') + ': ' + String(res.event || '').replace(/^AMENDED /, '') + hedgeLegsWords(res), 'ok'); }
+      if (kind === 'replace') { paintStatus('replaced ' + ((res.replaced && res.replaced.order_id) || '') + ' by ' + ((res.order && res.order.order_id) || '') + ' (' + String((res.order && res.order.status) || '').toLowerCase() + ')' + hedgeLegsWords(res), 'ok'); }
       if (kind === 'single' && st.hedge) { st.hedge = null; st.hedge_cand = null; if (hedge) { hedge.none(); } paintFields(); }
       if (kind === 'package' && st.hedge_pos) { paintStatus('hedge package ' + ((res.package && res.package.package_id) || '') + ' ' + ((res.package && res.package.status) || '') + ': only the hedge legs were ordered', 'ok'); }
       ['orders', 'positions', 'account_detail', 'accounts', 'attention'].forEach(function (p) { T.poll.kick(p); });

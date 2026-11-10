@@ -1107,7 +1107,11 @@ def choice_contract(out, item, f, ch, out2, books=FIFTH_BOOKS) -> list:
             for g in (it or {}).get("flags") or []:
                 if any(c["clause"] == ch["clause"] for c in g.get("choices") or []):
                     return True
-        return False
+        # sixth review: a leg that read no book because a book word that names no book (its own, carried with the side, or the closing /
+        # opening phrase's) lies inside the words this choice rewrites takes the book the choice settles - as the same text typed right
+        sp = f.get("span") or [0, 0]
+        return x["book"] is None and any(g["code"] == "UNPARSED_TEXT" and "is not a book" in g["text"] and g.get("span")
+                                         and g["span"][0] < sp[1] and g["span"][1] > sp[0] for g in x["flags"])
     by0, by2 = {}, {}
     for l in out["legs"]:
         by0.setdefault(ci0[l["n"]], []).append(l)
@@ -1413,6 +1417,218 @@ class ChoicesFifthReviewWorldA(_FifthReviewBase):
         self.assertEqual([], problems, f"{len(problems)} of {applied} applied choices break the choice contract:\n" + "\n".join(problems[:20]))
         self.assertGreater(applied, 40)
 
+
+
+#: 1.0.7.2 sixth review, property R2 (tests/test_prop6_smart_ticket.py's oracle, seeds 610001-613000): every reading of a two-digit year
+#: written without its comma after the month and day ("Dec 18 26", "Jan 15 27") before a bare "limit" / "lmt" - the year is never the
+#: price: none of them is sendable (the review reported seeds 610100, 610259, 610323, 610367, 610528, 610625, 610636, 610658, 610674, 610694 ...)
+SIXTH_YEAR_TEXTS = (
+    (610028, "sto 2 ACME 260c Jan 15 27 gtc limit"), (610040, "sell 1 contracts WIDG Nov 20 26 40p lmt"),
+    (610051, "sto 2 WIDG 25 calls Dec 18 26 lmt"), (610100, "bto 2 contracts ACME 250 put Jan 15 27 limit"),
+    (610235, "bto 3 ACME Dec 18 26 220p limit"), (610259, "sto 1 ACME 200 put Jan 15 27 lmt gtc"), (610298, "sto 3 WIDG Nov 20 26 20 call limit"),
+    (610323, "bto 1 WIDG 45p Nov 20 26 lmt"), (610367, "sto 2 WIDG 35 calls Dec 18 26 limit"), (610408, "sell 5 WIDG 35 call Dec 18 26 gtc lmt"),
+    (610452, "buy 3 ACME Jan 15 27 260 calls lmt day"), (610512, "bto 1 ACME Jan 15 27 200 puts lmt"),
+    (610528, "bto 5 contracts WIDG 40p Dec 18 26 limit gtc"), (610576, "sell 2 WIDG 20 calls Nov 20 26 day limit"),
+    (610577, "sto 3 ACME Dec 18 26 240 calls limit"), (610625, "sto 1 contracts ACME 230p Jan 15 27 limit"),
+    (610636, "bto 2 contracts ACME 220 puts Dec 18 26 limit"), (610658, "bto 5 WIDG 35 puts Nov 20 26 limit day"),
+    (610659, "bto 5 ACME Dec 18 26 210 call limit"), (610674, "sto 5 ACME 210c Dec 18 26 limit"), (610694, "bto 5 WIDG 35 puts Nov 20 26 limit day"),
+    (610702, "bto 1 WIDG 20 calls Nov 20 26 limit gtc"), (610705, "bto 3 contracts ACME 240 puts Dec 18 26 lmt gtc"),
+    (610765, "bto 1 ACME Jan 15 27 240 puts lmt day"), (610792, "sell 5 WIDG Dec 18 26 40 put limit"),
+    (610796, "sto 1 contracts ACME 220c Dec 18 26 limit gtc"), (610846, "sell 3 ACME 260c Dec 18 26 limit gtc"),
+    (610877, "sto 3 contracts WIDG Dec 18 26 40 calls limit"), (610898, "bto 3 contracts ACME Dec 18 26 210c gtc limit"),
+    (610920, "bto 1 contracts WIDG Nov 20 26 40 call limit"), (610990, "bto 3 contracts WIDG 25 puts Dec 18 26 lmt"),
+    (610999, "sell 5 contracts ACME Jan 15 27 250c limit gtc"), (611010, "buy 5 contracts WIDG 20p Dec 18 26 gtc lmt"),
+    (611013, "bto 5 ACME Jan 15 27 210c limit day"), (611033, "bto 1 WIDG 35 puts Dec 18 26 lmt gtc"),
+    (611067, "buy 1 contracts ACME 200 call Jan 15 27 lmt"), (611106, "bto 2 ACME 260 calls Dec 18 26 limit"),
+    (611112, "sto 5 ACME Jan 15 27 250 puts limit"), (611153, "sto 3 ACME Jan 15 27 240 call limit"), (611154, "sto 1 ACME 220c Dec 18 26 limit"),
+    (611171, "bto 5 contracts WIDG Dec 18 26 40c limit"), (611180, "buy 5 ACME 240 call Dec 18 26 lmt"), (611225, "sell 1 WIDG Dec 18 26 40c lmt"),
+    (611294, "bto 3 contracts WIDG 35 puts Dec 18 26 limit"), (611346, "sell 1 ACME Dec 18 26 260 calls limit"),
+    (611352, "bto 5 contracts ACME Jan 15 27 260 puts gtc lmt"), (611435, "sto 2 ACME 260 puts Jan 15 27 gtc limit"),
+    (611481, "buy 3 contracts WIDG 45c Nov 20 26 lmt"), (611517, "bto 1 ACME Dec 18 26 240 call limit"),
+    (611568, "sell 3 WIDG 40 put Nov 20 26 day limit"), (611621, "bto 1 ACME 210 call Jan 15 27 limit"),
+    (611693, "bto 3 WIDG Nov 20 26 25 call lmt day"), (611715, "buy 1 ACME Jan 15 27 220 call lmt gtc"),
+    (611772, "bto 3 WIDG 25 puts Nov 20 26 limit"), (611781, "sto 1 contracts WIDG 45p Dec 18 26 limit day"),
+    (611783, "bto 3 WIDG Dec 18 26 25c gtc limit"), (611800, "bto 2 contracts ACME Dec 18 26 240c limit"),
+    (611889, "sto 2 WIDG Nov 20 26 20c limit"), (611892, "sto 5 ACME Dec 18 26 260c limit"), (611917, "sto 5 WIDG 25 call Dec 18 26 limit"),
+    (611935, "sto 2 contracts WIDG 25 puts Nov 20 26 limit gtc"), (611936, "buy 5 contracts WIDG 40 calls Dec 18 26 limit"),
+    (611972, "sell 5 ACME 220 call Dec 18 26 limit"), (611984, "buy 2 ACME 250 call Jan 15 27 limit gtc"),
+    (611992, "sto 2 ACME Dec 18 26 230c lmt day"), (612002, "bto 2 WIDG 45 calls Nov 20 26 limit gtc"),
+    (612018, "sell 5 ACME 230 put Dec 18 26 limit gtc"), (612022, "bto 3 WIDG 45c Nov 20 26 lmt"), (612026, "bto 3 ACME 250p Jan 15 27 day lmt"),
+    (612031, "bto 5 ACME Jan 15 27 200 calls limit"), (612038, "buy 3 contracts ACME Jan 15 27 240 call day limit"),
+    (612068, "sell 1 ACME 250 puts Jan 15 27 limit"), (612069, "sell 3 contracts ACME 200 call Jan 15 27 limit"),
+    (612076, "bto 5 ACME Dec 18 26 250p limit"), (612098, "sto 3 contracts ACME Dec 18 26 240 puts limit"),
+    (612111, "bto 2 contracts WIDG Nov 20 26 20p gtc limit"), (612136, "buy 1 WIDG 25 put Dec 18 26 lmt"),
+    (612150, "bto 1 contracts WIDG 45c Dec 18 26 gtc limit"), (612161, "bto 3 ACME 250p Jan 15 27 day lmt"),
+    (612179, "sto 2 ACME Jan 15 27 250c lmt"), (612189, "sto 5 ACME Dec 18 26 230 put limit day"), (612197, "sell 5 ACME Dec 18 26 220c limit"),
+    (612245, "bto 1 contracts ACME Dec 18 26 250 puts lmt"), (612267, "sto 2 WIDG Dec 18 26 45 puts lmt day"),
+    (612343, "bto 5 ACME 220 call Jan 15 27 limit"), (612373, "bto 1 WIDG 40c Dec 18 26 gtc limit"),
+    (612427, "sell 1 WIDG 35 calls Dec 18 26 limit day"), (612449, "sell 5 WIDG 40 call Nov 20 26 limit day"),
+    (612450, "sell 2 WIDG Dec 18 26 25 put gtc lmt"), (612486, "bto 5 WIDG 45 call Dec 18 26 day lmt"), (612488, "sell 2 WIDG 35 put Nov 20 26 lmt"),
+    (612497, "sell 3 contracts ACME Dec 18 26 250p limit"), (612506, "bto 1 contracts ACME 260 calls Dec 18 26 limit"),
+    (612622, "buy 2 contracts WIDG Nov 20 26 35 calls limit"), (612630, "sto 1 contracts WIDG Nov 20 26 25c limit gtc"),
+    (612665, "sto 1 ACME 260 put Dec 18 26 day lmt"), (612758, "bto 5 contracts WIDG 20p Nov 20 26 limit gtc"),
+    (612778, "bto 5 ACME Dec 18 26 240 call lmt"), (612852, "bto 1 WIDG Nov 20 26 40 puts lmt gtc"),
+    (612854, "bto 1 contracts ACME Dec 18 26 220p limit"), (612865, "buy 5 contracts WIDG 45 call Dec 18 26 lmt"),
+    (612896, "sto 1 ACME 230 calls Dec 18 26 lmt"), (612899, "bto 1 WIDG 40p Nov 20 26 limit"),
+    (612941, "bto 5 contracts ACME 230c Jan 15 27 lmt gtc"), (612978, "bto 1 ACME 250 put Jan 15 27 limit day"),
+    (612984, "sell 3 WIDG 20 calls Dec 18 26 limit"),
+)
+#: 1.0.7.2 sixth review, properties U1-U3 (tests/test_prop6_smart_ticket_unread_book.py): (seed, the text with the book word misspelled, the
+#: same text spelled right, the selected book, the book the word means) - the seeds the review reported
+SIXTH_UNREAD_BOOK = (
+    (640002, "sell 1 ACME Dec 18 2026 260 call in the Persnal book and 1 ACME Dec 18 2026 260 call",
+     "sell 1 ACME Dec 18 2026 260 call in the Personal book and 1 ACME Dec 18 2026 260 call", "I", "P"),
+    (640003, "cover 1 ACME Dec 18 2026 260 call in the Fnd book then 2 ACME Dec 18 2026 250 calls limit 41, sell 1 ACME Dec 18 2026 220 put limit 1.00 gtc",
+     "cover 1 ACME Dec 18 2026 260 call in the Fund book then 2 ACME Dec 18 2026 250 calls limit 41, sell 1 ACME Dec 18 2026 220 put limit 1.00 gtc", "I", "F"),
+    (640005, "buy 1 ACME Dec 18 2026 220 put limit 41 then 2 ACME Dec 18 2026 250 calls then sell 1 ACME Dec 18 2026 220 put limit 1.00 gtc in the Persnal book",
+     "buy 1 ACME Dec 18 2026 220 put limit 41 then 2 ACME Dec 18 2026 250 calls then sell 1 ACME Dec 18 2026 220 put limit 1.00 gtc in the Personal book", "F", "P"),
+    (640006, "sto 1 ACME Dec 18 2026 220 put in the Fnd book; 150 ACME limit 1.00 gtc",
+     "sto 1 ACME Dec 18 2026 220 put in the Fund book; 150 ACME limit 1.00 gtc", "P", "F"),
+    (640007, "sto 2 WIDG Dec 18 2026 45 calls gtc in the Instituional book and 50 GIZM gtc",
+     "sto 2 WIDG Dec 18 2026 45 calls gtc in the Institutional book and 50 GIZM gtc", "P", "I"),
+    (640013, "buy 50 GIZM limit 41 then 100 ACME in the Instituional book at pb ms",
+     "buy 50 GIZM limit 41 then 100 ACME in the Institutional book at pb ms", "P", "I"),
+    (640016, "buy 300 GIZM limit 1.00 gtc, cover 200 WIDG at market in the Fnd book and 300 GIZM limit 1.00 gtc",
+     "buy 300 GIZM limit 1.00 gtc, cover 200 WIDG at market in the Fund book and 300 GIZM limit 1.00 gtc", "P", "F"),
+    (640020, "short 2 WIDG Dec 18 2026 45 calls at market in the Fnd book, 50 GIZM gtc",
+     "short 2 WIDG Dec 18 2026 45 calls at market in the Fund book, 50 GIZM gtc", "P", "F"),
+    (640032, "sell 50 WIDG; bto 2 WIDG Dec 18 2026 45 calls in the Fnd book",
+     "sell 50 WIDG; bto 2 WIDG Dec 18 2026 45 calls in the Fund book", "P", "F"),
+    (640036, "buy 300 GIZM in the Persnal book then 2 WIDG Dec 18 2026 45 calls gtc, 150 ACME gtc; bto 50 WIDG",
+     "buy 300 GIZM in the Personal book then 2 WIDG Dec 18 2026 45 calls gtc, 150 ACME gtc; bto 50 WIDG", "I", "P"),
+)
+
+
+class ChoicesSixthReview(_FifthReviewBase):
+    """1.0.7.2 sixth review (the world of its Smart Ticket lens: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, 200 WIDG long
+    at I1:PB_MS): a book word that names no book leaves unread every order that takes that phrase's book (carried with the side, under the
+    closing or the opening phrase) - never the selected book - each with a blocker that names the words and offers every book, and the
+    choice that settles the word may give them the book it names; a choice never writes the account of a book phrase twice; "as separate
+    orders" also drops a group word typed inside the parentheses; a choice offered on one book's copy of a package never changes another
+    book's copy outside that package (property C2, seed 762690); a two-digit year before a bare "limit" is never the price (property R2);
+    and the unread-book property's seeds keep U1-U3."""
+    WORLD_KIND = "SIXTH"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp, cls.rt = cls._make()
+        world = dict(corpus.WORLD)
+        world["chains"] = list(corpus.WORLD["chains"]) + [{"underlying": "WIDG", "cboe": "WIDG", "spot": 40, "expiries": ("2026-11-20", corpus.DEC),
+                                                           "strikes": (35, 40, 45), "skip": (), "age_s": 30, "trade_time": corpus.TRADE_TIME, "extra": ()}]
+        world["positions"] = list(corpus.WORLD["positions"]) + [(F, "WIDG", "SHORT", 100, "40"), (PB, "WIDG", "LONG", 200, "40")]
+        build_world(unittest.TestCase(), cls.rt, world)
+
+    @staticmethod
+    def goes(out, l) -> bool:
+        return _fifth_goes(out, l)
+
+    def offered(self, out, n):
+        return {ch["label"] for l in out["legs"] if l["n"] == n for f in l["flags"] for ch in f.get("choices") or []}
+
+    def test_an_unknown_book_word_leaves_unread_every_order_that_takes_its_book(self):
+        for text, book, n in (("buy 100 ACME in the Fnd book and 50 WIDG", "P", 2), ("sell 100 ACME in the Fnd book, 50 WIDG", "P", 2),
+                              ("buy 100 ACME, buy 50 WIDG in the Fnd book", "P", 1), ("sell 50 WIDG; buy 100 ACME in the Fnd book", "P", 1),
+                              ("buy 100 ACME, buy 50 WIDG in the Fnd book at pb ms", "I", 1), ("in the Fnd book: buy 100 ACME, buy 50 WIDG", "P", 1)):
+            with self.subTest(text=text, selected=book):
+                out = self.parse(text, book)
+                l = next(x for x in out["legs"] if x["n"] == n)
+                self.assertEqual((None, None, False), (l["book"], l["account_id"], self.goes(out, l)), out["legs"])
+                f = next(f for f in l["flags"] if f["code"] == "UNPARSED_TEXT")
+                self.assertIn("'Fnd'", f["text"])
+                self.assertEqual({"the Personal Book", "the Fund Book", "the Institutional Book"}, {ch["label"] for ch in f.get("choices") or []})
+                good = self.parse(text.replace("Fnd", "Fund"), book)
+                self.assertEqual(["F"] * len(good["legs"]), [x["book"] for x in good["legs"]])
+                ch = next(ch for ch in f["choices"] if ch["label"] == "the Fund Book")    # the choice on the order that takes the word settles it
+                out2 = self.apply(out, f, ch, book)
+                self.assertEqual([x["book"] for x in good["legs"]], [x["book"] for x in out2["legs"]])
+
+    def test_an_unknown_book_words_choices_are_offered_whatever_the_orders_place(self):
+        want = {"the Personal Book", "the Fund Book", "the Institutional Book"}
+        for text, n in (("sell 50 WIDG in the Personal book; buy 100 ACME in the Fnd book", 2), ("sell 50 WIDG; buy 100 ACME in the Fnd book", 2),
+                        ("buy 100 ACME in the Fnd book and 50 WIDG", 1), ("buy 100 ACME, buy 50 WIDG in the Fnd book", 2)):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                self.assertEqual(want, self.offered(out, n))
+                item, f, ch = self.find(out, "UNPARSED_TEXT", "the Fund Book")
+                out2 = self.apply(out, f, ch, "P")
+                self.assertEqual(set(), _fifth_unparsed(out2), out2["text"])
+                self.assertEqual([], choice_contract(out, item, f, ch, out2))
+
+    def test_a_choice_never_writes_the_account_of_a_book_phrase_twice(self):
+        for text, code, label in (("sell 1 ACME Dec 18 2026 240/250 call spread at 1.00 gtc in the Institutional book at pb ms", "LIMIT_IN_AON", "the legs as separate orders"),
+                                  ("buy 1 ACME Dec 18 2026 220/230/240 butterfly limit 0.50 in the Institutional book at pb ms", "LIMIT_IN_AON", "the legs as separate orders"),
+                                  ("buy 100 LOT TOGETHER in the Institutional book at pb ms", "TOKEN_AMBIGUOUS", "read as: ")):
+            with self.subTest(text=text):
+                out = self.parse(text, "P")
+                pairs = [(f, ch) for it in out["legs"] + out["combos"] for f in it["flags"] if f["code"] == code for ch in f.get("choices") or []
+                         if ch["label"].startswith(label)]
+                self.assertTrue(pairs, out)
+                for f, ch in pairs:
+                    self.assertEqual([1], sorted({part.count("at pb ms") for part in ch["clause"].split(" and ")}), ch["clause"])   # once per order
+                    out2 = self.apply(out, f, ch, "P")
+                    self.assertEqual([], [l["n"] for l in out2["legs"] if "DUPLICATE_FIELD" in codes(l["flags"])], out2["text"])
+                    self.assertEqual({PB}, {l["account_id"] for l in out2["legs"]}, out2["text"])
+
+    def test_as_separate_orders_also_drops_a_group_word_inside_the_parentheses(self):
+        for text in ("(buy 1 ACME Dec 18 2026 240 call limit 1.00, sell 1 ACME Dec 18 2026 250 call as a package)",
+                     "(buy 1 ACME Dec 18 2026 240 call limit 1.00 and sell 1 ACME Dec 18 2026 250 call together)"):
+            with self.subTest(text=text):
+                out = self.parse(text, "F")
+                item, f, ch = self.find(out, "LIMIT_IN_AON", "as separate orders")
+                out2 = self.apply(out, f, ch, "F")
+                self.assertEqual([None, None], [l["combo"] for l in out2["legs"]], out2["text"])
+                self.assertEqual([("LIMIT", "1.00"), ("MARKET", None)], [(l["order_type"], l["limit_px"]) for l in out2["legs"]])
+                self.assertEqual([], choice_contract(out, item, f, ch, out2))
+
+    def test_a_package_choice_never_changes_another_books_copy_outside_it(self):
+        """Property C2, seed 762690: the run of "as a package" reaches back over a clause typed for two books, so the Personal copy of the 250
+        call is in a package with the 240 call (Fund book, the selected one) and the Fund copy is a package of its own.  No choice offered
+        on the first package rewrites the Fund copy's limit 2.00 ("drop the limits" would: it is not offered there); "as separate orders",
+        offered on both, keeps every typed limit."""
+        out = self.parse("buy 1 ACME Dec 18 2026 250 call limit 2.00 in the Personal and Fund books then buy 1 ACME Dec 18 2026 240 call limit 1.00 as a package", "F")
+        f250 = next(l for l in out["legs"] if l["book"] == "F" and l["instrument"].get("id") == C250)
+        for cb in out["combos"]:
+            if f250["n"] in cb["legs"]:
+                continue
+            for f in cb["flags"]:
+                for ch in f.get("choices") or []:
+                    with self.subTest(code=f["code"], choice=ch["label"]):
+                        out2 = self.apply(out, f, ch, "F")
+                        g = next(l for l in out2["legs"] if l["book"] == "F" and l["instrument"].get("id") == C250)
+                        self.assertEqual(("LIMIT", "2.00"), (g["order_type"], g["limit_px"]), ch)
+                        self.assertEqual([], choice_contract(out, cb, f, ch, out2))
+        self.assertFalse(any(ch["label"].startswith("drop the limits") for cb in out["combos"] if f250["n"] not in cb["legs"] for f in cb["flags"]
+                             for ch in f.get("choices") or []))
+
+    def test_a_two_digit_year_before_a_bare_limit_is_never_the_price(self):
+        for seed, text in SIXTH_YEAR_TEXTS:
+            with self.subTest(seed=seed, text=text):
+                out = self.parse(text, "F")
+                self.assertEqual([], [(l["order_type"], l["limit_px"]) for l in out["legs"] if self.goes(out, l)])
+                self.assertNotIn("YEAR_INFERRED", [c for l in out["legs"] for c in codes(l["flags"])])
+
+    def test_the_unread_book_propertys_seeds_keep_u1_to_u3(self):
+        typo = {"F": "Fnd", "I": "Instituional", "P": "Persnal"}
+        names = {"F": "the Fund Book", "I": "the Institutional Book", "P": "the Personal Book"}
+        for seed, bad, good, sel, code in SIXTH_UNREAD_BOOK:
+            with self.subTest(seed=seed):
+                o_bad, o_good = self.parse(bad, sel), self.parse(good, sel)
+                self.assertEqual(len(o_good["legs"]), len(o_bad["legs"]))
+                for lb, lg in zip(o_bad["legs"], o_good["legs"]):
+                    holds = typo[code] in lb["clause"]
+                    inherited = lg["book"] == code and any(f["code"] == "BOOK_FROM_SCOPE" and ("order before" in f["text"] or "at the end of the text" in f["text"])
+                                                           for f in lg["flags"])
+                    if not holds and inherited:                                      # U1: never sendable
+                        self.assertFalse(self.goes(o_bad, lb), (lb["n"], lb["book"], lb["account_id"]))
+                    if holds and lb["book"] is None:                                 # U2: the book the word meant is offered; U3: it puts the order there
+                        self.assertIn(names[code], self.offered(o_bad, lb["n"]))
+                        for f in lb["flags"]:
+                            for ch in f.get("choices") or []:
+                                if ch["label"] == names[code]:
+                                    o2 = self.apply(o_bad, f, ch, sel)
+                                    a = f["span"][0]
+                                    mine = [l for l in o2["legs"] if a <= l["span"][0] < a + len(ch["clause"]) and typo[code] not in l["clause"]]
+                                    self.assertTrue(not mine or any(l["book"] == code for l in mine), (seed, ch, [(l["n"], l["book"]) for l in mine]))
 
 # ===== the route on a full runtime: registration, 400s, the corpus and the purity proof ================================================
 def _build_full(tmp):

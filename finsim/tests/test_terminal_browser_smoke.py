@@ -624,6 +624,73 @@ class BrowserSmokeTests(unittest.TestCase):
         b.pump(0.8)
         self.assertEqual([], [e for e in b.errors(sid, since) if not ("409" in e and "/api/orders" in e) and "Failed to fetch" not in e])
 
+    def test_xc_smart_ticket_sixth_review_holds_a_resent_combination_to_its_confirm(self):
+        """1.0.7.2 sixth review, on the real server.  An all-or-none combination's post carries the figures its confirm listed; the SERVER
+        places it only when it fills at once within them - so the page transport's resend of the same body is held to the confirm too:
+        (a) the first post answered 503 (the writer busy: nothing written) while the 60 / 65 call spread moves 81 % against the buyer: the
+        resend is refused (AON_NOT_PLACED), nothing is placed and the item stays staged, said; (b) the first post dropped as a refused
+        connection does while the spread moves: the same; (c) the confirm line says it goes only if it fills at once."""
+        from finsim.terminal.commands import Result, _error_body
+        b, sid = self.browser, self.sid
+        rt = self.server.rt
+        status = "document.querySelector('#smart-status').innerText"
+        moved = {("2026-12-18", "C", 60): ("4.10", "4.30"), ("2026-12-18", "C", 65): ("0.50", "0.60")}
+        for case in ("busy", "dropped"):
+            with self.subTest(case=case):
+                b.js(sid, "localStorage.removeItem('finsim.smart.draft'); true")
+                self._served_chain()
+                self.visit("#/smart", "text")
+                since = b.mark()
+                self._smart_read("buy 1 ACME Dec 18 2026 60/65 call spread", 2)
+                ticket = b.js(sid, TICKET_OF_PAGE)
+                self._press("Enter", 13, ctrl=True, shift=True)
+                b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+                conf = b.js(sid, "document.querySelector('#modal-root .modal').innerText")
+                self.assertIn("goes only at the net cash listed here", conf)
+                self.assertIn("and only if it fills at once", conf)
+                real = rt.bus.execute
+                hits = []
+                if case == "busy":
+                    def execute(cmd):
+                        if cmd.kind == "order.submit" and isinstance(cmd.payload.get("package"), dict) and not hits:
+                            hits.append(cmd.request_id)
+                            self._served_chain(moved)                    # the market moves while the writer is busy
+                            return Result(False, 503, _error_body("WRITER_BUSY", "the writer is busy; retry", request_id=cmd.request_id), retry_after=1)
+                        return real(cmd)
+                    rt.bus.execute = execute
+                else:
+                    b.js(sid, """(function () {
+                      if (!window.__realFetch) { window.__realFetch = window.fetch; }
+                      var real = window.__realFetch; window.__dropped = 0;
+                      window.fetch = function (url, init) {
+                        var u = String(url && url.url ? url.url : url), m = String((init && init.method) || 'GET').toUpperCase();
+                        if (!window.__dropped && m === 'POST' && /\\/api\\/orders(\\?|$)/.test(u)) { window.__dropped = 1; return Promise.reject(new TypeError('Failed to fetch')); }
+                        return real.apply(this, arguments);
+                      };
+                      return true;
+                    })()""")
+                try:
+                    b.js(sid, "document.querySelector('#smart-send').click(); true")
+                    if case == "dropped":
+                        b.wait(sid, "window.__dropped === 1", timeout=30)
+                        self._served_chain(moved)                        # the market moves while the transport waits to retry
+                    b.wait(sid, "/^sent 0 of 1, skipped 1/.test(%s)" % status, timeout=60)
+                finally:
+                    if "execute" in vars(rt.bus):
+                        del rt.bus.execute
+                    b.js(sid, "if (window.__realFetch) { window.fetch = window.__realFetch; } true")
+                said = b.js(sid, status)
+                self.assertIn("not placed: its net cash now would be", said)
+                self.assertIn("submit it again to confirm them", said)
+                with rt.db.reader() as conn:
+                    self.assertEqual(0, conn.execute("SELECT COUNT(*) FROM orders WHERE request_id LIKE ?", (f"st:{ticket}:%",)).fetchone()[0])
+                posts = self._order_posts(since)
+                self.assertEqual({"-210.00"}, {(p["body"].get("aon_confirmed") or {}).get("net_cash") for p in posts}, posts)
+                self.assertEqual(409, posts[-1]["status"], posts)
+                self._served_chain()
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); location.hash = '#/dashboard'; true")
+        b.pump(0.8)
+
     def test_y_smart_ticket_records_a_sequential_package_as_sent_only_with_its_terms(self):
         """1.0.7.2 third review: the page records an item as sent under its own request id (a reload or a second window got there first)
         only when the orders under that id have the item's terms - a sequential package's option legs included: their type, limit and

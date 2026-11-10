@@ -516,6 +516,39 @@ class FifthReviewGrammar(unittest.TestCase):
         self.assertEqual("at pb ms", text[a["span"][0]:a["span"][1]])
 
 
+class SixthReviewGrammar(unittest.TestCase):
+    """1.0.7.2 sixth review, the pure layer: a one- or two-digit number written right after "<month> <day>" with no comma ("Dec 18 26", "Jan 15
+    27", "December 18 26": trader shorthand for a year) is never the "<n> limit" price - before a bare "limit" / "lmt" it stays one of the
+    contract's words, so the price is MISSING_PRICE and the reading names the year form; the "<n> limit" price after the contract's own
+    words, and a price after the word, are read as before; an unknown book word carries with the side and closes the text as a known one
+    does; a group word inside parentheses is a modifier of its order."""
+
+    def test_a_two_digit_year_after_a_month_and_day_is_never_the_price(self):
+        for text in ("bto 2 ACME 240c Dec 18 26 limit", "sell 2 ACME 250c Dec 18 26 lmt", "bto 3 ACME 250 puts Jan 15 27 limit", "buy 2 ACME 240 calls Dec 18 26 limit",
+                     "buy 2 ACME 240c December 18 26 limit", "bto 1 WIDG 45p Nov 20 26 lmt gtc"):
+            with self.subTest(text=text):
+                c = clause(text)
+                p = c["mods"]["price"]
+                self.assertEqual(("LIMIT", None), (p["type"], p.get("limit")))
+                self.assertIn("MISSING_PRICE", codes(c))
+        for text, price in (("buy 2 ACME Dec 18 2026 240 calls 26 limit", "26"), ("buy 2 ACME 240c Dec 18 26 limit 2.50", "2.50"), ("buy 100 ACME 26 limit", "26")):
+            with self.subTest(text=text):
+                self.assertEqual(("LIMIT", price), (clause(text)["mods"]["price"]["type"], clause(text)["mods"]["price"].get("limit")))
+
+    def test_an_unknown_book_word_carries_and_closes_as_a_known_one(self):
+        out = st.parse("buy 100 ACME in the Fnd book and 50 WIDG")
+        self.assertEqual("Fnd", out["clauses"][1]["carried_scope"]["unknown"])
+        self.assertEqual("Fnd", out["text"][slice(*out["clauses"][1]["carried_scope"]["word_span"])])
+        out = st.parse("buy 100 ACME, buy 50 WIDG in the Fnd book at pb ms")
+        self.assertEqual(("Fnd", 1), (out["suffix"]["scope"]["unknown"], out["suffix"]["clause"]))
+
+    def test_a_group_word_inside_parentheses_is_a_word_of_its_order(self):
+        out = st.parse("(buy 1 ACME Dec 18 2026 240 call limit 1.00, sell 1 ACME Dec 18 2026 250 call as a package)")
+        self.assertEqual(1, len(out["groups"]))
+        self.assertEqual("paren", out["groups"][0]["kind"])
+        self.assertIsNotNone(out["clauses"][1]["mods"]["group"])
+
+
 class Determinism(unittest.TestCase):
     def test_corpus_twice_in_process(self):
         self.assertEqual(corpus_digest(), corpus_digest())

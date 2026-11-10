@@ -106,7 +106,7 @@ from .orders_rules import (AUTO_RESUME_NOTE, BUY_SIDES, CASH_SIDES, FUNDS_CODES,
                            OrderRow, PackageDecision, evaluate, evaluate_package, exec_price, fill_cap, funds_wait_from_error, funds_wait_reason, is_funds_wait,
                            match_idem, on_tick, px_words, queued_until_text, review, trail_amount, trail_stop)
 from .quotes import QuoteRecord
-from .units import fmt_money, qprice, to_c
+from .units import fmt_money, mul_c, qprice, to_c
 
 
 class NotBuilt(RejectError):
@@ -503,29 +503,57 @@ def _chain_legs(conn, primary_order_id: str) -> List[str]:
                                                  " ('WAITING_PARENT','WORKING','PARTIAL','SUSPENDED') ORDER BY order_id", ids).fetchall()]
 
 
-def _follow_primary(ctx: TxContext, prow, leg_ids: Iterable[str], note: Optional[str]) -> List[str]:
-    """1.0.7.2 fifth review: the open hedge legs ``leg_ids`` take their shares order's lifetime - time in force, expiry, good-till date and
-    next-session start - so a leg never ends on a clock of its own while its shares order still buys (an amend or a re-price that keeps
-    the shares order working longer keeps its legs with it; a GTD or next-session package's legs live as long as its shares).  ``note``:
-    the order event written on each leg changed (None at the legs' creation).  Returns the legs changed."""
+def _follow_primary(ctx: TxContext, prow, leg_ids: Iterable[str], lead: Optional[str]) -> tuple:
+    """1.0.7.2 fifth review: the hedge legs ``leg_ids`` STILL WAITING take their shares order's lifetime exactly - time in force, expiry,
+    good-till date and next-session start - so a waiting leg never ends on a clock of its own while its shares order still buys (an amend
+    or a re-price that keeps the shares order working longer keeps its waiting legs with it; a GTD or next-session package's legs live as
+    long as its shares).  ``lead``: the first words of the order event written on each leg changed ("its shares order O-1 was amended
+    (DAY -> GTC)"); None at the legs' creation, where only waiting legs are given.
+
+    Sixth review: a leg already RELEASED (working, partly filled or held) hedges shares already bought; its shares order's change only
+    ever makes it live LONGER, never shorter: it is changed only when the shares order now expires later than it, and a time in force
+    the owner gave the leg with its own amend is kept.  It keeps working now - a shares order queued for a later session (next session)
+    makes it good till that session's close (GTD), never queued.  So an amend or a re-price GTC -> DAY, or one for the next session,
+    never ends or holds back a protective leg already working for shares the owner holds.  A filled leg is not changed here: the fill
+    that re-opens it gives it its shares order's lifetime (``execution.resize_hedge_children``).
+
+    Returns (the waiting legs changed, the released legs made to live longer)."""
     conn = ctx.conn
     want = (str(prow["tif"]), int(prow["expires_ts"]), _row_get(prow, "gtd_date"), _row_get(prow, "activate_ts"))
     cols = _order_cols(conn)
-    changed = []
+    both = "gtd_date" in cols and "activate_ts" in cols
+    waiting, longer = [], []
     for lid in leg_ids:
         r = _order_raw(conn, lid)
-        if r is None or r["status"] not in ("WAITING_PARENT", "WORKING", "PARTIAL", "SUSPENDED"):
+        if r is None:
             continue
-        if (str(r["tif"]), int(r["expires_ts"]), _row_get(r, "gtd_date"), _row_get(r, "activate_ts")) == want:
+        if r["status"] == "WAITING_PARENT":
+            if (str(r["tif"]), int(r["expires_ts"]), _row_get(r, "gtd_date"), _row_get(r, "activate_ts")) == want:
+                continue
+            conn.execute("UPDATE orders SET tif=?, expires_ts=? WHERE order_id=?", (want[0], want[1], lid))
+            if both:
+                conn.execute("UPDATE orders SET gtd_date=?, activate_ts=? WHERE order_id=?", (want[2], want[3], lid))
+            if lead:
+                conn.execute("UPDATE orders SET updated_ts=? WHERE order_id=?", (ctx.ts, lid))
+                _order_event(conn, lid, ctx.ts, r["status"], r["status"], f"{lead}: this leg, still waiting, keeps its time in force")
+            waiting.append(lid)
             continue
-        conn.execute("UPDATE orders SET tif=?, expires_ts=? WHERE order_id=?", (want[0], want[1], lid))
-        if "gtd_date" in cols and "activate_ts" in cols:
-            conn.execute("UPDATE orders SET gtd_date=?, activate_ts=? WHERE order_id=?", (want[2], want[3], lid))
-        if note:
-            conn.execute("UPDATE orders SET updated_ts=? WHERE order_id=?", (ctx.ts, lid))
-            _order_event(conn, lid, ctx.ts, r["status"], r["status"], note)
-        changed.append(lid)
-    return changed
+        if not lead or not both or r["status"] not in ("WORKING", "PARTIAL", "SUSPENDED") or int(r["expires_ts"]) >= want[1]:
+            continue                                     # a released leg is never shortened
+        if execution._own_tif(conn, lid):
+            continue                                     # the owner's own time in force for this leg
+        if want[3] is not None and int(want[3]) > ctx.ts:
+            # the shares order is queued for a later session: the leg keeps working now, good till that session's close
+            tif, gtd, act = "GTC", ny_of(want[1]).date().isoformat(), None
+            label = f"GTD {gtd}"
+        else:
+            tif, gtd, act = want[0], want[2], want[3]
+            label = tif_label(tif_of_row({"tif": tif, "gtd_date": gtd, "activate_ts": act}), _date_or_none(gtd), act)
+        conn.execute("UPDATE orders SET tif=?, expires_ts=?, gtd_date=?, activate_ts=?, updated_ts=? WHERE order_id=?", (tif, want[1], gtd, act, ctx.ts, lid))
+        _order_event(conn, lid, ctx.ts, r["status"], r["status"],
+                     f"{lead}: this leg, already released for shares bought, now works as long as it ({label}); a change of its shares order never shortens it")
+        longer.append(lid)
+    return waiting, longer
 
 
 def _held_leg(services, conn, r, now: int):
@@ -575,7 +603,7 @@ def create_hedge_children(ctx: TxContext, services, primary_order_id: str, legs:
         ratio = (Decimal(int(leg["qty"])) / Decimal(pqty)).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_EVEN).normalize()
         oid = _insert_order(ctx, vo, f"{praw['request_id']}:H{i + 1}", status="WAITING_PARENT", package_id=pid, parent_order_id=primary_order_id, ratio=ratio)
         # 1.0.7.2 fifth review: a leg lives exactly as long as its shares order - its expiry, good-till date and next-session start too
-        # (a GTD or next-session primary's leg never expires on a day of its own)
+        # (a GTD or next-session primary's leg never expires on a day of its own); it waits, so it takes them exactly
         _follow_primary(ctx, praw, [oid], None)
         _order_event(conn, oid, ctx.ts, None, "WAITING_PARENT", f"hedge leg of {primary_order_id} ({candidate_id}): {_summary(vo)}, ratio {ratio}", vo.rec)
         ctx.event("ORDER_SUBMITTED", account_id=vo.account_id, instrument_id=vo.inst.instrument_id, ref_type="order", ref_id=oid, side=vo.side, qty=vo.qty,
@@ -629,6 +657,57 @@ def _submit_single(ctx: TxContext, services, payload: dict, vo: ValidatedOrder, 
             "hedge_package": package_id, "warnings": vo.warnings, "decision": dec.to_dict(), "preview": vo.preview}
 
 
+#: 1.0.7.2 sixth review: the refusal of an all-or-none combination held to its confirm (``aon_confirmed``): nothing was placed
+AON_NOT_PLACED = "AON_NOT_PLACED"
+
+
+def _aon_guard_of(payload: dict) -> Optional[tuple]:
+    """1.0.7.2 sixth review: ``aon_confirmed {net_cash, previewed_at}`` of an all-or-none package - the net cash and the server time of the
+    package preview the Smart Ticket's confirm listed - as ``(net cash in cents, previewed_at)``, or None when the request has none (any
+    other client: the package keeps 1.0.7.2's rule, filled whenever one observation covers every leg).  400 AON_CONFIRMED when malformed."""
+    g = payload.get("aon_confirmed")
+    if g is None:
+        return None
+    try:
+        if not isinstance(g, dict):
+            raise ValueError("not an object")
+        net = Decimal(str(g.get("net_cash")))
+        at = int(g.get("previewed_at"))
+        if not net.is_finite() or at <= 0:
+            raise ValueError("out of range")
+    except (ArithmeticError, TypeError, ValueError) as e:
+        raise RejectError("AON_CONFIRMED", f"aon_confirmed needs the confirmed net_cash (a number) and previewed_at (the preview's server time): {e}",
+                          {"aon_confirmed": g if isinstance(g, (dict, str, int, float)) else None}) from None
+    return to_c(net), at
+
+
+def _aon_guard_check(guard: tuple, legs: List[OrderRow], dec: PackageDecision) -> None:
+    """1.0.7.2 sixth review: an all-or-none combination sent with its confirmed figures (``aon_confirmed``) is placed only when it FILLS NOW,
+    all-or-none, at a net cash at most ``config.PRICE_MOVED_PCT`` (0.5 %) worse than the one its confirm listed - checked here, at the
+    placement itself, so every send and every resend of it (after a busy writer's 503, a dropped connection, the large-order question) is
+    held to the confirm, whoever resends it.  A combination that cannot fill at once (a displayed size too small, a stale chain, the
+    session closed) is never left working: there is no net limit in this version, and it would fill later at whatever prices then.
+    Raises 409 AON_NOT_PLACED (the command rolls back: nothing was placed); the Smart Ticket keeps it staged with its new figures."""
+    net0, _at = guard
+    if dec.action != "FILL":
+        why = {"AON_SIZE": "the displayed size does not cover every leg", "AON_STALE": "a leg has no fresh executable Cboe quote",
+               "AON_OBSERVATION": "the legs come from different chain observations", "AWAITING_SESSION": "the session is not open"}.get(dec.reason, dec.reason)
+        raise ConflictError(AON_NOT_PLACED, f"not placed: it cannot fill all-or-none now ({why}{': ' + dec.note if dec.note else ''}); a combination has no net limit in"
+                                            " this version, so it is never left working to fill later at other prices", {"why": "NOT_NOW", "decision": dec.to_dict()})
+    by_id = {l.order_id: l for l in legs}
+    net1 = 0
+    for ld in dec.legs:
+        g = mul_c(int(ld.qty), ld.price, by_id[ld.order_id].multiplier)
+        net1 += g if ld.side in SELL_SIDES else -g
+    worse = net0 - net1                                  # net cash: received +, paid -; worse = paying more or receiving less
+    pct = Decimal(str(config.PRICE_MOVED_PCT))
+    if worse > 0 and (net0 == 0 or Decimal(worse) > abs(Decimal(net0)) * pct):
+        moved = f" ({(Decimal(worse) / abs(Decimal(net0)) * 100).quantize(Decimal('0.01'))} % against you)" if net0 else ""
+        raise ConflictError(AON_NOT_PLACED, f"not placed: its net cash now would be {fmt_money(net1)} instead of the {fmt_money(net0)} its confirm listed{moved},"
+                                            f" more than {(pct * 100).normalize()} % worse", {"why": "MOVED", "net_cash_c": net1, "confirmed_net_cash_c": net0,
+                                                                                              "decision": dec.to_dict()})
+
+
 def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     strategies = getattr(services, "strategies", None)
     if strategies is None or not hasattr(strategies, "package_legs"):
@@ -666,6 +745,11 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     insts = [services.instruments.get(l["instrument_id"], conn) for l in legs]
     if any(i is None or i.kind != "OPTION" for i in insts) or len({i.underlying_id for i in insts}) != 1:
         raise RejectError("AON_LEGS", "an all-or-none package must be options on one underlying only", {"legs": [l.get("instrument_id") for l in legs]})
+    guard = _aon_guard_of(payload)
+    if guard is not None and ctx.ts - guard[1] > int(config.PREVIEW_TTL_S):
+        raise ConflictError(AON_NOT_PLACED, f"not placed: the package preview its confirm listed was taken {ctx.ts - guard[1]:,} s ago, and a combination goes"
+                                            f" only within {int(config.PREVIEW_TTL_S)} s of it - confirm it again", {"why": "OLD", "previewed_at": guard[1],
+                                                                                                                     "ttl_s": int(config.PREVIEW_TTL_S)})
     vos = []
     for l in legs:
         req = {"account_id": account_id, "instrument_id": l["instrument_id"], "side": l["side"], "qty": int(l["qty"]), "order_type": "MARKET", "tif": tif}
@@ -678,6 +762,9 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     # FUNDS_WAIT: a leg the account cannot fund queues the whole package (every leg SUSPENDED, no reservation, one INFO item)
     waiting = [v for v in vos if v.funds_wait]
     wait = funds_wait_reason(vos[0].inst.currency, sum(int(v.need_c) for v in vos), int(waiting[0].funds_wait["available_c"])) if waiting else None
+    if guard is not None and wait:
+        raise ConflictError(AON_NOT_PLACED, f"not placed: it cannot be funded now ({wait}), and a combination held to its confirm is never queued to fill"
+                                            " later at other prices", {"why": "FUNDS", "reason": wait})
     status = "SUSPENDED" if wait else "WORKING"
     pid = next_id(conn, "package")
     conn.execute("INSERT INTO hedge_packages(package_id, command_id, account_id, primary_order_id, candidate_id, strategy_key, legs_json, fill_mode, status, created_ts)"
@@ -699,9 +786,14 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     recs = {vo.inst.instrument_id: vo.rec for vo in vos}
     pkg = conn.execute("SELECT * FROM hedge_packages WHERE package_id=?", (pid,)).fetchone()
     dec = evaluate_package(pkg, rows, recs, vos[0].session, ctx.ts)
+    if guard is not None:
+        _aon_guard_check(guard, rows, dec)               # sixth review: raises (nothing placed) unless it fills now within its confirm
     result = None
     if dec.action == "FILL":
         result = _fill_package(ctx, services, pkg, rows, recs, dec, new_package=True)
+        if guard is not None and (result or {}).get("status") != "FILLED":
+            raise ConflictError(AON_NOT_PLACED, "not placed: its fill could not be funded, and a combination held to its confirm is never queued to fill later"
+                                                " at other prices", {"why": "FUNDS", "reason": (result or {}).get("reason")})
     return {"package": {"package_id": pid, "fill_mode": "AON", "strategy_key": key, "status": (result or {}).get("status", "WORKING"), "legs": legs},
             "orders": [order_view(conn, oid) for oid in oids], "decision": dec.to_dict(), "fills": (result or {}).get("fills", []), "margin": (result or {}).get("margin"),
             "sweeps": (result or {}).get("sweeps", []), "warnings": [w for v in vos for w in v.warnings], "previews": [v.preview for v in vos]}
@@ -942,16 +1034,33 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
 
 def _say_leg_ended(ctx: TxContext, r, why: str) -> None:
     """1.0.7.2 fifth review: a hedge leg that expired while its shares order (the head of its replace chain) still works - its own
-    contract ended, or a forced expiry - is said by ONE INFO item (HEDGE_LEG_ENDED): the shares bought from then on have no such leg."""
+    contract ended, or a forced expiry - is said by ONE INFO item (HEDGE_LEG_ENDED): the shares bought from then on have no such leg.
+    Sixth review: a leg already RELEASED for shares bought that expires with part of it still to fill is said too once its shares order
+    has ended (filled, cancelled or expired): those shares are hedged only by what the leg filled.  ``r`` is the leg as it was before it
+    expired."""
     conn = ctx.conn
     head = _chain_head(conn, r["parent_order_id"])
-    if head is None or head["status"] not in LIVE_STATUSES or ctx.ts > int(head["expires_ts"]):
-        return
     side = str(r["side"]).replace("_", " ").lower()
+    if head is not None and head["status"] in LIVE_STATUSES and ctx.ts <= int(head["expires_ts"]):
+        ctx.attention("INFO", "orders", "HEDGE_LEG_ENDED",
+                      f"the hedge leg {r['order_id']} {side} {int(r['qty']):,} {r['instrument_id']} expired ({why}) while its shares order {head['order_id']} still works"
+                      f" ({str(head['status']).lower()}): the shares it buys from now on are not hedged by this leg",
+                      {"account_id": r["account_id"], "ref_type": "order", "ref_id": head["order_id"], "legs": [r["order_id"]]})
+        return
+    qty, filled = int(r["qty"]), int(r["filled_qty"] or 0)
+    if r["status"] not in ("WORKING", "PARTIAL", "SUSPENDED") or qty <= filled:
+        return
+    hid = head["order_id"] if head is not None else r["parent_order_id"]
+    if head is None:
+        state = "has ended"
+    elif head["status"] in LIVE_STATUSES:
+        state = "is past its own expiry"                 # expired by the same run, after this leg
+    else:
+        state = f"has ended ({str(head['status']).lower()})"
     ctx.attention("INFO", "orders", "HEDGE_LEG_ENDED",
-                  f"the hedge leg {r['order_id']} {side} {int(r['qty']):,} {r['instrument_id']} expired ({why}) while its shares order {head['order_id']} still works"
-                  f" ({str(head['status']).lower()}): the shares it buys from now on are not hedged by this leg",
-                  {"account_id": r["account_id"], "ref_type": "order", "ref_id": head["order_id"], "legs": [r["order_id"]]})
+                  f"the hedge leg {r['order_id']} {side} {qty:,} {r['instrument_id']} expired ({why}) with {qty - filled:,} of {qty:,} not filled; its shares order"
+                  f" {hid} {state}: the shares bought are hedged by the {filled:,} this leg filled, not by the {qty - filled:,} it did not",
+                  {"account_id": r["account_id"], "ref_type": "order", "ref_id": hid, "legs": [r["order_id"]]})
 
 
 def h_resume(ctx: TxContext, payload: dict) -> dict:
@@ -1308,11 +1417,12 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
     text = "AMENDED " + "; ".join(f"{w} {a} -> {b}" for w, a, b in changes)
     _order_event(conn, oid, ctx.ts, raw["status"], raw["status"], text, vo.rec)
     follow: List[str] = []
+    longer: List[str] = []
     if tif_changed and not raw["parent_order_id"]:
-        # 1.0.7.2 fifth review: a shares order's hedge legs keep its time in force (and expiry): one kept working past the close keeps
-        # its legs with it, never leaving them to expire on their own clock while it still buys
-        follow = _follow_primary(ctx, _order_raw(conn, oid), _chain_legs(conn, oid),
-                                 f"its shares order {oid} was amended ({changes[-1][1]} -> {changes[-1][2]}): this leg keeps its time in force")
+        # 1.0.7.2 fifth review: a shares order's waiting hedge legs keep its time in force (and expiry): one kept working past the close
+        # keeps its waiting legs with it, never leaving them to expire on their own clock while it still buys.  Sixth review: a leg
+        # already released only ever lives longer (``_follow_primary``): never shortened, never queued, never its own mod undone
+        follow, longer = _follow_primary(ctx, _order_raw(conn, oid), _chain_legs(conn, oid), f"its shares order {oid} was amended ({changes[-1][1]} -> {changes[-1][2]})")
     ctx.event("ORDER_AMENDED", account_id=raw["account_id"], instrument_id=raw["instrument_id"], ref_type="order", ref_id=oid, amend_count=count,
               changes=[{"field": w, "from": a, "to": b} for w, a, b in changes], expires_ts=expires)
     fills, sweeps, dec = [], [], None
@@ -1328,6 +1438,8 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
            "decision": dec, "fills": fills, "sweeps": sweeps, "warnings": vo.warnings, "preview": vo.preview}
     if follow:
         out["hedge_legs_follow"] = follow
+    if longer:
+        out["hedge_legs_longer"] = longer
     return out
 
 
@@ -1388,12 +1500,14 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
             _order_event(conn, c, ctx.ts, "WAITING_PARENT", "WAITING_PARENT", f"its primary {oid} was replaced by {new_id}: it now waits for {new_id}")
     if old["package_id"]:
         conn.execute("UPDATE hedge_packages SET primary_order_id=? WHERE package_id=? AND primary_order_id=?", (new_id, old["package_id"], oid))
-    # 1.0.7.2 fifth review: the hedge legs (waiting, and released ones of the orders it replaced) keep the replacement's time in force
+    # 1.0.7.2 fifth review: the hedge legs still waiting (moved to the replacement above) keep the replacement's time in force.  Sixth
+    # review: the legs already released - of this order or of the orders it replaced - keep their own (``_follow_primary``)
     follow: List[str] = []
+    longer: List[str] = []
     if not old["parent_order_id"]:
         nrow = _order_raw(conn, new_id)
         words = tif_label(tif_of_row(nrow), _date_or_none(_row_get(nrow, "gtd_date")), _row_get(nrow, "activate_ts"))
-        follow = _follow_primary(ctx, nrow, _chain_legs(conn, new_id), f"its shares order {oid} was replaced by {new_id} ({words}): this leg keeps its time in force")
+        follow, longer = _follow_primary(ctx, nrow, _chain_legs(conn, new_id), f"its shares order {oid} was replaced by {new_id} ({words})")
     reason = f"replaced by {new_id}"
     conn.execute("UPDATE orders SET status='CANCELLED', reason=?, replaced_by_order_id=?, updated_ts=? WHERE order_id=?", (reason, new_id, ctx.ts, oid))
     _order_event(conn, oid, ctx.ts, old["status"], "CANCELLED", reason + (f"; the borrow {old['borrow_id']} moves to {new_id}" if old["borrow_id"] else ""))
@@ -1407,6 +1521,8 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
            "hedge_legs_moved": moved}
     if follow:
         out["hedge_legs_follow"] = follow
+    if longer:
+        out["hedge_legs_longer"] = longer
     if wait:
         _order_event(conn, new_id, ctx.ts, None, "SUSPENDED", f"{note}; queued, {wait['reason']}: it executes automatically when cash frees up", vo.rec)
         ctx.event("ORDER_SUBMITTED", status="SUSPENDED", reason=wait["reason"], **ev)

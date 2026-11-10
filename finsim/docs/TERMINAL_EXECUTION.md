@@ -149,7 +149,13 @@ NAV falls by exactly the 1.00 commission.
   working as GTC keeps its waiting puts with it to the next session, where they are released as the shares fill). A leg
   still waiting is never expired on its own clock while its primary works (a leg left with an older expiry is kept, and
   takes the primary's lifetime when released); only its own contract's end (or a forced expiry) ends it first, and then one
-  `HEDGE_LEG_ENDED` item names it and the primary that still works.
+  `HEDGE_LEG_ENDED` item names it and the primary that still works. 1.0.7.2 sixth review: that rule is exact for the legs still
+  waiting only. A leg already released for shares bought only ever lives LONGER when its primary is amended or re-priced: it takes
+  the primary's later expiry (the answer names it, `hedge_legs_longer`, and the ticket's status line says so), never an earlier one
+  (GTC -> DAY, an earlier GTD), never a next-session start (a primary queued for the next session makes it good till that session's
+  close, still working now), and a time in force you gave the leg with its own amend is kept. Every later release - a working leg
+  grown, a filled leg re-opened by a later day's fill - gives the leg the primary's lifetime when that is longer, so it can still
+  fill. A released leg that expires with part of it unfilled is said by one `HEDGE_LEG_ENDED` item also when its primary has ended.
 - **All-or-none (option-only, one underlying)**: every leg needs a fresh Cboe quote with displayed size for its whole
   remaining quantity in the **same** chain observation; otherwise nothing fills (`AON_SIZE`, `AON_STALE`) and every leg
   keeps working. The fill is one command for all legs with one option-margin recomputation; cancelling any leg cancels
@@ -176,6 +182,11 @@ NAV falls by exactly the 1.00 commission.
   from that one observation; otherwise it works until one observation can fill every leg. Request ids: the
   combination's own id, `<id>:L1..` for its all-or-none legs, `<id>:H1..` for a sequential package's waiting legs.
   Pending and the order drawer name it 'your own legs (Smart Ticket)'. It is never listed among the 60 templates.
+  1.0.7.2 sixth review: a combination sent with `aon_confirmed {net_cash, previewed_at}` (the Smart Ticket sends the package
+  preview its confirm listed) is placed only when it fills at once, all-or-none, at most 0.5 % worse than that net cash and within
+  2 minutes of that preview; otherwise 409 `AON_NOT_PLACED` (moved, older, not fillable now, not fundable now) and nothing is
+  written. A resend of the same body (after a 503 or a dropped connection) is held to it too, and such a combination never rests.
+  A resend whose body differs only in `aon_confirmed` is the same order (a replay).
 - **Cancel many at once (`POST /api/orders/cancel[?book=]`, 1.0.7.2)**: explicit order ids only (1 to 500, each named
   once) and one reason (at most 120 characters; 'cancelled by the owner' when none is given). The request id is the
   batch id (8 to 60 characters). The whole list is checked before anything is cancelled, and nothing is cancelled if

@@ -21,6 +21,7 @@ import tempfile
 import unittest
 from datetime import date
 from decimal import Decimal
+from typing import Optional
 
 from tests.terminal_helpers import _Log, assert_integrity
 from finsim.terminal import config, server as _server
@@ -720,6 +721,596 @@ class HedgeLegLifetimeTests(SmartSubmitBase):
         self.assertEqual((200, "FILLED"), (st, res["order"]["status"]), res)
         self.assertEqual([(2, "2.75")], [(int(f["qty"]), str(qprice(f["price"]))) for f in res["fills"]])   # at the 2.75 ask, within the 2.80 typed
         assert_integrity(self, self.rt, "full")
+
+
+class ReleasedLegLifetimeTests(SmartSubmitBase):
+    """1.0.7.2 sixth review (the money path; the property seeds W6 117, 544, 629 and W3 10, 14, 49, 75, 91, 92, 113 of the lifetime walk, L2
+    640230, 640287, 640647, 640740, 640777, 640895, 640909, 641165, 641169, 641201, 641239, 641273, 641579, 641652, 641767, 641898, 641990 and
+    L5 640165, 640249, 640264, 640559, 640611, 640909, 641201, 641652, 641823, 641898, 641990 of the money-path walk): a hedge leg already
+    RELEASED for shares bought only ever lives longer when its shares order is amended or re-priced - never shortened (GTC -> DAY, an earlier
+    GTD), never queued for a later session (next session: it keeps working, good till that session's close), never its own mod undone -
+    and the answer names it (``hedge_legs_longer``, the ticket's status line says so).  Every later release (a working leg grown, a filled
+    leg re-opened by the next session's fill) gives it its shares order's longer lifetime, so it can fill; a released leg that expires
+    with part of it unfilled after its shares order ended is said (HEDGE_LEG_ENDED).  The world: BUY 300 ACME limit 99 + BTO 3 Dec 18 2026
+    95 puts (limit 1.00 below the 2.10 bid: they rest; or MARKET: bought on the next chain observation), a 1,000-share bar fills 100."""
+    PUT = acme("P", 95)
+    CALL = acme("C", 105)
+    bar = ReleaseAfterAmendOrReplaceTests.bar
+    row = ReleaseAfterAmendOrReplaceTests.row
+    positions = ReleaseAfterAmendOrReplaceTests.positions
+
+    def package(self, tif: str = "DAY", put_limit: Optional[str] = "1.00", call: bool = False) -> tuple:
+        primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00", "tif": tif}
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
+        self.assertEqual(200, st, pv)
+        opt = leg(self.CALL, "STO", 3) if call else (leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px=put_limit) if put_limit else leg(self.PUT, "BTO", 3))
+        st, out, _h = self.combo(1, [leg("ACME", "BUY", 300, order_type="LIMIT", limit_px="99.00"), opt], clause="buy 300 ACME limit 99 and its options as a package",
+                                 preview_id=pv["preview_id"], tif=tif)
+        self.assertEqual(200, st, out)
+        rid = f"st:{TICKET}:C1:r1"
+        p = self.q("SELECT order_id FROM orders WHERE request_id=?", (rid,))[0]["order_id"]
+        h = self.q("SELECT order_id FROM orders WHERE request_id=?", (rid + ":H1",))[0]["order_id"]
+        return p, h
+
+    def released(self, tif: str = "DAY", put_limit: Optional[str] = "1.00", call: bool = False) -> tuple:
+        p, h = self.package(tif, put_limit, call)
+        self.bar(1000)                                                   # 10 % x 1,000 = 100 shares: floor(100 x 3 / 300) = 1 released
+        self.assertEqual((100, "WORKING", 1), (int(self.row(p)["filled_qty"]), self.row(h)["status"], int(self.row(h)["qty"])))
+        return p, h
+
+    def change(self, p: str, how: str, body: dict, rid: str) -> tuple:
+        if how == "amend":
+            st, out, _h = self.call("PATCH", f"/api/orders/{p}?book=T", body, rid)
+        else:
+            st, out, _h = self.call("POST", f"/api/orders/{p}/replace?book=T", dict({"limit_px": "99.00"}, **body), rid)
+        self.assertEqual(200, st, out)
+        return out["order"]["order_id"], out
+
+    def lifetime(self, oid: str) -> tuple:
+        r = self.row(oid)
+        return r["tif"], int(r["expires_ts"]), r.get("gtd_date"), r.get("activate_ts")
+
+    def close(self, day: str = "2026-10-20") -> None:
+        self.assertTrue(self.rt.lifecycle.tick(at=f"{day}T16:00:01-04:00", only="EXPIRE_ORDERS")["ran"] is not None)
+
+    def items(self) -> list:
+        return [r["message"] for r in self.q("SELECT message FROM attention WHERE code='HEDGE_LEG_ENDED' ORDER BY id")]
+
+    def options(self) -> None:
+        self.rt.clock.advance(30)
+        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
+        self.rt.matcher.on_quotes([self.PUT, self.CALL])
+
+    def test_u_a_shorter_time_in_force_of_the_shares_order_never_shortens_a_released_leg(self):
+        """W6 / L5: GTC package, 1 put released and resting GTC; the shares order amended to DAY, re-priced by replace with DAY, or amended
+        to an earlier GTD: the released put keeps its GTC lifetime, works past the close with 300 ACME held, and nothing is said."""
+        done = False
+        for how, body in (("amend", {"tif": "DAY"}), ("replace", {"tif": "DAY"}), ("amend", {"tif": "GTD", "gtd_date": "2026-10-21"})):
+            with self.subTest(how=how, body=body):
+                if done:
+                    self.tearDown()
+                    self.setUp()
+                done = True
+                p, h = self.released("GTC")
+                before = self.lifetime(h)
+                head, out = self.change(p, how, body, f"ui:rv6-short-{how[:2]}-{body['tif'][:3].lower()}")
+                self.assertEqual(before, self.lifetime(h))                  # never shortened
+                self.assertNotIn("hedge_legs_longer", out)
+                self.bar(50000)                                             # the rest of the shares fill: the put is resized to 3
+                self.assertEqual(("FILLED", "WORKING", 3), (self.row(head)["status"], self.row(h)["status"], int(self.row(h)["qty"])))
+                self.close()
+                self.assertEqual(("WORKING", "GTC"), (self.row(h)["status"], self.row(h)["tif"]))
+                self.assertEqual(({"ACME": 300}, []), (self.positions(), self.items()))
+                assert_integrity(self, self.rt, "full")
+
+    def test_v_a_time_in_force_the_owner_gave_a_released_leg_is_kept(self):
+        """W6: the owner's own mod of the released put (DAY -> GTC) survives a plain re-price of the shares (DAY); and a put the owner made
+        DAY in a GTC package stays DAY when a later fill grows it (a release never undoes the owner's own choice while it can still work)."""
+        p, h = self.released("DAY")
+        st, out, _h = self.call("PATCH", f"/api/orders/{h}?book=T", {"tif": "GTC"}, "ui:rv6-own-gtc-01")
+        self.assertEqual(200, st, out)
+        own = self.lifetime(h)
+        head, out = self.change(p, "replace", {"qty": 200, "order_type": "LIMIT", "tif": "DAY"}, "ui:rv6-own-repl-01")
+        self.assertEqual((own, None), (self.lifetime(h), out.get("hedge_legs_longer")))
+        self.bar(50000)
+        self.close()
+        self.assertEqual(("WORKING", "GTC", 3), (self.row(h)["status"], self.row(h)["tif"], int(self.row(h)["qty"])))
+        assert_integrity(self, self.rt, "full")
+        self.tearDown()
+        self.setUp()
+        p, h = self.released("GTC")
+        st, out, _h = self.call("PATCH", f"/api/orders/{h}?book=T", {"tif": "DAY"}, "ui:rv6-own-day-01")
+        self.assertEqual(200, st, out)
+        self.bar(2000)                                                   # 200 more shares: the put grows to floor(300 x 3 / 300) = 3, still DAY
+        self.assertEqual((3, "DAY"), (int(self.row(h)["qty"]), self.row(h)["tif"]))
+        self.close()
+        self.assertEqual(("EXPIRED", "FILLED"), (self.row(h)["status"], self.row(p)["status"]))
+        assert_integrity(self, self.rt, "full")
+
+    def test_w_a_shares_order_for_the_next_session_never_queues_a_released_leg(self):
+        """L2: DAY package, a MARKET put released for the 100 shares bought (not bought yet); the shares order re-priced (replace) or amended
+        for the next session: the put keeps working now - good till that session's close (GTD), never queued - and the next chain
+        observation buys it; the answer names it."""
+        done = False
+        for how in ("replace", "amend"):
+            with self.subTest(how=how):
+                if done:
+                    self.tearDown()
+                    self.setUp()
+                done = True
+                p, h = self.released("DAY", put_limit=None)
+                head, out = self.change(p, how, {"tif": "NEXT_SESSION"}, f"ui:rv6-next-{how[:2]}-01")
+                self.assertIsNotNone(self.row(head).get("activate_ts"))     # the shares order is queued for the next session
+                self.assertEqual([h], out.get("hedge_legs_longer"))
+                r = self.row(h)
+                self.assertEqual(("WORKING", None, "GTC", "2026-10-21"), (r["status"], r.get("activate_ts"), r["tif"], r.get("gtd_date")))
+                self.assertEqual(int(self.row(head)["expires_ts"]), int(r["expires_ts"]))
+                self.assertTrue(any("now works as long as it (GTD 2026-10-21)" in e["note"] for e in self.q("SELECT note FROM order_events WHERE order_id=?", (h,))))
+                self.options()
+                self.assertEqual(("FILLED", 1), (self.row(h)["status"], int(self.row(h)["filled_qty"])))
+                self.assertEqual({"ACME": 100, self.PUT: 1}, self.positions())
+                assert_integrity(self, self.rt, "full")
+
+    def test_x_a_released_leg_lives_as_long_as_a_shares_order_kept_working_longer(self):
+        """The fifth review's trigger, for a leg already released: DAY package, 1 put released and resting; the shares order amended to GTC:
+        the put takes GTC (only ever longer; the answer and the ticket's status line name it), works past the close, and the next session's
+        fill grows it to 3."""
+        p, h = self.released("DAY")
+        _head, out = self.change(p, "amend", {"tif": "GTC"}, "ui:rv6-longer-01")
+        self.assertEqual([h], out.get("hedge_legs_longer"))
+        self.assertEqual(self.lifetime(p)[:2], self.lifetime(h)[:2])
+        self.close()
+        self.assertEqual(("PARTIAL", "WORKING"), (self.row(p)["status"], self.row(h)["status"]))
+        self.assertEqual([], self.items())
+        self.rt.clock.set("2026-10-21T10:00:00-04:00")
+        print_acme(self.rt, "98.90", 10, self.rt.clock.epoch() - 60, 50000)
+        self.rt.matcher.on_quotes(["ACME"])
+        self.assertEqual(("FILLED", "WORKING", 3), (self.row(p)["status"], self.row(h)["status"], int(self.row(h)["qty"])))
+        assert_integrity(self, self.rt, "full")
+
+    def test_y_a_leg_reopened_by_a_later_days_fill_takes_its_shares_orders_lifetime(self):
+        """W3 (a put; seed 14: a sold call): DAY package of MARKET options, 100 shares and 1 option filled on Tuesday (the leg FILLED 1/1); the
+        shares order kept working as GTC (amend, or a re-price by replace); Wednesday's fill of the other 200 re-opens the leg with its shares
+        order's GTC lifetime - never Tuesday's passed expiry - and the 2 more are bought / sold on a fresh chain."""
+        done = False
+        for how, call in (("amend", False), ("replace", False), ("amend", True)):
+            with self.subTest(how=how, call=call):
+                if done:
+                    self.tearDown()
+                    self.setUp()
+                done = True
+                opt = self.CALL if call else self.PUT
+                p, h = self.released("DAY", put_limit=None, call=call)
+                self.options()
+                self.assertEqual(("FILLED", 1), (self.row(h)["status"], int(self.row(h)["filled_qty"])))
+                head, _out = self.change(p, how, {"tif": "GTC"}, f"ui:rv6-reopen-{how[:2]}-{int(call)}")
+                self.close()
+                self.rt.clock.set("2026-10-21T10:00:00-04:00")
+                print_acme(self.rt, "98.90", 10, self.rt.clock.epoch() - 60, 50000)
+                self.rt.matcher.on_quotes(["ACME"])
+                r = self.row(h)
+                self.assertEqual(("PARTIAL", 3, 1, "GTC"), (r["status"], int(r["qty"]), int(r["filled_qty"]), r["tif"]))
+                self.assertGreater(int(r["expires_ts"]), self.rt.clock.epoch())
+                self.assertTrue(any("it now lives as long as its shares order (GTC)" in e["note"] for e in self.q("SELECT note FROM order_events WHERE order_id=?", (h,))))
+                self.options()
+                self.assertEqual(("FILLED", 3), (self.row(h)["status"], int(self.row(h)["filled_qty"])))
+                self.assertEqual({"ACME": 300, opt: -3 if call else 3}, self.positions())
+                assert_integrity(self, self.rt, "full")
+
+    def test_z_a_released_leg_that_expires_unfilled_after_its_shares_order_ended_is_said(self):
+        """DAY package; the shares fill in full and release 3 puts resting at 1.00; at the close the puts expire unfilled: one INFO item
+        names them and says the shares bought are not hedged by them (the shares order has ended: filled)."""
+        p, h = self.package("DAY")
+        self.bar(50000)
+        self.assertEqual(("FILLED", "WORKING", 3), (self.row(p)["status"], self.row(h)["status"], int(self.row(h)["qty"])))
+        self.close()
+        self.assertEqual("EXPIRED", self.row(h)["status"])
+        (msg,) = self.items()
+        for s in (h, "expired", "3 of 3 not filled", p, "has ended (filled)"):
+            self.assertIn(s, msg)
+        assert_integrity(self, self.rt, "full")
+
+
+class AonConfirmedTests(SmartSubmitBase):
+    """1.0.7.2 sixth review (the send loop): an all-or-none combination sent with the figures its confirm listed (``aon_confirmed``: the
+    package preview's net cash and server time, as the Smart Ticket sends it) is placed only when it FILLS NOW, all-or-none, at most 0.5 %
+    worse than that net cash and within 2 minutes of that preview - checked by the server at the placement, so a resend after a busy
+    writer's 503 or a dropped connection is held to the confirm too; otherwise 409 AON_NOT_PLACED and nothing is written (the page keeps
+    it staged).  Without it (any other client) the package keeps its rule.  BUY 10 ACME Dec 18 2026 100/105 call spread: BTO 10 at the
+    5.00 ask, STO 10 at the 2.60 bid: net cash 10 x (2.60 - 5.00) x 100 = -2,400.00; 20 contracts displayed."""
+    C100, C105 = acme("C", 100), acme("C", 105)
+
+    def spread(self, n: int, qty: int = 10, **extra):
+        return self.combo(n, [leg(self.C100, "BTO", qty), leg(self.C105, "STO", qty)], clause=f"buy {qty} ACME Dec 18 2026 100/105 call spread", **extra)
+
+    def rows(self, n: int) -> list:
+        return self.q("SELECT order_id, status FROM orders WHERE request_id LIKE ?", (f"st:{TICKET}:C{n}:%",))
+
+    def moved_chain(self) -> None:
+        now = self.rt.clock.epoch()
+        rows = [ChainRow(acme(r, k, e), e, r, qprice(k), qprice("5.90" if (r, k) == ("C", 100) else b), qprice("6.00" if (r, k) == ("C", 100) else a), 20, 20,
+                         None, None, 0.30, None, None, None, None, 100, 10) for e, r, k, b, a in ROWS]
+        load_chain(self.rt, ChainSnapshot("ACME", "ACME", ChainUnderlying("ACME", qprice("100.00"), None, None, None, None, now - 60, None, 0.30), rows, now, now - 60,
+                                          len(rows)))
+
+    def test_aa_held_to_its_confirm_it_fills_now_within_it_or_nothing_is_placed(self):
+        now = self.rt.clock.epoch()
+        conf = {"net_cash": "-2400.00", "previewed_at": now - 30}
+        # within: placed and filled at once, at -2,400.00
+        st, out, _h = self.spread(1, aon_confirmed=conf)
+        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]), out)
+        self.assertEqual({self.C100: 10, self.C105: -10}, {k: v for k, v in ReleaseAfterAmendOrReplaceTests.positions(self).items()})
+        # 0.48 % worse is within the 0.5 % rule (confirmed -2,388.50: -2,400.00 is 11.50 worse)
+        st, out, _h = self.spread(2, aon_confirmed={"net_cash": "-2388.50", "previewed_at": now - 30})
+        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]), out)
+        # moved: the 100 call's ask is 6.00 now: net cash -3,400.00, 41.67 % against the confirmed -2,400.00
+        self.moved_chain()
+        st, out, _h = self.spread(3, aon_confirmed=conf)
+        self.assertEqual((409, "AON_NOT_PLACED", "MOVED"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
+        self.assertIn("-3,400.00 instead of the -2,400.00", out["error"]["message"])
+        self.assertEqual([], self.rows(3))                               # nothing was placed
+        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
+        # the same request id sent again once the price is back: the refusal stored nothing, so it is placed now (a 503's resend)
+        st, out, _h = self.spread(3, aon_confirmed=conf)
+        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]), out)
+        # old: the preview its confirm listed is 121 s old
+        st, out, _h = self.spread(4, aon_confirmed={"net_cash": "-2400.00", "previewed_at": now - 121})
+        self.assertEqual((409, "AON_NOT_PLACED", "OLD"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
+        # it cannot fill at once: 25 contracts, 20 displayed - never left working to fill later at other prices
+        st, out, _h = self.spread(5, qty=25, aon_confirmed={"net_cash": "-6000.00", "previewed_at": now - 30})
+        self.assertEqual((409, "AON_NOT_PLACED", "NOT_NOW"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
+        self.assertEqual([], self.rows(5))
+        # malformed
+        st, out, _h = self.spread(6, aon_confirmed={"net_cash": "lots", "previewed_at": now})
+        self.assertEqual((400, "AON_CONFIRMED"), (st, out["error"]["code"]), out)
+        assert_integrity(self, self.rt, "full")
+
+    def test_ab_without_its_confirmed_figures_a_package_keeps_its_rule_and_a_resend_is_the_same_order(self):
+        st, out, _h = self.spread(1, qty=25)                             # any other client: it rests until one observation covers it
+        self.assertEqual((200, "WORKING"), (st, out["package"]["status"]), out)
+        now = self.rt.clock.epoch()
+        st, out, _h = self.spread(2, aon_confirmed={"net_cash": "-2400.00", "previewed_at": now - 30})
+        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]))
+        st, again, h = self.spread(2, aon_confirmed={"net_cash": "-2400.00", "previewed_at": now - 10})     # only the check differs: the same order
+        self.assertEqual((200, "1", out["package"]["package_id"]), (st, h.get("X-Replayed"), again["package"]["package_id"]))
+        assert_integrity(self, self.rt, "full")
+
+
+class CoveredSharesPledgedTests(SmartSubmitBase):
+    """1.0.7.2 sixth review (the money path: nothing may leave an uncovered short): the shares free to cover NEW calls (a covered call, a
+    collar) are the shares held free less those the account's working sell-to-open calls will take once they fill (an earlier ticket's
+    covered call resting at its limit, a buy write's released calls) and less those a covered call or collar earlier in the same
+    instruction took - so the same shares are never offered as cover twice; a covered call or collar beyond what is left is SIDE_SPLIT,
+    naming the calls that hold them, never "the calls only" / "the put and the call only".  The book holds 300 ACME (bought first)."""
+    C105, C110, P95 = acme("C", 105), acme("C", 110), acme("P", 95)
+    row = ReleaseAfterAmendOrReplaceTests.row
+    positions = ReleaseAfterAmendOrReplaceTests.positions
+
+    def setUp(self):
+        super().setUp()
+        st, out, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "MARKET", "tif": "DAY"}, "ui:cover-hold-300-01")
+        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
+
+    def parse(self, text: str) -> dict:
+        st, out, _h = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": text, "book": "T"})
+        self.assertEqual(200, st, out)
+        return out
+
+    def send_leg(self, req: dict, rid: str) -> str:
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(req))
+        self.assertEqual(200, st, pv)
+        st, out, _h = self.send(dict(req, preview_id=pv["preview_id"]), rid)
+        self.assertEqual(200, st, out)
+        return out["order"]["order_id"]
+
+    @staticmethod
+    def flag_text(l: dict, code: str) -> str:
+        return next((f["text"] for f in l["flags"] if f["code"] == code), "")
+
+    @staticmethod
+    def call_leg(out: dict, occ: str) -> dict:
+        return next(l for l in out["legs"] if (l.get("instrument") or {}).get("id") == occ)
+
+    def resting_call(self, n: int = 3) -> str:
+        first = self.parse(f"covered call {n * 100} ACME Dec 18 2026 105 limit 2.70")          # above the 2.60 bid: it rests
+        req = [l["request"] for l in first["legs"] if l.get("request")][0]
+        oid = self.send_leg(req, f"st:{TICKET}:L1:r1")
+        self.assertEqual(("WORKING", "STO", n), (self.row(oid)["status"], self.row(oid)["side"], int(self.row(oid)["qty"])))
+        return oid
+
+    def test_ad_two_covered_calls_in_one_instruction_never_share_their_cover(self):
+        out = self.parse("covered call 300 ACME Dec 18 2026 105, covered call 300 ACME Dec 18 2026 110")
+        a, b = out["legs"][0], self.call_leg(out, self.C110)
+        self.assertEqual(("STO", 3, self.C105), (a["request"]["side"], a["request"]["qty"], a["request"]["instrument_id"]))
+        self.assertIn("the calls only, no shares bought", self.flag_text(a, "SIDE_INFERRED"))
+        self.assertEqual([None, None], [l["request"] for l in out["legs"][1:]])              # the second: its shares leg and its call, blocked
+        self.assertIn("0 of the 300 ACME held", self.flag_text(b, "SIDE_SPLIT"))
+        self.assertIn("300 covering the calls of an earlier order in this instruction", self.flag_text(b, "SIDE_SPLIT"))
+        oid = self.send_leg(a["request"], f"st:{TICKET}:L1:r1")
+        self.rt.clock.advance(30)
+        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
+        self.rt.matcher.on_quotes([self.C105])
+        self.assertEqual(("FILLED", {"ACME": 300, self.C105: -3}), (self.row(oid)["status"], self.positions()))
+        assert_integrity(self, self.rt, "full")
+
+    def test_ae_a_working_covered_call_holds_its_cover_for_the_next_ticket(self):
+        self.resting_call(3)
+        out = self.parse("covered call 300 ACME Dec 18 2026 110")
+        l = self.call_leg(out, self.C110)
+        self.assertTrue(all(x["request"] is None for x in out["legs"]), out["legs"])
+        self.assertIn("300 covering calls being sold (working orders)", self.flag_text(l, "SIDE_SPLIT"))
+        out = self.parse("collar 300 ACME Dec 18 2026 95/110")                                  # the collar's sold call too
+        self.assertTrue(all(l["request"] is None for l in out["legs"]), out["legs"])
+        self.assertTrue(all("SIDE_SPLIT" in [f["code"] for f in l["flags"]] for l in out["legs"]))
+        self.assertFalse(any("the put and the call only" in f["text"] for l in out["legs"] for f in l["flags"]))
+        assert_integrity(self, self.rt, "full")
+
+    def test_af_what_a_working_call_leaves_free_is_offered_and_a_filled_one_is_reserved(self):
+        self.resting_call(1)                                                                     # 100 of the 300 shares pledged
+        out = self.parse("covered call 300 ACME Dec 18 2026 110")
+        f = next(f for f in self.call_leg(out, self.C110)["flags"] if f["code"] == "SIDE_SPLIT")
+        self.assertIn("200 of the 300 ACME held", f["text"])
+        self.assertIn("covered call on the 200 held free", [c["label"] for c in f.get("choices") or []])
+        out = self.parse("covered call 200 ACME Dec 18 2026 110")
+        (l,) = out["legs"]
+        self.assertEqual(("STO", 2), (l["request"]["side"], l["request"]["qty"]))
+        # control: once the resting call has filled, the calls already sold reserve their shares (1.0.7.2's rule)
+        self.rt.clock.advance(30)
+        snap = acme_chain(self.rt.clock.epoch())
+        for r in snap.contracts:
+            if r.occ == self.C105:
+                r.bid, r.ask = qprice("2.70"), qprice("2.80")
+        load_chain(self.rt, snap)
+        self.rt.matcher.on_quotes([self.C105])
+        self.assertEqual({"ACME": 300, self.C105: -1}, self.positions())
+        out = self.parse("covered call 300 ACME Dec 18 2026 110")
+        self.assertTrue(all(x["request"] is None for x in out["legs"]), out["legs"])
+        self.assertIn("200 of the 300 ACME held", self.flag_text(self.call_leg(out, self.C110), "SIDE_SPLIT"))
+        assert_integrity(self, self.rt, "full")
+
+
+# ===== the sixth review's lifetime walk, replayed for the seeds it reported =================================================================
+#: the walks of the sixth review's property test (sequential packages over several sessions: share fills, option fills, amends of the
+#: quantity or the time in force, re-prices by replace, the owner's own mod of a released leg, the x on a shares order or on a leg, session
+#: closes), seed for seed: W6 at 117, 544, 629 (a released leg shortened by its shares order's DAY, then expired at the close) and W3 at 10,
+#: 14, 49, 75, 91, 92, 113 of the walk that keeps the shares working past the close (a leg re-opened with a passed expiry, never able to fill)
+LIFE_SEEDS = ((False, (117, 544, 629)), (True, (10, 14, 49, 75, 91, 92, 113)))
+_LIFE_LIVE = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
+_LIFE_DAYS = ["2026-10-20", "2026-10-21", "2026-10-22"]           # Tue, Wed, Thu (NYSE sessions)
+
+
+class _LifeWorld:
+    CALL, PUT = acme("C", 105), acme("P", 95)
+
+    def __init__(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-smartsub-life-")
+        self.rt = build(self.tmp)
+        add_name(self.rt, "ACME")
+        now = self.rt.clock.epoch()
+        print_acme(self.rt, "100.00", 120, now - 180, 50000)
+        load_chain(self.rt, acme_chain(now))
+        self.day = 0
+        self.n = self.k = 0
+        self.legs = {}               # leg id -> (L0, P0, side, instrument)
+        self.life = {}               # leg id -> the expires_ts it had when released (or the owner's own mod gave it)
+        self.own_cancel = set()      # legs the owner cancelled with their own x
+
+    def close(self):
+        try:
+            self.rt.close()
+        finally:
+            shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def call(self, method, path, body=None, rid=None):
+        b = dict(body or {})
+        if rid is not None:
+            b["request_id"] = rid
+        return self.rt.router.handle(method, path, None, b, "127.0.0.1", None)
+
+    def q(self, sql, params=()):
+        with self.rt.db.reader() as conn:
+            return [dict(r) for r in conn.execute(sql, params).fetchall()]
+
+    def row(self, oid):
+        r = self.q("SELECT * FROM orders WHERE order_id=?", (oid,))
+        return r[0] if r else None
+
+    def rid(self, what):
+        self.k += 1
+        return f"ui:prop6-{what}-{self.k:06d}"
+
+    def bar(self, vol):
+        self.rt.clock.advance(60)
+        print_acme(self.rt, "98.90", 10, self.rt.clock.epoch() - 60, vol)
+        self.rt.matcher.on_quotes(["ACME"])
+
+    def options(self):
+        self.rt.clock.advance(30)
+        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
+        self.rt.matcher.on_quotes([self.CALL, self.PUT])
+
+    def close_day(self):
+        if self.day + 1 >= len(_LIFE_DAYS):
+            return False
+        self.rt.lifecycle.tick(at=f"{_LIFE_DAYS[self.day]}T16:00:01-04:00", only="EXPIRE_ORDERS")
+        self.day += 1
+        self.rt.clock.set(f"{_LIFE_DAYS[self.day]}T10:00:00-04:00")
+        now = self.rt.clock.epoch()
+        print_acme(self.rt, "100.00", 30, now - 90, 50000)     # the open: above the 99.00 limits, nothing fills on it
+        load_chain(self.rt, acme_chain(now))
+        return True
+
+    def package(self, p0, legs, tif):
+        self.n += 1
+        rid = f"st:{TICKET}:C{self.n}:r1"
+        body = {"account_id": ACCT, "tif": tif, "package": {"strategy_key": "CUSTOM", "legs": [
+            {"instrument_id": "ACME", "side": "BUY", "qty": p0, "order_type": "LIMIT", "limit_px": "99.00"}] + legs},
+                "smart": {"ticket": TICKET, "item": f"C{self.n}", "clause": f"package {self.n}"}}
+        st, out, _h = self.call("POST", "/api/orders?book=T", body, rid)
+        assert st == 200, (st, out)
+        for i, lg in enumerate(legs, 1):
+            oid = self.q("SELECT order_id FROM orders WHERE request_id=?", (f"{rid}:H{i}",))[0]["order_id"]
+            self.legs[oid] = (int(lg["qty"]), p0, lg["side"], lg["instrument_id"])
+
+    def primaries(self):
+        return [r["order_id"] for r in self.q("SELECT order_id FROM orders WHERE parent_order_id IS NULL AND package_id IS NOT NULL AND instrument_id='ACME'"
+                                                " AND status IN ('WORKING','PARTIAL','SUSPENDED') ORDER BY order_id")]
+
+    def released(self):
+        return [oid for oid in self.legs if (self.row(oid) or {}).get("status") in ("WORKING", "PARTIAL")]
+
+    def head_of(self, leg_id):
+        from finsim.terminal.api_products import replace_chain
+        r = self.row(leg_id)
+        with self.rt.db.reader() as conn:
+            chain = replace_chain(conn, r["parent_order_id"], forward=True)
+        rows = [self.row(x) for x in chain]
+        return rows[0], sum(int(x["filled_qty"] or 0) for x in rows)
+
+    def positions(self):
+        return {r["instrument_id"]: int(r["qty"]) for r in self.q("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty != 0", (ACCT,))}
+
+
+def _life_check(w, where, before):
+    """W1 no orphan; W2 sizing floor(S x L0 / P0); W3 a released leg with quantity left is never past its own expiry while the session is
+    open; W4 no short call beyond the shares / 100; W5 a waiting leg never expires while its shares order works; W6 a released leg never
+    ends before the lifetime it had when released (or the owner's own mod gave it) unless the owner cancelled it."""
+    bad = []
+    now = w.rt.clock.epoch()
+    for oid, (l0, p0, side, _inst) in w.legs.items():
+        r = w.row(oid)
+        st = r["status"]
+        was = before.get(oid)
+        head, s = w.head_of(oid)
+        target = s * l0 // p0
+        if st == "WAITING_PARENT":
+            if head["status"] not in _LIFE_LIVE:
+                bad.append(f"{where}: W1 {oid} waits for {head['order_id']} which is {head['status']}")
+            if target > 0:
+                bad.append(f"{where}: W2 {oid} still waits although floor({s} x {l0} / {p0}) = {target}")
+        elif st in ("WORKING", "PARTIAL", "FILLED") and target > 0 and int(r["qty"]) != target:
+            bad.append(f"{where}: W2 {oid} ({side}) sized {r['qty']} but floor({s} x {l0} / {p0}) = {target}")
+        if st in ("WORKING", "PARTIAL") and int(r["qty"]) > int(r["filled_qty"]) and int(r["expires_ts"]) < now:
+            bad.append(f"{where}: W3 {oid} ({side}) has {int(r['qty']) - int(r['filled_qty'])} left to fill but its expiry passed ({r['tif']})")
+        if st in ("WORKING", "PARTIAL", "FILLED") and oid not in w.life:
+            w.life[oid] = int(r["expires_ts"])
+        if was in _LIFE_LIVE and st == "EXPIRED":
+            if was == "WAITING_PARENT" and head["status"] in _LIFE_LIVE:
+                bad.append(f"{where}: W5 the waiting leg {oid} expired while its shares order {head['order_id']} works ({head['status']})")
+            if was in ("WORKING", "PARTIAL") and oid in w.life and now <= w.life[oid] and oid not in w.own_cancel:
+                bad.append(f"{where}: W6 the released leg {oid} ({side}) expired before the lifetime it was released with; its tif now {r['tif']}")
+        if was in ("WORKING", "PARTIAL") and st == "CANCELLED" and oid not in w.own_cancel:
+            bad.append(f"{where}: W6 the released leg {oid} ({side}) was cancelled without the owner's own cancel: {r['reason']}")
+    pos = w.positions()
+    if -pos.get(w.CALL, 0) * 100 > pos.get("ACME", 0):
+        bad.append(f"{where}: W4 {-pos.get(w.CALL, 0)} short calls on {pos.get('ACME', 0)} shares")
+    return bad
+
+
+def _life_scenario(seed: int, biased: bool = False):
+    """One walk of the sixth review's lifetime property test, step for step as it drew them from ``random.Random(seed)``."""
+    import random
+    rng = random.Random(seed)
+    w = _LifeWorld()
+    bad, steps = [], []
+    try:
+        for _ in range(rng.choice([1, 1, 2])):
+            p0 = rng.choice([100, 200, 300, 400])
+            legs = []
+            if rng.random() < 0.6:
+                kind = "MARKET" if biased else rng.choice(["LIMIT", "MARKET"])
+                legs.append(dict({"instrument_id": w.CALL, "side": "STO", "qty": rng.randint(1, p0 // 100), "order_type": kind},
+                                 **({"limit_px": "9.00"} if kind == "LIMIT" else {})))
+            if rng.random() < 0.7 or not legs:
+                kind = "MARKET" if biased else rng.choice(["LIMIT", "MARKET"])
+                legs.append(dict({"instrument_id": w.PUT, "side": "BTO", "qty": rng.randint(1, p0 // 100), "order_type": kind},
+                                 **({"limit_px": "1.00"} if kind == "LIMIT" else {})))
+            tif = "DAY" if biased else rng.choice(["DAY", "GTC"])
+            w.package(p0, legs, tif)
+            steps.append(f"package {p0} {tif} {[(l['side'], l['qty'], l['order_type']) for l in legs]}")
+        if biased:
+            plan = ["bar_part", "options", rng.choice(["amend_tif", "replace"]), "close", "bar", "options"]
+            for _ in range(rng.randint(0, 3)):
+                plan.insert(rng.randint(0, len(plan)), rng.choice(["bar_part", "options", "close", "amend_tif", "replace"]))
+        else:
+            plan = [None] * rng.randint(3, 12)
+        for step, op in enumerate(plan):
+            before = {oid: (w.row(oid) or {}).get("status") for oid in w.legs}
+            live = w.primaries()
+            if op is None:
+                op = rng.choice(["bar", "bar", "bar", "options", "options", "amend_qty", "amend_tif", "replace", "leg_tif", "x_primary", "x_leg", "close", "close"])
+            if op in ("bar", "bar_part"):
+                vol = rng.choice([300, 600, 1000, 2000] if op == "bar_part" else [300, 600, 1000, 2000, 50000])
+                op = "bar"
+                w.bar(vol)
+                op += f" {vol}"
+            elif op == "options":
+                w.options()
+            elif op == "amend_qty" and live:
+                oid = rng.choice(live)
+                r = w.row(oid)
+                qty = int(r["filled_qty"]) + rng.choice([1, 50, 100, 200])
+                st, _out, _h = w.call("PATCH", f"/api/orders/{oid}?book=T", {"qty": qty}, w.rid("aq"))
+                op += f" {oid} {qty} -> {st}"
+            elif op == "amend_tif" and live:
+                oid = rng.choice(live)
+                tif = "GTC" if biased else rng.choice(["DAY", "GTC"])
+                st, _out, _h = w.call("PATCH", f"/api/orders/{oid}?book=T", {"tif": tif}, w.rid("at"))
+                op += f" {oid} {tif} -> {st}"
+            elif op == "replace" and live:
+                oid = rng.choice(live)
+                r = w.row(oid)
+                rem = int(r["qty"]) - int(r["filled_qty"])
+                body = {"limit_px": rng.choice(["99.00", "99.05"]), "tif": "GTC" if biased else rng.choice([r["tif"], r["tif"], "DAY", "GTC"]),
+                        "qty": rng.choice([rem, rem, max(1, rem - 50)])}
+                st, _out, _h = w.call("POST", f"/api/orders/{oid}/replace?book=T", body, w.rid("rp"))
+                op += f" {oid} {body} -> {st}"
+            elif op == "leg_tif":
+                rel = w.released()
+                if rel:
+                    oid = rng.choice(rel)
+                    tif = rng.choice(["DAY", "GTC"])
+                    st, _out, _h = w.call("PATCH", f"/api/orders/{oid}?book=T", {"tif": tif}, w.rid("lt"))
+                    if st == 200:
+                        w.life[oid] = int(w.row(oid)["expires_ts"])
+                    op += f" {oid} {tif} -> {st}"
+            elif op == "x_primary" and live:
+                oid = rng.choice(live)
+                st, _out, _h = w.call("DELETE", f"/api/orders/{oid}?book=T", {}, w.rid("xp"))
+                op += f" {oid} -> {st}"
+            elif op == "x_leg":
+                opn = [oid for oid in w.legs if (w.row(oid) or {}).get("status") in _LIFE_LIVE]
+                if opn:
+                    oid = rng.choice(opn)
+                    st, _out, _h = w.call("DELETE", f"/api/orders/{oid}?book=T", {}, w.rid("xl"))
+                    if st == 200:
+                        w.own_cancel.add(oid)
+                    op += f" {oid} -> {st}"
+            elif op == "close":
+                if not w.close_day():
+                    op += " (last day)"
+            steps.append(op)
+            got = _life_check(w, f"seed {seed} step {step} [{op}]", before)
+            if got:
+                bad += got
+                break
+        rep = w.rt.accounting.integrity("full")
+        if not rep.ok:
+            bad.append(f"seed {seed}: integrity {[p.to_dict() for p in rep.problems][:3]}")
+    finally:
+        w.close()
+    return bad, steps
+
+
+class LifetimeSeedTests(unittest.TestCase):
+    def test_ac_the_lifetime_walks_the_sixth_review_reported_keep_every_leg_able_to_work(self):
+        failures = {}
+        for biased, seeds in LIFE_SEEDS:
+            for seed in seeds:
+                got, steps = _life_scenario(seed, biased)
+                if got:
+                    failures[(seed, biased)] = (got[:2], steps)
+        self.assertEqual({}, failures)
 
 
 class ReadAgainTests(SmartSubmitBase):
