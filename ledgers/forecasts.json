@@ -6951,6 +6951,46 @@
       "probability": "65-80%",
       "basis": "Thursday settle ~$90.52 (Rigzone) after renewed Hormuz tanker incidents; deal headlines are the downside risk.",
       "status": "open"
+    },
+    {
+      "id": "2026-11-10-pm-1",
+      "date": "2026-11-10",
+      "slot": "pm",
+      "forecast": "The $25B 30-year Treasury auction on Thu Nov 12, 2026 clears at a high yield at or above 5.30%.",
+      "horizon": "2026-11-12",
+      "probability": "70-85%",
+      "basis": "Par 30Y closed 5.35% on Nov 10; bond market closed Nov 11 leaves no session to rally; hot CPI and Fed hike pricing.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-10-pm-2",
+      "date": "2026-11-10",
+      "slot": "pm",
+      "forecast": "VIX closes below 22.00 on Wed Nov 11, 2026.",
+      "horizon": "2026-11-11",
+      "probability": "70-85%",
+      "basis": "VIX closed 19.46 on Nov 10 with term structure back in contango (9D 18.54 < VIX < 3M 20.64).",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-10-pm-3",
+      "date": "2026-11-10",
+      "slot": "pm",
+      "forecast": "Front-month Brent crude settles below $95.00 on Wed Nov 11, 2026.",
+      "horizon": "2026-11-11",
+      "probability": "75-88%",
+      "basis": "Brent settled $91.49 Nov 10 (CNBC) with the US strike pause on Iran in place; Brent moved >$3 in a day only on major escalation in recent weeks.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-10-pm-4",
+      "date": "2026-11-10",
+      "slot": "pm",
+      "forecast": "The FOMC raises the federal funds target range by at least 25 bp at its Dec 8-9, 2026 meeting.",
+      "horizon": "2026-12-09",
+      "probability": "85-95%",
+      "basis": "CME FedWatch ~99% after hot Oct CPI (Reuters); Waller leaning to a hike; discounted for six weeks of data still to come.",
+      "status": "open"
     }
   ]
 }
