@@ -41,32 +41,12 @@
     try { return JSON.parse(lsGet(COURSE + ":day:" + day) || "{}") || {}; } catch (e) { return {}; }
   }
 
-  /* ---------- calculator switch ---------- */
-  var CALCS = [["both", "Both"], ["ba", "BA II Plus"], ["ti", "TI-84 Plus"]];
-  function applyCalc(p) {
-    doc.documentElement.setAttribute("data-calc", p);
-    each(doc.querySelectorAll(".calc-toggle button"), function (b) {
-      b.setAttribute("aria-pressed", String(b.getAttribute("data-calc") === p));
-    });
-  }
-  var calcs = doc.querySelectorAll(".calc");
-  if (calcs.length) {
-    each(calcs, function (c) {
-      var bar = el("div", "calc-toggle");
-      bar.setAttribute("role", "group");
-      bar.setAttribute("aria-label", "Show keystrokes for");
-      CALCS.forEach(function (o) {
-        var b = el("button", null, o[1]);
-        b.type = "button";
-        b.setAttribute("data-calc", o[0]);
-        b.addEventListener("click", function () { lsSet("cfa-calc", o[0]); applyCalc(o[0]); });
-        bar.appendChild(b);
-      });
-      c.insertBefore(bar, c.firstChild);
-    });
-    var pref = lsGet("cfa-calc");
-    applyCalc(pref === "ba" || pref === "ti" ? pref : "both");
-  }
+  /* ---------- calculator: BA II Plus only ----------
+     Logan uses the BA II Plus, the exam calculator (2026-11-11: "i have the
+     Ba II plus BTW, no need for TI84"). The first 30 lessons were written
+     with TI-84 lines beside it; this hides them, so every page shows one
+     calculator. */
+  doc.documentElement.setAttribute("data-calc", "ba");
 
   /* ---------- graded questions ---------- */
   var lesson = doc.querySelector("[data-cfa-day]");
