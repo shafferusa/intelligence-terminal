@@ -7031,6 +7031,36 @@
       "probability": "55-70%",
       "basis": "Reported consensus +0.4% (ZeroHedge, Kiplinger); range of estimates 0.2-0.4% (Goldman 0.3, Deutsche 0.2).",
       "status": "open"
+    },
+    {
+      "id": "2026-11-11-pm-1",
+      "date": "2026-11-11",
+      "slot": "pm",
+      "forecast": "The S&P 500 closes above 7,500 on Thu Nov 12, 2026 (Nov 11 close 7,619.38).",
+      "horizon": "2026-11-12",
+      "probability": "75-88%",
+      "basis": "Today's +1.31% broad chip-led rally; a >1.6% drop needs a poor 30-year auction or claims shock.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-11-pm-2",
+      "date": "2026-11-11",
+      "slot": "pm",
+      "forecast": "Initial jobless claims for the week ending Nov 7, 2026 (released Nov 12) print below 205,000.",
+      "horizon": "2026-11-12",
+      "probability": "65-80%",
+      "basis": "Prior 189K near cycle low; three-month trend stable; Oct payrolls +165K.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-11-pm-3",
+      "date": "2026-11-11",
+      "slot": "pm",
+      "forecast": "Cisco fiscal Q1 2027 revenue (reported Nov 12 after the close) is at or above $18.1 billion.",
+      "horizon": "2026-11-12",
+      "probability": "60-75%",
+      "basis": "Press consensus ~$18.1B; AI networking demand; Cisco's record of meeting guidance.",
+      "status": "open"
     }
   ]
 }
