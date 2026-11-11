@@ -397,8 +397,9 @@ def _materialise_option(rt, iid) -> None:
 #: keys of an order body that never change the order itself: the preview it was checked against, the large-order confirmation and the
 #: Smart Ticket's note of the words typed
 #: sixth review: ``aon_confirmed`` (the confirmed figures an all-or-none combination is held to at its placement) is a check, as the
-#: preview id is, never a term of the order: a resend that differs only in it is the same order
-RESEND_KEYS = ("preview_id", "confirm_large", "smart", "aon_confirmed")
+#: preview id is, never a term of the order: a resend that differs only in it is the same order; seventh review: so is ``seq_confirmed``
+#: (a sequential combination's confirmed option cash)
+RESEND_KEYS = ("preview_id", "confirm_large", "smart", "aon_confirmed", "seq_confirmed")
 
 
 def _resend_payload(rt, request_id: Optional[str], payload: dict) -> dict:
@@ -1109,7 +1110,12 @@ def register_routes(r) -> None:
                 return
             if mode == "with":                          # listed with its shares order, which has ended: it keeps working
                 pst = str(hst or "?").lower()
-                if outcome.get(head) == "done":
+                by = [m for m in reversed(chain) if fills.get(m, (None, 0))[1] > 0]
+                if outcome.get(head) == "done" and by not in ([], [head]):
+                    # seventh review: the shares were bought by an order the re-price replaced - the message names it
+                    code, msg = "RELEASED", (f"keeps working: released for the {bought:,} shares bought by {', '.join(by)} (its primary, re-priced as {head})"
+                                             f" before {head} was cancelled - it hedges them; cancel it on its own to end it")
+                elif outcome.get(head) == "done":
                     code, msg = "RELEASED", (f"keeps working: released for the {bought:,} shares its primary {head} bought before it was cancelled -"
                                              " it hedges them; cancel it on its own to end it")
                 else:

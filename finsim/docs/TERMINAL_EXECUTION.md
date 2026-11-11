@@ -186,7 +186,18 @@ NAV falls by exactly the 1.00 commission.
   preview its confirm listed) is placed only when it fills at once, all-or-none, at most 0.5 % worse than that net cash and within
   2 minutes of that preview; otherwise 409 `AON_NOT_PLACED` (moved, older, not fillable now, not fundable now) and nothing is
   written. A resend of the same body (after a 503 or a dropped connection) is held to it too, and such a combination never rests.
-  A resend whose body differs only in `aon_confirmed` is the same order (a replay).
+  A resend whose body differs only in `aon_confirmed` is the same order (a replay). 1.0.7.2 seventh review: a sequential
+  combination sent with `seq_confirmed {options_cash, previewed_at}` (the cash its option legs at market had in the package
+  preview the Smart Ticket's confirm listed) whose shares fill at the submit - its options released now - is placed only when
+  those legs' cash now is at most 0.5 % worse than that and within 2 minutes of that preview; otherwise 409 `SEQ_NOT_PLACED`
+  (moved, older) and nothing is written. Shares that rest release their options later at the prices then; a leg with its own
+  limit holds its price; a resend differing only in `seq_confirmed` is the same order. A package whose share leg SELLS (SELL or
+  SELL_SHORT) and whose option legs sell calls to open is refused `COMBO_INVALID`: its calls would be released, and written,
+  exactly as their cover is sold (a sale fits closing legs or protective buys). An order, or an all-or-none package, sent with
+  `covered: true` (the Smart Ticket's covered call or collar on shares held) is placed only while the shares of its calls' name
+  held in the account, net of working sells, of the shares reserved by calls already sold, of lent shares and of the cover of
+  the account's other working sell-to-open calls, are at least 100 a contract it sells; otherwise 409 `NOT_COVERED` and
+  nothing is written (400 `COVERED_INVALID` on an order that sells no call to open, or on a sequential package).
 - **Cancel many at once (`POST /api/orders/cancel[?book=]`, 1.0.7.2)**: explicit order ids only (1 to 500, each named
   once) and one reason (at most 120 characters; 'cancelled by the owner' when none is given). The request id is the
   batch id (8 to 60 characters). The whole list is checked before anything is cancelled, and nothing is cancelled if
@@ -208,7 +219,9 @@ NAV falls by exactly the 1.00 commission.
   primary is cancelled by its own command once that primary has ended, and kept (`PRIMARY_WORKING`) while it still
   works - cancel the primary with it, or the leg on its own with its x. Pending Trades lists the waiting legs of a
   ticked primary in its confirm ("ends with its primary") right after it, the released ones apart as "keeps working",
-  a leg you ticked before its primary, and says when a leg you ticked alone is kept; "Cancel all open" and the Smart
+  a leg you ticked before its primary, and says when a leg you ticked alone is kept - seventh review: a leg's primary is
+  read over the replace chain there too (a leg released before a re-price goes before the replacement you ticked, and is
+  said kept while that replacement works; the answer names the order that bought its shares); "Cancel all open" and the Smart
   Ticket's "Cancel what this ticket sent" list every leg before its primary (the confirm names them all) and keep a
   primary with its legs in one batch of 500. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is reported with
   its code. The answer lists what was cancelled, skipped, failed and kept working. Resending the same batch after a
@@ -217,7 +230,7 @@ NAV falls by exactly the 1.00 commission.
   Ticket's confirm says, for a leg whose primary is not listed, whether that primary (or the order that replaced it)
   still works (kept) or has ended (the leg is cancelled now).
 - **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in
-  `preview_id`, `confirm_large` or the Smart Ticket's `smart` note is the same order and is answered as its replay
+  `preview_id`, `confirm_large`, the Smart Ticket's `smart` note, `aon_confirmed` or `seq_confirmed` is the same order and is answered as its replay
   (`X-Replayed: 1`, the order that was placed): every send takes a fresh preview first. Any other difference is still
   409 `REQUEST_ID_REUSED`.
 

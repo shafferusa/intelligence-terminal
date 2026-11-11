@@ -253,32 +253,58 @@
      Fourth review: a leg ticked without its primary while that primary keeps working is kept by the server (a hedge is never taken
      from shares still being bought): ``alone`` names those primaries so the confirm says it.
      -> {extra: the rows that end with the ticked ones, keeps: the released legs that keep working, alone: {leg id: its working primary}} */
+  /* seventh review: the shares order that works NOW for a hedge leg - its parent, or the order a re-price by replace made of it (a leg
+     already released stays with the order that released it; the server reads it over the replace chain, api_products.replace_chain):
+     followed through the open rows' replaces_order_id, else the open primary of the same sequential package; the parent itself when
+     neither is open.  -> function (row) -> order id, or null for an order that is not a sequential hedge leg */
+  function headOf(pool) {
+    var open = {}, succ = {}, prim = {};
+    (pool || []).forEach(function (x) {
+      if (!x || !x.order_id || (x.row_kind && x.row_kind !== 'order')) { return; }
+      open[x.order_id] = x;
+      if (x.replaces_order_id) { succ[x.replaces_order_id] = x.order_id; }
+      if (x.package_id && !x.parent_order_id && x.fill_mode !== 'AON') { prim[x.package_id] = x.order_id; }
+    });
+    return function (r) {
+      if (!r || !r.parent_order_id || r.fill_mode === 'AON') { return null; }
+      var cur = r.parent_order_id, seen = {};
+      while (succ[cur] && !seen[cur]) { seen[cur] = true; cur = succ[cur]; }
+      if (open[cur]) { return cur; }
+      if (r.package_id && prim[r.package_id]) { return prim[r.package_id]; }
+      return r.parent_order_id;
+    };
+  }
   function linkedRows(rows, pool) {
-    var ids = {}, pk = {}, extra = [], keeps = [], alone = {}, open = {};
+    var ids = {}, pk = {}, extra = [], keeps = [], alone = {}, open = {}, head = headOf(pool);
     rows.forEach(function (r) { ids[r.order_id] = r; if (r.package_id && r.fill_mode === 'AON') { pk[r.package_id] = true; } });
     (pool || []).forEach(function (x) { if (x && x.order_id && (!x.row_kind || x.row_kind === 'order') && x.actions && x.actions.cancel) { open[x.order_id] = true; } });
-    rows.forEach(function (r) { if (r.parent_order_id && r.fill_mode !== 'AON' && !ids[r.parent_order_id] && open[r.parent_order_id]) { alone[r.order_id] = r.parent_order_id; } });
+    /* seventh review: a leg's primary read over the replace chain - a released leg of a re-priced shares order is "alone" while the
+       replacement works and is not ticked, as the server keeps it */
+    rows.forEach(function (r) { var h = head(r); if (h && !ids[h] && open[h]) { alone[r.order_id] = h; } });
     (pool || []).forEach(function (x) {
       if (!x || (x.row_kind && x.row_kind !== 'order') || !x.order_id || ids[x.order_id] || !(x.actions && x.actions.cancel)) { return; }
       var withPkg = !!(x.package_id && x.fill_mode === 'AON' && pk[x.package_id]);
-      var primary = x.parent_order_id ? ids[x.parent_order_id] : null;
+      var h = head(x);
+      var primary = h ? ids[h] : null;
       if (withPkg || (primary && x.status === 'WAITING_PARENT')) {
         ids[x.order_id] = x;
         extra.push(Object.assign({}, x, withPkg ? { $with: 'its all-or-none package' } :
-          { $with: 'its primary ' + x.parent_order_id + ': it still waits for its shares; shares bought meanwhile keep it working', $primary: x.parent_order_id }));
+          { $with: 'its primary ' + h + ': it still waits for its shares; shares bought meanwhile keep it working', $primary: h }));
       } else if (primary) {
-        keeps.push(Object.assign({}, x, { $filled: primary.filled_qty || 0 }));
+        keeps.push(Object.assign({}, x, { $filled: primary.filled_qty || 0, $head: h }));
       }
     });
-    return { extra: extra, keeps: keeps, alone: alone };
+    return { extra: extra, keeps: keeps, alone: alone, head: head };
   }
   /* the order the batch lists them in (third review): a leg the owner ticked goes BEFORE its ticked primary - the server cancels it by its
      own command; a waiting leg listed only because its primary is ticked goes right AFTER that primary - the server ends it with its
-     primary, or keeps it working once it is released; the rest in the order ticked */
-  function batchOrder(rows, extra) {
+     primary, or keeps it working once it is released; the rest in the order ticked.  Seventh review: the primary is read over the replace
+     chain (``head``), so a leg released before a re-price goes before the replacement the owner ticked */
+  function batchOrder(rows, extra, head) {
     var ids = {}, kidsOf = {}, linkedOf = {}, out = [], placed = {};
+    head = head || function (r) { return r && r.fill_mode !== 'AON' ? (r.parent_order_id || null) : null; };
     rows.forEach(function (r) { ids[r.order_id] = true; });
-    rows.forEach(function (r) { if (r.parent_order_id && ids[r.parent_order_id]) { (kidsOf[r.parent_order_id] = kidsOf[r.parent_order_id] || []).push(r); } });
+    rows.forEach(function (r) { var h = head(r); if (h && ids[h]) { (kidsOf[h] = kidsOf[h] || []).push(r); } });
     extra.forEach(function (x) { if (x.$primary && ids[x.$primary]) { (linkedOf[x.$primary] = linkedOf[x.$primary] || []).push(x); } });
     function put(r) { if (!placed[r.order_id]) { placed[r.order_id] = true; out.push(r); } }
     rows.forEach(function (r) { (kidsOf[r.order_id] || []).forEach(put); put(r); (linkedOf[r.order_id] || []).forEach(put); });
@@ -299,8 +325,9 @@
       body.appendChild(T.h('div', null, 'Keeps working (not cancelled: released for the shares its primary already bought; tick it to cancel it too):'));
       var kl = T.h('ul', { class: 'mono' });
       keeps.slice(0, MASS_LIST).forEach(function (r) {
-        kl.appendChild(T.h('li', { class: 'muted' }, (r.order_id || '') + ': ' + massWords(r) + ' (for the ' + T.fmt.qty(r.$filled) + ' of ' +
-          (r.parent_order_id || 'its primary') + ' filled)'));
+        kl.appendChild(T.h('li', { class: 'muted' }, (r.order_id || '') + ': ' + massWords(r) + (r.$head && r.parent_order_id && r.$head !== r.parent_order_id ?
+          ' (for the shares ' + r.parent_order_id + ' bought before it was re-priced as ' + r.$head + ')' :
+          ' (for the ' + T.fmt.qty(r.$filled) + ' of ' + (r.parent_order_id || 'its primary') + ' filled)')));
       });
       if (keeps.length > MASS_LIST) { kl.appendChild(T.h('li', { class: 'muted' }, '... and ' + (keeps.length - MASS_LIST) + ' more')); }
       body.appendChild(kl);
@@ -320,7 +347,8 @@
       if (seen[r.order_id]) { return; }
       seen[r.order_id] = true;
       /* fourth review: a primary and every leg listed with it (ticked or ending with it) are one unit, never split between two batches */
-      var key = b + ' ' + (r.$primary || (r.parent_order_id && listed[r.parent_order_id] ? r.parent_order_id : r.order_id));
+      var up = r.$head || r.parent_order_id;          /* seventh review: a leg's primary over the replace chain */
+      var key = b + ' ' + (r.$primary || (up && listed[up] ? up : r.order_id));
       if (!units[key]) { units[key] = []; groups[b].push(units[key]); }
       units[key].push(r.order_id);
     });
@@ -599,8 +627,13 @@
         return;
       }
       var linked = linkedRows(rows, pool);
-      rows = rows.map(function (r) { return linked.alone[r.order_id] ? Object.assign({}, r, { $alone: linked.alone[r.order_id] }) : r; });
-      rows = batchOrder(rows, linked.extra);
+      rows = rows.map(function (r) {
+        var h = linked.head(r), add = {};
+        if (linked.alone[r.order_id]) { add.$alone = linked.alone[r.order_id]; }
+        if (h && h !== r.parent_order_id) { add.$head = h; }            /* seventh review: a leg of a re-priced shares order */
+        return Object.keys(add).length ? Object.assign({}, r, add) : r;
+      });
+      rows = batchOrder(rows, linked.extra, linked.head);
       massConfirm(rows, title, linked.keeps).then(function (yes) {
         if (!yes || dead) { return; }
         st.massBusy = true; paintMass();

@@ -677,14 +677,21 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertIn("onKey: function (k, r) { if (k === 'x' && r && r.actions && r.actions.cancel) { cancelOrder(r, function () { load(false); }); return true; } return false; } });", src)
         # third review: a ticked leg is listed before its primary, a waiting leg of a ticked primary right after it (it ends with it, never by
         # a cancel of its own); "kept" is counted and said; the x reads the primary's legs before its confirm and its toast names the ended ones
-        for s in ("rows = batchOrder(rows, linked.extra);", "rows.forEach(function (r) { (kidsOf[r.order_id] || []).forEach(put); put(r); (linkedOf[r.order_id] || []).forEach(put); });",
+        for s in ("rows = batchOrder(rows, linked.extra, linked.head);", "rows.forEach(function (r) { (kidsOf[r.order_id] || []).forEach(put); put(r); (linkedOf[r.order_id] || []).forEach(put); });",
                   "tot.kept += ((a && a.kept) || []).length;",
-                  "var key = b + ' ' + (r.$primary || (r.parent_order_id && listed[r.parent_order_id] ? r.parent_order_id : r.order_id));",
+                  "var key = b + ' ' + (r.$primary || (up && listed[up] ? up : r.order_id));",
                   "primaryLegs(r).then(function (lk) {", "var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];"):
             self.assertIn(s, src, s)
         # fourth review: a leg ticked without its working primary is said to be kept (the server keeps it); a primary and its legs are one
         # unit of a batch; the instrument page's x cancels through Pending's cancel (the legs that end with it named)
-        self.assertIn("rows = rows.map(function (r) { return linked.alone[r.order_id] ? Object.assign({}, r, { $alone: linked.alone[r.order_id] }) : r; });", src)
+        self.assertIn("if (linked.alone[r.order_id]) { add.$alone = linked.alone[r.order_id]; }", src)
+        # seventh review: a leg's primary is read over the replace chain (the open rows' replaces_order_id, then the package's open primary),
+        # so a leg released before a re-price goes before the replacement ticked, and is said kept while that replacement works
+        for s in ("while (succ[cur] && !seen[cur]) { seen[cur] = true; cur = succ[cur]; }", "if (r.package_id && prim[r.package_id]) { return prim[r.package_id]; }",
+                  "rows.forEach(function (r) { var h = head(r); if (h && !ids[h] && open[h]) { alone[r.order_id] = h; } });",
+                  "rows.forEach(function (r) { var h = head(r); if (h && ids[h]) { (kidsOf[h] = kidsOf[h] || []).push(r); } });",
+                  "var up = r.$head || r.parent_order_id;"):
+            self.assertIn(s, src, s)
         inst = read(os.path.join(STATIC, "pages", "instrument.js"))
         self.assertIn("var pp = T.pages && T.pages.pending;", inst)
         self.assertIn("pp.cancelOrder(Object.assign({}, o, { side_words: o.side_words || String(o.side || '').replace(/_/g, ' '), symbol: o.symbol || o.instrument_id }), after);", inst)
@@ -699,7 +706,8 @@ class SmartTicketShellTests(unittest.TestCase):
         fns = _functions(src)
         self.assertEqual("submit", _enclosing(fns, src.index("list.forEach(function (it) { it.cbase = confirmedTotals(it); });")))
         self.assertEqual("sendOne", _enclosing(fns, src.index("var why = aonMoved(it, fr.spec);")))
-        self.assertIn("return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null };", src)
+        self.assertIn("return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null, opt: it.fill_mode === 'SEQUENTIAL' ?"
+                      " seqOptionsCash(it.spec) : null };", src)
         self.assertIn("if (at0 > 0 && at1 > 0 && at1 - at0 > ttl) {", src)
         self.assertIn("if (worse > 0 && (n0 === 0 || worse > Math.abs(n0) * pct)) {", src)
         self.assertIn("it.result = { state: 'skipped', text: 'not sent: ' + why + '; it stays staged with its new figures - submit it again to confirm them' };", src)
@@ -732,6 +740,26 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertNotIn("bumpRev", src[src.index("if (hit && !err) {"):src.index("if (hit) {", src.index("if (hit && !err) {"))])
         self.assertEqual("cancelSent", _enclosing(fns, src.index("note = ' (its shares order has ended: cancelled now)';")))
         self.assertIn("return shareOrderWorks(o.parent_order_id, openAll).then(function (live) { o.$shareLive = live; });", src)
+
+    def test_smart_seventh_review(self):
+        """1.0.7.2 seventh review: a choice picked after the text was changed is taken from a new reading of the text as it now reads (the
+        same flag at the same words, the same label), never put into words the server did not check it against; a sequential combination
+        carries the cash its options at market had in the preview its confirm listed (seq_confirmed), and a refusal to place it at a moved
+        price keeps it staged like an all-or-none one; a covered call or collar's request is sent as it was read (covered: true)."""
+        src = read(SMART)
+        fns = _functions(src)
+        self.assertEqual("choose", _enclosing(fns, src.index("S.redo = { seq: S.pseq + 1, code: f.code, at: at, label: String(ch.label || ''), was: short(ch.label || ch.clause, 60) };")))
+        self.assertNotIn("text = bar;", src[src.index("function choose("):src.index("function runAction(")])
+        self.assertEqual("redoChoice", _enclosing(fns, src.index("if (f.code !== rd.code || !Array.isArray(f.span) || Number(f.span[0]) !== rd.at) { return; }")))
+        self.assertIn("if (rd && rd.seq === seq) { redoChoice(S, rd); }", src)
+        self.assertIn("if (S.redo && S.pseq !== S.redo.seq) { S.redo = null; }", src)          # a reading that did not start keeps no pick for later
+        self.assertEqual("bodyOf", _enclosing(fns, src.index("b.seq_confirmed = { options_cash: it.cbase.opt, previewed_at: it.cbase.at };")))
+        self.assertIn("if (e && (e.code === 'AON_NOT_PLACED' || e.code === 'SEQ_NOT_PLACED')) {", src)
+        self.assertEqual("seqOptionsCash", _enclosing(fns, src.index("return (legs.reduce(function (s, l) { return s + l.cash_c; }, 0) / 100).toFixed(2);")))
+        self.assertEqual((0, 0, 0), js_balance(src))
+        from finsim.terminal import api_products, smart_ticket
+        self.assertIn("seq_confirmed", api_products.RESEND_KEYS)
+        self.assertEqual("blocker", smart_ticket.FLAG_SEVERITY["COVER_TAKEN"])
 
     def test_smart_css_uses_the_tokens_only(self):
         css = read(NEW_CSS)

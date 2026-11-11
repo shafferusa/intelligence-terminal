@@ -708,6 +708,56 @@ def _aon_guard_check(guard: tuple, legs: List[OrderRow], dec: PackageDecision) -
                                                                                               "decision": dec.to_dict()})
 
 
+#: 1.0.7.2 seventh review: the refusal of a sequential combination whose options at market moved since its confirm: nothing was placed
+SEQ_NOT_PLACED = "SEQ_NOT_PLACED"
+
+
+def _seq_guard_of(payload: dict) -> Optional[tuple]:
+    """1.0.7.2 seventh review: ``seq_confirmed {options_cash, previewed_at}`` of a sequential package - the cash of its option legs at
+    market and the server time of the package preview the Smart Ticket's confirm listed - as ``(cents, previewed_at)``, or None when the
+    request has none (any other client: unchanged).  400 SEQ_CONFIRMED when malformed."""
+    g = payload.get("seq_confirmed")
+    if g is None:
+        return None
+    try:
+        if not isinstance(g, dict):
+            raise ValueError("not an object")
+        cash = Decimal(str(g.get("options_cash")))
+        at = int(g.get("previewed_at"))
+        if not cash.is_finite() or at <= 0:
+            raise ValueError("out of range")
+    except (ArithmeticError, TypeError, ValueError) as e:
+        raise RejectError("SEQ_CONFIRMED", f"seq_confirmed needs the confirmed options_cash (a number: the option legs at market of the package preview) and"
+                                           f" previewed_at (that preview's server time): {e}",
+                          {"seq_confirmed": g if isinstance(g, (dict, str, int, float)) else None}) from None
+    return to_c(cash), at
+
+
+def _seq_guard_check(ctx: TxContext, guard: tuple, legs: List[dict]) -> None:
+    """1.0.7.2 seventh review: a sequential combination sent with its confirmed figures (``seq_confirmed``) whose shares FILL AT ONCE
+    releases its options now: the option legs at market (a leg with its own limit holds its price) are placed only within
+    ``config.PRICE_MOVED_PCT`` (0.5 %) of the cash its confirm listed and within ``config.PREVIEW_TTL_S`` (120 s) of that preview - checked
+    at the placement, so every send and resend of it is held to the confirm, as an option order alone is (PREVIEW_STALE) and an
+    all-or-none combination is (AON_NOT_PLACED).  ``legs``: the package's legs priced now (``strategies.package_legs``).  Raises 409
+    SEQ_NOT_PLACED (the command rolls back: nothing was placed).  Shares that rest release their options later, at the prices then."""
+    cash0, at = guard
+    mkt = [l for l in legs if str(l.get("kind")) == "OPTION" and str(l.get("order_type") or "MARKET").upper() == "MARKET"]
+    if not mkt:
+        return
+    ttl = int(config.PREVIEW_TTL_S)
+    if ctx.ts - at > ttl:
+        raise ConflictError(SEQ_NOT_PLACED, f"not placed: its shares fill at once, and the package preview its confirm listed was taken {ctx.ts - at:,} s ago - its"
+                                            f" options at market go only within {ttl} s of it: confirm it again", {"why": "OLD", "previewed_at": at, "ttl_s": ttl})
+    cash1 = sum(int(l.get("cash_c") or 0) for l in mkt)
+    worse = cash0 - cash1                                # cash: received +, paid -; worse = paying more or receiving less
+    pct = Decimal(str(config.PRICE_MOVED_PCT))
+    if worse > 0 and (cash0 == 0 or Decimal(worse) > abs(Decimal(cash0)) * pct):
+        moved = f" ({(Decimal(worse) / abs(Decimal(cash0)) * 100).quantize(Decimal('0.01'))} % against you)" if cash0 else ""
+        raise ConflictError(SEQ_NOT_PLACED, f"not placed: its shares fill at once, and its options at market would now be {fmt_money(cash1)} instead of the"
+                                            f" {fmt_money(cash0)} its confirm listed{moved}, more than {(pct * 100).normalize()} % worse",
+                            {"why": "MOVED", "options_cash_c": cash1, "confirmed_options_cash_c": cash0})
+
+
 def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     strategies = getattr(services, "strategies", None)
     if strategies is None or not hasattr(strategies, "package_legs"):
@@ -734,12 +784,19 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
                 break
         if primary is None:
             raise RejectError("AON_LEGS", "a SEQUENTIAL package needs a stock or futures primary; an option-only package must be AON")
+        if payload.get("covered"):
+            raise RejectError("COVERED_INVALID", "covered: true is for calls sold on shares held: a package that trades its shares brings its own")
+        seq_guard = _seq_guard_of(payload)
         req = {"account_id": account_id, "instrument_id": primary["instrument_id"], "side": primary["side"], "qty": int(primary["qty"]),
                "order_type": primary.get("order_type") or "MARKET", "limit_px": primary.get("limit_px"), "tif": tif, "confirm_large": payload.get("confirm_large"),
                "preview_id": payload.get("preview_id")}
         vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, queue_unfunded=True)
         others = [l for l in legs if l is not primary]
         out = _submit_single(ctx, services, req, vo, hedge_legs=others, candidate_id=key)
+        if seq_guard is not None and out.get("fills"):
+            # seventh review: the shares filled at once, so their options are released now - at market they are held to the confirm (raises:
+            # the command rolls back, nothing was placed)
+            _seq_guard_check(ctx, seq_guard, legs)
         out["package"] = {"package_id": out["hedge_package"], "fill_mode": "SEQUENTIAL", "strategy_key": key}
         return out
     insts = [services.instruments.get(l["instrument_id"], conn) for l in legs]
@@ -754,6 +811,7 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     for l in legs:
         req = {"account_id": account_id, "instrument_id": l["instrument_id"], "side": l["side"], "qty": int(l["qty"]), "order_type": "MARKET", "tif": tif}
         vos.append(validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, rest_ok=True, queue_unfunded=True))
+    _covered_check(ctx, services, payload, [(v.inst, v.side, v.qty) for v in vos])     # seventh review: a collar on shares held
     if any(v.funding.get("confirm_required") for v in vos) and not payload.get("confirm_large"):
         reasons = [f"{v.inst.symbol}: {v.funding.get('confirm_reason')}" for v in vos if v.funding.get("confirm_required")]
         raise ConflictError("CONFIRM_REQUIRED", "confirm the large package: " + "; ".join(reasons),
@@ -847,7 +905,65 @@ def h_submit(ctx: TxContext, payload: dict) -> dict:
     if isinstance(payload.get("package"), dict):
         return _submit_package(ctx, services, payload)
     vo = validate(services, payload, snapshot=ctx.marks, conn=ctx.conn, now=ctx.ts, queue_unfunded=True)     # funding alone queues (FUNDS_WAIT); PRIVATE / BOND / FX / OTC: USE_OWN_TICKET there
+    _covered_check(ctx, services, payload, [(vo.inst, vo.side, vo.qty)])
     return _submit_single(ctx, services, payload, vo)
+
+
+#: 1.0.7.2 seventh review: calls sent as covered by shares held (``covered: true``) whose shares are no longer free: nothing was placed
+NOT_COVERED = "NOT_COVERED"
+
+
+def _covered_check(ctx: TxContext, services, payload: dict, legs: List[tuple]) -> None:
+    """1.0.7.2 seventh review: an order or an all-or-none package sent with ``covered: true`` - the Smart Ticket's covered call or collar on
+    shares held, calls said to be covered by shares the account holds with no shares bought - is placed only while those shares are free
+    NOW, checked here at its placement (every send and resend of it): the shares of the calls' name held long in the account, net of its
+    working sells, of the shares reserved by calls already sold, of lent shares and of the cover the account's other working
+    sell-to-open calls will take, must be at least the multiplier (100) a contract sold.  Else 409 NOT_COVERED and nothing is placed: the
+    shares were sold, or taken by other calls, since the reading.  ``legs``: (instrument, side, quantity) of each order of the request;
+    400 COVERED_INVALID when none sells calls to open on one name."""
+    if not payload.get("covered"):
+        return
+    from .orders_preview import _lent_shares, _reserved_shares
+    from .ledger import position as _ledger_position
+    calls = [(inst, int(qty)) for inst, side, qty in legs if side == "STO" and inst is not None and inst.kind == "OPTION" and inst.right == "C"]
+    if not calls or len({inst.underlying_id for inst, _q in calls}) != 1 or not calls[0][0].underlying_id:
+        raise RejectError("COVERED_INVALID", "covered: true is for an order, or an all-or-none package, that sells calls to open on one name the account holds")
+    uid = str(calls[0][0].underlying_id)
+    acct = str(payload.get("account_id") or "")
+    conn = ctx.conn
+
+    def mult(inst) -> int:
+        try:
+            return int(Decimal(str(inst.multiplier or 100)))
+        except (ArithmeticError, ValueError):
+            return 100
+    need = sum(q * mult(inst) for inst, q in calls)
+    held = int(_ledger_position(conn, acct, uid)[0])
+    sells = sum(int(r["qty"]) - int(r["filled_qty"] or 0) for r in conn.execute(
+        "SELECT qty, filled_qty FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC')"
+        " AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')", (acct, uid)).fetchall())
+    working = 0
+    for r in conn.execute("SELECT o.qty, o.filled_qty, i.multiplier FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id WHERE o.account_id=?"
+                          " AND o.side='STO' AND o.status IN ('WORKING','PARTIAL','SUSPENDED') AND i.kind='OPTION' AND i.right='C' AND i.underlying_id=?",
+                          (acct, uid)).fetchall():
+        try:
+            m = int(Decimal(str(r["multiplier"] or "100")))
+        except (ArithmeticError, ValueError):
+            m = 100
+        working += max(0, int(r["qty"]) - int(r["filled_qty"] or 0)) * m
+    reserved = _reserved_shares(services, acct, uid) if held > 0 else 0
+    lent = _lent_shares(services, conn, acct, uid) if held > 0 else 0
+    free = max(0, held) - sells - reserved - lent - working
+    if free >= need:
+        return
+    inst_u = services.instruments.get(uid, conn)
+    sym = inst_u.symbol if inst_u is not None else uid
+    why = [f"{n:,} {w}" for n, w in ((sells, "in working sells"), (reserved, "reserved by calls already sold"), (lent, "lent"),
+                                     (working, "covering other calls being sold")) if n]
+    raise ConflictError(NOT_COVERED, f"not placed: the calls need {need:,} {sym} held free in {acct} as their cover and {max(free, 0):,} are free now (held"
+                                     f" {held:,}{'; ' + ', '.join(why) if why else ''}) - the shares were sold, or taken by other calls, since it was read:"
+                                     " read it again", {"need": need, "free": max(free, 0), "held": held, "working_sells": sells, "reserved_shares": reserved,
+                                                        "lent": lent, "calls_working": working, "underlying_id": uid})
 
 
 # ---- order.match / order.match_package ------------------------------------------------------------------------------------------

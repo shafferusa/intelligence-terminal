@@ -718,16 +718,23 @@ class CustomPackageTests(unittest.TestCase):
         self.assertEqual({"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT", "limit_px": "100"}, d["params"]["legs"][1])
 
     def test_sequential_children_keep_their_limit_and_a_sale_uncovers_the_call(self):
-        # held 300 ACME; SELL 300 + STO 1 call LIMIT 2.70: after the sale nothing is left to cover the call -> naked
+        # 1.0.7.2 seventh review: held 300 ACME; SELL 300 + STO 1 call LIMIT 2.70 would release the call as its cover is SOLD (the options of
+        # a sequential package follow its share leg's fills): refused, with or without a limit, and with a short sale too
         self.assertTrue(buy(self.rt, US_EXCHANGE, "ACME", 300, "100.00").ok)
-        spec = self.spec([{"instrument_id": "ACME", "side": "SELL", "qty": 300}, {"instrument_id": acme("C", 105), "side": "STO", "qty": 1, "limit_px": "2.70"}])
+        for side in ("SELL", "SELL_SHORT"):
+            e = self.refused([{"instrument_id": "ACME", "side": side, "qty": 300}, {"instrument_id": acme("C", 105), "side": "STO", "qty": 1, "limit_px": "2.70"}],
+                             "COMBO_INVALID")
+            self.assertIn("a package that sells its shares cannot sell calls to open as they go", e.message)
+            self.assertEqual([1, 2], e.details["legs"])
+        # a sale with a put bought, or calls bought back, still goes in sequence (a sale fits closing legs and protective buys)
+        spec_p = self.spec([{"instrument_id": "ACME", "side": "SELL", "qty": 300}, {"instrument_id": acme("P", 95), "side": "BTO", "qty": 1}])
+        self.assertEqual("SEQUENTIAL", spec_p.fill_mode)
+        # the limit of a child travels (estimated at the bid): a purchase of the shares with a call sold to open at a limit
+        spec = self.spec([{"instrument_id": "ACME", "side": "BUY", "qty": 100}, {"instrument_id": acme("C", 105), "side": "STO", "qty": 1, "limit_px": "2.70"}])
         stock, call = spec.legs
-        self.assertEqual(("MARKET", None, D("99.98"), "Cboe underlying bid"), (stock.order_type, stock.limit_px, stock.est_price, stock.price_basis))
+        self.assertEqual(("MARKET", None), (stock.order_type, stock.limit_px))
         self.assertEqual(("LIMIT", D("2.7"), D("2.6")), (call.order_type, call.limit_px, call.est_price))     # estimated at the bid; the limit travels
         self.assertEqual("sell to open 1 ACME 2026-12-18 105 call at 2.60, limit 2.70 (+5.00 % from spot)", call.what)
-        # naked call, mark = the chain mid (2.60 + 2.75) / 2 = 2.675 -> premium 267.50; OTM 105 - 100 = 5:
-        #   a = 267.50 + 0.20 x 100 x 100 - 5 x 100 = 267.50 + 2,000 - 500 = 1,767.50; b = 267.50 + 0.10 x 100 x 100 = 1,267.50 -> 1,767.50
-        self.assertEqual((176_750, "naked call"), (spec.margin["requirement_c"], spec.margin["detail"][0]["rule"]))
         # still holding the 300 and no share leg: the 3 sold calls are covered by the 300 shares held (covered calls are counted first; the
         # bought 110 call is spare) -> no option margin
         spec2 = self.spec([{"instrument_id": acme("C", 105), "side": "STO", "qty": 3}, {"instrument_id": acme("C", 110), "side": "BTO", "qty": 1}])

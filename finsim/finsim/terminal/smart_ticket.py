@@ -81,8 +81,14 @@ Conventions (sentence SMART_TICKET)
   COMBO_INVALID), never dropped; a covered call or collar reads the signed holding: on shares held free the options only, on shares held
   but not free SIDE_SPLIT, on a short NOTHING_HELD, none held the shares bought (a check; a "buy write" always buys them) - sixth review:
   "free" to cover new calls is also net of the shares the account's working sell-to-open calls will take and of those a covered call or
-  collar earlier in the same instruction took, so the same shares are never the cover of two orders; one price typed for a close of
-  several contracts is PRICE_AMBIGUOUS.
+  collar earlier in the same instruction took, so the same shares are never the cover of two orders - seventh review: one
+  instruction counts the shares an account holds once, in the order typed (``Resolver._take_legs``): a sale or short sale takes the
+  shares it sells, every call sold to open on the name 100 a contract (a covered call's, a collar's, a strategy's calls sold beyond
+  those it buys); a covered call or collar reads only what is still free at its turn, a sale too (net of the working sell-to-open
+  calls' cover as well: WOULD_OVERSELL, never offering a short sale of shares that cover calls), and a call sold to open or a short
+  sale on shares an earlier covered call or collar covers is COVER_TAKEN; a combination whose share leg sells and whose options sell
+  calls to open is COMBO_INVALID (the CUSTOM package refuses it); an instruction where such orders on one name fall in different
+  sections is read whole by the choice guard; one price typed for a close of several contracts is PRICE_AMBIGUOUS.
 - CHOICES are clause texts (``{label, clause}``): the page puts the choice's text in place of the flag's span and parses again, so the
   grammar stays the one source of truth.  Every flag that offers choices carries the span it replaces: the leg's clause, the
   combination's text, both clauses for COVER_HINT, or for an instruction-level flag the word it names (an unknown or shared book word
@@ -103,9 +109,10 @@ Conventions (sentence SMART_TICKET)
   choice whose re-read reads a field twice (DUPLICATE_FIELD) is not offered, and the account of a book phrase is written once; "as
   separate orders" drops a group word typed inside its parentheses.
 - A leg's ``request`` is exactly the order body (account_id, instrument_id, side, qty, order_type, tif, limit_px / stop_px / trail_amt /
-  trail_pct / gtd_date when they apply, ``borrow: true`` for SELL_SHORT), null while the leg has a blocker.  A combination's ``request`` is
-  ``{account_id, tif, package: {strategy_key: "CUSTOM", legs: [{instrument_id, side, qty, order_type?, limit_px?}]}}``, null while it or a
-  leg has a blocker.  Prices are copied as typed (a leading ``$`` and commas removed), never rounded: the preview judges the tick.
+  trail_pct / gtd_date when they apply, ``borrow: true`` for SELL_SHORT, ``covered: true`` for calls said to be covered by shares held:
+  the order route places them only while those shares are free), null while the leg has a blocker.  A combination's ``request`` is
+  ``{account_id, tif, package: {strategy_key: "CUSTOM", legs: [{instrument_id, side, qty, order_type?, limit_px?}]}}`` (``covered: true``
+  for a collar on shares held), null while it or a leg has a blocker.  Prices are copied as typed (a leading ``$`` and commas removed), never rounded: the preview judges the tick.
 """
 from __future__ import annotations
 
@@ -140,6 +147,8 @@ FLAG_SEVERITY = {
     # 1.0.7.2 review: a closing side whose position is already in working closing orders; 'all' / 'half' read as an order that adds to
     # the position; one typed price for several contracts
     "ALREADY_CLOSING": "blocker", "ADDS_TO_POSITION": "blocker", "PRICE_AMBIGUOUS": "blocker",
+    # 1.0.7.2 seventh review: a call sold to open or a short sale on the shares an earlier covered call or collar of the instruction covers
+    "COVER_TAKEN": "blocker",
     "SIDE_INFERRED": "check", "SIDE_CARRIED": "check", "YEAR_INFERRED": "check", "EXPIRY_FROM_MONTH": "check", "TYPE_DEFAULT": "check",
     "PRICE_FROM_QUOTE": "check", "QTY_ROUNDED": "check", "BOOK_FROM_SCOPE": "check", "OTHER_BOOK": "check", "MULTI_BOOK": "check",
     "ACCOUNT_CHOICE": "check", "OPTION_UNVERIFIED": "check", "CHAIN_STALE": "check", "COVER_HINT": "check", "DUPLICATE_LEG": "check",
@@ -2236,7 +2245,13 @@ class Resolver:
         self._snaps: Dict[str, Any] = {}
         self._pos: Dict[Tuple[str, str], dict] = {}
         self._wcalls: Dict[Tuple[str, str], int] = {}        # sixth review: shares the working sell-to-open calls will take (per parse)
-        self._pledge: Dict[Tuple[str, str], int] = {}        # sixth review: shares this reading's covered calls / collars took (per run)
+        # seventh review: the shares of (account, name) this reading's EARLIER orders take, in the order typed (per run): sales and short
+        # sales the shares they sell, every call sold to open on the name 100 a contract (a covered call's or a collar's own calls too);
+        # ``_pledged`` the part of it the covered calls and collars took as their cover
+        self._taken: Dict[Tuple[str, str], int] = {}
+        self._pledged: Dict[Tuple[str, str], int] = {}
+        self._shorted: Dict[Tuple[str, str], int] = {}      # ... and the part of it short sales took (never counted against a later sale)
+        self._called: Dict[Tuple[str, str], int] = {}       # ... and the part of it calls sold to open took as their cover
         self._sent: Dict[Tuple[str, str], List[dict]] = {}
         self._midnight = 0
         self._fresh: Dict[tuple, tuple] = {}                 # fifth review: a chain's freshness, judged once per parse (shared with re-reads)
@@ -2358,14 +2373,113 @@ class Resolver:
             self._wcalls[key] = n
         return self._wcalls[key]
 
-    def _cover_free(self, aid: str, uid: str, pos: dict) -> int:
+    def _cover_free(self, aid: str, uid: str, pos: dict, sale: bool = False) -> int:
         """1.0.7.2 sixth review: the shares held free to cover NEW calls (a covered call, a collar): the shares held free (``_position``:
-        net of working sells, the calls already sold and lent shares) less those the working sell-to-open calls will take, less those a
-        covered call or a collar earlier in this same instruction has already taken (a running count per parse).  ``pos`` (the leg's
-        position, a copy) gains the two counts, so a refusal names them."""
-        calls, here = self._calls_working(aid, uid), int(self._pledge.get((aid, uid), 0))
-        pos["calls_working"], pos["pledged_here"] = calls, here
+        net of working sells, the calls already sold and lent shares) less those the working sell-to-open calls will take, less those
+        this same instruction's earlier orders took.  Seventh review: the running count is every earlier order that takes the shares
+        (``_take_legs``: a sale or a short sale of them, a call sold to open on the name - a plain one, a covered call's, a collar's), and
+        a SALE of the shares is read against the same count (``_side``, ``_close_legs``), so the shares are counted once over the
+        instruction, in the order typed, and never sold and offered as cover too.  ``pos`` (the leg's position, a copy) gains the two
+        counts, so a refusal names them.  ``sale``: the shares a SALE may take - an earlier short sale of the instruction borrows its
+        shares and is not counted against it (as the order route counts none against a sale), unless a covered call or collar of the
+        instruction covers those shares (a short sale then nets the position below their cover, so it counts)."""
+        calls, here = self._calls_working(aid, uid), int(self._taken.get((aid, uid), 0))
+        if sale and not self._pledged.get((aid, uid)):
+            here = max(0, here - int(self._shorted.get((aid, uid), 0)))
+        pledged = min(here, int(self._pledged.get((aid, uid), 0)))
+        pos["calls_working"], pos["pledged_here"], pos["taken_here"] = calls, pledged, here - pledged
+        pos["calls_here"] = int(self._called.get((aid, uid), 0))
         return max(0, int(pos.get("free") or 0) - calls - here) if int(pos.get("qty") or 0) > 0 else 0
+
+    def _take_legs(self, c: dict, legs: List[dict]) -> None:
+        """Seventh review: the shares the orders of clause ``c`` (one book's copy) take, added to the reading's running count: a covered
+        call's or a collar's calls on shares held (their cover: ``_claim``), a sale or short sale of the shares, a call sold to open on
+        the name (100 a contract), and a strategy's or a roll's calls sold beyond those it buys.  An order already sent (ALREADY_SENT: its
+        working order is counted with the account's), refused for its cover (COVER_TAKEN, SIDE_SPLIT ...: it has no side or carries the
+        refusal), or covered by shares its own package buys (a buy write: ``_own_cover``) takes nothing."""
+        kind = c.get("kind")
+
+        def add(key, n, pledge=False, short=False, call=False):
+            if key[0] and key[1] and n > 0:
+                self._taken[key] = self._taken.get(key, 0) + int(n)
+                for flag, d in ((pledge, self._pledged), (short, self._shorted), (call or pledge, self._called)):
+                    if flag:
+                        d[key] = d.get(key, 0) + int(n)
+        if kind in ("covered", "collar"):
+            for l in legs:
+                inst = l.get("instrument") or {}
+                if l.get("_claim") and l.get("qty") and l.get("side") == "STO":
+                    add((l.get("account_id"), inst.get("underlying_id")), 100 * int(l["qty"]), pledge=True)
+            return
+        if kind in ("strategy", "roll"):
+            net: Dict[Tuple[str, str], int] = {}
+            for l in legs:
+                inst = l.get("instrument") or {}
+                if inst.get("kind") != "OPTION" or inst.get("right") != "C" or not l.get("qty") or l.get("side") not in ("STO", "BTO", "BTC"):
+                    continue
+                key = (l.get("account_id"), inst.get("underlying_id"))
+                net[key] = net.get(key, 0) + (int(l["qty"]) if l["side"] == "STO" else -int(l["qty"]))
+            for key, n in net.items():
+                if n > 0 and key[0] and key[1] and self._pledged.get(key):
+                    # calls a strategy sells beyond those it buys, on shares an earlier covered call or collar covers: COVER_TAKEN, as a
+                    # call sold to open on its own (``_cover_taken``)
+                    upos = self._position(key[0], key[1], True)
+                    left = self._cover_free(key[0], key[1], upos) if int(upos["qty"]) > 0 else None
+                    if left is not None and left < 100 * n:
+                        for l in legs:
+                            inst = l.get("instrument") or {}
+                            if l.get("side") == "STO" and inst.get("right") == "C" and (l.get("account_id"), inst.get("underlying_id")) == key:
+                                l["flags"].append(_flag("COVER_TAKEN", f"the {n:,} call(s) this {c.get('kind')} sells beyond those it buys: the {int(upos['qty']):,}"
+                                                        f" {key[1]} held in {key[0]} cover the calls of a covered call or collar earlier in this instruction and"
+                                                        f" {left:,} are left free{self._not_free_words(upos)} - they would be written without shares to cover"
+                                                        " them: send it as its own order, or write the covered call or collar on fewer shares", l["span"]))
+                        continue
+                add(key, 100 * n, call=True)
+            return
+        for l in legs:
+            side, q = l.get("side"), l.get("qty")
+            inst = l.get("instrument") or {}
+            if not side or not q or l.get("_own_cover") or any(f["code"] in ("ALREADY_SENT", "COVER_TAKEN") for f in l["flags"]):
+                continue
+            if inst.get("kind") in EQUITY_KINDS and side in ("SELL", "SELL_SHORT"):
+                add((l.get("account_id"), inst.get("id")), int(q), short=side == "SELL_SHORT")
+            elif inst.get("kind") == "OPTION" and inst.get("right") == "C" and side == "STO":
+                add((l.get("account_id"), inst.get("underlying_id")), 100 * int(q), call=True)
+
+    def _cover_taken(self, leg: dict, con: Optional[dict]) -> None:
+        """Seventh review: a call sold to open, or a short sale, on shares the account holds that a covered call or collar EARLIER in this
+        instruction took as its cover, beyond the shares still free there, is refused (COVER_TAKEN): it would leave calls said to be
+        covered without shares (the same shares are never the cover of two orders).  An account that holds none of the name writes a
+        call as before (its margin is in the preview)."""
+        side, q, aid = leg.get("side"), leg.get("qty"), leg.get("account_id")
+        if not side or not q or not aid or con is None or leg.get("_own_cover"):
+            return
+        cls = self._cls(con)
+        if cls == "option" and side == "STO" and con.get("right") == "C" and con.get("underlying_id"):
+            uid, need = str(con["underlying_id"]), 100 * int(q)
+        elif cls == "shares" and side == "SELL_SHORT":
+            uid, need = str(con["id"]), int(q)
+        else:
+            return
+        pledged = int(self._pledged.get((aid, uid), 0))
+        if not pledged:
+            return
+        upos = self._position(aid, uid, True)
+        held = int(upos["qty"])
+        if held <= 0:
+            return
+        left = self._cover_free(aid, uid, upos)
+        if left >= need:
+            return
+        u = self.master.get(uid, self.conn)
+        sym = u.symbol if u is not None else uid
+        what = (f"sell to open {int(q):,} {con.get('words') or con.get('symbol') or ''}".rstrip() if cls == "option" else f"short {int(q):,} {sym}")
+        leg["flags"].append(_flag("COVER_TAKEN", f"{what}: {pledged:,} of the {held:,} {sym} held in {aid} cover the calls of a covered call or collar earlier in"
+                                  f" this instruction and {left:,} are left free{self._not_free_words(upos)} - "
+                                  + ("this call would be written without shares to cover it" if cls == "option" and int(q) == 1 else
+                                     "these calls would be written without shares to cover them" if cls == "option" else
+                                     "a short sale here would leave those calls without the shares")
+                                  + ": send it as its own order, or write the covered call or collar on fewer shares", leg["span"]))
 
     def _reserved(self, aid: str, iid: str) -> int:
         fn = getattr(getattr(self.s, "options", None), "reserved_shares", None)
@@ -3237,15 +3351,23 @@ class Resolver:
                 closing("buy", None)
                 return None
             return "BUY"
+        busy = {}
+        if held > 0:
+            # seventh review: the shares a sale may take are also net of those the account's working sell-to-open calls will take and of
+            # those this instruction's earlier orders took (a sale, a short sale, calls sold to open, a covered call or collar on them)
+            busy = dict(pos)
+            free = self._cover_free(acct, con["id"], busy, sale=True)
         if held > 0 and free >= q:
             return "SELL"
         free_long = free if held > 0 else 0
+        covers = bool(busy.get("calls_working") or busy.get("calls_here"))       # the shares cover calls (working, or of this instruction)
         choices = []
         if free_long > 0:
             choices.append({"label": f"sell {free_long:,}", "clause": self._side_edit(c, "sell", free_long, leg, con)})
-            choices.append({"label": f"sell {free_long:,} + short {q - free_long:,}",
-                            "clause": self._side_edit(c, "sell", free_long, leg, con) + " and " + self._side_edit(c, "short", q - free_long, leg, con)})
-        else:
+            if not covers:            # seventh review: a short sale of shares that cover calls would leave the calls without them
+                choices.append({"label": f"sell {free_long:,} + short {q - free_long:,}",
+                                "clause": self._side_edit(c, "sell", free_long, leg, con) + " and " + self._side_edit(c, "short", q - free_long, leg, con)})
+        elif not covers:
             choices.append({"label": f"short {q:,}", "clause": self._side_edit(c, "short", q, leg, con)})
         why = []
         if pos["working_sells"]:
@@ -3254,8 +3376,14 @@ class Resolver:
             why.append(f"{pos['reserved']:,} reserved by covered calls")
         if pos["lent"]:
             why.append(f"{pos['lent']:,} lent")
+        if busy.get("calls_working"):
+            why.append(f"{int(busy['calls_working']):,} covering calls being sold (working orders)")
+        if busy.get("pledged_here"):
+            why.append(f"{int(busy['pledged_here']):,} covering the calls of an earlier order in this instruction")
+        if busy.get("taken_here"):
+            why.append(f"{int(busy['taken_here']):,} taken by earlier orders of this instruction (sold, or covering calls they sell to open)")
         flags.append(_flag("WOULD_OVERSELL", f"sell {q:,} {words} but the free quantity in {acct} is {free_long:,} (held {held:,}"
-                           + ("; " + ", ".join(why) if why else "") + ")", leg["span"], choices))
+                           + ("; " + ", ".join(why) if why else "") + ")", leg["span"], choices or None))
         return None
 
     def _quote_price(self, which: str, leg: dict, con: dict) -> Optional[str]:
@@ -3410,6 +3538,10 @@ class Resolver:
             req["gtd_date"] = leg["gtd_date"]
         if leg["side"] == "SELL_SHORT":
             req["borrow"] = True
+        if leg.get("_claim"):
+            # seventh review: calls said to be covered by shares held - the order route places them only while those shares are still
+            # free (409 NOT_COVERED, nothing placed), so shares sold between the reading and the send never leave them uncovered
+            req["covered"] = True
         return req
 
     # ---- the clause kinds ----------------------------------------------------------------------------------------------------------------
@@ -3459,6 +3591,7 @@ class Resolver:
                 leg["qty"] = q
                 leg["side"] = self._side(c, leg, con, pos, q)
                 self._adds_check(c, leg, con, pos)
+                self._cover_taken(leg, con)
             self._price_tif(c, leg, con)
         else:
             self._price_tif(c, leg, None)
@@ -3754,9 +3887,11 @@ class Resolver:
             call["flags"].append(_flag("SIDE_INFERRED", f"covered call on {q:,} of the {free:,} {ia.get('symbol')} held free in {a['account_id']}: the calls"
                                        " only, no shares bought", call["span"]))
             self._price_tif(c, call, con2)
-            key = (a["account_id"], con["id"])
-            self._pledge[key] = self._pledge.get(key, 0) + q          # sixth review: these shares now cover these calls
+            # sixth / seventh reviews: these shares now cover these calls (``_take_legs`` counts them); the order says so to the server, which
+            # places it only while the shares are still free (409 NOT_COVERED)
+            call["_claim"] = True
             return [call]
+        call["_own_cover"] = True                     # a buy write: its calls are covered by the shares its own package buys
         self._price_tif(c, call, con2, market_only=True)
         if c["mods"].get("price") is not None:
             p = c["mods"]["price"]
@@ -3827,10 +3962,10 @@ class Resolver:
         if held_qty > 0 and held >= q:
             for leg in opts:
                 leg["flags"].append(_flag("SIDE_INFERRED", f"collar on {q:,} of the {held:,} {sym} held: the put and the call only, all-or-none", leg["span"]))
-            key = (a["account_id"], con["id"])
-            self._pledge[key] = self._pledge.get(key, 0) + q          # sixth review: these shares now cover the collar's call
+            opts[1]["_claim"] = True                  # sixth / seventh reviews: these shares now cover the collar's call (``_take_legs``)
             return opts
         if held_qty == 0:
+            opts[1]["_own_cover"] = True              # the collar buys its own shares first
             shares["qty"], shares["side"] = q, "BUY"
             self._price_tif(c, shares, con, market_only=True)
             shares["flags"].append(_flag("TYPE_DEFAULT", "no price: the shares at market (fills at the next executable delayed print)", shares["span"]))
@@ -3849,12 +3984,14 @@ class Resolver:
     @staticmethod
     def _not_free_words(pos: Optional[dict]) -> str:
         """Why shares held are not free: " (300 in working sells, 100 reserved by covered calls, 50 lent)", or "".  Sixth review: also the
-        shares the working sell-to-open calls will take and those a covered call or collar earlier in the instruction took."""
+        shares the working sell-to-open calls will take and those a covered call or collar earlier in the instruction took; seventh
+        review: those every earlier order of the instruction takes (a sale, a short sale, calls sold to open)."""
         pos = pos or {}
         why = []
         for n, words in ((pos.get("working_sells"), "in working sells"), (pos.get("reserved"), "reserved by covered calls"), (pos.get("lent"), "lent"),
                          (pos.get("calls_working"), "covering calls being sold (working orders)"),
-                         (pos.get("pledged_here"), "covering the calls of an earlier order in this instruction")):
+                         (pos.get("pledged_here"), "covering the calls of an earlier order in this instruction"),
+                         (pos.get("taken_here"), "taken by earlier orders of this instruction (sold, or covering calls they sell to open)")):
             if n:
                 why.append(f"{int(n):,} {words}")
         return f" ({', '.join(why)})" if why else ""
@@ -4013,6 +4150,13 @@ class Resolver:
             leg["position"] = pos
             held, free = int(pos["qty"]), int(pos["free"])
             cls2 = self._cls(con)
+            bz: dict = {}
+            if cls2 == "shares" and held > 0:
+                # seventh review: a close of shares sells them - net of the working sell-to-open calls' cover and of what this
+                # instruction's earlier orders took, as a sale (``_side``)
+                bz = dict(pos)
+                free = self._cover_free(t["account_id"], con["id"], bz, sale=True)
+            extra = int(bz.get("calls_working") or 0) + int(bz.get("pledged_here") or 0) + int(bz.get("taken_here") or 0)
             side = ({"option": "STC", "future": "SELL", "shares": "SELL"} if held > 0 else {"option": "BTC", "future": "BUY", "shares": "BUY_TO_COVER"})[cls2]
             lot = max(1, int(con.get("lot") or 1))
             q = free
@@ -4020,7 +4164,10 @@ class Resolver:
                 q = int(qa["value"])
             elif qa is not None and qa.get("kind") == "half":
                 q = (abs(held) // 2) // lot * lot
-            if free <= 0:
+            if free <= 0 and extra:
+                leg["flags"].append(_flag("WOULD_OVERSELL", f"the {abs(held):,} {con['words']} held in {t['account_id']} are not free{self._not_free_words(bz)}",
+                                          leg["span"]))
+            elif free <= 0:
                 leg["flags"].append(_flag("WOULD_OVERSELL", f"the {abs(held):,} {con['words']} held in {t['account_id']} are already in working orders", leg["span"]))
             elif q > free:
                 ch = [{"label": f"close {free:,}", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(free))])}] if qa and qa.get("span") else None
@@ -4030,7 +4177,7 @@ class Resolver:
                 leg["flags"].append(_flag("NOTHING_HELD", f"nothing to close in {t['account_id']}", leg["span"]))
             else:
                 leg["qty"], leg["side"] = q, side
-                busy = int(pos["working_sells"]) + int(pos["reserved"]) + int(pos["lent"]) if held > 0 else int(pos["working_covers"])
+                busy = int(pos["working_sells"]) + int(pos["reserved"]) + int(pos["lent"]) + extra if held > 0 else int(pos["working_covers"])
                 leg["flags"].append(_flag("SIDE_INFERRED", f"close = {SIDE_TEXT[side]} {q:,} of the {abs(held):,} {'held' if held > 0 else 'short'} in {t['account_id']}"
                                           + (f" ({busy:,} already in working orders or reserved)" if busy else ""), leg["span"]))
             self._price_tif(c, leg, con)
@@ -4106,6 +4253,11 @@ class Resolver:
             prim = eq[0]
             if prim["order_type"] not in (None, "MARKET", "LIMIT") or any(l["order_type"] not in (None, "MARKET", "LIMIT") for l in opts):
                 flags.append(_flag("COMBO_INVALID", "the legs of a package are market or limit orders (no stops)", span))
+            if prim.get("side") in ("SELL", "SELL_SHORT") and any(l.get("side") == "STO" and l["instrument"].get("right") == "C" for l in opts):
+                # seventh review (the CUSTOM package refuses it too): the options of a package are released as its shares fill - calls
+                # sold to open as their shares are SOLD would be written exactly as their cover goes
+                flags.append(_flag("COMBO_INVALID", "a package that sells its shares cannot sell calls to open as they go (the calls would be written as"
+                                   " their cover is sold): send the calls as their own order", span, self._ungroup_choice(src)))
             if src.get("price") is not None:
                 p = src["price"]
                 flags.append(_flag("COMBO_INVALID", f"a price on a {src.get('strategy') or 'package'} that buys the shares first is unclear (the shares, or a net"
@@ -4134,6 +4286,8 @@ class Resolver:
                         d["limit_px"] = l["limit_px"]
                 pk.append(d)
             combo["request"] = {"account_id": combo["account_id"], "tif": tif, "package": {"strategy_key": "CUSTOM", "legs": pk}}
+            if fill == "AON" and any(l.get("_claim") for l in legs):
+                combo["request"]["covered"] = True    # seventh review: a collar on shares held - placed only while they are still free
         for f in flags:
             _widen(self.text, f)
         combo["flags"] = sort_flags(flags)
@@ -4215,11 +4369,17 @@ class Resolver:
     def run(self, tree: dict) -> dict:
         self.text = tree["text"]
         self._tree = tree
-        self._pledge = {}                     # sixth review: each reading counts the shares its own covered calls / collars take, in order
+        # sixth / seventh reviews: each reading counts the shares its own orders take, in the order typed (``_take_legs``)
+        self._taken, self._pledged, self._shorted, self._called = {}, {}, {}, {}
         clauses = tree["clauses"]
         insts: List[List[dict]] = []
         for ci, c in enumerate(clauses):
-            insts.append([{"rep": b["rep"], "legs": self._clause_legs(ci, c, b, tree)} for b in self._books_for(ci, c, tree)])
+            row = []
+            for b in self._books_for(ci, c, tree):
+                got = self._clause_legs(ci, c, b, tree)
+                self._take_legs(c, got)
+                row.append({"rep": b["rep"], "legs": got})
+            insts.append(row)
         legs = [l for row in insts for inst in row for l in inst["legs"]]
         if len(legs) > MAX_LEGS:
             raise SmartTicketError("TOO_MANY_LEGS", f"the instruction makes {len(legs)} legs: at most {MAX_LEGS}", {"legs": len(legs), "max": MAX_LEGS})
@@ -4423,6 +4583,20 @@ class Resolver:
         secs = [(s, (starts[k + 1] - 1) if k + 1 < len(starts) else len(cl) - 1) for k, s in enumerate(starts)]
         if len(secs) < 2:
             return None
+        # seventh review: the shares an account holds are counted once over the whole instruction, in the order typed (``_take_legs``): a
+        # name whose orders fall in two sections, one of them reading that count (a covered call or collar, a close, a sale or short sale
+        # of the shares, an order on them with no side yet), is read whole - a choice on one of them could change how the other reads
+        where: Dict[str, set] = {}
+        reads: set = set()
+        for k, (s, e) in enumerate(secs):
+            for i in range(s, e + 1):
+                key = cl[i].get("underlying_key")
+                if key:
+                    where.setdefault(key, set()).add(k)
+                    if self._reads_cover(cl[i]):
+                        reads.add(key)
+        if any(len(where[key]) > 1 for key in reads):
+            return None
         pre = tree.get("prefix") or {}
 
         def booked(c):
@@ -4436,6 +4610,16 @@ class Resolver:
             last_book = bool((cl[hi]["mods"].get("scope") or {}).get("books"))
             ok.append(not (hi > lo and last_book and not all(booked(cl[i]) for i in range(lo, hi))))
         return secs, last_free, ok
+
+    @staticmethod
+    def _reads_cover(c: dict) -> bool:
+        """Seventh review: whether a clause's reading depends on the shares the instruction's other orders take (``_sections``)."""
+        k = c.get("kind")
+        if k in ("covered", "collar", "close"):
+            return True
+        if k == "order" and not c.get("option") and (c.get("instrument") or {}).get("kind") == "ticker":
+            return (c.get("verb") or {}).get("side") in (None, "sell", "SELL_SHORT", "STO", "STC")
+        return False
 
     def _section_of(self, tree: dict, plan: Optional[tuple], span0: Sequence[int], chs0: List[dict]) -> Optional[tuple]:
         """The section range a flag is checked on, or None (the whole instruction)."""

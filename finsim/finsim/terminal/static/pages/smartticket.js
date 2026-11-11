@@ -33,7 +33,12 @@
  *   rest go on (as Skip would).  Sixth review: its POST carries those confirmed figures (aon_confirmed {net_cash, previewed_at}) and the
  *   SERVER places it only when it fills at once within them - so the transport's resend of the same body (after a 503 or a dropped
  *   connection) is held to the confirm as well, and a combination never rests to fill later at other prices; its refusal (409
- *   AON_NOT_PLACED: nothing placed) leaves the item staged with the server's reason, as a skip.  A lost answer is looked up
+ *   AON_NOT_PLACED: nothing placed) leaves the item staged with the server's reason, as a skip.  Seventh review: a sequential
+ *   combination carries the cash its option legs at market had in that preview (seq_confirmed {options_cash, previewed_at}): when its
+ *   shares fill at once the server places it only within 0.5 % of it and 2 minutes of the preview (409 SEQ_NOT_PLACED: kept staged, as a
+ *   skip); a covered call or collar on shares held goes with covered: true (409 NOT_COVERED when the shares were sold meanwhile; a
+ *   refusal, the run stops).  A choice picked after the text was changed is taken from a new reading of the text as it now reads (the
+ *   same flag at the same words, the same label: choose / redoChoice), never put into words the server did not check it against.  A lost answer is looked up
  *   by its request id (a single order through T.api's reconcile, a combination by rid / rid:L1 / rid:H1) before anything else goes,
  *   and recorded as sent only when the orders there have the item's terms (a sequential package's option legs too: type, limit and
  *   size through their ratio; third review).
@@ -452,8 +457,11 @@
       say(S, 'read ' + plural(Number(c.legs != null ? c.legs : ans.legs.length), 'leg') + (c.combos ? ' (' + plural(Number(c.combos), 'combination') + ')' : '') +
           (c.blockers ? ': ' + plural(Number(c.blockers), 'red flag') + ' to fix (click a chip)' : (c.checks ? ': ' + plural(Number(c.checks), 'amber flag') + ' to look at' : '')) +
           '. Nothing is sent until you confirm.', c.blockers ? 'err' : 'ok');
+      var rd = S.redo; S.redo = null;
+      if (rd && rd.seq === seq) { redoChoice(S, rd); }
     }, function (e) {
       if (S.dead || seq !== S.pseq) { return; }
+      S.redo = null;
       S.parsing = false; paint(S);
       var msg = 'could not read it: ' + T.api.describe(e);
       say(S, msg, 'err'); T.ui.toast(msg, 'err', 5000);
@@ -462,6 +470,25 @@
       console.error('smart ticket: the answer could not be shown', x);
       if (!S.dead && seq === S.pseq) { S.parsing = false; S.parsed = null; S.items = []; S.rows = []; paint(S); say(S, 'the answer could not be shown: ' + (x && x.message || x), 'err'); }
     });
+  }
+  /* seventh review: an alternative picked on an older reading (the text changed since), taken from the reading of the text as it is now:
+     the same flag code at the same words (shifted by a change before them), the same label - once, else nothing is put in */
+  function redoChoice(S, rd) {
+    var ans = S.parsed || {}, combos = ans.combos || [], hits = [], seen = {};
+    (ans.legs || []).concat(combos).forEach(function (x) {
+      (x.flags || []).forEach(function (f) {
+        if (f.code !== rd.code || !Array.isArray(f.span) || Number(f.span[0]) !== rd.at) { return; }
+        (f.choices || []).forEach(function (c) {
+          var k = f.span.join(',') + '|' + c.clause;
+          if (String(c.label || '') === rd.label && !seen[k]) { seen[k] = true; hits.push({ f: f, c: c, combo: combos.indexOf(x) >= 0 }); }
+        });
+      });
+    });
+    if (hits.length !== 1) {
+      say(S, 'read again: "' + rd.was + '" is not offered on the text as it now reads (it would change another order) - nothing was put in; pick from this reading', 'err');
+      return;
+    }
+    choose(S, null, Object.assign({ $combo: hits[0].combo }, hits[0].f), hits[0].c);
   }
   /* D-b: a choice replaces the words its flag names (the flag's span: the leg's clause, the combination's text, or both clauses of a
      cover hint) in the text as read, then the text is read again; a flag without a span falls back to its leg's (or combination's) words */
@@ -476,9 +503,12 @@
     }
     return Array.isArray(r.leg.span) ? r.leg.span : null;
   }
-  /* fifth review: words the owner changed since the last read are kept - the choice goes into the text in the bar, where the words it
-     replaces are still the ones read (the change was before them or after them); when the owner changed those very words, nothing is
-     put in and the text is to be read again first */
+  /* fifth review: words the owner changed since the last read are kept.  Seventh review: a choice is checked by the server against the
+     text it READ (the other orders keep their side, book and account) - put into words changed since, it could carry its side, book or
+     account into an order the server never saw with it.  So when the owner changed the text before or after the choice's words, the text
+     in the bar is read again first (the change kept), and the same alternative - the same flag at the same words, the same label - is
+     taken from THAT reading, with its own words (the server may write out what other orders carry, or not offer it any more: then
+     nothing is put in and it says so); when the owner changed the choice's own words, nothing is put in and the text is to be read again */
   function choose(S, r, f, ch) {
     var read = S.parsed && typeof S.parsed.text === 'string' ? S.parsed.text : ui.bar.value;
     var sp = spanOf(S, r, f, ch);
@@ -486,14 +516,19 @@
     if (!(a >= 0 && b >= a && b <= read.length) || typeof ch.clause !== 'string') { say(S, 'this alternative has no place in the text to go to', 'err'); return; }
     var bar = ui.bar.value, text = read;
     if (S.parsedFrom != null && bar !== S.parsedFrom) {
-      var tail = read.length - a;
-      if (S.parsedFrom === read && bar.slice(0, b) === read.slice(0, b)) { text = bar; }                       /* changed after these words */
+      var tail = read.length - a, at = a;
+      if (S.parsedFrom === read && bar.slice(0, b) === read.slice(0, b)) { at = a; }                            /* changed after these words */
       else if (S.parsedFrom === read && bar.length >= tail && bar.slice(bar.length - tail) === read.slice(a)) {  /* changed before them */
-        var shift = bar.length - read.length; text = bar; a += shift; b += shift;
+        at = a + bar.length - read.length;
       } else {
         say(S, 'the words of this order changed since they were read: press Enter to read the text again, then pick the alternative', 'err');
         return;
       }
+      S.redo = { seq: S.pseq + 1, code: f.code, at: at, label: String(ch.label || ''), was: short(ch.label || ch.clause, 60) };
+      say(S, 'the text changed since it was read: reading it again first, then "' + S.redo.was + '" if it is still offered there ...');
+      parse(bar);
+      if (S.redo && S.pseq !== S.redo.seq) { S.redo = null; }        /* the reading did not start (it said why): nothing is kept for later */
+      return;
     }
     var next = text.slice(0, a) + ch.clause + text.slice(b);
     ui.bar.value = next; S.text = next;
@@ -937,6 +972,8 @@
       if (money(tt.net_cash)) { f2.push('net cash ' + money(tt.net_cash)); }
       if (money(tt.fees)) { f2.push('fees ' + money(tt.fees)); }
       if (money(tt.option_margin)) { f2.push('option margin ' + money(tt.option_margin)); }
+      var oc = it.fill_mode === 'SEQUENTIAL' ? seqOptionsCash(it.spec) : null;
+      if (oc != null) { f2.push('options at market ' + money(oc)); }
       if (it.ppv) { f2.push('shares: ' + execWords(it.ppv)); }
       li.appendChild(T.h('div', { class: 'muted' }, 'the server\'s package preview: ' + (f2.length ? f2.join(' . ') : 'no totals')));
       /* sixth review: the server holds it to these figures at its placement (aon_confirmed): it fills at once or nothing is placed - with no
@@ -944,7 +981,9 @@
       li.appendChild(T.h('div', { class: it.fill_mode === 'AON' ? 'smart-warn' : 'muted' }, it.fill_mode === 'AON' ? 'one combination: ' + AON_WORDS +
         '; it goes only at the net cash listed here (at most 0.5 % worse) and within 2 minutes of this preview, and only if it fills at once -' +
         ' it is never left working to fill later at other prices; else nothing is placed and it stays staged for you to confirm again' :
-        'one combination: the shares first, the options released as they fill'));
+        'one combination: the shares first, the options released as they fill' + (oc != null ? '; when the shares fill at once, its options at market go only' +
+        ' within 0.5 % of the cash listed here and within 2 minutes of this preview, else nothing is placed and it stays staged for you to confirm again;' +
+        ' options released later, as resting shares fill, go at the prices then' : '') + ' (a limit typed on a leg holds its price)'));
     }
     return li;
   }
@@ -960,7 +999,9 @@
       ' a moved price or a large order asks you again (moved: more than 0.5 % against you since this preview, or this preview older than 2 minutes).' +
       (list.some(isAon) ? ' An all-or-none combination is held to the net cash listed here the same way: moved or older, it is not sent - it stays staged' +
        ' with its new figures for you to confirm again, and the rest go on. The server holds it to those figures too, on every send and resend:' +
-       ' it is placed only if it fills at once within them.' : '')));
+       ' it is placed only if it fills at once within them.' : '') +
+      (list.some(function (x) { return x.kind === 'combo' && x.fill_mode === 'SEQUENTIAL'; }) ? ' A combination of shares and options whose shares fill at once' +
+       ' is held to the cash of its options at market listed here the same way, by the server on every send and resend.' : '')));
     var label = 'Send ' + plural(n, 'order');
     /* what the owner confirms is exactly what goes: no edit and no new reading while the confirm is open, and "Send" checks that every
        listed item is still staged with the same terms (else nothing is sent).  Second review: the preview each order was confirmed with
@@ -1011,10 +1052,20 @@
     return it.fill_mode === 'SEQUENTIAL' ? ((it.ppv && it.ppv.preview_id) || null) : null;
   }
   function isAon(it) { return it.kind === 'combo' && it.fill_mode === 'AON'; }
-  /* fourth review: the package preview the confirm lists for an all-or-none combination - {net, at, rule} - else null */
+  /* seventh review: the cash of a sequential combination's option legs at market in a package preview (received +, paid -), as text with
+     two decimals, or null when it has none (a leg with its own limit holds its price) */
+  function seqOptionsCash(spec) {
+    var legs = (spec && Array.isArray(spec.legs)) ? spec.legs.filter(function (l) { return l && l.kind === 'OPTION' && String(l.order_type || 'MARKET').toUpperCase() === 'MARKET'; }) : [];
+    if (!legs.length || legs.some(function (l) { return typeof l.cash_c !== 'number'; })) { return null; }
+    return (legs.reduce(function (s, l) { return s + l.cash_c; }, 0) / 100).toFixed(2);
+  }
+  /* fourth review: the package preview the confirm lists for an all-or-none combination - {net, at, rule} - else null; seventh review: a
+     sequential combination's too, with the cash of its option legs at market (opt), which the server holds them to when the shares fill
+     at once */
   function confirmedTotals(it) {
-    if (!isAon(it) || !it.spec) { return null; }
-    return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null };
+    if (it.kind !== 'combo' || !it.spec) { return null; }
+    if (!isAon(it) && it.fill_mode !== 'SEQUENTIAL') { return null; }
+    return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null, opt: it.fill_mode === 'SEQUENTIAL' ? seqOptionsCash(it.spec) : null };
   }
   function ageWords(s) { return s < 120 ? Math.round(s) + ' s' : Math.floor(s / 60) + ' minutes'; }
   /* why an all-or-none combination must not go now (null: it may): its fresh package preview against the one its confirm listed - the
@@ -1052,6 +1103,12 @@
        preview - on every send and every resend of it (a busy writer's 503 or a dropped connection resends the same body) - else nothing
        is placed (409 AON_NOT_PLACED) and it stays staged */
     if (isAon(it) && it.cbase) { b.aon_confirmed = { net_cash: it.cbase.net, previewed_at: it.cbase.at }; }
+    /* seventh review: a sequential combination carries the cash its option legs at market had in the package preview its confirm listed:
+       when its shares fill at once (its options released now) the server places it only within 0.5 % of that and 2 minutes of that
+       preview, on every send and resend - else nothing is placed (409 SEQ_NOT_PLACED) and it stays staged */
+    if (it.kind === 'combo' && it.fill_mode === 'SEQUENTIAL' && it.cbase && it.cbase.opt != null && Number(it.cbase.at) > 0) {
+      b.seq_confirmed = { options_cash: it.cbase.opt, previewed_at: it.cbase.at };
+    }
     b.confirm_large = false;
     b.smart = { ticket: S.ticket, item: it.key, clause: clauseOf(it) };
     return b;
@@ -1170,7 +1227,7 @@
       if (e && e.code === 'CONFIRM_REQUIRED') { return askConfirm(S, it, body, rid, e, d); }
       /* sixth review: the server held the all-or-none combination to its confirm and placed nothing (it moved, its preview is older than
          2 minutes, or it cannot fill at once): it stays staged with its new figures, and the rest go on */
-      if (e && e.code === 'AON_NOT_PLACED') {
+      if (e && (e.code === 'AON_NOT_PLACED' || e.code === 'SEQ_NOT_PLACED')) {
         it.result = { state: 'skipped', text: T.api.describe(e) + ' - it stays staged with its new figures: submit it again to confirm them' };
         return 'skip';
       }

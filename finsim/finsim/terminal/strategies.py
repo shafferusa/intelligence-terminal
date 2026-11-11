@@ -1186,6 +1186,14 @@ def _custom_spec(services, account_id: str, params: dict, materialise=None) -> P
         raise RejectError("COMBO_INVALID", f"legs {stock[0]['n']} and {stock[1]['n']} are both share legs: {CUSTOM_ONE_NAME}",
                           {"legs": [it["n"] for it in stock]})
     fill_mode = "SEQUENTIAL" if stock else "AON"
+    if stock and stock[0]["side"] in ("SELL", "SELL_SHORT"):
+        # 1.0.7.2 seventh review: the options of a sequential package are released as its share leg fills - calls sold to open as the shares
+        # are SOLD would be written exactly as their cover goes (a sale fits closing legs or protective buys, a purchase calls sold to open)
+        calls = [it for it in opts if it["side"] == "STO" and _option_terms(it["iid"], it["inst"])[1] == "C"]
+        if calls:
+            raise RejectError("COMBO_INVALID", f"leg {calls[0]['n']} sells calls to open while leg {stock[0]['n']} sells the shares: a package that sells its"
+                                               " shares cannot sell calls to open as they go (the calls would be written as their cover is sold) - send the"
+                                               " calls as their own order", {"legs": [stock[0]["n"]] + [it["n"] for it in calls]})
     for it in items:
         n = it["n"]
         if fill_mode == "AON":

@@ -30,6 +30,7 @@ import time
 import unittest
 from datetime import date
 from decimal import Decimal
+from typing import Dict
 
 from tests import terminal_smart_corpus as corpus
 from tests.terminal_helpers import _Log, _h_test_buy, buy, execute, make_runtime, sell
@@ -1629,6 +1630,327 @@ class ChoicesSixthReview(_FifthReviewBase):
                                     a = f["span"][0]
                                     mine = [l for l in o2["legs"] if a <= l["span"][0] < a + len(ch["clause"]) and typo[code] not in l["clause"]]
                                     self.assertTrue(not mine or any(l["book"] == code for l in mine), (seed, ch, [(l["n"], l["book"]) for l in mine]))
+
+
+# ===== 1.0.7.2 seventh review: the shares an account holds are counted once over an instruction ======================================
+#: the worlds of the seventh review's cover property (fictional names and numbers): W1 = the corpus world with a WIDG chain and 200 WIDG
+#: held at the fictional prime broker I1:PB_MS; W2 = W1 with a working sell-to-open WIDG call in P1:US_EXCHANGE and another at I1:PB_MS
+#: (each takes 100 shares as its cover); W3 = W1 with 200 more ACME in the Fund book (300 held) and a working sale of 50 of them; L = the
+#: corpus world with 300 ACME held in P1:US_EXCHANGE (the Fund book's 100 ACME free there as everywhere)
+SEVENTH_WIDG_CHAIN = {"underlying": "WIDG", "cboe": "WIDG", "spot": 40, "expiries": ("2026-11-20", corpus.DEC), "strikes": (20, 25, 35, 40, 45), "skip": (),
+                      "age_s": 30, "trade_time": corpus.TRADE_TIME, "extra": ()}
+
+
+def seventh_world(kind: str) -> dict:
+    w = dict(corpus.WORLD)
+    if kind == "L":
+        w["positions"] = list(corpus.WORLD["positions"]) + [(P, "ACME", "LONG", 300, "225")]
+        return w
+    wc45, wc40 = "WIDG261218C00045000", "WIDG261218C00040000"
+    w["instruments"] = list(corpus.WORLD["instruments"]) + [corpus._opt("WIDG", wc45), corpus._opt("WIDG", wc40)]
+    w["chains"] = list(corpus.WORLD["chains"]) + [dict(SEVENTH_WIDG_CHAIN)]
+    w["positions"] = list(corpus.WORLD["positions"]) + [(PB, "WIDG", "LONG", 200, "40")]
+    w["working"] = list(corpus.WORLD["working"])
+    if kind == "W2":
+        w["working"] += [{"order_id": "O-ST7-W1", "request_id": "test:st7-working-1", "account_id": P, "instrument_id": wc45, "side": "STO", "qty": 1,
+                          "order_type": "LIMIT", "limit_px": "9.00", "tif": "DAY", "status": "WORKING", "session_group": "US_EQUITY_OPTIONS"},
+                         {"order_id": "O-ST7-W2", "request_id": "test:st7-working-2", "account_id": PB, "instrument_id": wc40, "side": "STO", "qty": 1,
+                          "order_type": "LIMIT", "limit_px": "9.00", "tif": "DAY", "status": "WORKING", "session_group": "US_EQUITY_OPTIONS"}]
+    if kind == "W3":
+        w["positions"] += [(F, "ACME", "LONG", 200, "225")]
+        w["working"] += [{"order_id": "O-ST7-W3", "request_id": "test:st7-working-3", "account_id": F, "instrument_id": "ACME", "side": "SELL", "qty": 50,
+                          "order_type": "LIMIT", "limit_px": "260", "tif": "DAY", "status": "WORKING", "session_group": "US_EQUITY"}]
+    return w
+
+
+def _seventh_goes(out, l) -> bool:
+    return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+
+
+def _seventh_claim(l) -> bool:
+    """A call said to be covered by shares held: "covered call on N of the M ... held free ...: the calls only, no shares bought", or a
+    collar's "the put and the call only"."""
+    return any(f["code"] == "SIDE_INFERRED" and ((str(f["text"]).startswith("covered call on") and "the calls only" in f["text"])
+                                                 or (str(f["text"]).startswith("collar on") and "the put and the call only" in f["text"])) for f in l["flags"])
+
+
+def seventh_cc1(rt, out) -> list:
+    """The cover property's CC1 on one reading: per account and name with a SENDABLE call labelled covered by shares held, the shares left
+    once the instruction's sendable orders ran (held - working sells - sold - shorted + bought) cover every call labelled so, the calls
+    already short or working, the calls of its buy writes and every call sold to open before the last one labelled covered."""
+    combos = {c["id"]: c for c in out["combos"]}
+    by: Dict[tuple, list] = {}
+    for l in out["legs"]:
+        if not _seventh_goes(out, l):
+            continue
+        inst = l.get("instrument") or {}
+        name = inst.get("underlying_id") if inst.get("kind") == "OPTION" else inst.get("id")
+        if l["account_id"] and name:
+            by.setdefault((l["account_id"], name), []).append(l)
+    probs = []
+    for (aid, name), legs in by.items():
+        if not any(_seventh_claim(l) and (l.get("instrument") or {}).get("right") == "C" and l["side"] == "STO" for l in legs):
+            continue
+        with rt.db.reader() as conn:
+            h = conn.execute("SELECT COALESCE(SUM(qty), 0) n FROM v_positions WHERE account_id=? AND instrument_id=?", (aid, name)).fetchone()["n"]
+            w = conn.execute("SELECT COALESCE(SUM(qty - filled_qty), 0) n FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL', 'SELL_SHORT')"
+                             " AND status IN ('WORKING', 'PARTIAL', 'SUSPENDED')", (aid, name)).fetchone()["n"]
+            c = conn.execute("SELECT COALESCE(SUM(-p.qty), 0) n FROM v_positions p JOIN instruments i ON i.instrument_id=p.instrument_id WHERE p.account_id=?"
+                             " AND i.kind='OPTION' AND i.right='C' AND i.underlying_id=? AND p.qty < 0", (aid, name)).fetchone()["n"]
+            c += conn.execute("SELECT COALESCE(SUM(o.qty - o.filled_qty), 0) n FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id WHERE"
+                              " o.account_id=? AND o.side='STO' AND o.status IN ('WORKING', 'PARTIAL', 'SUSPENDED') AND i.kind='OPTION' AND i.right='C'"
+                              " AND i.underlying_id=?", (aid, name)).fetchone()["n"]
+        sold = shorted = bought = cov = bw = sto_seen = sto_before = 0
+        for l in legs:
+            inst = l.get("instrument") or {}
+            q = int(l["qty"] or 0)
+            if inst.get("kind") != "OPTION":
+                sold += q if l["side"] == "SELL" else 0
+                shorted += q if l["side"] == "SELL_SHORT" else 0
+                bought += q if l["side"] in ("BUY", "BUY_TO_COVER") else 0
+                continue
+            if inst.get("right") != "C" or l["side"] != "STO":
+                continue
+            combo = combos.get(l["combo"]) if l["combo"] else None
+            own = combo is not None and any((out["legs"][k - 1].get("instrument") or {}).get("kind") != "OPTION" and out["legs"][k - 1]["side"] == "BUY"
+                                            for k in combo["legs"])
+            if _seventh_claim(l):
+                cov += q
+                sto_before = sto_seen
+            elif own:
+                bw += q
+            else:
+                sto_seen += q
+        left = max(0, int(h)) - int(w) - sold - shorted + bought
+        if left < 100 * (int(c) + cov + bw + sto_before):
+            probs.append(f"CC1 {aid} {name}: {left} shares left for {int(c) + cov + bw + sto_before} short calls - sendable: "
+                         + "; ".join(f"{l['side']} {l['qty']} {(l.get('instrument') or {}).get('id')}" for l in legs))
+    return probs
+
+
+def seventh_s1_s2(out, free_held: dict) -> list:
+    """The Smart Ticket lens property: walked in send order per account, a sendable call said to be covered by shares held has them at
+    its turn (S1: shares sold before it + 100 for each call sold to open before it and of its own <= held free + bought before it), and no
+    sendable sale after it sells them (S2)."""
+    probs = []
+    for aid, free in free_held.items():
+        sold = bought = calls = said = 0
+        for l in out["legs"]:
+            if not _seventh_goes(out, l) or l["account_id"] != aid:
+                continue
+            inst = l.get("instrument") or {}
+            q = int(l["qty"])
+            if inst.get("id") == "ACME" and l["side"] == "SELL":
+                sold += q
+                if said and sold + 100 * said > free + bought:
+                    probs.append(f"S2 {aid}: leg {l['n']} sells {q} ACME after {said} call(s) said covered")
+            elif inst.get("id") == "ACME" and l["side"] == "BUY":
+                bought += q
+            elif inst.get("kind") == "OPTION" and inst.get("underlying_id") == "ACME" and inst.get("right") == "C" and l["side"] == "STO":
+                if _seventh_claim(l) and sold + 100 * (calls + q) > free + bought:
+                    probs.append(f"S1 {aid}: leg {l['n']} said covered after {sold} sold and {calls} call(s) sold to open")
+                calls += q
+                said += q if _seventh_claim(l) else 0
+    return probs
+
+
+#: the cover property's reported seeds (seventh review, CC1: SOLD, STO, SHORT, MIXED) as (seed, world, selected book, text)
+SEVENTH_CC1_SEEDS = [
+    (770010, "W2", "P", "(buy write 100 ACME Jan 15 2027 260 in the Fund book, sell 250 ACME in the Fund book); sell all ACME in the Fund book, and covered call 100"
+                        " ACME Dec 18 2026 250 in the Fund book"),
+    (770020, "W2", "F", "sell 150 WIDG in the Personal book, and covered call 100 WIDG Dec 18 2026 45 in the Personal book"),
+    (770046, "W3", "I", "covered call 200 WIDG Dec 18 2026 45 then sell 100 WIDG"),
+    (770052, "W3", "P", "(covered call 200 WIDG Dec 18 2026 45, sell 100 WIDG)"),
+    (770053, "W2", "I", "sell all WIDG; then covered call 100 WIDG Dec 18 2026 45 in the Institutional book"),
+    (770038, "W1", "F", "covered call 200 ACME Dec 18 2026 250 and sell 200 ACME, sell 1 ACME Dec 18 2026 250 call then collar 100 ACME Dec 18 2026 210/250"),
+    (770168, "W3", "F", "sto 2 WIDG Nov 20 2026 45 calls in the Personal book and covered call 200 WIDG Dec 18 2026 45 in the Personal book"),
+    (770130, "W2", "I", "(sell 150 WIDG, covered call 100 WIDG Dec 18 2026 40), and covered call 300 WIDG Dec 18 2026 45 in the Institutional book"),
+    (770137, "W3", "I", "short 50 WIDG in the Institutional book; sell 150 WIDG then covered call 200 WIDG Dec 18 2026 45"),
+    (770141, "W1", "F", "(covered call 100 ACME Dec 18 2026 260 in the Fund book, sell 50 ACME in the Fund book) then sell to open 1 ACME Jan 15 2027 260 call"),
+    (770142, "W3", "P", "covered call 200 WIDG Dec 18 2026 40 in the Personal book; covered call 300 WIDG Nov 20 2026 45 then covered call 100 WIDG Nov 20 2026 40;"
+                        " short 100 WIDG"),
+    (770157, "W3", "F", "covered call 100 ACME Dec 18 2026 250, and sell 100 ACME; then covered call 200 ACME Jan 15 2027 250 and covered call 100 ACME Jan 15 2027 250"),
+    (770162, "W1", "P", "covered call 200 WIDG Dec 18 2026 40, and buy write 100 WIDG Dec 18 2026 45; then sell 50 WIDG"),
+    (770171, "W2", "P", "covered call 100 WIDG Nov 20 2026 45, and sell 2 WIDG Dec 18 2026 40 calls, buy write 100 WIDG Dec 18 2026 40 in the Personal book, and sell"
+                        " 50 WIDG"),
+    (770173, "W2", "P", "sell 250 ACME in the Fund book, and covered call 200 ACME Dec 18 2026 250 in the Fund book; short 50 ACME in the Fund book, and covered call"
+                        " 100 ACME Dec 18 2026 260 in the Fund book"),
+    (770176, "W3", "F", "sell 200 ACME, and covered call 100 ACME Dec 18 2026 250; sell to open 2 ACME Dec 18 2026 250 calls in the Fund book, short 100 ACME"),
+]
+#: the choice property's X3 seeds (seventh review): the instruction the choice was offered on, then the text it gave
+SEVENTH_X3_SEEDS = [
+    (772058, "W1", "F", "in the Personal and Fund books: sell 2 ACME 230p Dec 18 2026 limit 1.00, and sell 300 WIDG in the Personal and Fund books; covered call 300 WIDG"
+                        " Dec 18 2026 45 in the Personal and Fund books"),
+    (772058, "W1", "F", "in the Personal and Fund books: sell 2 ACME 230p Dec 18 2026 limit 1.00, and sell 200 WIDG in the Personal book and short 100 WIDG in the"
+                        " Personal book; sell 300 WIDG in the Fund book; covered call 200 WIDG Dec 18 2026 45 in the Personal book; covered call 300 WIDG Dec 18 2026 45"
+                        " in the Fund book"),
+    (772143, "W1", "P", "covered call 1 contract WIDG Dec 18 2026 45 then sell 200 WIDG"),
+    (772143, "W1", "P", "covered call 100 WIDG Dec 18 2026 45 then sell 200 WIDG"),
+    (772242, "W3", "P", "covered call 200 WIDG Dec 18 2026 40 and sto 200 WIDG in the Fnd book at 2.50 then 100 WIDG"),
+    (772242, "W3", "P", "covered call 200 WIDG Dec 18 2026 40 and short 200 WIDG in the Personal book at 2.50 then sto 100 WIDG in the Personal book"),
+    (772415, "W1", "P", "(sell 250 WIDG, covered call 200 WIDG Dec 18 2026 40)"),
+    (772415, "W1", "P", "sell 200 WIDG and short 50 WIDG, covered call 200 WIDG Dec 18 2026 40"),
+    (772698, "W1", "P", "sell all WIDG; covered call 200 WIDG Dec 18 2026 40 at us exchange and all WIDG Dec 18 26 45 calls, and sell 100 LOTX"),
+    (772698, "W1", "P", "sell 200 WIDG and short 100 WIDG; covered call 200 WIDG Dec 18 2026 40 at us exchange and close all WIDG Dec 18 26 45 calls, and sell 100 LOTX"),
+    (772803, "W1", "I", "stc half WIDG; covered call 200 WIDG Dec 18 2026 40 at 2.50 in the Institutional book at us exchange"),
+    (772803, "W1", "I", "sell half WIDG at pb ms; covered call 200 WIDG Dec 18 2026 40 at 2.50 in the Institutional book at pb ms"),
+    (772875, "W2", "P", "in the Fund book: sto 2 ACME Dec 18 2026 240 calls in the Fund and Institutional books and covered call 200 ACME Dec 18 2026 260 and sell 2 WIDG"
+                        " Dec 18 2026 35/40 put spread in the Personal book"),
+    (772875, "W2", "P", "in the Fund book: sto 2 ACME Dec 18 2026 240 calls in the Fund and Institutional books and covered call 100 ACME Dec 18 2026 260 and sell 2 WIDG"
+                        " Dec 18 2026 35/40 put spread in the Personal book"),
+    (772932, "W1", "P", "covered call 100 WIDG Nov 20 2026 45 together, and sell all WIDG"),
+    (772932, "W1", "P", "covered call 100 WIDG Nov 20 2026 45, and sell 200 WIDG and short 100 WIDG"),
+    (773767, "W3", "P", "sell 2 WIDG Nov 2026 40 calls, and collar 200 WIDG Dec 18 2026 35/45 and cover 1 LOTX in the Institutional book"),
+    (773767, "W3", "P", "sell 2 WIDG Nov 2026 40 calls at pb ms, and collar 200 WIDG Dec 18 2026 35/45 and cover 10 LOTX in the Institutional book"),
+]
+#: the Smart Ticket lens property's reported seeds (S1 / S2) as (seed, selected book, text), on world L
+SEVENTH_LENS_SEEDS = [
+    (770001, "P", "close ACME and collar 100 ACME Dec 18 2026 220/260"), (770002, "F", "covered call 100 ACME Dec 18 2026 240 and sell half ACME"),
+    (770018, "F", "covered call 100 ACME Dec 18 2026 250, close ACME"), (770020, "F", "sell 100 ACME limit 231 then collar 100 ACME Dec 18 2026 210/250"),
+    (770030, "F", "sell 1 ACME Dec 18 2026 260 call, covered call 100 ACME Jan 15 2027 260"),
+    (770027, "F", "sell half ACME then sell half ACME; collar 100 ACME Dec 18 2026 220/260"),
+    (770028, "F", "buy 1 ACME Dec 18 2026 220 put; sell all ACME and buy 50 WIDG then collar 100 ACME Dec 18 2026 220/260"),
+    (770029, "F", "sell 1 ACME Dec 18 2026 260 call and collar 100 ACME Dec 18 2026 220/260 then sell 1 ACME Dec 18 2026 260 call"),
+    (770032, "F", "sell 3 ACME Dec 18 2026 260 call and collar 100 ACME Dec 18 2026 220/260"),
+]
+
+
+class CoverCountedOnceSeventhReview(unittest.TestCase):
+    """1.0.7.2 seventh review: in one instruction the shares an account holds are counted once, in the order typed - a sale or a short sale
+    takes the shares it sells, every call sold to open on the name 100 a contract (a covered call's or a collar's own calls too).  A covered
+    call or collar is "the calls only" / "the put and the call only" only when its shares are still free at its turn (else SIDE_SPLIT with
+    the count); a sale after one is WOULD_OVERSELL naming the calls it would uncover (never offering a short sale of them); a call sold to
+    open or a short sale on shares a covered call or collar of the same instruction covers is COVER_TAKEN; a package that sells its shares
+    never sells calls to open as they go.  Every seed the review's three properties reported is replayed by its text (CC1, S1 / S2, X3)."""
+    worlds: Dict[str, tuple] = {}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.worlds = {}
+        for kind in ("W1", "W2", "W3", "L"):
+            tmp, rt = _ResolverBase._make()
+            cls.worlds[kind] = (tmp, rt)
+            build_world(unittest.TestCase(), rt, seventh_world(kind))
+
+    @classmethod
+    def tearDownClass(cls):
+        for tmp, rt in cls.worlds.values():
+            rt.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def parse(self, kind: str, text: str, book: str) -> dict:
+        return st.parse_view(self.worlds[kind][1], {"text": text, "book": book})
+
+    @staticmethod
+    def staged(out) -> list:
+        return [(l["n"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), "sendable" if _seventh_goes(out, l) else "blocked",
+                 [f["code"] for f in l["flags"] if f["severity"] == "blocker"]) for l in out["legs"]]
+
+    def test_a_the_shares_one_instruction_sells_or_writes_calls_on_are_never_counted_as_cover(self):
+        # the Fund book holds 100 ACME free in F1:US_EXCHANGE: what the sendable orders take of them, never more than held + bought
+        def taken(out):
+            sold = calls = bought = 0
+            for l in out["legs"]:
+                if not _seventh_goes(out, l) or l["account_id"] != F:
+                    continue
+                inst = l.get("instrument") or {}
+                if inst.get("id") == "ACME":
+                    sold += int(l["qty"]) if l["side"] == "SELL" else 0
+                    bought += int(l["qty"]) if l["side"] == "BUY" else 0
+                elif inst.get("kind") == "OPTION" and inst.get("underlying_id") == "ACME" and inst.get("right") == "C" and l["side"] == "STO":
+                    calls += int(l["qty"])
+            return sold + 100 * calls - bought
+        ref = self.parse("L", "covered call 100 ACME Dec 18 2026 240, covered call 100 ACME Dec 18 2026 250", "F")     # the sixth fix
+        self.assertEqual(100, taken(ref), self.staged(ref))
+        for text in ("sell 100 ACME, covered call 100 ACME Dec 18 2026 240", "covered call 100 ACME Dec 18 2026 240 and sell 100 ACME",
+                     "covered call 100 ACME Dec 18 2026 240; sell all ACME", "covered call 100 ACME Dec 18 2026 240; close ACME",
+                     "collar 100 ACME Dec 18 2026 220/260; sell 100 ACME", "sell 1 ACME Dec 18 2026 240 call, covered call 100 ACME Dec 18 2026 250",
+                     "covered call 100 ACME Dec 18 2026 250; sto 1 ACME Dec 18 2026 240 call", "covered call 100 ACME Dec 18 2026 250; short 100 ACME",
+                     "(covered call 100 ACME Dec 18 2026 240, sell 100 ACME)", "covered call 100 ACME Dec 18 2026 240 then sell half ACME"):
+            with self.subTest(text=text):
+                out = self.parse("L", text, "F")
+                self.assertLessEqual(taken(out), 100, self.staged(out))
+                self.assertEqual([], seventh_s1_s2(out, {F: 100}))
+                self.assertEqual([], seventh_cc1(self.worlds["L"][1], out))
+
+    def test_b_the_second_order_is_refused_with_the_count_and_what_took_the_shares(self):
+        out = self.parse("L", "covered call 100 ACME Dec 18 2026 240 and sell 100 ACME", "F")
+        call, sale = out["legs"]
+        self.assertEqual(("STO", True, True), (call["side"], call["request"].get("covered"), _seventh_claim(call)))
+        f = next(f for f in sale["flags"] if f["code"] == "WOULD_OVERSELL")
+        self.assertIn("the free quantity in F1:US_EXCHANGE is 0 (held 100; 100 covering the calls of an earlier order in this instruction)", f["text"])
+        self.assertEqual([], f.get("choices") or [])                             # never a short sale of shares that cover calls
+        out = self.parse("L", "sell 100 ACME, covered call 100 ACME Dec 18 2026 240", "F")
+        self.assertEqual(("SELL", 100), (out["legs"][0]["request"]["side"], out["legs"][0]["request"]["qty"]))
+        f = next(f for f in out["legs"][-1]["flags"] if f["code"] == "SIDE_SPLIT")
+        self.assertIn("0 of the 100 ACME held in F1:US_EXCHANGE are free (100 taken by earlier orders of this instruction", f["text"])
+        self.assertIn("buy write 100 (buy the shares)", [c["label"] for c in f.get("choices") or []])
+        for text, n in (("covered call 100 ACME Dec 18 2026 250; sto 1 ACME Dec 18 2026 240 call", 2), ("covered call 100 ACME Dec 18 2026 250; short 100 ACME", 2)):
+            out = self.parse("L", text, "F")
+            f = next(f for f in out["legs"][n - 1]["flags"] if f["code"] == "COVER_TAKEN")
+            self.assertEqual("blocker", f["severity"])
+            self.assertIn("100 of the 100 ACME held in F1:US_EXCHANGE cover the calls of a covered call or collar earlier in this instruction", f["text"])
+            self.assertIsNone(out["legs"][n - 1]["request"])
+        # a strategy after it: a call spread sells no call beyond the one it buys (it goes); a straddle's call has no shares left (refused)
+        out = self.parse("L", "covered call 100 ACME Dec 18 2026 250; sell 1 ACME Dec 18 2026 240/250 call spread", "F")
+        self.assertTrue(all(_seventh_goes(out, l) for l in out["legs"]), self.staged(out))
+        out = self.parse("L", "covered call 100 ACME Dec 18 2026 250; sell 1 ACME Dec 18 2026 240 straddle", "F")
+        self.assertEqual([(2, "STO", 1, "ACME261218C00240000", "blocked", ["COVER_TAKEN"])], [x for x in self.staged(out) if x[5]])
+        # an account that holds the shares covers a call sold to open after a covered call on part of them; none held: a call is written as before
+        out = self.parse("L", "covered call 100 ACME Dec 18 2026 250; sto 1 ACME Dec 18 2026 240 call", "P")              # 300 ACME held in P1
+        self.assertTrue(all(_seventh_goes(out, l) for l in out["legs"]), self.staged(out))
+        out = self.parse("L", "sto 1 WIDG Dec 18 2026 45 call", "F")
+        self.assertTrue(all(_seventh_goes(out, l) for l in out["legs"]), self.staged(out))
+        # a collar on shares held goes as a package said to be covered: the server places it only while the shares are free
+        out = self.parse("L", "collar 100 ACME Dec 18 2026 220/260", "F")
+        (cb,) = out["combos"]
+        self.assertEqual(("AON", True), (cb["fill_mode"], cb["request"].get("covered")))
+        # grouped with a sale of its shares: the calls would be written as their cover is sold - refused
+        out = self.parse("L", "(sell 100 ACME, sell 1 ACME Dec 18 2026 240 call)", "F")
+        (cb,) = out["combos"]
+        self.assertIsNone(cb["request"])
+        self.assertTrue(any(f["code"] == "COMBO_INVALID" and "a package that sells its shares cannot sell calls to open as they go" in f["text"] for f in cb["flags"]))
+
+    def test_c_a_choice_that_would_change_another_orders_cover_is_never_offered(self):
+        # "100 ACME" has no side: "sell" would take the shares the covered call after it reads as free - only "buy" is offered
+        out = self.parse("L", "100 ACME, covered call 100 ACME Dec 18 2026 240", "F")
+        labels = [c["label"] for f in out["legs"][0]["flags"] if f["code"] == "MISSING_SIDE" for c in f.get("choices") or []]
+        self.assertFalse(any(x.startswith("sell") for x in labels), labels)
+        for l0 in labels:
+            f = next(f for f in out["legs"][0]["flags"] if f["code"] == "MISSING_SIDE")
+            ch = next(c for c in f["choices"] if c["label"] == l0)
+            a, b = f["span"]
+            out2 = self.parse("L", out["text"][:a] + ch["clause"] + out["text"][b:], "F")
+            self.assertTrue(_seventh_claim(out2["legs"][-1]), self.staged(out2))
+
+    def test_d_the_cover_propertys_seeds_keep_cc1(self):
+        for seed, kind, book, text in SEVENTH_CC1_SEEDS:
+            with self.subTest(seed=seed):
+                out = self.parse(kind, text, book)
+                self.assertEqual([], seventh_cc1(self.worlds[kind][1], out), self.staged(out))
+
+    def test_e_the_lens_propertys_seeds_keep_s1_s2(self):
+        for seed, book, text in SEVENTH_LENS_SEEDS:
+            with self.subTest(seed=seed):
+                out = self.parse("L", text, book)
+                self.assertEqual([], seventh_s1_s2(out, {P: 300, F: 100}), self.staged(out))
+                self.assertEqual([], seventh_cc1(self.worlds["L"][1], out), self.staged(out))
+
+    def test_f_the_choice_propertys_seeds_keep_x3_every_choice_on_them_too(self):
+        for seed, kind, book, text in SEVENTH_X3_SEEDS:
+            with self.subTest(seed=seed, text=text):
+                rt = self.worlds[kind][1]
+                out = self.parse(kind, text, book)
+                self.assertEqual([], seventh_cc1(rt, out), self.staged(out))
+                for item in out["legs"] + out["combos"]:
+                    for f in item["flags"]:
+                        for ch in f.get("choices") or []:
+                            a, b = f["span"]
+                            try:
+                                out2 = self.parse(kind, text[:a] + ch["clause"] + text[b:], book)
+                            except st.SmartTicketError:
+                                continue
+                            self.assertEqual([], seventh_cc1(rt, out2), (f["code"], ch["label"], out2["text"], self.staged(out2)))
 
 # ===== the route on a full runtime: registration, 400s, the corpus and the purity proof ================================================
 def _build_full(tmp):
