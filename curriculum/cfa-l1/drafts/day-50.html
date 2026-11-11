@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>“Beta is dead”? Fama and French found a flat slope in 1992; Fischer Black said not so fast — CFA Math, Day 50 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "“Beta is dead”? Fama and French found a flat slope in 1992; Fischer Black said not so fast",
+    "path": "reports/cfa/l1/day-50.html",
+    "summary": "Day 50 of CFA Math: a regression slope is tested like a mean, t = (b̂1 − B1) / s(b̂1) with n − 2 degrees of freedom; Logan regresses six months of a stock’s returns on the market’s to get its beta (1.27), tests it against 0 (t = 5.80, reject) and against 1 (t = 1.22, fail to reject) on both calculators, and sees why the slope test, the correlation test and F = t² are one test.",
+    "headlines": [
+      "Day 50 of 90 · Quantitative Methods: test a regression slope with t = (b̂1 − B1) / s(b̂1) and n − 2 df, and read a stock’s beta as its slope on the market",
+      "Calculator: beta and r from six months of returns, then the t-tests of β = 0 and β = 1, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>“Beta is dead”? Fama and French found a flat slope in 1992; Fischer Black said not so fast</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A fitted slope is never exactly 0 or exactly 1. Count how many of its own standard errors it sits from the value you are testing, and the t-table tells you whether the gap is real or noise.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 50 of 90 &middot; LM10 Applications of Simple Linear Regression in Finance &middot; Testing the slope; beta by regression</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="50">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 47 and 43, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="0.8" data-tol="0.01" data-pct data-show="0.80">
+          <p class="cq-stem"><b>From Day 47.</b> A stock&rsquo;s monthly returns (Y) and the market&rsquo;s (X) have a correlation of 0.6. The stock&rsquo;s standard deviation is 5.0%, the market&rsquo;s 4.0%. Their average monthly returns are 1.4% (stock) and 0.8% (market). What is the intercept of the least-squares line? In %, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Slope first: b&#770;<sub>1</sub> = r &times; s<sub>Y</sub> / s<sub>X</sub>. The line passes through the point of means, and that gives the intercept.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>b&#770;<sub>1</sub> = 0.6 &times; 5.0 / 4.0 = 0.75. b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub>X&#772; = 1.4 &minus; 0.75 &times; 0.8 = 1.4 &minus; 0.60 = <b>0.80%</b>.</p>
+            <p>The usual slips: s<sub>X</sub> / s<sub>Y</sub> instead of s<sub>Y</sub> / s<sub>X</sub> (slope 0.48, intercept 1.02%), or leaving out r (slope 1.25, intercept 0.40%). Keep this line in mind: today the slope is the stock&rsquo;s beta and the intercept its alpha.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 43.</b> 36 monthly returns have a mean of 1.0% and a sample standard deviation of 4.2%. With t = 2.030 (35 df, 2.5% in each tail), the lower limit of the 95% confidence interval for the mean monthly return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 0.76%</span></label>
+              <p class="cq-why">That divides s by n (4.2 / 36 = 0.117) instead of by &radic;n. The standard error shrinks with the square root of the sample size.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. &minus;0.42%</span></label>
+              <p class="cq-why">Right: SE = 4.2 / &radic;36 = 0.70, and 1.0 &minus; 2.030 &times; 0.70 = 1.0 &minus; 1.421 = &minus;0.421%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. &minus;0.15%</span></label>
+              <p class="cq-why">That uses 1.645, the z-value for 5% in one tail: a 90% interval, and z although &sigma; is unknown. Too narrow on both counts.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Interval = X&#772; &plusmn; t &times; s / &radic;n = 1.0 &plusmn; 2.030 &times; 0.70 = 1.0 &plusmn; 1.421: from &minus;0.42% to 2.42%. Today does the same with a slope: estimate &plusmn; t &times; its standard error.</p></details>
+        </div>
+      </section>
+
+      <h3>&ldquo;Beta is dead&rdquo; &ndash; or just hard to measure?</h3>
+      <p>In June 1992 Eugene Fama and Kenneth French published &ldquo;The Cross-Section of Expected Stock Returns&rdquo; in the <i>Journal of Finance</i>. They studied US stocks from 1963 to 1990.</p>
+      <p>The theory under test was simple. A stock that swings more with the market has a higher beta, and it should earn more on average to pay for that risk.</p>
+      <p>Their abstract delivered the blow. Once beta was allowed to vary for reasons unrelated to size, &ldquo;the relation between market beta and average return is flat, even when beta is the only explanatory variable.&rdquo; Size and book-to-market, meanwhile, explained a great deal.</p>
+      <p>Fama&rsquo;s view had reached the press months earlier. As Fischer Black later cited it: &ldquo;Eugene Fama says (according to Eric Berg of The New York Times, February 18, 1992) beta as the sole variable explaining returns on stocks is dead.&rdquo;</p>
+      <p>Black, co-creator of the Black-Scholes option model, answered in 1993 in the <i>Journal of Portfolio Management</i>. His paper, &ldquo;Beta and Return&rdquo;, opens: &ldquo;Announcements of the death of beta seem premature.&rdquo;</p>
+      <p>A fitted slope is never exactly 0, or exactly 1. So how do you decide whether beta really explains a stock&rsquo;s returns? And if a test cannot find the relation, does that prove it is not there?</p>
+
+      <h3>The idea</h3>
+      <p>Day 47 fitted the line. Day 48 measured how well it fits. Today asks whether its slope is real.</p>
+      <p>Fit a line through six months of noisy returns and the slope comes out at, say, 1.27. Take six other months and you get a different number. The slope is an estimate, and like a sample mean (Day 43) it wobbles from sample to sample. Its typical wobble is its <b>standard error</b>, s<sub>b&#770;1</sub>.</p>
+      <p>So test it the Day 44 way: how many standard errors does b&#770;<sub>1</sub> sit from the value you are testing? Beyond the t-table&rsquo;s critical value (n &minus; 2 df), noise is a poor explanation: reject.</p>
+      <p>For a stock, two values matter:</p>
+      <ul>
+        <li><b>B<sub>1</sub> = 0</b>: does the market move this stock at all?</li>
+        <li><b>B<sub>1</sub> = 1</b>: does it move one-for-one with the market, or is it more (or less) risky than average?</li>
+      </ul>
+      <p><b>Beta by regression.</b> Put the stock&rsquo;s returns as Y and the market&rsquo;s as X. The slope is the stock&rsquo;s <b>beta</b>: Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>), Day 47&rsquo;s slope. With excess returns (above the risk-free rate), the intercept is its <b>alpha</b>: the return the market does not explain. Alpha is tested the same way.</p>
+
+      <h3>Why it works</h3>
+      <p><b>The recipe is Day 44&rsquo;s.</b> Test statistic = (estimate &minus; hypothesized value) / standard error. Here: t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>) / s<sub>b&#770;1</sub>. Only s<sub>b&#770;1</sub> is new.</p>
+      <p><b>Where the wobble comes from.</b> Day 47: b&#770;<sub>1</sub> = &Sigma;xy / &Sigma;x<sup>2</sup> (x and y measured from the means). Write each Y as the true line plus an error &epsilon;, and the true slope b<sub>1</sub> drops out: b&#770;<sub>1</sub> = b<sub>1</sub> + &Sigma;x&epsilon; / &Sigma;x<sup>2</sup>. The miss is a weighted sum of the errors, weights x / &Sigma;x<sup>2</sup>.</p>
+      <p><b>Size of the wobble.</b> The errors are independent, each with variance &sigma;<sup>2</sup> (Day 47&rsquo;s assumptions), so Day 32&rsquo;s portfolio variance with zero covariances applies: &sigma;<sup>2</sup> &times; &Sigma;(weight<sup>2</sup>) = &sigma;<sup>2</sup> &times; &Sigma;x<sup>2</sup> / (&Sigma;x<sup>2</sup>)<sup>2</sup> = &sigma;<sup>2</sup> / &Sigma;x<sup>2</sup>. Take the root and put Day 48&rsquo;s SEE in for the unknown &sigma;: s<sub>b&#770;1</sub> = SEE / &radic;&Sigma;(X &minus; X&#772;)<sup>2</sup>.</p>
+      <p>Noisier returns (bigger SEE), shakier slope. More months, or a market that moves more (bigger &Sigma;x<sup>2</sup>), steadier slope.</p>
+      <p><b>Why t, with n &minus; 2.</b> Estimating &sigma; turns z into Student&rsquo;s t (Day 43), and the SEE has n &minus; 2 df (Day 48).</p>
+      <p><b>The correlation shortcut.</b> Put in b&#770;<sub>1</sub> = r s<sub>Y</sub> / s<sub>X</sub> (Day 47), SSE = (1 &minus; r<sup>2</sup>)SST (Day 48), SST = (n &minus; 1)s<sub>Y</sub><sup>2</sup> and &Sigma;x<sup>2</sup> = (n &minus; 1)s<sub>X</sub><sup>2</sup>: s<sub>b&#770;1</sub> = (s<sub>Y</sub> / s<sub>X</sub>)&radic;(1 &minus; r<sup>2</sup>) / &radic;(n &minus; 2). Divide, and s<sub>Y</sub> / s<sub>X</sub> cancels: b&#770;<sub>1</sub> / s<sub>b&#770;1</sub> = r&radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>). Testing slope = 0 <em>is</em> testing correlation = 0.</p>
+      <p><b>F = t<sup>2</sup>.</b> Day 48&rsquo;s SSR = b&#770;<sub>1</sub><sup>2</sup>&Sigma;x<sup>2</sup>, so F = SSR / MSE = b&#770;<sub>1</sub><sup>2</sup>&Sigma;x<sup>2</sup> / SEE<sup>2</sup> = (b&#770;<sub>1</sub> / s<sub>b&#770;1</sub>)<sup>2</sup>.</p>
+      <p><b>In plain words:</b> measure the slope&rsquo;s distance from the value you are testing in units of its own wobble. Far enough, and luck is a poor explanation.</p>
+      <div class="formula">
+        <p class="expr">t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>) / s<sub>b&#770;1</sub>, df = n &minus; 2</p>
+        <p class="expr">s<sub>b&#770;1</sub> = SEE / &radic;&Sigma;(X<sub>i</sub> &minus; X&#772;)<sup>2</sup></p>
+        <p class="expr">t = r&radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>), df = n &minus; 2</p>
+        <p class="expr">t = (b&#770;<sub>0</sub> &minus; B<sub>0</sub>) / s<sub>b&#770;0</sub>; F = t<sup>2</sup></p>
+        <dl>
+          <dt>b&#770;<sub>1</sub></dt><dd>estimated slope; with Y = the stock&rsquo;s returns and X = the market&rsquo;s, the stock&rsquo;s beta</dd>
+          <dt>B<sub>1</sub></dt><dd>hypothesized slope: 0 (no relation) or 1 (moves one-for-one with the market)</dd>
+          <dt>s<sub>b&#770;1</sub></dt><dd>standard error of the slope: its typical sample-to-sample wobble</dd>
+          <dt>SEE</dt><dd>standard error of the estimate, &radic;[SSE / (n &minus; 2)] (Day 48)</dd>
+          <dt>n &minus; 2</dt><dd>degrees of freedom: n observations less two estimated coefficients</dd>
+          <dt>r</dt><dd>sample correlation; its t-test of &rho; = 0 equals the slope&rsquo;s test of B<sub>1</sub> = 0</dd>
+          <dt>b&#770;<sub>0</sub>, B<sub>0</sub>, s<sub>b&#770;0</sub></dt><dd>the intercept (alpha, with excess returns), its hypothesized value and its standard error</dd>
+          <dt>F</dt><dd>Day 48&rsquo;s F-statistic for H<sub>0</sub>: b<sub>1</sub> = 0, the square of the slope&rsquo;s t</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>t-statistic for a regression slope: t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>) / s<sub>b&#770;1</sub>, df = n &minus; 2</li>
+          <li>t-statistic for a correlation (simple regression): t = r &radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>), df = n &minus; 2</li>
+          <li>Beta from data: &beta; = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>) = slope of R<sub>i</sub> regressed on R<sub>m</sub></li>
+          <li>Link between F and t in simple regression: F = t<sup>2</sup> (slope test of H<sub>0</sub>: b<sub>1</sub> = 0)</li>
+          <li>Test of the intercept (alpha): t = (b&#770;<sub>0</sub> &minus; B<sub>0</sub>) / s<sub>b&#770;0</sub>, df = n &minus; 2</li>
+          <li>Standard error of the slope: s<sub>b&#770;1</sub> = SEE / &radic;&Sigma;(X<sub>i</sub> &minus; X&#772;)<sup>2</sup></li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A stock&rsquo;s 60 monthly excess returns are regressed on the market&rsquo;s. Slope 1.25, standard error 0.10; intercept 0.20%, standard error 0.15%. At 5% (two-tailed, t<sub>0.025, 58</sub> = 2.002): is beta different from 1? From 0? Is alpha different from 0? What are F and the correlation?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>df = 60 &minus; 2 = 58. Reject when |t| &gt; 2.002.</li>
+          <li>&beta; = 1? t = (1.25 &minus; 1) / 0.10 = <b>2.50</b> &gt; 2.002: reject. Beta is above 1; the stock amplifies the market.</li>
+          <li>&beta; = 0? t = 1.25 / 0.10 = <b>12.5</b>: reject, by a mile. The market clearly moves this stock.</li>
+          <li>&alpha; = 0? t = 0.20 / 0.15 = <b>1.33</b> &lt; 2.002: fail to reject. No evidence of an abnormal return, which is not proof that alpha is zero.</li>
+          <li>F = t<sup>2</sup> for H<sub>0</sub>: b<sub>1</sub> = 0: 12.5<sup>2</sup> = <b>156.25</b>.</li>
+          <li>Correlation: square t = r&radic;58 / &radic;(1 &minus; r<sup>2</sup>) and solve for r: r = t / &radic;(t<sup>2</sup> + n &minus; 2) = 12.5 / &radic;(156.25 + 58) = 12.5 / 14.6373 = <b>0.8540</b>. Check: 0.8540 &times; &radic;58 / &radic;(1 &minus; 0.8540<sup>2</sup>) = 12.50.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Six months of returns (illustrative). Market X (%) = 1.8, &minus;2.4, 3.1, &minus;0.6, 0.9, 2.6; stock Y (%) = 2.9, &minus;2.0, 4.6, &minus;1.9, 0.2, 3.1. Find beta and r, the t-statistic for &beta; = 0, the slope&rsquo;s standard error s<sub>b</sub> = b / t, and the t-statistic for H<sub>0</sub>: &beta; = 1 (5%, two-tailed, 4 df). The BA II Plus has no t function: on the exam the critical value, 2.776 here, comes from the t-table.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data and enter the six months: the market as X, the stock as Y</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>1.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.6</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.9</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.1</kbd> <kbd>ENTER</kbd> (X01, Y01, X02, Y02 &hellip; Y06)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>, the same for <samp>L2</samp>. Down L1: <kbd>1.8</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>2.4</kbd> <kbd>ENTER</kbd> <kbd>3.1</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>.6</kbd> <kbd>ENTER</kbd> <kbd>.9</kbd> <kbd>ENTER</kbd> <kbd>2.6</kbd> <kbd>ENTER</kbd>; down L2: <kbd>2.9</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>4.6</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>1.9</kbd> <kbd>ENTER</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd> <kbd>3.1</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: <samp>Y06 = 3.1000</samp> (BA II Plus) / six rows in each list, minus signs on rows 2 and 4 (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Run the regression; store beta (b) and r at full precision</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> nine times (past n, x&#772;, Sx, &sigma;x, &#563;, Sy, &sigma;y, a) to <samp>b</samp>, <kbd>STO</kbd> <kbd>1</kbd>; <kbd>&darr;</kbd> to <samp>r</samp>, <kbd>STO</kbd> <kbd>2</kbd>; then <kbd>2ND</kbd> <kbd>QUIT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS), <kbd>&#9660;</kbd> down to <kbd class="menu">F:LinRegTTest&hellip;</kbd> (<samp>E:</samp> before OS 2.30), <kbd>ENTER</kbd>. Set <samp>Xlist:L1</samp> (<kbd>2nd</kbd> <kbd>1</kbd>), <samp>Ylist:L2</samp> (<kbd>2nd</kbd> <kbd>2</kbd>), <samp>Freq:1</samp>; on <samp>&beta; &amp; &rho;:</samp> highlight <samp>&ne;0</samp>, <kbd>ENTER</kbd>; leave <samp>RegEQ:</samp> blank; <samp>Calculate</samp> <kbd>ENTER</kbd>. Scroll <kbd>&#9660;</kbd> for the last lines.</div>
+            <p class="calc-see">Display: <samp>a = 0.0105</samp> on the way, <samp>b = 1.2661</samp>, <samp>r = 0.9453</samp> (BA II Plus) / <samp>t=5.7953</samp>, <samp>p=.0044</samp>, <samp>df=4</samp>, <samp>a=.0105</samp>, <samp>b=1.2661</samp>, <samp>s=1.0173</samp>, <samp>r&#178;=.8936</samp>, <samp>r=.9453</samp> (TI-84; s is the SEE). Beta is 1.27; alpha about 0.01% a month.</p>
+          </li>
+          <li>
+            <p class="calc-what">t for H<sub>0</sub>: &beta; = 0, by the correlation formula: r &times; &radic;4 / &radic;(1 &minus; r<sup>2</sup>), since n &minus; 2 = 4</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&radic;x</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> LinRegTTest already showed <samp>t=5.7953</samp>. To see the correlation formula give the same number: <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">7:r</kbd> <kbd>&times;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>4</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">7:r</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>5.7953</samp> (BA II Plus) / <samp>5.7953</samp> (TI-84). Slope test and correlation test, one number. 5.80 &gt; 2.776 (TI-84 p = .0044): reject &beta; = 0.</p>
+          </li>
+          <li>
+            <p class="calc-what">The slope&rsquo;s standard error: s<sub>b</sub> = b / t (because t = b / s<sub>b</sub> when B<sub>1</sub> = 0)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>4</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">3:b</kbd> <kbd>&divide;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TEST) <kbd class="menu">3:t</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (the line reads <samp>b/t&rarr;A</samp>)</div>
+            <p class="calc-see">Display: <samp>0.2185</samp> (BA II Plus) / <samp>.2185</samp> (TI-84). The same as SEE / &radic;&Sigma;(X &minus; X&#772;)<sup>2</sup> = 1.0173 / 4.6562.</p>
+          </li>
+          <li>
+            <p class="calc-what">t for H<sub>0</sub>: &beta; = 1: (b &minus; 1) / s<sub>b</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">3:b</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>1.2182</samp> (BA II Plus) / <samp>1.2182</samp> (TI-84). 1.22 &lt; 2.776: fail to reject &beta; = 1 (two-tailed p = 0.29). Retyping the rounded 1.2661 and 0.2185 gives 1.2178: that is why you store.</p>
+          </li>
+          <li>
+            <p class="calc-what">The 95% confidence interval for beta: b &plusmn; 2.776 &times; s<sub>b</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>2.776</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>=</kbd>, then <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>2.776</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>=</kbd> (AOS does the &times; first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">3:b</kbd> <kbd>&minus;</kbd> <kbd>2.776</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd>, then the same with <kbd>+</kbd>. The critical value itself: <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">4:invT(</kbd> <kbd>.975</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.7764</samp></div>
+            <p class="calc-see">Display: <samp>0.6597</samp> and <samp>1.8726</samp> (BA II Plus) / <samp>.6597</samp> and <samp>1.8726</samp> (TI-84). The interval holds 1 and excludes 0: both tests in one picture.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: beta = 1.2661 (r = 0.9453). Against &beta; = 0, t = 5.7953: reject. s<sub>b</sub> = 0.2185. Against &beta; = 1, t = 1.2182 &lt; 2.776: fail to reject. 95% interval 0.66 to 1.87.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Today&rsquo;s six months give a beta of 1.27 with a standard error of 0.22. Against &beta; = 0, t = 5.80, well past the critical 2.776: the market clearly moves this stock. Against &beta; = 1, t = 1.22: six months cannot tell this stock&rsquo;s beta from 1. The 95% interval runs from 0.66 to 1.87.</p>
+      <p>Fama and French&rsquo;s slope was a different one: average return across stocks, set against beta. &ldquo;Flat&rdquo; is a verdict about a slope. But the question is today&rsquo;s: is a fitted slope far enough from zero, in standard errors, to be more than noise?</p>
+      <p>The same logic sat under the quarrel. Returns are so noisy that slopes come with wide standard errors, and &ldquo;fail to reject&rdquo; is not &ldquo;proved zero&rdquo;. Black went further, arguing that Fama and French had misinterpreted their own data.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Testing &beta; = 1 with 0 in the numerator.</b> b / s<sub>b</sub> tests &beta; = 0. In the walkthrough that gives 5.80 (reject) where the right t, (1.2661 &minus; 1) / 0.2185 = 1.22, fails to reject: opposite verdicts.</li>
+          <li><b>n &minus; 1 degrees of freedom.</b> A regression estimates two coefficients, so df = n &minus; 2. With six months the critical t is 2.776 (4 df), not 2.571 (5 df): a t of 2.65 would reject with the wrong df and not with the right one.</li>
+          <li><b>The stock as X, the market as Y.</b> Beta is the stock regressed on the market. Swap them and the walkthrough&rsquo;s &ldquo;beta&rdquo; becomes 0.7057 (r<sup>2</sup> / b), and its test of &beta; = 1 gives t = &minus;2.42 instead of 1.22. The test of 0 survives the swap (5.7953 both ways, because r is symmetric), which is why the slip is easy to miss.</li>
+          <li><b>&ldquo;Not significant&rdquo; read as &ldquo;equal&rdquo;.</b> t = 1.22 does not show beta is 1. It shows six months cannot rule 1 out, nor 0.7, nor 1.8.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.9322973479262906" data-tol="0.01" data-show="2.93">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Six new months. Market X (%) = 2.2, &minus;1.4, 0.8, &minus;2.9, 3.5, 1.1; stock Y (%) = 2.6, &minus;2.3, 0.1, &minus;3.6, 4.9, 1.9. What is the t-statistic for H<sub>0</sub>: &beta; = 1? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 1 to 5; only the twelve data entries change. Still six months, so n &minus; 2 = 4 and the &radic;4 stays. Store b, r, t and s<sub>b</sub> rather than retyping them.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>LIN: b = 1.3355, r = 0.9856 (a = &minus;0.1345). t against 0 = 11.6720. s<sub>b</sub> = 1.3355 / 11.6720 = 0.1144. t against 1 = (1.3355 &minus; 1) / 0.1144 = <b>2.93</b>.</p>
+            <p>2.93 &gt; 2.776: reject &beta; = 1. This stock&rsquo;s beta is above 1 (two-tailed p = 0.0427; 95% interval 1.02 to 1.65, which excludes 1).</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, <kbd>2.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.3</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.9</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.6</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.9</kbd> <kbd>ENTER</kbd>; <kbd>2ND</kbd> <kbd>STAT</kbd> (LIN), <kbd>&darr;</kbd> nine times to <samp>b = 1.3355</samp>, <kbd>STO</kbd> <kbd>1</kbd>, <kbd>&darr;</kbd> to <samp>r = 0.9856</samp>, <kbd>STO</kbd> <kbd>2</kbd>, <kbd>2ND</kbd> <kbd>QUIT</kbd>; <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&radic;x</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>11.6720</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>4</kbd> &rarr; <samp>0.1144</samp>; <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>2.9323</samp>.</p>
+            <p>TI-84 Plus: L1 = <kbd>2.2</kbd>, <kbd>(&minus;)</kbd> <kbd>1.4</kbd>, <kbd>.8</kbd>, <kbd>(&minus;)</kbd> <kbd>2.9</kbd>, <kbd>3.5</kbd>, <kbd>1.1</kbd>; L2 = <kbd>2.6</kbd>, <kbd>(&minus;)</kbd> <kbd>2.3</kbd>, <kbd>.1</kbd>, <kbd>(&minus;)</kbd> <kbd>3.6</kbd>, <kbd>4.9</kbd>, <kbd>1.9</kbd> (<kbd>ENTER</kbd> after each). <kbd class="menu">F:LinRegTTest&hellip;</kbd> as in step 2 &rarr; <samp>t=11.6720</samp>, <samp>p=3.0805E-4</samp>, <samp>b=1.3355</samp>, <samp>r=.9856</samp>. Then <samp>b/t&rarr;A</samp> &rarr; <samp>.1144</samp> and <samp>(b&minus;1)/A</samp> &rarr; <samp>2.9323</samp>, with b and t from <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> as in steps 4 and 5.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> Why does the t-test of a regression slope use n &minus; 2 degrees of freedom?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Its standard error is built from the SEE, and the residuals behind the SEE lost two degrees of freedom to the two estimated coefficients, b&#770;<sub>0</sub> and b&#770;<sub>1</sub></span></label>
+              <p class="cq-why">Right. s<sub>b&#770;1</sub> = SEE / &radic;&Sigma;(X &minus; X&#772;)<sup>2</sup>, and SEE<sup>2</sup> = SSE / (n &minus; 2). The t inherits the SEE&rsquo;s degrees of freedom.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Any test built on a sample uses n &minus; 1, as for a sample mean; the regression takes away one more for the slope</span></label>
+              <p class="cq-why">The n &minus; 1 habit. A sample mean estimates one number, X&#772;, so it loses one df. A regression line estimates two, intercept and slope, so the residuals lose two: n &minus; 2 from the start, not n &minus; 1 with an add-on.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. n &minus; 2 applies when testing &beta; = 1; testing &beta; = 0 uses n &minus; 1</span></label>
+              <p class="cq-why">The hypothesized value changes only the numerator, b&#770;<sub>1</sub> &minus; B<sub>1</sub>. The standard error, and with it the df, is the same whatever value you test.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Estimating &sigma; with the SEE is what makes the statistic a t rather than a z (Day 43), and the t has as many degrees of freedom as that estimate: the residuals must add to zero and be uncorrelated with X, two conditions, so only n &minus; 2 of them are free (Day 48). In the walkthrough, 6 &minus; 2 = 4 df and a critical value of 2.776.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="2.303224545033181" data-tol="0.01" data-show="2.30">
+          <p class="cq-stem"><b>3. Twist: test a correlation.</b> Over 40 months, the correlation between a fund&rsquo;s returns and an economic indicator is 0.35. What is the t-statistic for H<sub>0</sub>: &rho; = 0? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> t = r&radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>), with n &minus; 2 = 38. It is step 3 with typed numbers instead of stored ones.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&radic;38 = 6.1644; 1 &minus; 0.35<sup>2</sup> = 0.8775, whose root is 0.9367. t = 0.35 &times; 6.1644 / 0.9367 = <b>2.30</b>.</p>
+            <p>Critical t (38 df, 2.5% per tail) = 2.024: reject &rho; = 0 (p = 0.0268). It is also the slope t of a regression of either series on the other. In large samples the same statistic tests Spearman&rsquo;s rank correlation r<sub>s</sub> (whether the 2027 curriculum asks this is uncertain; it costs one line to know).</p>
+            <p>BA II Plus: <kbd>.35</kbd> <kbd>&times;</kbd> <kbd>38</kbd> <kbd>&radic;x</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.35</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> &rarr; <samp>2.3032</samp>.</p>
+            <p>TI-84 Plus: <kbd>.35</kbd> <kbd>&times;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>38</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.35</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.3032</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An analyst regresses 36 monthly excess returns of a stock on the market&rsquo;s excess returns. The estimated beta is 1.18 with a standard error of 0.08. The t-statistic for testing whether beta differs from 1 is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 14.75</span></label>
+              <p class="cq-why">That is 1.18 / 0.08: 0 in the numerator, which tests &beta; = 0. To test &beta; = 1, subtract 1 first.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 0.375</span></label>
+              <p class="cq-why">That multiplies the standard error by &radic;36 = 6, as if 0.08 were a standard deviation. The 0.08 already is the slope&rsquo;s standard error: use it as it is.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 2.25</span></label>
+              <p class="cq-why">Right: (1.18 &minus; 1) / 0.08 = 0.18 / 0.08 = 2.25.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>) / s<sub>b&#770;1</sub> = (1.18 &minus; 1) / 0.08 = 2.25, with 36 &minus; 2 = 34 df. The 5% two-tailed critical value is about 2.032, so beta is significantly above 1 (p = 0.031). The 95% interval, 1.18 &plusmn; 2.032 &times; 0.08 = 1.02 to 1.34, excludes 1: the same verdict.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does a slope t-test tell you about a stock&rsquo;s beta, and why is &ldquo;not significant&rdquo; different from &ldquo;beta is zero&rdquo;?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The test counts how many standard errors the estimated beta sits from the value you are testing, t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>) / s<sub>b&#770;1</sub> with n &minus; 2 df; if |t| beats the critical value, that value is rejected. Failing to reject only means the data cannot rule the value out: with short or noisy samples the standard error is wide and the test has little power, so a real beta can hide in the noise (a Type II error), and the confidence interval shows how wide the range still plausible is.</p>
+            <p>A complete answer says: (1) t = (estimate &minus; hypothesized value) / standard error, with n &minus; 2 df; (2) fail to reject means &ldquo;cannot rule out&rdquo;, not &ldquo;proved&rdquo;: possible Type II error, low power with noisy or short samples; (3) a confidence interval shows the range of betas still plausible.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 10: Applications of Simple Linear Regression in Finance (hypothesis tests of the slope and the intercept; the standard error of the slope; F = t<sup>2</sup> in simple regression; beta by regression), with the t-test of a correlation and, as insurance, its large-sample use for Spearman&rsquo;s rank correlation.</p>
+      <p><strong>Sources.</strong> E. F. Fama and K. R. French, &ldquo;The Cross-Section of Expected Stock Returns&rdquo;, <i>Journal of Finance</i> 47(2), June 1992, pp. 427&ndash;465 (abstract: the beta&ndash;return relation flat for 1963&ndash;1990, even with beta alone); F. Black, &ldquo;Beta and Return&rdquo;, <i>Journal of Portfolio Management</i> 20(1), Fall 1993, pp. 8&ndash;18, doi:10.3905/jpm.1993.409462 (its opening line, and its citation of Eric Berg, <i>The New York Times</i>, 18 February 1992, which is quoted here as Black gives it); Black&rsquo;s view that Fama and French misinterpreted their own data is from the text of his paper as reproduced online. The six months of returns are illustrative, not Fama&ndash;French data; every regression number is this lesson&rsquo;s own arithmetic.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-49.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

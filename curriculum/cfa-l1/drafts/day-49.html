@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Signal or noise? Build the interval, run the test, fit the line: the Week 7 review in ten questions — CFA Math, Day 49 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Signal or noise? Build the interval, run the test, fit the line: the Week 7 review in ten questions",
+    "path": "reports/cfa/l1/day-49.html",
+    "summary": "Day 49 of CFA Math, the Week 7 review: the formulas of Days 43–48 in one box, one calculator run that ties a t-test to its confidence interval, then ten graded questions with new numbers on confidence intervals, the t-test of a mean, Type I errors, paired and pooled tests, F and χ² tests of variance, the least-squares slope and the regression F-statistic.",
+    "headlines": [
+      "Day 49 of 90 · Quantitative Methods: Week 7 review of confidence intervals, t-tests, χ² and F tests, least squares and the ANOVA table",
+      "Calculator: a confidence interval, one-sample, paired and pooled t-statistics, a least-squares slope and a regression F, on the BA II Plus",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Signal or noise? Build the interval, run the test, fit the line: the Week 7 review in ten questions</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        No new idea today. One question ran through the whole week, &ldquo;is it real, or could chance have done it?&rdquo;, and ten graded questions with new numbers check that you can answer it, calculator in hand.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 49 of 90 &middot; Review &middot; Week 7: inference and regression</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="49">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 48 and 26, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="0.046475800154489" data-tol="0.0005" data-show="0.0465">
+          <p class="cq-stem"><b>From Day 48.</b> A regression on 27 monthly returns has a total sum of squares SST = 0.0900 and a regression sum of squares SSR = 0.0360. What is the standard error of the estimate? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The SEE is built from the part the line misses, SSE = SST &minus; SSR. Divide it by n &minus; 2, then take the square root.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>SSE = 0.0900 &minus; 0.0360 = 0.0540. MSE = 0.0540 / (27 &minus; 2) = 0.0540 / 25 = 0.00216. SEE = &radic;0.00216 = <b>0.0465</b>. (R<sup>2</sup> = 0.0360 / 0.0900 = 0.40.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.036</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>25</kbd> <kbd>=</kbd> &rarr; <samp>0.0022</samp>, then <kbd>&radic;x</kbd> &rarr; <samp>0.0465</samp>. TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.036</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>25</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0465</samp>.</p>
+            <p>Dividing by n &minus; 1 = 26 gives 0.0456; using SSR instead of SSE gives 0.0379.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 26.</b> Next year the economy expands (probability 0.60) or contracts (0.40). In an expansion a company earns EPS of 3.20 with probability 0.75, or 2.40 with probability 0.25. In a contraction it earns 1.50. Its expected EPS is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 3.60</span></label>
+              <p class="cq-why">That is 0.75 &times; 3.20 + 0.25 &times; 2.40 + 0.40 &times; 1.50: the 0.75 and 0.25 were never multiplied by 0.60, so the weights add to 1.40, not 1.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 2.40</span></label>
+              <p class="cq-why">Right: E(EPS | expansion) = 0.75 &times; 3.20 + 0.25 &times; 2.40 = 3.00; then 0.60 &times; 3.00 + 0.40 &times; 1.50 = 1.80 + 0.60 = 2.40.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 2.28</span></label>
+              <p class="cq-why">That averages 3.20 and 2.40 equally (2.80) inside the expansion. The 0.75 and 0.25 matter: 0.60 &times; 2.80 + 0.40 &times; 1.50 = 2.28.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Total probability rule: E(X) = E(X | S<sub>1</sub>)P(S<sub>1</sub>) + E(X | S<sub>2</sub>)P(S<sub>2</sub>). Or multiply along each branch: the joint probabilities 0.45, 0.15 and 0.40 add to 1, and 0.45 &times; 3.20 + 0.15 &times; 2.40 + 0.40 &times; 1.50 = <b>2.40</b>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>One question ran through all six days: is what the sample shows real, or could chance alone have produced it? Day 43 measured how far a sample mean wanders from sample to sample, its standard error s/&radic;n, and built a confidence interval a few standard errors either side. Day 44 turned the same arithmetic into a test: count the standard errors between the sample and the null, compare with a critical value or read the p-value, and accept a known risk &alpha; of a false alarm. Day 45 compared two means: pooled for independent samples, as differences for matched pairs. Day 46 tested spreads: &chi;<sup>2</sup> for one variance against a stated value, F for two. Days 47 and 48 fitted a line by least squares and asked how much it explains: R<sup>2</sup>, the standard error of the estimate and the F-test of the slope.</p>
+
+      <div class="sie-block memorize">
+        <b>Memorize &middot; Days 43&ndash;48</b>
+        <ul>
+          <li><b>Day 43.</b> Standard error of the mean: s<sub>X&#772;</sub> = s / &radic;n (&sigma; / &radic;n if &sigma; is known). Central limit theorem: for n &ge; 30, X&#772; is about normal with mean &mu; and variance &sigma;<sup>2</sup>/n, whatever the population&rsquo;s shape.</li>
+          <li><b>Day 43.</b> Confidence interval: X&#772; &plusmn; reliability factor &times; standard error. z factors: 90% 1.645; 95% 1.96; 99% 2.58. &sigma; unknown: t with df = n &minus; 1.</li>
+          <li><b>Day 44.</b> t = (X&#772; &minus; &mu;<sub>0</sub>) / (s / &radic;n), df = n &minus; 1. Reject H<sub>0</sub> if |t| &gt; the critical value, or if p-value &lt; &alpha;. Otherwise &ldquo;fail to reject&rdquo;, never &ldquo;accept&rdquo;.</li>
+          <li><b>Day 44.</b> Type I: reject a true H<sub>0</sub> (probability &alpha;). Type II: fail to reject a false H<sub>0</sub> (probability &beta;). Power = 1 &minus; &beta;.</li>
+          <li><b>Day 45.</b> Pooled (independent samples, equal variances): s<sub>p</sub><sup>2</sup> = [(n<sub>1</sub> &minus; 1)s<sub>1</sub><sup>2</sup> + (n<sub>2</sub> &minus; 1)s<sub>2</sub><sup>2</sup>] / (n<sub>1</sub> + n<sub>2</sub> &minus; 2); t = (X&#772;<sub>1</sub> &minus; X&#772;<sub>2</sub>) / &radic;(s<sub>p</sub><sup>2</sup>/n<sub>1</sub> + s<sub>p</sub><sup>2</sup>/n<sub>2</sub>), df = n<sub>1</sub> + n<sub>2</sub> &minus; 2.</li>
+          <li><b>Day 45.</b> Paired (same months, same firms): t = d&#772; / (s<sub>d</sub> / &radic;n), df = n &minus; 1, where n counts pairs.</li>
+          <li><b>Day 46.</b> One variance: &chi;<sup>2</sup> = (n &minus; 1)s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup>, df = n &minus; 1. Two variances: F = s<sub>1</sub><sup>2</sup> / s<sub>2</sub><sup>2</sup>, larger variance on top, df = (n<sub>1</sub> &minus; 1, n<sub>2</sub> &minus; 1).</li>
+          <li><b>Day 46.</b> Non-parametric tests: for ranks, or when normality fails (small samples, outliers). Contingency table (2027 coverage uncertain): E<sub>ij</sub> = row total &times; column total / overall total; &chi;<sup>2</sup> = &Sigma;(O &minus; E)<sup>2</sup> / E, df = (r &minus; 1)(c &minus; 1).</li>
+          <li><b>Day 47.</b> b&#770;<sub>1</sub> = Cov(X, Y) / Var(X) = r &times; s<sub>Y</sub> / s<sub>X</sub>; b&#770;<sub>0</sub> = Y&#772; &minus; b&#770;<sub>1</sub>X&#772;; residual e = Y &minus; Y&#770;. BA II Plus LIN: a = intercept, b = slope. Assumptions: linearity, homoskedasticity, independent errors, normal errors.</li>
+          <li><b>Day 48.</b> SST = SSR + SSE; R<sup>2</sup> = SSR / SST (= r<sup>2</sup>); MSE = SSE / (n &minus; 2); SEE = &radic;MSE; F = (SSR / 1) / [SSE / (n &minus; 2)], df = 1 and n &minus; 2.</li>
+        </ul>
+      </div>
+
+      <h3>Worked example: one interval, one test</h3>
+      <p><b>Problem.</b> 36 monthly returns have a mean of 0.7% and s = 1.8%. Build the 95% confidence interval (t<sub>0.025,35</sub> = 2.030) and use it to test H<sub>0</sub>: &mu; = 0 at 5%.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Standard error: 1.8 / &radic;36 = 1.8 / 6 = 0.30%.</li>
+          <li>Half-width: 2.030 &times; 0.30 = 0.609. Interval: 0.7 &plusmn; 0.609 = <b>0.091% to 1.309%</b>.</li>
+          <li>0 lies outside the interval, so a two-tailed 5% test rejects H<sub>0</sub>: &mu; = 0.</li>
+          <li>The Day 44 way: t = (0.7 &minus; 0) / 0.30 = 2.3333 &gt; 2.030. Same verdict.</li>
+          <li>They always agree: the interval is exactly the set of &mu;<sub>0</sub> values whose t would land inside &plusmn;2.030.</li>
+        </ol>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>n &minus; 1 versus n &minus; 2.</b> Each estimate fed back into the formula costs one degree of freedom. A mean, a paired test and &chi;<sup>2</sup>: n &minus; 1. Pooled: n<sub>1</sub> + n<sub>2</sub> &minus; 2. Regression residuals: n &minus; 2 (two coefficients). In question 10, n &minus; 1 gives F = 21.00 instead of 20.57.</li>
+          <li><b>One tail or two.</b> &ldquo;Different from&rdquo; is two-tailed: &alpha;/2 in each tail. &ldquo;Greater than&rdquo; puts all of &alpha; in one. With 7 df at 5%, that is 2.365 versus 1.895: the wrong table column moves the verdict.</li>
+          <li><b>F: the larger variance on top, and variances, not SDs.</b> Then F &ge; 1 and only the upper-tail table is needed, with the top sample&rsquo;s df first. In question 7 the SDs give 1.50 instead of 2.25.</li>
+        </ul>
+      </div>
+
+      <h3>On your calculator: one test, start to finish</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Eight monthly returns (%): 1.2, &minus;0.4, 2.1, 0.8, &minus;1.1, 1.5, 0.3, 0.9. Is the true mean different from zero? Get the mean and s from one-variable statistics, compute t for H<sub>0</sub>: &mu; = 0 (two-tailed, 5%), then check the verdict with the 95% interval. The BA II Plus has no t-distribution: on the exam the critical value comes from a table, so the BA line reads it from the table.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data and enter the eight returns</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>1.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>2.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1.1</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.9</kbd> <kbd>ENTER</kbd> (each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past Y, the frequency, which stays 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; <kbd>&#9650;</kbd> onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>; then <kbd>1.2</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>.4</kbd> <kbd>ENTER</kbd> <kbd>2.1</kbd> <kbd>ENTER</kbd> <kbd>.8</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>1.1</kbd> <kbd>ENTER</kbd> <kbd>1.5</kbd> <kbd>ENTER</kbd> <kbd>.3</kbd> <kbd>ENTER</kbd> <kbd>.9</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: <samp>X08 = 0.9000</samp> (BA II Plus) / eight rows in L1 (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Read the mean and the sample SD (BA: store both)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>1-V</samp> shows; <kbd>&darr;</kbd> (n) <kbd>&darr;</kbd> (x&#772;) <kbd>STO</kbd> <kbd>1</kbd> <kbd>&darr;</kbd> (Sx) <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> (L1) <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>n = 8.0000</samp>, <samp>x&#772; = 0.6625</samp>, <samp>Sx = 1.0350</samp> (BA II Plus) / <samp>x&#772;=.6625</samp>, <samp>Sx=1.0350</samp>, <samp>&sigma;x=.9682</samp>, <samp>n=8</samp> (TI-84). Take Sx: a sample, so n &minus; 1.</p>
+          </li>
+          <li>
+            <p class="calc-what">t = x&#772; / (Sx / &radic;8): how many standard errors the mean sits from 0</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>8</kbd> <kbd>&radic;x</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">2:x&#772;</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">3:Sx</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>8</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.3659</samp> after <kbd>)</kbd> (the standard error), then <samp>1.8104</samp> (BA II Plus) / <samp>1.8104</samp> (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Decide: 8 &minus; 1 = 7 df, 2.5% in each tail</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no keys: the t-table (7 df, 0.025 per tail) gives <samp>2.365</samp></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">4:invT(</kbd> <kbd>.975</kbd> <kbd>,</kbd> <kbd>7</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>. One-screen check: <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS) <kbd class="menu">2:T-Test&hellip;</kbd>, <samp>Inpt: Data</samp>, <samp>&mu;0: 0</samp>, <samp>List: L1</samp>, <samp>Freq: 1</samp>, <samp>&mu;: &ne;&mu;0</samp>, <samp>Calculate</samp> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.3646</samp>; the test screen shows <samp>t=1.8104</samp>, <samp>p=.1131</samp> (TI-84). 1.8104 &lt; 2.365 and p &gt; 0.05: <b>fail to reject</b>.</p>
+          </li>
+          <li>
+            <p class="calc-what">Same verdict from the 95% interval: x&#772; &plusmn; 2.365 &times; standard error</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>8</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>2.365</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>2.365</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS) <kbd class="menu">8:TInterval&hellip;</kbd>, <samp>Inpt: Data</samp>, <samp>List: L1</samp>, <samp>Freq: 1</samp>, <samp>C-Level: .95</samp>, <samp>Calculate</samp> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;0.2029</samp> and <samp>1.5279</samp> (BA II Plus) / <samp>(&minus;.2028,1.5278)</samp> (TI-84, which uses the exact 2.3646). The interval contains 0, so 0 is a believable mean.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: x&#772; = 0.6625%, s = 1.0350%, t = 1.8104 with 7 df. Below 2.365 (p = 0.1131): fail to reject H<sub>0</sub>: &mu; = 0. The interval, &minus;0.20% to 1.53%, contains 0: the same verdict.</p>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions in the week&rsquo;s order, all with new numbers, graded here. Each names its day, so a miss tells you which lesson to reopen. Questions 1, 5, 6 and 9 need the calculator&rsquo;s statistics; keep it in hand for the rest too. The first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.5976288886102594" data-tol="0.01" data-pct data-show="2.60%">
+          <p class="cq-stem"><b>1. Confidence interval (Day 43) &middot; calculator.</b> A fund has 20 monthly returns with a mean of 1.1% and a sample standard deviation of 3.2%. The t-table gives t<sub>0.025,19</sub> = 2.093. What is the upper limit of the 95% confidence interval for the mean monthly return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Standard error first, s / &radic;n. Then add 2.093 standard errors to the mean.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>SE = 3.2 / &radic;20 = 3.2 / 4.4721 = 0.7155. Half-width: 2.093 &times; 0.7155 = 1.4976. Upper limit: 1.1 + 1.4976 = <b>2.60%</b> (lower limit &minus;0.40%).</p>
+            <p>BA II Plus: <kbd>3.2</kbd> <kbd>&divide;</kbd> <kbd>20</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.7155</samp>; <kbd>1.1</kbd> <kbd>+</kbd> <kbd>2.093</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>2.5976</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.1</kbd> <kbd>+</kbd> <kbd>2.093</kbd> <kbd>&times;</kbd> <kbd>3.2</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>20</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.5976</samp>. Check: <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS) <kbd class="menu">8:TInterval&hellip;</kbd>, <samp>Inpt: Stats</samp>, <samp>x&#772;: 1.1</samp>, <samp>Sx: 3.2</samp>, <samp>n: 20</samp>, <samp>C-Level: .95</samp>, <samp>Calculate</samp> <kbd>ENTER</kbd> &rarr; <samp>(&minus;.3976,2.5976)</samp>.</p>
+            <p>The z value 1.96 gives 2.50%; dividing s by n instead of &radic;n gives 1.43%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Reliability factor (Day 43).</b> An analyst builds a 90% confidence interval for a population mean from 12 observations. The population variance is unknown. The reliability factor is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. 1.796</span></label>
+              <p class="cq-why">Right: &sigma; unknown, so t; df = 12 &minus; 1 = 11; 90% leaves 5% in each tail. t<sub>0.05,11</sub> = 1.796.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. 1.645</span></label>
+              <p class="cq-why">That is the z value for 90%. With &sigma; unknown and only 12 observations, s is itself uncertain, and t&rsquo;s fatter tails pay for that.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. 1.782</span></label>
+              <p class="cq-why">That is t with 12 df. Estimating the mean used one degree of freedom: df = n &minus; 1 = 11.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Three choices, three rules: t or z (is &sigma; known?), the df (n &minus; 1), the tail area ((100% &minus; 90%) / 2 = 5%). TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">4:invT(</kbd> <kbd>.95</kbd> <kbd>,</kbd> <kbd>11</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.7959</samp>. On the BA II Plus it comes from the t-table.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="2.25" data-tol="0.01" data-show="2.25">
+          <p class="cq-stem"><b>3. Testing a mean (Day 44).</b> Over 64 months a manager&rsquo;s mean monthly excess return is 0.45%, with a sample standard deviation of 1.6%. What is the t-statistic for H<sub>0</sub>: &mu; = 0? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> t = (X&#772; &minus; &mu;<sub>0</sub>) / (s / &radic;n), and &radic;64 = 8.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>SE = 1.6 / 8 = 0.20. t = (0.45 &minus; 0) / 0.20 = <b>2.25</b>, with 63 df.</p>
+            <p>Verdict: at 5% two-tailed the critical value is about 2.00 (invT gives 1.9983), so reject. At 1% it is about 2.66 (2.6561), so fail to reject. The TI-84 two-tailed p-value, 2 &times; <samp>tcdf(2.25,1E99,63)</samp>, is 0.0280: between 1% and 5%, as the two verdicts say.</p>
+            <p>BA II Plus: <kbd>.45</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1.6</kbd> <kbd>&divide;</kbd> <kbd>64</kbd> <kbd>&radic;x</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>2.2500</samp>. TI-84 Plus: <kbd>.45</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1.6</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>64</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.2500</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Type I and Type II (Day 44).</b> The null hypothesis is &ldquo;the manager has no skill.&rdquo; Concluding that she has skill when in fact she has none is:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. A Type II error</span></label>
+              <p class="cq-why">A Type II error is the opposite miss: failing to reject H<sub>0</sub> when it is false, here overlooking a manager who really is skilled.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. A Type I error, whose probability is the significance level &alpha;</span></label>
+              <p class="cq-why">Right: H<sub>0</sub> (no skill) is true and you rejected it. That false alarm is exactly the risk &alpha; you choose.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. A lack of power</span></label>
+              <p class="cq-why">Power, 1 &minus; &beta;, is the chance of detecting a real effect. Low power causes Type II errors, missed skill, not false claims of it.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Ask two things: what is really true, and what did you decide? True H<sub>0</sub> + rejected = Type I (probability &alpha;). False H<sub>0</sub> + not rejected = Type II (probability &beta;). A smaller &alpha; cuts false alarms but, for a given sample, raises &beta;; only more data lowers both.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="num" data-answer="2.9415462958754257" data-tol="0.01" data-show="2.94">
+          <p class="cq-stem"><b>5. Paired test (Day 45) &middot; calculator.</b> Two portfolios are tracked over the same six months. Their monthly return differences (A &minus; B, %) are 0.8, &minus;0.2, 1.1, 0.5, 0.9, 0.3. What is the t-statistic for H<sub>0</sub>: &mu;<sub>d</sub> = 0? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same months, so paired: one-variable statistics on the six differences, then d&#772; / (s<sub>d</sub> / &radic;6). It is the walkthrough with new data.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>d&#772; = 3.4 / 6 = 0.5667; s<sub>d</sub> = 0.4719; SE = 0.4719 / &radic;6 = 0.1926; t = 0.5667 / 0.1926 = <b>2.94</b>, with 6 &minus; 1 = 5 df. 2.94 &gt; 2.571, the 5% critical value: reject. A&rsquo;s edge over B is more than chance (TI-84 p = 0.0322).</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.2</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.3</kbd> <kbd>ENTER</kbd>; <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>1-V</samp> shows; <kbd>&darr;</kbd> <kbd>&darr;</kbd> (<samp>x&#772; = 0.5667</samp>) <kbd>STO</kbd> <kbd>1</kbd> <kbd>&darr;</kbd> (<samp>Sx = 0.4719</samp>) <kbd>STO</kbd> <kbd>2</kbd>; <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>6</kbd> <kbd>&radic;x</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>2.9415</samp>.</p>
+            <p>TI-84 Plus: clear L1, then <kbd>.8</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd> <kbd>1.1</kbd> <kbd>ENTER</kbd> <kbd>.5</kbd> <kbd>ENTER</kbd> <kbd>.9</kbd> <kbd>ENTER</kbd> <kbd>.3</kbd> <kbd>ENTER</kbd>; <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS) <kbd class="menu">2:T-Test&hellip;</kbd>, <samp>Inpt: Data</samp>, <samp>&mu;0: 0</samp>, <samp>List: L1</samp>, <samp>Freq: 1</samp>, <samp>&mu;: &ne;&mu;0</samp>, <samp>Calculate</samp> <kbd>ENTER</kbd> &rarr; <samp>t=2.9415</samp>, <samp>p=.0322</samp>.</p>
+            <p>&sigma;x (0.4308) in place of Sx gives 3.22: the divide-by-n trap.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="num" data-answer="1.015673432238051" data-tol="0.01" data-show="1.02">
+          <p class="cq-stem"><b>6. Pooled test (Day 45) &middot; calculator.</b> Fund X: 15 months, mean 1.4%, s = 2.2%. Fund Y: 12 other months, mean 0.6%, s = 1.8%. The samples are independent and the population variances are assumed equal. What is the t-statistic for H<sub>0</sub>: &mu;<sub>X</sub> = &mu;<sub>Y</sub>? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Pool first: weights n &minus; 1 = 14 and 11, divided by 15 + 12 &minus; 2 = 25. Then divide the 0.8 gap by &radic;(s<sub>p</sub><sup>2</sup>/15 + s<sub>p</sub><sup>2</sup>/12).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>s<sub>p</sub><sup>2</sup> = (14 &times; 2.2<sup>2</sup> + 11 &times; 1.8<sup>2</sup>) / 25 = (67.76 + 35.64) / 25 = 4.1360. SE = &radic;(4.1360/15 + 4.1360/12) = &radic;0.6204 = 0.7877. t = (1.4 &minus; 0.6) / 0.7877 = <b>1.02</b>, with 25 df. Below 2.060: fail to reject (TI-84 p = 0.3195).</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>14</kbd> <kbd>&times;</kbd> <kbd>2.2</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>11</kbd> <kbd>&times;</kbd> <kbd>1.8</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>25</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>4.1360</samp>; <kbd>(</kbd> <kbd>1.4</kbd> <kbd>&minus;</kbd> <kbd>.6</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>15</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> &rarr; <samp>0.6204</samp>, <samp>0.7877</samp> on the way, then <samp>1.0157</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS) <kbd class="menu">4:2-SampTTest&hellip;</kbd>, <samp>Inpt: Stats</samp>, <samp>x&#772;1: 1.4</samp>, <samp>Sx1: 2.2</samp>, <samp>n1: 15</samp>, <samp>x&#772;2: .6</samp>, <samp>Sx2: 1.8</samp>, <samp>n2: 12</samp>, <samp>&mu;1: &ne;&mu;2</samp>, <samp>Pooled: Yes</samp>, <samp>Calculate</samp> <kbd>ENTER</kbd> &rarr; <samp>t=1.0157</samp>, <samp>p=.3195</samp>, <samp>Sxp=2.0337</samp> (the root of 4.1360).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>7. F-test (Day 46).</b> Fund 1: s = 3.0% from 21 months. Fund 2: s = 2.0% from 16 months. At 5%, one-tailed, you test whether fund 1&rsquo;s variance is larger. The F-table gives F(20, 15) = 2.33 and F(15, 20) = 2.20. Which is correct?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c7" value="A"> <span>A. F = 1.50; fail to reject</span></label>
+              <p class="cq-why">1.50 is 3.0 / 2.0, a ratio of standard deviations. F compares variances: square both.</p></li>
+            <li><label><input type="radio" name="c7" value="B"> <span>B. F = 2.25; reject</span></label>
+              <p class="cq-why">Right statistic, wrong table cell: 2.20 is F(15, 20), with the df reversed. The numerator df belongs to the top sample, n<sub>1</sub> &minus; 1 = 20.</p></li>
+            <li><label><input type="radio" name="c7" value="C"> <span>C. F = 2.25; fail to reject</span></label>
+              <p class="cq-why">Right: 3.0<sup>2</sup> / 2.0<sup>2</sup> = 9 / 4 = 2.25, with df (20, 15). 2.25 &lt; 2.33.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Larger variance on top, its df first: F(20, 15) = 2.33. 2.25 falls just short, so the evidence is not strong enough at 5%. TI-84: <samp>Fcdf(2.25,1E99,20,15)</samp> = 0.0570, just above 0.05.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="num" data-answer="43.2" data-tol="0.01" data-show="43.20">
+          <p class="cq-stem"><b>8. Chi-square test (Day 46).</b> 31 monthly returns have a sample standard deviation of 2.4%. Test H<sub>0</sub>: &sigma;<sup>2</sup> &le; (2.0%)<sup>2</sup> against H<sub>a</sub>: &sigma;<sup>2</sup> &gt; (2.0%)<sup>2</sup>. What is the &chi;<sup>2</sup> statistic? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> (n &minus; 1)s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup>: square both standard deviations.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&chi;<sup>2</sup> = 30 &times; 2.4<sup>2</sup> / 2.0<sup>2</sup> = 30 &times; 5.76 / 4 = <b>43.20</b>, with 30 df. The 5% upper critical value is 43.773, so fail to reject, narrowly (TI-84 p = 0.0563).</p>
+            <p>BA II Plus: <kbd>30</kbd> <kbd>&times;</kbd> <kbd>2.4</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>43.2000</samp>. TI-84 Plus: the same keys, <kbd>ENTER</kbd> for <kbd>=</kbd> &rarr; <samp>43.2000</samp>; then <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">8:&chi;&sup2;cdf(</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>30</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0563</samp>.</p>
+            <p>Standard deviations instead of variances give 36.00; n instead of n &minus; 1 gives 44.64, which would wrongly reject.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="1.1066666666666667" data-tol="0.001" data-show="1.1067">
+          <p class="cq-stem"><b>9. Least-squares slope (Day 47) &middot; calculator.</b> Five paired observations: X = 1.0, 2.5, &minus;0.5, 3.0, 1.5 and Y = 2.0, 3.1, 0.2, 4.4, 2.3. What is the slope of the least-squares line of Y on X? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two-variable statistics: LIN on the BA II Plus, LinReg(a+bx) on the TI-84. On the BA, b is the slope and a the intercept.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.5</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4.4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.3</kbd> <kbd>ENTER</kbd> (X01, Y01 &hellip; Y05). <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> eight times to <samp>a = 0.7400</samp>, once more to <samp>b = 1.1067</samp>, once more to <samp>r = 0.9833</samp>.</p>
+            <p>TI-84 Plus: clear L1 and L2; L1 = 1, 2.5, &minus;.5, 3, 1.5 and L2 = 2, 3.1, .2, 4.4, 2.3. <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>a=.7400</samp>, <samp>b=1.1067</samp>, <samp>r&sup2;=.9669</samp>, <samp>r=.9833</samp>.</p>
+            <p>By hand: X&#772; = 1.5, Y&#772; = 2.4. The products of deviations, 0.20, 0.70, 4.40, 3.00 and 0.00, add to 8.30; the squared X deviations, 0.25, 1.00, 4.00, 2.25 and 0.00, add to 7.50. Slope = 8.30 / 7.50 = <b>1.1067</b>; intercept = 2.4 &minus; 1.1067 &times; 1.5 = 0.74. Entering X and Y swapped gives 0.8737.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="num" data-answer="20.57142857142857" data-tol="0.01" data-show="20.57">
+          <p class="cq-stem"><b>10. Regression F (Day 48).</b> A simple linear regression on 50 observations has a total sum of squares of 0.0800 and a sum of squared errors of 0.0560. What is the F-statistic for the slope? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> SSR = SST &minus; SSE. Then MSR = SSR / 1 and MSE = SSE / (n &minus; 2). Store the MSE rather than retyping a rounded display.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>SSR = 0.0800 &minus; 0.0560 = 0.0240. MSE = 0.0560 / 48 = 0.001167. F = 0.0240 / 0.001167 = <b>20.57</b>, df (1, 48). Shortcut: (SSR / SSE) &times; (n &minus; 2) = (0.024 / 0.056) &times; 48. The 5% critical F(1, 48) is about 4.04, so reject: the slope explains something (p below 0.001). Also R<sup>2</sup> = 0.30 and SEE = 0.0342.</p>
+            <p>BA II Plus: <kbd>.056</kbd> <kbd>&divide;</kbd> <kbd>48</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (shows <samp>0.0012</samp>); <kbd>(</kbd> <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>.056</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>20.5714</samp>.</p>
+            <p>TI-84 Plus: <kbd>.056</kbd> <kbd>&divide;</kbd> <kbd>48</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (shows <samp>.0012</samp>); <kbd>(</kbd> <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>.056</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>20.5714</samp>.</p>
+            <p>Dividing SSE by n &minus; 1 = 49 gives 21.00; putting SST on top gives 68.57.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, in review: Learning Module 7: Estimation and Hypothesis Testing (standard errors and confidence intervals, the t-test of a mean, Type I and Type II errors and the p-value, pooled and paired tests of two means, the chi-square and F tests of variances, non-parametric tests); Learning Module 10: Applications of Simple Linear Regression in Finance (least squares, the ANOVA table, R<sup>2</sup>, the standard error of the estimate, the F-test of the slope). The warm-up reaches back to Learning Module 6: Statistical Distributions for Financial Asset Prices and Returns (Day 26). The contingency-table &chi;<sup>2</sup> test is included as insurance: its 2027 coverage is uncertain.</p>
+      <p><strong>Sources.</strong> No story on review days. Every question uses new, made-up numbers, each one computed for this page; the t, F and &chi;<sup>2</sup> critical values are standard table values, recomputed in the verification script.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-48.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

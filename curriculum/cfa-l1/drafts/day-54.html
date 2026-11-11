@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>February 1994: the Fed raised rates, and by April Askin’s ‘market-neutral’ mortgage funds were bankrupt — CFA Math, Day 54 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "February 1994: the Fed raised rates, and by April Askin’s ‘market-neutral’ mortgage funds were bankrupt",
+    "path": "reports/cfa/l1/day-54.html",
+    "summary": "Day 54 of CFA Math: when a bond’s cash flows change with rates, as for callable bonds and mortgage-backed securities, effective duration and effective convexity measure its risk by repricing it under shifts of the benchmark curve; Logan computes both for a callable bond, sees why prepayments make mortgage securities negatively convex, and converts a monthly prepayment rate (SMM) into an annual CPR.",
+    "headlines": [
+      "Day 54 of 90 · Fixed Income: effective duration and convexity reprice the bond under curve shifts, and prepayments make mortgage securities negatively convex",
+      "Calculator: effective duration, effective convexity and the ±100 bp price estimate for a callable bond, then SMM to CPR, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>February 1994: the Fed raised rates, and by April Askin&rsquo;s &lsquo;market-neutral&rsquo; mortgage funds were bankrupt</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        When a bond&rsquo;s cash flows change with interest rates, no formula can read its risk off a schedule: you shift the benchmark curve down and up, let a model replay what borrowers would do, and measure the price swing, which for mortgages is lopsided.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 54 of 90 &middot; Curve-Based and Empirical Fixed-Income Risk Measures &middot; Effective duration and negative convexity</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="54">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 53 and Day 39, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="2.4800000000000004" data-tol="0.01" data-pct data-show="2.48%">
+          <p class="cq-stem"><b>From Day 53.</b> A portfolio returned 9.8% with a beta of 0.8. The market returned 8.5% and the risk-free rate was 2.6%. What is the portfolio&rsquo;s Jensen&rsquo;s alpha? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> First the CAPM return the portfolio owed: R<sub>f</sub> + &beta; &times; (R<sub>m</sub> &minus; R<sub>f</sub>). Alpha is what it actually earned above that.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Required = 2.6 + 0.8 &times; (8.5 &minus; 2.6) = 2.6 + 0.8 &times; 5.9 = 2.6 + 4.72 = 7.32%. Alpha = 9.8 &minus; 7.32 = <b>2.48%</b>.</p>
+            <p>BA II Plus: <kbd>9.8</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>2.6</kbd> <kbd>+</kbd> <kbd>.8</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>8.5</kbd> <kbd>&minus;</kbd> <kbd>2.6</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>2.4800</samp>.</p>
+            <p>TI-84 Plus: <kbd>9.8</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>2.6</kbd> <kbd>+</kbd> <kbd>.8</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>8.5</kbd> <kbd>&minus;</kbd> <kbd>2.6</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.4800</samp>.</p>
+            <p>The trap: beta times the market return, 9.8 &minus; (2.6 + 0.8 &times; 8.5), gives 0.40%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 39.</b> An annual-pay bond yields 5% and has a Macaulay duration of 8.40. If its yield falls by 30 basis points, its price changes by <em>approximately</em>:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. +2.40%</span></label>
+              <p class="cq-why">Right: ModDur = 8.40 / 1.05 = 8.00, and &minus;8.00 &times; (&minus;0.30) = +2.40%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. +2.52%</span></label>
+              <p class="cq-why">Macaulay duration used as the sensitivity: 8.40 &times; 0.30. Divide by 1 + r first.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. &minus;2.40%</span></label>
+              <p class="cq-why">The right size with the wrong sign. Yield down, price up.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>%&Delta;PV &asymp; &minus;ModDur &times; &Delta;Yield = &minus;(8.40/1.05) &times; (&minus;0.30) = <b>+2.40%</b>. That formula assumes the bond&rsquo;s cash flows stay fixed when its yield moves. Today is about bonds where they don&rsquo;t.</p></details>
+        </div>
+      </section>
+
+      <h3>The market-neutral funds that were not</h3>
+      <p>Friday, 4 February 1994. The Federal Reserve raised its target for the federal funds rate from 3% to 3.25%, a quarter of a point. Bond markets around the world sold off.</p>
+      <p>In New York, David Askin&rsquo;s firm, Askin Capital Management, ran three funds: Granite Partners, Granite Corporation and the Quartz Hedge Fund. They held mortgage-backed securities, bonds paid out of the monthly payments on pools of home loans.</p>
+      <p>The funds had been presented as &ldquo;market-neutral&rdquo;. In the words of later court opinions, they held &ldquo;a balanced mix of &lsquo;bullish&rsquo; and &lsquo;bearish&rsquo; securities&rdquo;: some should gain when rates rose, others when rates fell, so the gains and losses would offset whichever way rates moved.</p>
+      <p>They were also highly leveraged, built largely with borrowed money. As prices fell, the lenders made margin calls. The forced sales showed the portfolio was worth far less than the &ldquo;theoretical&rdquo; values the firm had been reporting.</p>
+      <p>In April 1994 the funds, which had held about $600 million of investors&rsquo; money, went into bankruptcy. By later accounts, nearly all of it was lost.</p>
+      <p>If part of the book gained when rates rose and part when they fell, how could rising rates wipe it out? And why does ordinary duration, which treats a bond&rsquo;s cash flows as fixed, miss the danger?</p>
+
+      <h3>The idea</h3>
+      <p>Days 39 to 41 assumed a bond&rsquo;s cash flows are fixed: the coupons and principal arrive on schedule whatever rates do. Only the discounting changes.</p>
+      <p>Many bonds break that rule. A <b>callable bond</b> (Day 16) can be repaid early by the issuer, and it will be when rates fall. A <b>mortgage-backed security (MBS)</b> passes on homeowners&rsquo; payments, and homeowners can prepay at any time. They refinance when rates fall and stay put when rates rise. In both cases the investor has sold the borrower an option.</p>
+      <p>Picture a landlord. When market rents fall, tenants paying the old high rent move somewhere cheaper. When rents rise, tenants on cheap leases never leave. Good news is cut short; bad news drags on. That is <b>negative convexity</b>.</p>
+      <p>With cash flows that move, there is no fixed schedule to compute a Macaulay duration from. So measure the sensitivity directly: shift the benchmark yield curve down and up a little, let a model price each case, and see how far the price swings. That is <b>effective duration</b>; the same three prices give <b>effective convexity</b>.</p>
+
+      <h3>Why it works</h3>
+      <ol>
+        <li><b>Start from Day 40.</b> Reprice the bond one step down and one step up in yield. The price moves PV<sub>&minus;</sub> &minus; PV<sub>+</sub> over a span of 2 &times; &Delta;Yield; divide by PV<sub>0</sub> and you have the % change per unit of rates: duration.</li>
+        <li><b>What Day 40 held fixed: the cash flows.</b> Only the discounting changed. A callable&rsquo;s or an MBS&rsquo;s cash flows change with rates, so there is not even one yield to move.</li>
+        <li><b>So shift the benchmark curve.</b> Move the government curve down by &Delta;Curve. A model (a rate tree for a callable, a prepayment model for an MBS) re-decides the cash flows and values them at the same OAS (Day 38): PV<sub>&minus;</sub>. Up: PV<sub>+</sub>. Day 40&rsquo;s arithmetic, unchanged: EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>). For an option-free bond nothing moves, so EffDur &asymp; ApproxModDur.</li>
+        <li><b>Convexity from the same prices (Day 41).</b> PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2PV<sub>0</sub> = (PV<sub>&minus;</sub> &minus; PV<sub>0</sub>) &minus; (PV<sub>0</sub> &minus; PV<sub>+</sub>): the gain when the curve falls minus the loss when it rises. Bigger gain, positive; bigger loss, negative.</li>
+        <li><b>Why mortgages go negative.</b> Rates down: refinancing hands back principal at par just when the bond is worth more, capping the gain (<b>contraction risk</b>); a callable is capped near its call price. Rates up: prepayments slow and the MBS lasts longer just when that hurts most (<b>extension risk</b>). Gain &lt; loss, so EffCon &lt; 0.</li>
+        <li><b>It fits exactly.</b> For the walkthrough&rsquo;s bond, &minus;EffDur &times; &Delta;Curve + &frac12; &times; EffCon &times; (&Delta;Curve)&sup2; at &plusmn;25 bp, times PV<sub>0</sub>, gives back +0.84 and &minus;0.86: slope and bend of a curve through the three prices.</li>
+        <li><b>Key rate durations.</b> Shift one maturity&rsquo;s par rate only and reprice. All key rates together make the parallel shift, so they add up to EffDur: 0.35 + 1.60 + 1.45 = 3.40 (2-, 5- and 10-year). They show <em>where</em> on the curve the risk sits.</li>
+        <li><b>Prepayment speed.</b> If 0.8% of the balance prepays each month (the SMM), 99.2% survives each month and 0.992<sup>12</sup> = 90.81% survives the year. So 9.19% prepays: the CPR. Not 12 &times; 0.8% = 9.60%: each month&rsquo;s 0.8% comes out of a smaller balance (Day 4&rsquo;s compounding).</li>
+      </ol>
+      <p>In plain words: if you can&rsquo;t know a bond&rsquo;s cash flows in advance, nudge rates down and up, let the model replay what borrowers would do, and measure how far the price really moves.</p>
+      <div class="formula">
+        <p class="expr">EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>)</p>
+        <p class="expr">EffCon = (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>) / [(&Delta;Curve)&sup2; &times; PV<sub>0</sub>]</p>
+        <p class="expr">%&Delta;PV &asymp; &minus;EffDur &times; &Delta;Curve + &frac12; &times; EffCon &times; (&Delta;Curve)&sup2;</p>
+        <p class="expr">CPR = 1 &minus; (1 &minus; SMM)<sup>12</sup></p>
+        <dl>
+          <dt>PV<sub>0</sub></dt><dd>the bond&rsquo;s price today, at the current benchmark curve</dd>
+          <dt>PV<sub>&minus;</sub></dt><dd>the model price after the benchmark curve shifts <em>down</em> by &Delta;Curve (the higher price)</dd>
+          <dt>PV<sub>+</sub></dt><dd>the model price after the curve shifts <em>up</em> by &Delta;Curve (the lower price)</dd>
+          <dt>&Delta;Curve</dt><dd>the size of the parallel shift in the benchmark curve, as a decimal (25 bp = 0.0025)</dd>
+          <dt>EffDur</dt><dd>effective duration: about the % price change for a 1-point (100 bp) shift in the curve</dd>
+          <dt>EffCon</dt><dd>effective convexity: the bend; negative when the gain from a fall is smaller than the loss from a rise</dd>
+          <dt>SMM</dt><dd>single monthly mortality: the share of the remaining balance (after scheduled principal) prepaid in a month</dd>
+          <dt>CPR</dt><dd>conditional prepayment rate: the SMM expressed as an annual rate</dd>
+        </dl>
+      </div>
+      <p><b>The other mortgage words</b> (describe, no math):</p>
+      <ul>
+        <li><b>PSA benchmark:</b> 100 PSA is a CPR of 0.2% in month 1, rising 0.2% a month to 6% in month 30, then 6%. 150 PSA is 1.5 times those speeds.</li>
+        <li><b>WAC</b> (weighted average coupon): the pool&rsquo;s mortgage rates, weighted by balance.</li>
+        <li><b>WAM</b> (weighted average maturity): the loans&rsquo; remaining terms, weighted by balance.</li>
+        <li><b>WAL</b> (weighted average life): the average time until principal comes back. Faster prepayment shortens it.</li>
+        <li><b>LTV</b> (loan-to-value): loan &divide; property value. Lower LTV, more owner equity, less default risk.</li>
+      </ul>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Effective duration: EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>)</li>
+          <li>Effective convexity: EffCon = [PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>] / [(&Delta;Curve)&sup2; &times; PV<sub>0</sub>]</li>
+          <li>Conditional prepayment rate from the single monthly mortality: CPR = 1 &minus; (1 &minus; SMM)<sup>12</sup></li>
+          <li>Negative convexity: Price rises less when rates fall than it falls when rates rise (callables, MBS)</li>
+          <li>Key rate durations: Sum of key rate durations = effective duration</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A mortgage pass-through is priced at 98.50. A prepayment model reprices it at 100.10 if the benchmark curve falls 50 bp and at 96.60 if it rises 50 bp. Find its effective duration and effective convexity, estimate the price change for a 100 bp rise and a 100 bp fall, and convert the model&rsquo;s 6% CPR into a monthly SMM.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Look first: a 50 bp fall gains 1.60; a 50 bp rise loses 1.90. Lopsided already.</li>
+          <li>EffDur = (100.10 &minus; 96.60) / (2 &times; 0.005 &times; 98.50) = 3.50 / 0.985 = <b>3.5533</b>.</li>
+          <li>EffCon = (100.10 + 96.60 &minus; 2 &times; 98.50) / (0.005&sup2; &times; 98.50) = &minus;0.30 / 0.0024625 = <b>&minus;121.83</b>.</li>
+          <li>Convexity term for a 100 bp move either way: &frac12; &times; (&minus;121.83) &times; 0.01&sup2; = &minus;0.0061, or &minus;0.61%.</li>
+          <li>+100 bp: &minus;3.5533% &minus; 0.61% = <b>&minus;4.16%</b>. &minus;100 bp: +3.5533% &minus; 0.61% = <b>+2.94%</b>. The convexity term hurts both ways.</li>
+          <li>SMM from CPR: run the survival backwards. SMM = 1 &minus; (1 &minus; 0.06)<sup>1/12</sup> = 1 &minus; 0.994857 = <b>0.5143%</b> a month, not 6%/12 = 0.50%.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A callable bond&rsquo;s model prices are 100.94 if the benchmark curve falls 25 bp, 100.10 unchanged and 99.24 if it rises 25 bp. Find its effective duration and effective convexity, the estimated price change for a 100 bp rise and a 100 bp fall, then convert a 0.8% single monthly mortality (SMM) into a conditional prepayment rate (CPR). &Delta;Curve = 0.0025, typed as a decimal.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1, so &times; and &divide; go before + and &minus;)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>). Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>100.94</kbd> <kbd>&minus;</kbd> <kbd>99.24</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0025</kbd> <kbd>&times;</kbd> <kbd>100.1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>100.94</kbd> <kbd>&minus;</kbd> <kbd>99.24</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0025</kbd> <kbd>&times;</kbd> <kbd>100.1</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (D is above <kbd>x&#8315;&sup1;</kbd>)</div>
+            <p class="calc-see">Display: <samp>3.3966</samp> (both). A 1.70 swing over a 0.50-point span, per 100.10 of price.</p>
+          </li>
+          <li>
+            <p class="calc-what">EffCon = (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>) / ((&Delta;Curve)&sup2; &times; PV<sub>0</sub>). Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>100.94</kbd> <kbd>+</kbd> <kbd>99.24</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>100.1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.0025</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>100.1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>100.94</kbd> <kbd>+</kbd> <kbd>99.24</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>100.1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.0025</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>100.1</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (C is above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>&minus;31.9680</samp> (both). Negative: the fall gained 0.84, the rise lost 0.86. Right after <kbd>x&sup2;</kbd> the BA II Plus shows <samp>0.0000</samp>: 0.00000625 is too small for 4 decimals, but it keeps all of it. The numerator is a tiny &minus;0.02, so type the prices exactly.</p>
+          </li>
+          <li>
+            <p class="calc-what">Estimate for a 100 bp rise, &minus;EffDur &times; 0.01 + &frac12; &times; EffCon &times; 0.01&sup2;, then in percent. Then the 100 bp fall: same keys without the first sign change</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd>; then <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd>; then <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;0.0356</samp>, <samp>&minus;3.5564</samp>, then <samp>0.0324</samp>, <samp>3.2368</samp> (BA II Plus) / <samp>&minus;.0356</samp>, <samp>&minus;3.5564</samp>, then <samp>.0324</samp>, <samp>3.2368</samp> (TI-84). Duration alone says &plusmn;3.40%; the negative convexity takes 0.16 of a point off both.</p>
+          </li>
+          <li>
+            <p class="calc-what">CPR = 1 &minus; (1 &minus; SMM)<sup>12</sup>, in percent. 1 &minus; 0.008 = 0.992 is what survives each month</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.992</kbd> <kbd>yˣ</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.992</kbd> <kbd>^</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>9.1887</samp> (both). 12 &times; 0.8 = 9.60% would overstate it.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: EffDur 3.3966; EffCon &minus;31.97. A 100 bp rise costs about 3.56%, a 100 bp fall earns only about 3.24%. An SMM of 0.8% is a CPR of 9.19%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Mortgage cash flows are not fixed. When rates rise, homeowners stop refinancing, prepayments slow and the securities&rsquo; lives extend just when a longer life hurts most. When rates fall, prepayments speed up and cap the gain.</p>
+      <p>So the risk can only be measured with a model: reprice the securities with a prepayment model under a shifted benchmark curve. Like Askin&rsquo;s &ldquo;theoretical&rdquo; values, the answer is only as good as that model.</p>
+      <p>Today&rsquo;s callable bond shows the lopsidedness: a 25 bp fall adds 0.84, a 25 bp rise takes away 0.86. Effective duration 3.3966 and effective convexity &minus;31.97 say a 100 bp rise costs about 3.56%, a 100 bp fall earns only about 3.24%.</p>
+      <p>Borrowed money multiplies it. At an illustrative five-to-one leverage (not Askin&rsquo;s actual figure), that 3.56% fall is a 17.8% loss of the investors&rsquo; own money. An asymmetry like that turns a &ldquo;neutral&rdquo; book into a one-way bet.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Modified duration for a callable or an MBS.</b> It assumes fixed cash flows and a change in the bond&rsquo;s own yield. Theirs move with rates: use effective duration, from model prices under curve shifts.</li>
+          <li><b>CPR = 12 &times; SMM.</b> 12 &times; 0.8% = 9.60%; the right CPR is 1 &minus; 0.992<sup>12</sup> = 9.19%. Backwards too: a 6% CPR is an SMM of 0.5143%, not 0.50%.</li>
+          <li><b>&ldquo;Negative convexity helps when rates fall.&rdquo;</b> It caps the gain. The term &frac12; &times; EffCon &times; (&Delta;Curve)&sup2; is negative for falls <em>and</em> rises.</li>
+          <li><b>Units.</b> &Delta;Curve is a decimal: 25 bp = 0.0025, and 0.0025&sup2; = 0.00000625. Typed as 25 or 0.25, the answer is nonsense.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="4.507389162561572" data-tol="0.005" data-show="4.51">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A callable bond is priced at 101.50. Its model prices are 102.38 if the benchmark curve falls 20 bp and 100.55 if it rises 20 bp. What is its effective duration? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keys as step 2 with the three new prices, and &Delta;Curve = 0.002 (20 bp). An answer near 9.01 dropped the 2; near 0.45, 20 bp went in as 0.02.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>EffDur = (102.38 &minus; 100.55) / (2 &times; 0.002 &times; 101.50) = 1.83 / 0.406 = <b>4.51</b> (4.5074).</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>102.38</kbd> <kbd>&minus;</kbd> <kbd>100.55</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.002</kbd> <kbd>&times;</kbd> <kbd>101.5</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>4.5074</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>102.38</kbd> <kbd>&minus;</kbd> <kbd>100.55</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.002</kbd> <kbd>&times;</kbd> <kbd>101.5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.5074</samp>.</p>
+            <p>Bonus: the fall gains 0.88, the rise loses 0.95, so EffCon = &minus;0.07 / (0.002&sup2; &times; 101.50) = &minus;0.07 / 0.000406 = &minus;172.41. Negatively convex.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> Why is effective duration, not modified duration, the right measure of interest rate risk for a callable bond or a mortgage-backed security?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Modified duration only works for zero-coupon bonds</span></label>
+              <p class="cq-why">Modified duration works for any option-free bond, coupons and all (Day 39). The problem is not coupons; it is cash flows that change with rates.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Effective duration is modified duration measured in basis points</span></label>
+              <p class="cq-why">Both are in the same units: % price change per 1-point move. The difference is how the prices are produced, not the units.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Their cash flows change when rates change (calls, prepayments), so sensitivity must come from model prices under curve shifts; modified duration assumes fixed cash flows</span></label>
+              <p class="cq-why">Right. Modified duration moves the bond&rsquo;s own yield with the cash flows held still. Effective duration shifts the benchmark curve and lets the model re-decide the calls and prepayments.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>A callable&rsquo;s or an MBS&rsquo;s cash flows depend on rates: falling rates bring calls and refinancing, rising rates slow prepayments. With no fixed schedule there is no single yield to move. So you shift the benchmark curve &plusmn;&Delta;Curve, reprice with a model at a constant OAS, and plug the prices into (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>).</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="-5.6000000000000005" data-tol="0.01" data-pct data-show="&minus;5.60%">
+          <p class="cq-stem"><b>3. Twist: chain the two measures.</b> An MBS has an effective duration of 5.20 and an effective convexity of &minus;80. Estimate its percentage price change if the benchmark curve rises 100 bp. As a percent, to two decimals, with its sign.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> %&Delta;PV &asymp; &minus;EffDur &times; &Delta;Curve + &frac12; &times; EffCon &times; (&Delta;Curve)&sup2;, with &Delta;Curve = +0.01. EffCon is negative, so the convexity term is too.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Duration term: &minus;5.20 &times; 0.01 = &minus;0.0520. Convexity term: &frac12; &times; (&minus;80) &times; 0.0001 = &minus;0.0040. Total &minus;0.0560 = <b>&minus;5.60%</b>.</p>
+            <p>A 100 bp fall gives only +5.20 &minus; 0.40 = +4.80%. That gap is negative convexity.</p>
+            <p>BA II Plus: <kbd>5.2</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>80</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0560</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>&minus;5.6000</samp>.</p>
+            <p>TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>5.2</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>80</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0560</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;5.6000</samp>.</p>
+            <p>The traps: flipping the convexity term&rsquo;s sign because rates rose gives &minus;4.80%; forgetting the &frac12; gives &minus;6.00%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A mortgage pool&rsquo;s single monthly mortality rate (SMM) is 0.6%. Its conditional prepayment rate (CPR) is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 7.20%</span></label>
+              <p class="cq-why">That is 12 &times; 0.6%. Each month&rsquo;s 0.6% comes out of a smaller balance, so the year&rsquo;s total is less.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 6.97%</span></label>
+              <p class="cq-why">Right: 99.4% survives each month; 0.994<sup>12</sup> = 0.9303 survives the year, so CPR = 1 &minus; 0.9303 = 6.97%.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 7.44%</span></label>
+              <p class="cq-why">Compounded the wrong way, as if the balance grew: 1.006<sup>12</sup> &minus; 1. Prepayment shrinks the balance, so use (1 &minus; SMM).</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>CPR = 1 &minus; (1 &minus; 0.006)<sup>12</sup> = 1 &minus; 0.994<sup>12</sup> = <b>6.97%</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.994</kbd> <kbd>yˣ</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>6.9671</samp>. TI-84 Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.994</kbd> <kbd>^</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.9671</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is negative convexity, and why did it hurt funds like Askin&rsquo;s?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Negative convexity means the price rises less when rates fall than it falls when rates rise (EffCon &lt; 0). It comes from the borrower&rsquo;s option: when rates fall, homeowners prepay (or the issuer calls) and cap the gain; when rates rise, prepayments slow and the security&rsquo;s life extends just when that hurts. Bought with borrowed money, those bigger losses were multiplied into margin calls and forced sales.</p>
+            <p>A complete answer says: (1) the price gains less from a fall in rates than it loses from an equal rise, EffCon &lt; 0; (2) the cause is the prepayment (or call) option: faster prepayment caps the gain, slower prepayment extends the life when rates rise; (3) leverage magnifies the lopsided losses.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Curve-Based and Empirical Fixed-Income Risk Measures (effective duration and effective convexity from shifts in the benchmark curve, negative convexity of callable bonds, key rate durations), with the prepayment measures (SMM, CPR, the PSA benchmark) and pool terms (WAC, WAM, WAL, LTV) of Mortgage-Backed Security (MBS) Instrument and Market Features; building on Yield-Based Bond Duration Measures and Properties and Yield-Based Bond Convexity and Portfolio Properties.</p>
+      <p><strong>Sources.</strong> The FOMC&rsquo;s February 1994 increase in the federal funds target from 3% to 3.25% and the worldwide bond sell-off: Wikipedia, &ldquo;1994 bond market crisis&rdquo;. The Granite funds as intended to be &ldquo;market-neutral&rdquo; through &ldquo;a balanced mix of &lsquo;bullish&rsquo; and &lsquo;bearish&rsquo; securities&rdquo;: S.D.N.Y. opinions in the Askin litigation, e.g. ABF Capital Management v. Askin Capital Management, 957 F. Supp. 1308 (1997), and Primavera Familienstifung v. Askin, 130 F. Supp. 2d 450 (2001). High leverage, margin calls, forced liquidations, &ldquo;theoretical&rdquo; valuations above trading prices, and about US$600 million: Wikipedia, &ldquo;List of trading losses&rdquo; (Askin Capital Management, about USD 0.6 billion, 1994) and secondary accounts; the debtors In re Granite Partners, L.P., Granite Corporation and Quartz Hedge Fund, Bankr. S.D.N.Y. Nos. 94 B 41683&ndash;41685. The April 1994 bankruptcy and near-total losses: a U.S. Court of Appeals for the Fourth Circuit opinion describing the 1994 CMO market, as quoted in search results. The callable-bond and pass-through prices, the key rate durations and the five-to-one leverage are illustrative, not Askin&rsquo;s holdings.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-53.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

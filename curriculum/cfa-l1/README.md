@@ -30,10 +30,10 @@ rest of the entry); `curriculum/cfa-l1.json` is its slim copy for the course pag
 4. **Understand totally.** "Why it works" builds the formula from something simpler (usually an
    earlier day's result), one step per line, so nothing has to be taken on trust. Say what each
    symbol means in words. Then say what the formula *does* in a sentence a 12-year-old could follow.
-5. **Both calculators, every walkthrough.** Each step has a BA II Plus line and a TI-84 Plus line
-   (template markup). When the TI-84 has a function the BA II Plus lacks (normal and t
-   probabilities, hypothesis tests), show the TI-84 function and give the exam method for the BA
-   II Plus (table value or memorized critical value) on the BA line.
+5. **BA II Plus only** (Logan, 2026-11-11: "i have the Ba II plus BTW, no need for TI84"). Each
+   walkthrough step has one BA II Plus line (`calc-keys ba`); write no TI-84 lines (Days 1-30 carry
+   them, hidden by cfa.js). Where the BA II Plus has no function (normal and t probabilities,
+   hypothesis tests), give the exam method: a table value or a memorized critical value.
 6. **No answers before the questions.** The check questions use different numbers from the worked
    example and walkthrough, so working them proves he can do it, not that he can copy it.
 7. **Plain HTML, the template's classes only.** No external links except to the course page and the
@@ -51,7 +51,7 @@ rest of the entry); `curriculum/cfa-l1.json` is its slim copy for the course pag
 | Why it works | the derivation, step by step, then the `.formula` plate with every symbol in its `dl` | 150–350 words |
 | Memorize | `.sie-block.memorize`: the plan's `memorize` cards as a list (formula or fact, exactly as on the cards) | 2–6 lines |
 | Worked example | `.worked` box, by hand, each step on its own line | 80–180 words |
-| On your calculator | `.calc`: the problem, then 3–7 steps, each with a `calc-what`, a BA II Plus line, a TI-84 Plus line, and a `calc-see` display line where a number appears; ends with `calc-answer` | — |
+| On your calculator | `.calc`: the problem, then 3–7 steps, each with a `calc-what`, a BA II Plus line and a `calc-see` display line where a number appears; ends with `calc-answer` | — |
 | Back to the story | how the idea resolves the puzzle, with the story's own numbers where they work | 80–160 words |
 | Exam traps | `.sie-block.traps`: 2–4 mistakes the exam is built to catch | 2–4 bullets |
 | Check your understanding | five graded questions, below | 5 questions |
@@ -62,7 +62,7 @@ rest of the entry); `curriculum/cfa-l1.json` is its slim copy for the course pag
 ## 3. The five check questions
 
 - **c1 — Your turn, on the calculator** (`num`): the walkthrough's task with different numbers.
-  Hint = which inputs change. Solution = the keystrokes on **both** calculators and the display.
+  Hint = which inputs change. Solution = the BA II Plus keystrokes and the display.
 - **c2 — Why** (`mc`): a conceptual question that only someone who understood "Why it works" gets
   right (e.g. "What happens to the PV if the rate rises, and why?").
 - **c3 — Twist** (`num`): the concept applied one step differently (solve for a different unknown,
@@ -84,8 +84,7 @@ tolerance to cover it and no more). State the precision and the unit in the ques
 `data-signless` when only the size matters (a payment, a PV the question calls "how much").
 `data-show` is the answer as a person would write it (`1,628.89`).
 
-Each question's solution shows the work; for calculator questions it gives the BA II Plus and the
-TI-84 Plus keystrokes.
+Each question's solution shows the work; for calculator questions it gives the BA II Plus keystrokes.
 
 ## 4. Review days and the final stretch
 
@@ -102,7 +101,7 @@ new numbers), then the score box. `kind: "exam"` days follow the plan's own inst
 "path": "reports/cfa/l1/day-NN.html", "summary": <one sentence: what Logan learns and computes>,
 "headlines": [
   "Day N of 90 · <Topic area>: <the concept, one clause>",
-  "Calculator: <what he computes>, on the BA II Plus and the TI-84",
+  "Calculator: <what he computes>, on the BA II Plus",
   "Check yourself: 5 questions graded on the page"      (review days: "Review: 10 questions graded on the page")
 ],
 "reading_minutes": 20, "generated_at": "__GENERATED_AT__", "timezone": "America/New_York"

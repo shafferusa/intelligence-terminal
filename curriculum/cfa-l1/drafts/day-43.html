@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Guinness brewer who could not sign his own name, and why four samples need wider error bands — CFA Math, Day 43 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "The Guinness brewer who could not sign his own name, and why four samples need wider error bands",
+    "path": "reports/cfa/l1/day-43.html",
+    "summary": "Day 43 of CFA Math: why the sample mean wobbles by only σ/√n, how that standard error becomes a confidence interval, and why an estimated σ calls for Student's t with n − 1 degrees of freedom, worked by hand and on the calculator for 16 months of fund returns.",
+    "headlines": [
+      "Day 43 of 90 · Quantitative Methods: a confidence interval is the sample mean ± reliability factor × standard error, s/√n",
+      "Calculator: the standard error and a 95% t-interval for a fund's mean monthly return, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>The Guinness brewer who could not sign his own name, and why four samples need wider error bands</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        An average of n returns strays from the true mean by only about &sigma;/&radic;n, so a confidence interval is the average plus or minus a few of those standard errors; when &sigma; has to be estimated from a small sample, Student&rsquo;s t makes the band honestly wider.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 43 of 90 &middot; LM7 Estimation and Hypothesis Testing &middot; Standard error and confidence intervals</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="43">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 40 and 36, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="74400" data-tol="1" data-signless data-show="74,400">
+          <p class="cq-stem"><b>From Day 40.</b> A bond position has a full market value of $8,000,000 and an annual modified duration of 6.2. Using its money duration, about how much value does it lose if its yield rises 15 bp? To the nearest dollar.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Money duration = AnnModDur &times; market value. Then multiply by the yield change as a decimal: 15 bp = 0.0015.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Money duration = 6.2 &times; 8,000,000 = 49,600,000. &Delta;PV &asymp; &minus;49,600,000 &times; 0.0015 = &minus;74,400: a loss of about <b>$74,400</b>.</p>
+            <p>BA II Plus: <kbd>6.2</kbd> <kbd>&times;</kbd> <kbd>8000000</kbd> <kbd>&times;</kbd> <kbd>.0015</kbd> <kbd>=</kbd> &rarr; <samp>74,400.0000</samp>.</p>
+            <p>TI-84 Plus: <kbd>6.2</kbd> <kbd>&times;</kbd> <kbd>8000000</kbd> <kbd>&times;</kbd> <kbd>.0015</kbd> <kbd>ENTER</kbd> &rarr; <samp>74400.0000</samp>.</p>
+            <p>Same answer through the PVBP: 49,600,000 &times; 0.0001 = $4,960 per basis point, and 15 &times; 4,960 = 74,400. Type 15 bp as 0.15 and you get $7,440,000: a hundred times too much.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 36.</b> The 1-year spot rate is 3%. A 2-year bond with a 4% annual coupon trades at par (100). The 2-year spot rate is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 4.00%</span></label>
+              <p class="cq-why">That is the par yield. The first coupon is discounted at the lower 1-year rate (3%), so the final payment must be discounted at a rate above 4% for the price to stay at 100.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 8.20%</span></label>
+              <p class="cq-why">That is 1/DF<sub>2</sub> &minus; 1, the return over two years together. A spot rate is per year: take the square root, DF<sub>2</sub><sup>&minus;1/2</sup> &minus; 1.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 4.02%</span></label>
+              <p class="cq-why">Right. 100 = 4 &times; DF<sub>1</sub> + 104 &times; DF<sub>2</sub>, so DF<sub>2</sub> = (100 &minus; 4/1.03)/104 = 0.924197 and Z<sub>2</sub> = 0.924197<sup>&minus;1/2</sup> &minus; 1 = 4.02%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>104</kbd> <kbd>=</kbd> &rarr; <samp>0.9242</samp>, then <kbd>yˣ</kbd> <kbd>.5</kbd> <kbd>+|&minus;</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.0202</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>104</kbd> <kbd>)</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>.5</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0402</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.0202</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The brewer who published as &ldquo;Student&rdquo;</h3>
+      <p>In the autumn of 1899 William Sealy Gosset left Oxford and joined the Guinness brewery in Dublin.</p>
+      <p>His work there included trials of barley and hops. The trouble was size. A trial could seldom afford more than a handful of samples, while the statistical methods of the day assumed large ones.</p>
+      <p>So in 1906&ndash;07 Guinness sent him to London, to study in Karl Pearson&rsquo;s biometric laboratory at University College (for two terms, by one account).</p>
+      <p>In 1908 he published his answer in Pearson&rsquo;s journal, <em>Biometrika</em>: &ldquo;The Probable Error of a Mean&rdquo;. The name on it was &ldquo;Student&rdquo;. Guinness did not let its staff publish under their own names, reportedly after an earlier employee had given away trade secrets.</p>
+      <p>Here is his problem in today&rsquo;s terms. Say you have four measurements. Their average is your best guess at the truth. How far can you trust it? And why does the normal curve&rsquo;s &ldquo;plus or minus 1.96 standard errors&rdquo; promise more precision than four numbers can deliver?</p>
+
+      <h3>The idea</h3>
+      <p>You want the true mean &mu;: a fund&rsquo;s long-run average monthly return, say. You never see it. You see a <b>sample</b> of n returns and its mean X̄, your <b>point estimate</b>.</p>
+      <p>X̄ is never exactly &mu;, and another sample would give another X̄. The gap X̄ &minus; &mu; is <b>sampling error</b>.</p>
+      <p>The <b>standard error</b> is the size of that gap on a typical draw: the standard deviation of X̄ itself. It equals &sigma;/&radic;n. Averages are steadier than single returns, and steadier still as n grows.</p>
+      <p>A <b>confidence interval</b> wraps the estimate in a band: <b>X̄ &plusmn; reliability factor &times; standard error</b>. The reliability factor is a z-value (1.96 for 95%) when &sigma; is known, or a bigger t-value when you must estimate &sigma; with s.</p>
+      <p>&ldquo;95% confidence&rdquo; means: build intervals this way sample after sample, and 95% of them catch the true &mu;.</p>
+      <p>An everyday picture: a bathroom scale whose reading is typically 1 kg off, with each reading&rsquo;s error independent of the last. Average 4 readings and you are typically 0.5 kg off; average 16, 0.25 kg. Errors partly cancel. They never vanish.</p>
+      <p><b>Where samples come from</b> (know the names; how far the 2027 readings cover them is uncertain). Probability samples: <b>simple random</b> (every member equally likely), <b>systematic</b> (every k-th), <b>stratified</b> (random draws inside each subgroup, in proportion), <b>cluster</b> (whole groups at random). Non-probability: <b>convenience</b>, <b>judgmental</b>. Biases: <b>data snooping</b>, <b>sample selection</b> (including <b>survivorship</b>: dead funds drop out of the database), <b>look-ahead</b>, <b>time-period</b>.</p>
+
+      <h3>Why it works</h3>
+      <p><b>1. One draw.</b> A single return X has mean &mu; and variance &sigma;&sup2; (Day 24).</p>
+      <p><b>2. The mean is a portfolio.</b> X̄ = (1/n)X<sub>1</sub> + (1/n)X<sub>2</sub> + &hellip; + (1/n)X<sub>n</sub>: n draws, each with weight 1/n. Each draw has mean &mu;, so X̄ has mean &mu; too.</p>
+      <p><b>3. Day 32&rsquo;s portfolio variance.</b> Each weight squared times its variance, plus covariance terms. Independent draws have no covariance, which leaves n terms of (1/n)&sup2;&sigma;&sup2;.</p>
+      <p>Var(X̄) = n &times; &sigma;&sup2;/n&sup2; = <b>&sigma;&sup2;/n</b>.</p>
+      <p><b>4. Take the root.</b> SD(X̄) = &sigma;/&radic;n: the <b>standard error</b>. Why &radic;n and not n? Variances add; standard deviations do not. Independent errors partly cancel, which is diversification again.</p>
+      <p><b>5. The shape.</b> The <b>central limit theorem</b>: whatever the population looks like (if its variance is finite), X̄ from a large sample (n &ge; 30) is approximately normal. So Day 30&rsquo;s band applies to X̄: 95% of the time it lands within 1.96&sigma;/&radic;n of &mu;.</p>
+      <p><b>6. Flip it.</b> The distance from X̄ to &mu; is the distance from &mu; to X̄. So if X̄ lands within 1.96 standard errors of &mu; 95% of the time, &mu; lies within 1.96 standard errors of X̄ just as often: <b>X̄ &plusmn; 1.96&sigma;/&radic;n</b>.</p>
+      <p><b>7. &sigma; unknown: Gosset&rsquo;s step.</b> Use s/&radic;n instead. But s is only an estimate. With few observations it can easily come out too small, and dividing by a too-small number makes the ratio big. So (X̄ &minus; &mu;)/(s/&radic;n) swings wider than z.</p>
+      <p>Its distribution is <b>Student&rsquo;s t</b>: fatter tails, with <b>n &minus; 1 degrees of freedom</b> (one was spent on X̄, as in Day 24&rsquo;s n &minus; 1). For 95%: 3.182 at 3 df, 2.131 at 15, 2.045 at 29, closing in on 1.96. (For a small sample, t assumes a roughly normal population.)</p>
+      <p><b>In plain words:</b> an average of many readings wobbles less than one reading, by the square root of how many you took. The interval is your average plus or minus about two of those wobbles, and a bit more when you had to guess the wobble from little data.</p>
+      <div class="formula">
+        <p class="expr">&sigma;<sub>X̄</sub> = &sigma; / &radic;n &nbsp; or &nbsp; s<sub>X̄</sub> = s / &radic;n</p>
+        <p class="expr">X̄ &plusmn; z<sub>&alpha;/2</sub> &times; &sigma;/&radic;n &nbsp; (&sigma; known)</p>
+        <p class="expr">X̄ &plusmn; t<sub>&alpha;/2</sub> &times; s/&radic;n, &nbsp; df = n &minus; 1 &nbsp; (&sigma; unknown)</p>
+        <dl>
+          <dt>X̄</dt><dd>the sample mean: the point estimate</dd>
+          <dt>&mu;</dt><dd>the population mean you are estimating</dd>
+          <dt>&sigma;, s</dt><dd>the population standard deviation, and the sample one (divided by n &minus; 1)</dd>
+          <dt>n</dt><dd>the number of observations in the sample</dd>
+          <dt>&sigma;<sub>X̄</sub>, s<sub>X̄</sub></dt><dd>the standard error: how much X̄ typically strays from &mu;</dd>
+          <dt>&alpha;</dt><dd>the chance the interval misses: 5% for a 95% interval, split &alpha;/2 = 2.5% to each tail</dd>
+          <dt>z<sub>&alpha;/2</sub>, t<sub>&alpha;/2</sub></dt><dd>the reliability factor: the value with &alpha;/2 of the area beyond it</dd>
+          <dt>df</dt><dd>degrees of freedom of t: n &minus; 1</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Standard error of the sample mean: s<sub>X̄</sub> = s / &radic;n (&sigma; / &radic;n if &sigma; known)</li>
+          <li>Confidence interval for the mean: X̄ &plusmn; (reliability factor) &times; standard error</li>
+          <li>Reliability factors for z: 90%: 1.645; 95%: 1.96; 99%: 2.58 (2.576)</li>
+          <li>When to use t: Population variance unknown (use s); df = n &minus; 1</li>
+          <li>Central limit theorem: For any population with mean &mu; and finite variance &sigma;&sup2;, the sample mean of a large sample (rule of thumb n &ge; 30) is approximately normal with mean &mu; and variance &sigma;&sup2;/n</li>
+          <li>Sampling biases to name (2027 coverage uncertain): Data snooping; sample selection (incl. survivorship); look-ahead; time-period bias</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> An analyst has 9 quarterly returns on a small-cap fund: mean 2.0%, sample standard deviation 4.5%. Build a 90% confidence interval for the mean quarterly return (t-table, 8 df, 5% in each tail: 1.860). Then see what wrongly using z = 1.645 would do.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Standard error: s/&radic;n = 4.5/&radic;9 = 4.5/3 = 1.50%.</li>
+          <li>&sigma; is unknown and n is small: t with 9 &minus; 1 = 8 df. A 90% two-sided interval leaves 5% in each tail: t<sub>0.05</sub> = 1.860.</li>
+          <li>Half-width: 1.860 &times; 1.50 = 2.790%.</li>
+          <li>Interval: 2.0 &plusmn; 2.790 = <b>&minus;0.79% to 4.79%</b>.</li>
+          <li>With z = 1.645 instead: 2.0 &plusmn; 2.4675 = &minus;0.4675% to 4.4675%. About 12% narrower: it claims a precision that nine data points cannot give.</li>
+          <li>Zero is inside the interval: these nine quarters cannot rule out a true mean of 0. Day 44 turns that into a test.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> 16 monthly returns have a mean of 1.2% and a sample standard deviation of 4%. Find the standard error and the 95% confidence interval for the mean monthly return. Keep everything in percent.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from the one-time setup)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Standard error = s &divide; &radic;n = 4 &divide; &radic;16, and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>16</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (&radic;x acts at once on the 16 showing)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>16</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>S</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>1.0000</samp> (BA II Plus) / <samp>1.0000</samp> (TI-84). The mean of 16 months strays by about 1 point: a quarter of one month&rsquo;s 4.</p>
+          </li>
+          <li>
+            <p class="calc-what">Reliability factor: &sigma; is unknown, so t with 16 &minus; 1 = 15 df; 95% two-sided puts 2.5% in each tail</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no t-distribution on the BA: on the exam the value comes from a t-table in the question (row 15 df, column 0.025 in one tail): <samp>2.131</samp></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">4:invT(</kbd> <kbd>.975</kbd> <kbd>,</kbd> <kbd>15</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>T</kbd> <kbd>ENTER</kbd>. invT( wants the area to the <em>left</em>: 1 &minus; 0.025 = .975. (No invT( before TI-84 Plus OS 2.30: use the table&rsquo;s 2.131, as on the BA.)</div>
+            <p class="calc-see">Display: <samp>2.131</samp> from the table (BA II Plus) / <samp>2.1314</samp> (TI-84). Bigger than z&rsquo;s 1.96: the price of estimating &sigma;.</p>
+          </li>
+          <li>
+            <p class="calc-what">Half-width = t &times; standard error</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2.131</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>T</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>S</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>H</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.1310</samp> (BA II Plus) / <samp>2.1314</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">The limits: X̄ &minus; half-width, then X̄ + half-width</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>1.2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd>, then <kbd>1.2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>1.2</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>H</kbd> <kbd>ENTER</kbd>, then <kbd>1.2</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>H</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;0.9310</samp> and <samp>3.3310</samp> (BA II Plus) / <samp>&minus;.9314</samp> and <samp>3.3314</samp> (TI-84). The 0.0004 gap is only the table rounding t to three decimals.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check the whole interval on one screen</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no interval worksheet on the BA: steps 2 to 5 are the exam method</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS) <kbd class="menu">8:TInterval&hellip;</kbd>; on <samp>Inpt:</samp> highlight <samp>Stats</samp> and press <kbd>ENTER</kbd>; then <samp>x̄: 1.2</samp>, <samp>Sx: 4</samp>, <samp>n: 16</samp>, <samp>C-Level: .95</samp>; <samp>Calculate</samp> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>(&minus;.9314,3.3314)</samp> (TI-84), the same limits as step 5.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: standard error 1.00%; 95% confidence interval about &minus;0.93% to 3.33% a month (&minus;0.931 to 3.331 with the table&rsquo;s t). Zero is inside it.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Gosset&rsquo;s four samples leave 4 &minus; 1 = 3 degrees of freedom. For 95% the t-table says 3.182, not 1.96: the honest band is 62% wider.</p>
+      <p>Use 1.96 anyway and a band that claims 95% catches the true mean only about 86% of the time (for normally distributed measurements).</p>
+      <p>More samples shrink the penalty: 2.262 with 10, 2.045 with 30, already close to 1.96. In the walkthrough, 16 months gave 2.131 instead of 1.96, a band about 9% wider.</p>
+      <p>That was Gosset&rsquo;s answer: small samples are usable, provided the error bands are honestly wider. The distribution still carries his pen name: Student&rsquo;s t.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Dividing by n instead of &radic;n. The walkthrough&rsquo;s standard error is 4/&radic;16 = 1.00, not 4/16 = 0.25; the wrong one makes the interval four times too narrow.</li>
+          <li>Using z when &sigma; is unknown and the sample is small. In the worked example z = 1.645 gives &minus;0.47% to 4.47%; the right t (1.860, 8 df) gives &minus;0.79% to 4.79%.</li>
+          <li>A one-tailed value for a two-sided interval. A 95% interval puts 2.5% in <em>each</em> tail: z = 1.96 (1.645 is the 90% value), and on the TI-84 invT(.975, df), not invT(.95, df).</li>
+          <li>Mixing up &sigma; and &sigma;/&radic;n. &mu; &plusmn; 1.96&sigma; (Day 30) is where 95% of single returns land; X̄ &plusmn; 1.96&sigma;/&radic;n is a 95% interval for the <em>mean</em>.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.038339136976815" data-tol="0.01" data-pct data-show="2.04">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> 25 monthly returns have a mean of 0.8% and a sample standard deviation of 3.0%. What is the <em>upper</em> limit of the 95% confidence interval for the mean monthly return? In percent, to two decimals. (t-table, 24 df, 0.025 in one tail: 2.064.)</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> New inputs: n = 25 (so &radic;n = 5 and df = 24), X̄ = 0.8, s = 3. Then steps 2 to 5 of the walkthrough.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>SE = 3/&radic;25 = 3/5 = 0.60. Half-width = 2.064 &times; 0.60 = 1.2384. Interval: 0.8 &plusmn; 1.2384 = &minus;0.44% to <b>2.04%</b>.</p>
+            <p>BA II Plus: <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>25</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.6000</samp>; <kbd>2.064</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>1.2384</samp>; <kbd>.8</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>2.0384</samp>.</p>
+            <p>TI-84 Plus: <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>25</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>S</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6000</samp>; <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">4:invT(</kbd> <kbd>.975</kbd> <kbd>,</kbd> <kbd>24</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>T</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.0639</samp>; <kbd>.8</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>T</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>S</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.0383</samp>. Or <kbd class="menu">8:TInterval&hellip;</kbd> with Stats (x̄: .8, Sx: 3, n: 25, C-Level: .95) &rarr; <samp>(&minus;.4383,2.0383)</samp>.</p>
+            <p>The usual slips: z = 1.96 gives 1.98; dividing by n (3/25) gives 1.05.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> A large sample gives a 95% confidence interval for a fund&rsquo;s mean return, using z = 1.96. If the sample were four times as large and s came out the same, the interval&rsquo;s width would:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. fall to a quarter</span></label>
+              <p class="cq-why">That would be true if the standard error divided by n. It divides by &radic;n, and &radic;4 = 2.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. halve</span></label>
+              <p class="cq-why">Right. SE = s/&radic;n: four times the data doubles &radic;n, so the standard error, and with it the width, halves.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. stay the same, because s did not change</span></label>
+              <p class="cq-why">s measures how much single returns swing, and more data does not change that. But the mean of more returns swings less: s/&radic;n falls.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Step 3 of &ldquo;Why it works&rdquo;: Var(X̄) = &sigma;&sup2;/n, so the standard deviation of X̄ is &sigma;/&radic;n. Halving an interval takes four times the data; cutting it to a tenth takes a hundred times. Precision is expensive.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="246" data-tol="0.5" data-show="246">
+          <p class="cq-stem"><b>3. Twist: solve for n.</b> Monthly returns have a known population standard deviation of 4%. How many monthly observations do you need for the 95% confidence interval&rsquo;s half-width to be at most 0.5 percentage points? A whole number.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">observations</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> &sigma; is known, so z = 1.96. Set 1.96 &times; 4/&radic;n = 0.5, solve for &radic;n first, then square. Round up.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.96 &times; 4/&radic;n &le; 0.5, so &radic;n &ge; 1.96 &times; 4/0.5 = 15.68, so n &ge; 15.68&sup2; = 245.86. Round <em>up</em>: <b>246</b>. (At 245 the half-width is 0.50088, just over; at 246 it is 0.49986.)</p>
+            <p>BA II Plus: <kbd>1.96</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>.5</kbd> <kbd>=</kbd> &rarr; <samp>15.6800</samp>, then <kbd>x&sup2;</kbd> &rarr; <samp>245.8624</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>1.96</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>.5</kbd> <kbd>)</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>245.8624</samp>.</p>
+            <p>Forget to square and you get 16: 15.68 is &radic;n, not n.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A sample of 64 monthly returns has a mean of 1.5%. The population standard deviation is known to be 4%. The lower limit of the 95% confidence interval for the population mean is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 0.52%</span></label>
+              <p class="cq-why">Right. SE = 4/&radic;64 = 0.50; 1.5 &minus; 1.96 &times; 0.50 = 0.52%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 1.38%</span></label>
+              <p class="cq-why">&sigma; divided by n instead of &radic;n: 4/64 = 0.0625, and 1.5 &minus; 1.96 &times; 0.0625 = 1.3775.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 0.68%</span></label>
+              <p class="cq-why">The one-tailed 1.645, which is the 90% value: 1.5 &minus; 1.645 &times; 0.50 = 0.6775.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>&sigma; known, so z; 95% two-sided, so 2.5% per tail and 1.96. The interval is 0.52% to 2.48%. Had &sigma; been unknown, you would use s and t with 63 df (1.998), barely different at this sample size.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why did Gosset need a new distribution for small samples, and when do you use t instead of z?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>When &sigma; is unknown it has to be estimated by s, and with only a few observations s is itself unreliable, so (X̄ &minus; &mu;)/(s/&radic;n) has fatter tails than the normal; Student&rsquo;s t, with n &minus; 1 degrees of freedom, supplies the larger reliability factor that keeps a 95% interval honest. Use t whenever &sigma; is unknown; as n grows, t shrinks toward z.</p>
+            <p>A complete answer says: (1) &sigma; is unknown, so s is estimated from the data; (2) with few observations s is shaky, so t has fatter tails and a larger reliability factor (3.182 against 1.96 at 3 df); (3) df = n &minus; 1, and t approaches z as n grows.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 7: Estimation and Hypothesis Testing (sampling methods and sampling error, the central limit theorem, the standard error of the sample mean, confidence intervals for a population mean with z and t reliability factors; the sampling biases come from earlier editions of the curriculum).</p>
+      <p><strong>Sources.</strong> Student (W. S. Gosset), &ldquo;The Probable Error of a Mean&rdquo;, <em>Biometrika</em> 6(1), 1908, pp. 1&ndash;25; <em>The Irish Times</em>, &ldquo;How a student of Guinness became &lsquo;the Faraday of statistics&rsquo;&rdquo; (2014: Gosset at Guinness, his time in Karl Pearson&rsquo;s laboratory at University College London, the pen name); Encyclopedia.com, &ldquo;Gosset, William Sealy&rdquo; (joined Guinness in Dublin on leaving Oxford in autumn 1899; 1906&ndash;07 in Pearson&rsquo;s department; small barley trials); thatsmaths.com, &ldquo;The Faraday of Statistics&rdquo; (2014). Accounts differ on the length of the London stay, and the trade-secrets reason for Guinness&rsquo;s rule is as reported. The fund returns are illustrative; the t critical values and coverage figures were computed for this lesson.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-42.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

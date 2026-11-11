@@ -1728,18 +1728,22 @@
    "memorize": [
     {
      "front": "Risk-neutral probability of an up move",
-     "back": "π = (1 + r − d) / (u − d)"
+     "back": "π = (1 + r − d) / (u − d), where u = S_u/S_0 and d = S_d/S_0 (also written R^u and R^d)"
     },
     {
      "front": "One-period binomial call value",
      "back": "c_0 = [π × c_u + (1 − π) × c_d] / (1 + r)"
     },
     {
-     "front": "Hedge ratio",
+     "front": "One-period binomial put value",
+     "back": "p_0 = [π × p_u + (1 − π) × p_d] / (1 + r)"
+    },
+    {
+     "front": "Hedge ratio (shares per option)",
      "back": "h = (c_u − c_d) / (S_u − S_d)"
     },
     {
-     "front": "No-arbitrage condition",
+     "front": "No-arbitrage condition for the binomial model",
      "back": "d < 1 + r < u"
     }
    ]
@@ -1753,8 +1757,12 @@
    "concept": "An exchange rate A/B is the price of one unit of the base currency B in units of the price currency A, cross rates follow by multiplying quotes so the common currency cancels, and one currency's percentage change against another is not the negative of the other's.",
    "memorize": [
     {
-     "front": "Exchange-rate quote A/B",
-     "back": "Number of units of currency A (price) per 1 unit of currency B (base)"
+     "front": "Exchange-rate quote A/B (CFA notation)",
+     "back": "Units of currency A (price currency) per 1 unit of currency B (base currency)"
+    },
+    {
+     "front": "Inverting a quote",
+     "back": "B/A = 1 / (A/B)"
     },
     {
      "front": "Cross rate",
@@ -1762,7 +1770,7 @@
     },
     {
      "front": "Percentage change of the base currency in an A/B quote",
-     "back": "%Δ = (A/B)_new / (A/B)_old − 1"
+     "back": "%Δ_base = (A/B)_new / (A/B)_old − 1"
     },
     {
      "front": "Percentage change of the price currency against the base",
@@ -1805,11 +1813,11 @@
     },
     {
      "front": "FIFO vs LIFO when prices are rising",
-     "back": "LIFO: higher COGS, lower gross profit and taxes, lower ending inventory; FIFO: the reverse"
+     "back": "LIFO: higher COGS, lower gross profit and taxes, lower ending inventory; FIFO: the reverse (all reverse when prices fall)"
     },
     {
      "front": "Which standards allow LIFO?",
-     "back": "US GAAP only; IFRS prohibits LIFO"
+     "back": "US GAAP only (a company using LIFO for US taxes must also use it in its financial statements); IFRS prohibits LIFO"
     },
     {
      "front": "Inventory turnover and days on hand",
@@ -1831,19 +1839,23 @@
     },
     {
      "front": "Converting LIFO COGS to FIFO",
-     "back": "COGS_FIFO = COGS_LIFO − ΔLIFO reserve"
+     "back": "COGS_FIFO = COGS_LIFO − (ending LIFO reserve − beginning LIFO reserve)"
+    },
+    {
+     "front": "Converting LIFO net income to FIFO",
+     "back": "NI_FIFO = NI_LIFO + ΔLIFO reserve × (1 − tax rate)"
     },
     {
      "front": "Equity adjustment when restating to FIFO",
-     "back": "Equity increases by LIFO reserve × (1 − tax rate)"
+     "back": "Equity + LIFO reserve × (1 − t); deferred tax liability (or lower cash) + LIFO reserve × t"
     },
     {
      "front": "Net realisable value",
-     "back": "NRV = estimated selling price − estimated costs to complete and sell"
+     "back": "NRV = estimated selling price − estimated costs to complete and sell; write inventory down if cost > NRV"
     },
     {
-     "front": "LIFO liquidation signal",
-     "back": "Units sold exceed units purchased, so old low-cost layers enter COGS (LIFO reserve falls)"
+     "front": "Inventory write-down reversals; LIFO liquidation signal",
+     "back": "IFRS: reversal allowed up to original cost; US GAAP: no reversal. Liquidation: units sold > units bought, LIFO reserve falls, old cheap costs boost margins"
     }
    ]
   },
@@ -1861,15 +1873,19 @@
     },
     {
      "front": "Effect over the asset's life",
-     "back": "Total expense and total cash flow are the same; capitalizing smooths expense into later years"
+     "back": "Total expense and total cash flow are the same; capitalizing moves expense into later years (later-year NI is lower)"
     },
     {
      "front": "Where capitalized interest appears",
-     "back": "Added to the asset's cost (later depreciated); cash paid classified in CFI"
+     "back": "Added to the asset's cost (later depreciated); the cash paid is classified in CFI"
     },
     {
      "front": "Interest coverage ratio",
-     "back": "Interest coverage = EBIT / interest expense (analysts often add capitalized interest to the denominator)"
+     "back": "Interest coverage = EBIT / interest expense (analysts add capitalized interest to the denominator)"
+    },
+    {
+     "front": "Research and development costs",
+     "back": "IFRS: research expensed, development capitalized once criteria are met; US GAAP: both expensed (software development after technological feasibility is capitalized)"
     }
    ]
   },
@@ -1894,12 +1910,16 @@
      "back": "(Cost − salvage) × (units this period / total expected units)"
     },
     {
+     "front": "Estimated total useful life of PPE",
+     "back": "Gross PPE / annual depreciation expense"
+    },
+    {
      "front": "Average age of PPE",
      "back": "Accumulated depreciation / annual depreciation expense"
     },
     {
-     "front": "Remaining useful life of PPE",
-     "back": "Net PPE / annual depreciation expense"
+     "front": "Remaining useful life of PPE; change in estimate",
+     "back": "Net PPE / annual depreciation expense; changes in useful life or salvage are applied prospectively (no restatement)"
     }
    ]
   },
@@ -1913,19 +1933,23 @@
    "memorize": [
     {
      "front": "IFRS recoverable amount",
-     "back": "Higher of fair value less costs to sell and value in use"
+     "back": "Higher of fair value less costs to sell and value in use (PV of expected future cash flows)"
     },
     {
-     "front": "US GAAP recoverability test",
-     "back": "Impaired if carrying amount > undiscounted expected future cash flows; loss = carrying amount − fair value"
+     "front": "US GAAP impairment test (assets held for use)",
+     "back": "Step 1: impaired if carrying amount > undiscounted expected future cash flows; step 2: loss = carrying amount − fair value"
     },
     {
      "front": "Reversal of impairment losses",
-     "back": "IFRS: allowed (up to original carrying amount); US GAAP: not allowed for assets held for use"
+     "back": "IFRS: allowed (up to the carrying amount there would have been without the impairment); US GAAP: not allowed for assets held for use"
+    },
+    {
+     "front": "IFRS revaluation model",
+     "back": "Increase: to revaluation surplus in OCI (to profit only if it reverses an earlier loss); decrease: to profit (to OCI only if it reverses an earlier surplus)"
     },
     {
      "front": "Gain or loss on disposal",
-     "back": "Gain (loss) = sale proceeds − carrying amount"
+     "back": "Gain (loss) = sale proceeds − carrying amount; non-cash, so removed from net income in indirect CFO; proceeds are in CFI"
     }
    ]
   },
@@ -1939,19 +1963,23 @@
    "memorize": [
     {
      "front": "Initial lease liability",
-     "back": "PV of the lease payments discounted at the implicit rate (or the lessee's incremental borrowing rate)"
+     "back": "PV of the lease payments not yet paid at commencement, at the rate implicit in the lease (or, if not readily determinable, the lessee's incremental borrowing rate)"
     },
     {
      "front": "Initial right-of-use asset",
-     "back": "Lease liability + initial direct costs + lease payments made at or before commencement − incentives"
+     "back": "Lease liability + lease payments made at or before commencement + initial direct costs − lease incentives received"
+    },
+    {
+     "front": "Lease liability each period",
+     "back": "Interest = rate × opening liability; the payment reduces the liability by (payment − interest)"
     },
     {
      "front": "IFRS 16 lessee expense",
-     "back": "Depreciation of the ROU asset + interest on the lease liability"
+     "back": "Depreciation of the ROU asset + interest on the lease liability (front-loaded; EBITDA rises because rent is no longer an operating expense)"
     },
     {
      "front": "US GAAP operating lease (lessee)",
-     "back": "On the balance sheet; single straight-line lease cost in the income statement"
+     "back": "On the balance sheet (ROU asset and lease liability); single straight-line lease cost in the income statement"
     }
    ]
   },
@@ -1989,12 +2017,20 @@
      "back": "DTA = (tax base − carrying amount) × tax rate, when tax base > carrying amount"
     },
     {
+     "front": "Deferred tax on a liability (e.g. a warranty provision)",
+     "back": "Signs flip: carrying amount > tax base gives a DTA; carrying amount < tax base gives a DTL"
+    },
+    {
      "front": "Income tax expense",
      "back": "Income tax expense = taxes payable + ΔDTL − ΔDTA"
     },
     {
      "front": "Permanent differences",
-     "back": "Differences that never reverse (e.g. tax-exempt income, non-deductible fines): no deferred tax; they change the effective rate"
+     "back": "Differences that never reverse (e.g. tax-exempt income, non-deductible fines): no deferred tax; they make the effective rate differ from the statutory rate"
+    },
+    {
+     "front": "Valuation allowance (US GAAP)",
+     "back": "Reduces a DTA when it is more likely than not (over 50%) that some of it will not be realised; IFRS recognises a DTA only to the extent its use is probable"
     }
    ]
   },
@@ -2016,11 +2052,15 @@
     },
     {
      "front": "Effect of a tax-rate change on deferred taxes",
-     "back": "Remeasure DTL and DTA at the new enacted rate; the change goes through income tax expense"
+     "back": "Remeasure every DTL and DTA at the new enacted rate: change = temporary difference × (new rate − old rate), recorded in income tax expense"
     },
     {
      "front": "Tax-rate cut with a net DTA",
-     "back": "DTA falls in value → one-time increase in tax expense"
+     "back": "DTA falls in value → one-time increase in income tax expense"
+    },
+    {
+     "front": "Tax-rate cut with a net DTL",
+     "back": "DTL falls → one-time decrease in income tax expense"
     }
    ]
   },
@@ -2037,6 +2077,10 @@
      "back": "Basic EPS = (net income − preferred dividends) / weighted-average number of common shares"
     },
     {
+     "front": "Diluted EPS with convertible preferred (if-converted)",
+     "back": "(NI − preferred dividends + dividends on the convertible preferred) / (weighted-average shares + shares from conversion)"
+    },
+    {
      "front": "Diluted EPS with convertible debt (if-converted)",
      "back": "[NI − preferred dividends + convertible interest × (1 − t)] / (weighted-average shares + shares from conversion)"
     },
@@ -2046,7 +2090,7 @@
     },
     {
      "front": "Antidilution test",
-     "back": "Exclude any security whose inclusion would increase diluted EPS"
+     "back": "Exclude any security whose inclusion would increase diluted EPS (or reduce a loss per share)"
     },
     {
      "front": "When does a debt-funded share buyback raise EPS?",
@@ -2077,6 +2121,14 @@
     {
      "front": "Interest paid classification",
      "back": "US GAAP: CFO; IFRS: CFO or CFF"
+    },
+    {
+     "front": "Dividends paid classification",
+     "back": "US GAAP: CFF; IFRS: CFO or CFF"
+    },
+    {
+     "front": "Interest and dividends received",
+     "back": "US GAAP: CFO; IFRS: CFO or CFI"
     }
    ]
   },
@@ -2099,6 +2151,10 @@
     {
      "front": "FCFF from net income",
      "back": "FCFF = NI + NCC + Int × (1 − t) − FCInv − WCInv"
+    },
+    {
+     "front": "FCFE from FCFF",
+     "back": "FCFE = FCFF − Int × (1 − t) + net borrowing"
     },
     {
      "front": "Cash interest coverage",
@@ -2227,15 +2283,19 @@
    "memorize": [
     {
      "front": "Enterprise value",
-     "back": "EV = market value of equity + debt + preferred stock + non-controlling interest − cash and short-term investments"
+     "back": "EV = market value of equity + market value of debt + preferred stock + non-controlling interest − cash and short-term investments"
     },
     {
      "front": "EV/EBITDA",
-     "back": "Enterprise value / EBITDA (compare firms with different capital structures)"
+     "back": "Enterprise value / EBITDA (compares firms with different capital structures)"
     },
     {
      "front": "Price-to-book",
      "back": "P/B = market price per share / book value per share"
+    },
+    {
+     "front": "Trailing vs forward P/E",
+     "back": "Trailing: price / last 12 months' EPS; forward (leading): price / next 12 months' expected EPS"
     },
     {
      "front": "Residual income",
@@ -2257,19 +2317,19 @@
     },
     {
      "front": "IRR decision rule",
-     "back": "Accept if IRR > required rate of return (cost of capital)"
-    },
-    {
-     "front": "Return on invested capital",
-     "back": "ROIC = after-tax operating profit / average book value of invested capital"
+     "back": "Accept if IRR > required rate of return (cost of capital); for independent, conventional projects it agrees with NPV"
     },
     {
      "front": "Crossover rate",
-     "back": "The discount rate at which two projects' NPVs are equal (the IRR of the differences in cash flows)"
+     "back": "The discount rate at which two projects' NPVs are equal (the IRR of the differences in their cash flows)"
     },
     {
-     "front": "Sunk costs",
-     "back": "Never included in project cash flows"
+     "front": "Incremental cash flows",
+     "back": "Ignore sunk costs; include opportunity costs, externalities and cannibalization"
+    },
+    {
+     "front": "Return on invested capital",
+     "back": "ROIC = after-tax operating profit / average book value of invested capital (value is created when ROIC > cost of capital)"
     }
    ]
   },
@@ -2283,11 +2343,11 @@
    "memorize": [
     {
      "front": "Weighted average cost of capital",
-     "back": "WACC = w_d × r_d × (1 − t) + w_p × r_p + w_e × r_e"
+     "back": "WACC = w_d × r_d × (1 − t) + w_p × r_p + w_e × r_e (target, market-value weights)"
     },
     {
      "front": "After-tax cost of debt",
-     "back": "r_d × (1 − t), with r_d = YTM of the firm's debt"
+     "back": "r_d × (1 − t), with r_d = YTM of the firm's debt (not the coupon rate)"
     },
     {
      "front": "Cost of preferred stock",
@@ -2296,6 +2356,10 @@
     {
      "front": "Cost of equity via CAPM",
      "back": "r_e = R_f + β × [E(R_m) − R_f]"
+    },
+    {
+     "front": "Cost of equity via dividend discount",
+     "back": "r_e = D_1 / P_0 + g"
     },
     {
      "front": "MM proposition I with taxes",
@@ -2326,6 +2390,10 @@
     {
      "front": "Forward premium (base currency)",
      "back": "F − S > 0: the base currency trades at a forward premium"
+    },
+    {
+     "front": "Annualized forward premium or discount",
+     "back": "(F − S) / S × (360 / days)"
     }
    ]
   },
@@ -2393,12 +2461,16 @@
      "back": "Shut down if price < average variable cost; operate (even at a loss) if AVC ≤ P < ATC"
     },
     {
-     "front": "Breakeven point",
-     "back": "P = ATC (economic profit = 0)"
+     "front": "Breakeven and long-run exit",
+     "back": "Breakeven at P = ATC (economic profit = 0); exit in the long run if P < ATC"
     },
     {
      "front": "Herfindahl-Hirschman Index",
-     "back": "HHI = Σ (market share_i)², shares in percent (max 10,000)"
+     "back": "HHI = Σ s_i², s_i = market share as a decimal (monopoly = 1; M equal-sized firms = 1/M); with shares in percent the same index runs from 0 to 10,000, the scale regulators quote"
+    },
+    {
+     "front": "HHI increase from a merger of A and B",
+     "back": "ΔHHI = 2 × s_A × s_B (on the same scale as the shares)"
     },
     {
      "front": "N-firm concentration ratio",
@@ -2423,11 +2495,15 @@
      "back": "Incentive = rate × max[0, ending assets − management fee − beginning assets × (1 + hurdle)]"
     },
     {
+     "front": "Soft hurdle",
+     "back": "Once the return clears the hurdle, the incentive fee is charged on the whole gain"
+    },
+    {
      "front": "High-water mark",
      "back": "Incentive fees are paid only on value above the highest previous NAV (net of fees)"
     },
     {
-     "front": "Leveraged portfolio return",
+     "front": "Leveraged portfolio return (2027 coverage uncertain)",
      "back": "R_L = R + (V_B / V_E) × (R − r_D)"
     }
    ]
@@ -2454,7 +2530,7 @@
     },
     {
      "front": "Full catch-up",
-     "back": "After the preferred return, the GP receives (most or all of) distributions until it has its full carry share of total profits"
+     "back": "After the LPs' preferred return, the GP receives 100% of distributions until it holds its full carry share (e.g. 20%) of all profit; a partial catch-up gives it only part of each distribution"
     },
     {
      "front": "Clawback",

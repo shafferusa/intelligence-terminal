@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>A Madoff feeder fund printed a Sharpe ratio of 2.75 over sixteen years. That number was the red flag — CFA Math, Day 53 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "A Madoff feeder fund printed a Sharpe ratio of 2.75 over sixteen years. That number was the red flag",
+    "path": "reports/cfa/l1/day-53.html",
+    "summary": "Day 53 of CFA Math: risk-adjusted performance, with the Sharpe ratio and M² measuring excess return against total risk, the Treynor ratio and Jensen’s alpha against beta, and Sortino and Calmar against downside risk; Logan computes all four main measures for a fund and the market and sees why Fairfield Sentry’s Sharpe ratio of 2.75 was too good to be true.",
+    "headlines": [
+      "Day 53 of 90 · Portfolio Construction: Sharpe, M², Treynor and Jensen’s alpha measure excess return against the risk that matters",
+      "Calculator: Sharpe and Treynor ratios, M² and Jensen’s alpha for a fund and the market, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>A Madoff feeder fund printed a Sharpe ratio of 2.75 over sixteen years. That number was the red flag</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A return means little until you ask what risk bought it: Sharpe, M&sup2;, Treynor and Jensen&rsquo;s alpha weigh excess return against the risk that matters, and a Sharpe ratio is what made one Madoff fund look too good to be true.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Portfolio Construction</p>
+      <span class="track-progress">Day 53 of 90 &middot; Portfolio Risk and Return: Part II &middot; Risk-adjusted performance measures</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="53">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 52 and 46, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="6.6" data-tol="0.01" data-pct data-show="6.60%">
+          <p class="cq-stem"><b>From Day 52.</b> A stock&rsquo;s returns have a covariance with the market&rsquo;s of 0.0240, and the market&rsquo;s standard deviation is 20%. R<sub>f</sub> = 3% and E(R<sub>m</sub>) = 9%. What is the stock&rsquo;s CAPM required return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> &beta; = Cov(R<sub>i</sub>, R<sub>m</sub>) / &sigma;<sub>m</sub>&sup2;, with &sigma;<sub>m</sub> as a decimal (0.20). Then multiply &beta; by the market risk premium, E(R<sub>m</sub>) &minus; R<sub>f</sub>, not by the market return.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&beta; = 0.0240 / 0.20&sup2; = 0.0240 / 0.04 = 0.60. Premium = 9% &minus; 3% = 6%.</p>
+            <p>E(R) = 3% + 0.60 &times; 6% = 3% + 3.60% = <b>6.60%</b>. (3 + 0.60 &times; 9 = 8.40% is the trap: &beta; times the market return.)</p>
+            <p>BA II Plus (AOS): <kbd>.024</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.6000</samp>; <kbd>3</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>=</kbd> &rarr; <samp>6.6000</samp>.</p>
+            <p>TI-84 Plus: <kbd>.024</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>x&sup2;</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6000</samp>; <kbd>3</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.6000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 46.</b> Fund X&rsquo;s monthly returns have a sample standard deviation of 6% over 21 months; fund Y&rsquo;s, 4% over 25 months. For a test of equal variances, the F-statistic and its degrees of freedom are:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 1.50, with (20, 24) df</span></label>
+              <p class="cq-why">1.50 is the ratio of the standard deviations, 6/4. The F-test compares variances: square them first.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 2.25, with (20, 24) df</span></label>
+              <p class="cq-why">Right: F = 6&sup2; / 4&sup2; = 36 / 16 = 2.25, larger variance on top, and each sample has n &minus; 1 degrees of freedom.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 2.25, with (21, 25) df</span></label>
+              <p class="cq-why">The ratio is right but those are the sample sizes. Each sample loses one degree of freedom to its own mean: n &minus; 1.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>F = s<sub>1</sub>&sup2; / s<sub>2</sub>&sup2; with the larger variance on top, so F &ge; 1 and the upper-tail table applies; df = (21 &minus; 1, 25 &minus; 1) = (20, 24).</p></details>
+        </div>
+      </section>
+
+      <h3>A Sharpe ratio too good to be true</h3>
+      <p>On Monday 7 November 2005 the financial analyst Harry Markopolos e-mailed the SEC a revised version of his memo, later known as &ldquo;The World&rsquo;s Largest Hedge Fund is a Fraud&rdquo;. His case: Bernard Madoff&rsquo;s firm was most likely a Ponzi scheme.</p>
+      <p>He wrote that the whole report tied into Fairfield Sentry, a fund of funds with over $5 billion invested with Madoff. Within days, an SEC examiner who had read it wrote to a colleague that he felt &ldquo;much better that he is incorrect&rdquo;.</p>
+      <p>Fairfield kept marketing the fund. Its sheet dated August 2007 showed a sixteen-year record with only 14 down months: a compound annual return of 10.85%, with an annual standard deviation of just 2.50%.</p>
+      <p>Over the same years, the sheet showed the S&amp;P 100 earning 11.21% a year with a standard deviation of 14.11%. It even printed each one&rsquo;s Sharpe ratio: 2.75 for Sentry, 0.51 for the index.</p>
+      <p>On 11 December 2008 the FBI arrested Madoff.</p>
+      <p>How can returns be too good? And which single number, printed on the fund&rsquo;s own sheet, should have made any analyst suspicious?</p>
+
+      <h3>The idea</h3>
+      <p>A return on its own says little. Did a fund earn 12% by being clever, or by taking wild swings? To compare managers you need return <em>per unit of risk</em>.</p>
+      <p>Two adjustments do it. First, subtract the risk-free rate R<sub>f</sub>, which anyone can earn in T-bills. What is left, the <b>excess return</b>, is what the risk bought. Second, compare that excess return with the risk taken.</p>
+      <p>The measures differ only in what they call risk:</p>
+      <p><b>Total risk, &sigma;</b> (Sharpe ratio, M&sup2;): right when the fund is all you hold, because every swing hits you.</p>
+      <p><b>Beta, &beta;</b> (Treynor ratio, Jensen&rsquo;s alpha): right when the fund is one slice of a diversified portfolio. Its own (unsystematic) swings largely cancel against the other slices; only market risk is left (Day 52).</p>
+      <p><b>Downside only</b> (Sortino ratio) or <b>the worst fall</b> (Calmar ratio): for investors who mind losses, not upside surprises.</p>
+      <p>Think of fuel economy. Miles driven doesn&rsquo;t tell you which car is efficient; miles per gallon does. Return is the miles, risk is the gallons.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start with Day 34&rsquo;s line.</b> Mix T-bills with portfolio P, and every blend lies on a straight line: E(R) = R<sub>f</sub> + [(R<sub>p</sub> &minus; R<sub>f</sub>) / &sigma;<sub>p</sub>] &times; &sigma;. Its slope is the extra return you get for each point of &sigma;. That slope <em>is</em> the Sharpe ratio.</p>
+      <p><b>The steeper line wins.</b> You can slide along any line by holding more or fewer T-bills. So the steeper line gives more return at <em>every</em> level of risk. Rank by slope, not by raw return.</p>
+      <p><b>M&sup2;: read the line at the market&rsquo;s risk.</b> Slide P&rsquo;s line out to &sigma; = &sigma;<sub>m</sub>. There it earns R<sub>f</sub> + (R<sub>p</sub> &minus; R<sub>f</sub>) &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub>. The market, at the same risk, earns R<sub>m</sub>. Subtract: M&sup2; = (R<sub>p</sub> &minus; R<sub>f</sub>) &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub> &minus; (R<sub>m</sub> &minus; R<sub>f</sub>). Same ranking as Sharpe, but in percentage points.</p>
+      <p><b>Treynor: swap &sigma; for &beta;.</b> In a diversified portfolio only beta is left, so divide the excess return by &beta;<sub>p</sub>. The market has &beta; = 1, so its Treynor ratio is R<sub>m</sub> &minus; R<sub>f</sub>: the slope of Day 52&rsquo;s security market line (SML).</p>
+      <p><b>Jensen&rsquo;s alpha: height above the SML.</b> CAPM says a portfolio with beta &beta;<sub>p</sub> should earn R<sub>f</sub> + &beta;<sub>p</sub>(R<sub>m</sub> &minus; R<sub>f</sub>). Alpha is what it actually earned minus that.</p>
+      <p><b>Why Treynor and alpha can disagree.</b> Factor &beta;<sub>p</sub> out of alpha: &alpha;<sub>p</sub> = &beta;<sub>p</sub> &times; (Treynor<sub>p</sub> &minus; Treynor<sub>m</sub>). Alpha is the Treynor gap scaled up by beta (our shortcut, not a formula to memorize). A high-beta fund can rank first on alpha and second on Treynor.</p>
+      <p><b>Downside versions.</b> Sortino keeps Sharpe&rsquo;s shape but uses a minimum acceptable return (MAR) instead of R<sub>f</sub> and Day 24&rsquo;s target downside deviation instead of &sigma;. Calmar divides the annualized return by the maximum drawdown.</p>
+      <p><b>In plain words:</b> every measure asks how much extra return you got for each unit of risk. They only disagree about what counts as risk.</p>
+      <div class="formula">
+        <p class="expr">Sharpe = (R<sub>p</sub> &minus; R<sub>f</sub>) / &sigma;<sub>p</sub></p>
+        <p class="expr">M&sup2; = (R<sub>p</sub> &minus; R<sub>f</sub>) &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub> &minus; (R<sub>m</sub> &minus; R<sub>f</sub>)</p>
+        <p class="expr">Treynor = (R<sub>p</sub> &minus; R<sub>f</sub>) / &beta;<sub>p</sub></p>
+        <p class="expr">&alpha;<sub>p</sub> = R<sub>p</sub> &minus; [R<sub>f</sub> + &beta;<sub>p</sub>(R<sub>m</sub> &minus; R<sub>f</sub>)]</p>
+        <p class="expr">Sortino = (R<sub>p</sub> &minus; MAR) / downside deviation</p>
+        <p class="expr">Calmar = annualized return / maximum drawdown</p>
+        <dl>
+          <dt>R<sub>p</sub></dt><dd>the portfolio&rsquo;s return over the period</dd>
+          <dt>R<sub>f</sub></dt><dd>the risk-free rate (T-bills)</dd>
+          <dt>R<sub>m</sub></dt><dd>the market&rsquo;s (benchmark&rsquo;s) return</dd>
+          <dt>&sigma;<sub>p</sub>, &sigma;<sub>m</sub></dt><dd>standard deviation of the portfolio&rsquo;s and the market&rsquo;s returns: total risk</dd>
+          <dt>&beta;<sub>p</sub></dt><dd>the portfolio&rsquo;s beta: systematic (market) risk</dd>
+          <dt>MAR</dt><dd>minimum acceptable return, the investor&rsquo;s target (often R<sub>f</sub> or 0%)</dd>
+          <dt>downside deviation</dt><dd>Day 24&rsquo;s target downside deviation with MAR as the target: square each shortfall below MAR, add them, divide by n &minus; 1 (all n periods count), take the square root</dd>
+          <dt>maximum drawdown</dt><dd>the worst peak-to-trough fall in value</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Sharpe ratio: Sharpe = (R<sub>p</sub> &minus; R<sub>f</sub>) / &sigma;<sub>p</sub></li>
+          <li>Treynor ratio: Treynor = (R<sub>p</sub> &minus; R<sub>f</sub>) / &beta;<sub>p</sub></li>
+          <li>M-squared (M&sup2;): M&sup2; = (R<sub>p</sub> &minus; R<sub>f</sub>) &times; (&sigma;<sub>m</sub> / &sigma;<sub>p</sub>) &minus; (R<sub>m</sub> &minus; R<sub>f</sub>); equivalently, the risk-adjusted return R<sub>f</sub> + (R<sub>p</sub> &minus; R<sub>f</sub>) &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub> compared with R<sub>m</sub></li>
+          <li>Jensen&rsquo;s alpha: &alpha;<sub>p</sub> = R<sub>p</sub> &minus; [R<sub>f</sub> + &beta;<sub>p</sub> (R<sub>m</sub> &minus; R<sub>f</sub>)]</li>
+          <li>Sortino ratio: Sortino = (R<sub>p</sub> &minus; MAR) / downside deviation</li>
+          <li>Calmar ratio: Calmar = annualized return / maximum drawdown</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Fund A returned 14% with &sigma; = 20% and &beta; = 1.2. Fund B returned 10% with &sigma; = 12% and &beta; = 0.7. The market returned 9% with &sigma; = 16%, and R<sub>f</sub> = 2%. Find each fund&rsquo;s Sharpe ratio, Treynor ratio, M&sup2; and Jensen&rsquo;s alpha. Which fund does each measure rank first?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Excess returns: A 14 &minus; 2 = 12%; B 10 &minus; 2 = 8%; market 9 &minus; 2 = 7%.</li>
+          <li>Sharpe: A 12 / 20 = 0.60; B 8 / 12 = 0.67; market 7 / 16 = 0.4375.</li>
+          <li>Treynor: A 12 / 1.2 = 10.00; B 8 / 0.7 = 11.43; market 7 / 1 = 7.00.</li>
+          <li>M&sup2;: A 12 &times; 16/20 &minus; 7 = 9.60 &minus; 7 = 2.60%; B 8 &times; 16/12 &minus; 7 = 10.67 &minus; 7 = 3.67%.</li>
+          <li>Jensen&rsquo;s alpha: A 14 &minus; (2 + 1.2 &times; 7) = 14 &minus; 10.4 = 3.60%; B 10 &minus; (2 + 0.7 &times; 7) = 10 &minus; 6.9 = 3.10%.</li>
+          <li>Calmar (Alternatives): if A&rsquo;s worst peak-to-trough fall was 25%, Calmar = 14 / 25 = 0.56.</li>
+          <li>Verdict: Sharpe, M&sup2; and Treynor rank B first. Jensen ranks A first, because alpha is an amount, not a ratio: 1.2 &times; (10.00 &minus; 7) = 3.60 beats 0.7 &times; (11.43 &minus; 7) = 3.10. Fund held as the whole portfolio: use Sharpe or M&sup2;. One piece of a diversified portfolio: Treynor or Jensen.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A fund returned 12% with &sigma; = 4% and &beta; = 0.2. The market returned 10% with &sigma; = 15%, and R<sub>f</sub> = 3%. Find the Sharpe and Treynor ratios of the fund and the market, the fund&rsquo;s M&sup2; and its Jensen&rsquo;s alpha. Plain arithmetic, returns typed in percent (12, not 0.12), with the fund&rsquo;s excess return stored so it is typed once.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">The fund&rsquo;s excess return, R<sub>p</sub> &minus; R<sub>f</sub> = 12 &minus; 3. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>12</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>12</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>ENTER</kbd> (E is above <kbd>SIN</kbd>)</div>
+            <p class="calc-see">Display: <samp>9.0000</samp> (both). The market&rsquo;s excess return, 10 &minus; 3 = 7, is easy enough to type.</p>
+          </li>
+          <li>
+            <p class="calc-what">Sharpe ratios: the fund&rsquo;s 9 / &sigma;<sub>p</sub>, then the market&rsquo;s 7 / &sigma;<sub>m</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>=</kbd>, then <kbd>7</kbd> <kbd>&divide;</kbd> <kbd>15</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd>, then <kbd>7</kbd> <kbd>&divide;</kbd> <kbd>15</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.2500</samp>, then <samp>0.4667</samp> (BA II Plus) / <samp>2.2500</samp>, then <samp>.4667</samp> (TI-84). The fund&rsquo;s line is 4.8 times as steep as the market&rsquo;s.</p>
+          </li>
+          <li>
+            <p class="calc-what">Treynor ratio: the fund&rsquo;s 9 / &beta;<sub>p</sub>. The market&rsquo;s is 7 / 1 = 7.00, no keys needed</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>45.0000</samp> (both). Treynor keeps the units of return: 45 percentage points of excess return per unit of beta (0.45 if you work in decimals). Compare funds in the same units.</p>
+          </li>
+          <li>
+            <p class="calc-what">M&sup2;: the fund&rsquo;s return at the market&rsquo;s risk, R<sub>f</sub> + 9 &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub>, then minus the market&rsquo;s 10%</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>+</kbd> <kbd>3</kbd> <kbd>=</kbd>, then <kbd>&minus;</kbd> <kbd>10</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>+</kbd> <kbd>3</kbd> <kbd>ENTER</kbd>, then <kbd>&minus;</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> (the TI-84 types <samp>Ans&minus;</samp> for you)</div>
+            <p class="calc-see">Display: <samp>36.7500</samp>, then <samp>26.7500</samp> (both). Levered up 3.75 times to the market&rsquo;s 15% risk, the fund would have earned 36.75%: 26.75 points more than the market.</p>
+          </li>
+          <li>
+            <p class="calc-what">Jensen&rsquo;s alpha: R<sub>p</sub> &minus; [R<sub>f</sub> + &beta;<sub>p</sub>(R<sub>m</sub> &minus; R<sub>f</sub>)] = 12 &minus; (3 + 0.2 &times; 7)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>12</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>+</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>7</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>12</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>+</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>7</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>7.6000</samp> (both). CAPM asked only 3 + 1.4 = 4.4%; the fund earned 12%.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: Sharpe 2.25 (market 0.47); Treynor 45.00 (market 7.00); M&sup2; = 26.75%; Jensen&rsquo;s alpha = 7.60%. Every measure says the fund crushed the market. The inputs are possible (&rho; = &beta; &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub> = 0.2 &times; 15/4 = 0.75), but a Sharpe ratio nearly five times the market&rsquo;s is a number to question before you admire it.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Use the sheet&rsquo;s own numbers. Its ratios imply a risk-free rate of about 3.975%: 10.85 &minus; 2.75 &times; 2.50.</p>
+      <p>The S&amp;P 100 earned 11.21 &minus; 3.975 = 7.24 points of excess return for 14.11 points of volatility: 0.51 per unit. Sentry claimed 6.88 points for only 2.50: 2.75 per unit. That is about 5.4 times the index, for sixteen years, on a slightly <em>lower</em> raw return.</p>
+      <p>M&sup2; turns it into a return. Levered up to the index&rsquo;s 14.11% risk, Sentry&rsquo;s record would have earned 3.975% + 6.875% &times; 14.11/2.50 = 42.78% a year: an M&sup2; of 31.57 points over the index. Its worst drawdown on the sheet, &minus;0.64%, gives a return-to-drawdown (Calmar-style) ratio of about 17.</p>
+      <p>Markopolos argued that numbers like these were not possible for the strategy Madoff described: they were the signature of invented returns. The flag was printed on the sheet itself.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Using Treynor or Jensen&rsquo;s alpha for a portfolio that is not well diversified. Beta ignores unsystematic risk, so a concentrated fund looks better than it is. Judge it with Sharpe or M&sup2;, which use &sigma;.</li>
+          <li>Forgetting to subtract (R<sub>m</sub> &minus; R<sub>f</sub>) in M&sup2;. In the walkthrough, 9 &times; 15/4 = 33.75 and the risk-adjusted return of 36.75% are steps, not the answer: M&sup2; = 36.75 &minus; 10 = 26.75%.</li>
+          <li>Ranking by raw return. Fund A earned 14% to B&rsquo;s 10%, yet B has the higher Sharpe ratio, Treynor ratio and M&sup2;.</li>
+          <li>In the Sortino ratio&rsquo;s downside deviation, dividing by the number of shortfalls. As on Day 24, divide by n &minus; 1, counting every period.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.666666666666666" data-tol="0.01" data-pct data-show="2.67%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A fund returned 9.5% with &sigma; = 12%. The market returned 8% with &sigma; = 14%, and R<sub>f</sub> = 2.5%. What is the fund&rsquo;s M&sup2;? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the M&sup2; step. Store 9.5 &minus; 2.5, scale it by &sigma;<sub>m</sub>/&sigma;<sub>p</sub> = 14/12, add R<sub>f</sub> = 2.5 back, then subtract the market&rsquo;s 8%. An answer of 8.17 or 10.67 stopped one step early.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Excess return = 9.5 &minus; 2.5 = 7%. At the market&rsquo;s risk: 2.5 + 7 &times; 14/12 = 2.5 + 8.1667 = 10.6667%. M&sup2; = 10.6667 &minus; 8 = <b>2.67%</b>.</p>
+            <p>Same by the formula: 7 &times; 14/12 &minus; (8 &minus; 2.5) = 8.1667 &minus; 5.5 = 2.67. Or from the Sharpe ratios: (0.5833 &minus; 0.3929) &times; 14 = 2.67.</p>
+            <p>BA II Plus: <kbd>9.5</kbd> <kbd>&minus;</kbd> <kbd>2.5</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>7.0000</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>14</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>+</kbd> <kbd>2.5</kbd> <kbd>=</kbd> &rarr; <samp>10.6667</samp>; <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>=</kbd> &rarr; <samp>2.6667</samp>.</p>
+            <p>TI-84 Plus: <kbd>9.5</kbd> <kbd>&minus;</kbd> <kbd>2.5</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>ENTER</kbd> &rarr; <samp>7.0000</samp>; <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&times;</kbd> <kbd>14</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>+</kbd> <kbd>2.5</kbd> <kbd>ENTER</kbd> &rarr; <samp>10.6667</samp>; <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.6667</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> A fund holds only six stocks. Why can its Treynor ratio or Jensen&rsquo;s alpha make it look better than it is?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Beta overstates the risk of a concentrated fund</span></label>
+              <p class="cq-why">If beta overstated the risk, these measures would make the fund look <em>worse</em>. The problem runs the other way: beta leaves risk out.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Both measure risk by beta alone, which ignores the large unsystematic risk a six-stock fund still carries; Sharpe and M&sup2; use &sigma; and catch it</span></label>
+              <p class="cq-why">Right. Beta counts only market risk. A six-stock fund&rsquo;s own swings have not been diversified away, so &sigma; is the honest measure of what its holder bears.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Treynor and Jensen need a risk-free rate, which a concentrated fund does not have</span></label>
+              <p class="cq-why">Every measure here uses the same market risk-free rate, Sharpe included. R<sub>f</sub> is a T-bill rate, not a property of the fund.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Treynor divides by &beta; and alpha compares the return with R<sub>f</sub> + &beta;(R<sub>m</sub> &minus; R<sub>f</sub>). Both assume the fund&rsquo;s unsystematic risk has been diversified away by the rest of your holdings. For a six-stock fund held on its own, that risk is still there: &sigma; is high while &beta; may be modest, so Treynor and alpha flatter it. Sharpe and M&sup2; divide by &sigma; and charge for all of it.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="1.073312629199899" data-tol="0.005" data-show="1.07">
+          <p class="cq-stem"><b>3. Twist: only the bad years count.</b> A fund&rsquo;s five annual returns: 12%, &minus;4%, 9%, &minus;8%, 15%. Its investor&rsquo;s minimum acceptable return (MAR) is 0%. What is the fund&rsquo;s Sortino ratio? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">ratio</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Numerator: the mean return minus the MAR. Denominator: Day 24&rsquo;s target downside deviation. Square only the returns below 0%, add the squares, divide by n &minus; 1 = 4 (all five years count), then take the square root.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Mean = (12 &minus; 4 + 9 &minus; 8 + 15) / 5 = 24 / 5 = 4.8%. Below 0%: &minus;4 and &minus;8. Squares: 16 + 64 = 80; 80 / 4 = 20; &radic;20 = 4.4721%.</p>
+            <p>Sortino = (4.8 &minus; 0) / 4.4721 = <b>1.07</b>.</p>
+            <p>BA II Plus (a square ignores the sign, so type 4 and 8): <kbd>4</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>4.4721</samp>; <kbd>12</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>+</kbd> <kbd>9</kbd> <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>15</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>=</kbd> &rarr; <samp>4.8000</samp>; <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>1.0733</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>(</kbd> <kbd>4</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.4721</samp>; <kbd>(</kbd> <kbd>12</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>+</kbd> <kbd>9</kbd> <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>15</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.0733</samp>.</p>
+            <p>Dividing 80 by the 2 losing years instead gives a downside deviation of 6.3246 and a Sortino of 0.76: wrong. And the mean over the full SD of all five returns, 10.18%, is only 0.47: Sortino does not punish the fund for its 12% and 15% years.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A portfolio returned 11% with a beta of 1.3. The market returned 9% and the risk-free rate was 3%. The portfolio&rsquo;s Jensen&rsquo;s alpha is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 0.20%</span></label>
+              <p class="cq-why">Right: CAPM required return = 3 + 1.3 &times; (9 &minus; 3) = 3 + 7.8 = 10.8%, and &alpha; = 11 &minus; 10.8 = 0.20%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;3.70%</span></label>
+              <p class="cq-why">Beta was multiplied by the market return instead of the market risk premium: 11 &minus; (3 + 1.3 &times; 9) = 11 &minus; 14.7.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 2.00%</span></label>
+              <p class="cq-why">That compares raw returns, 11 &minus; 9, which is alpha only if &beta; = 1. With &beta; = 1.3 the portfolio was expected to beat the market.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>&alpha;<sub>p</sub> = R<sub>p</sub> &minus; [R<sub>f</sub> + &beta;<sub>p</sub>(R<sub>m</sub> &minus; R<sub>f</sub>)] = 11 &minus; [3 + 1.3 &times; 6] = 11 &minus; 10.8 = <b>0.20%</b>.</p>
+            <p>Check with Treynor: the portfolio&rsquo;s is 8 / 1.3 = 6.15 against the market&rsquo;s 6, and 1.3 &times; (6.15 &minus; 6) = 0.20. Barely above the SML.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: which number on Fairfield Sentry&rsquo;s sheet should have raised a flag, and why?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The Sharpe ratio of 2.75. It measures excess return per unit of total risk, and Sentry claimed 2.75 for sixteen years against 0.51 for the S&amp;P 100, an M&sup2; of about 31.6 points; a stock-like return with almost no volatility implies a risk&ndash;return trade-off no real strategy offers, so it called for investigation, not admiration.</p>
+            <p>A complete answer says: (1) Sharpe = (R<sub>p</sub> &minus; R<sub>f</sub>) / &sigma;<sub>p</sub>, excess return per unit of total risk; (2) 2.75 against 0.51, about 5.4 times the index, sustained for sixteen years; (3) a record that smooth is a reason to investigate, not to invest.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Portfolio Construction, module Portfolio Risk and Return: Part II (its 2024&ndash;2026 title; the 2027 title was not confirmed): the Sharpe ratio, the Treynor ratio, M&sup2; and Jensen&rsquo;s alpha, and which measure suits a diversified or an undiversified portfolio. The Sortino and Calmar ratios are from Alternative Investments (Alternative Investment Performance and Returns); target downside deviation from Quantitative Methods, Learning Module 5; the capital allocation line from Learning Module 8.</p>
+      <p><strong>Sources.</strong> Harry Markopolos&rsquo;s e-mail of 7 November 2005 to Meaghan Cheung of the SEC with his resubmitted memo (the report ties into Fairfield Sentry Ltd., a fund of funds with over $5 billion invested with Madoff), and an SEC examiner&rsquo;s e-mail after reading it (&ldquo;I feel much better that he is incorrect&rdquo;): SEC Office of Inspector General, Report OIG-509 (2009), Exhibit 289. The memo&rsquo;s title, &ldquo;The World&rsquo;s Largest Hedge Fund is a Fraud&rdquo;: ProPublica&rsquo;s reproduction. Fairfield Sentry marketing sheet dated August 2007, filed as Exhibit 29 in the Madoff trustee&rsquo;s litigation (sixteen-year record, 14 down months, compound annual return 10.85%, annual standard deviation 2.50%, Sharpe ratio 2.75, worst drawdown &minus;0.64%; S&amp;P 100 11.21%, 14.11%, 0.51), checked through search-indexed text of the exhibit. Madoff&rsquo;s arrest on 11 December 2008: MoneyWeek; History.com. The implied risk-free rate, the Sharpe checks, M&sup2; and the drawdown ratio are our computations from the sheet&rsquo;s figures.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-52.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

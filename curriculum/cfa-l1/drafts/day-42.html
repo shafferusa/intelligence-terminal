@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Bootstrap the curve, then shock it: the Week 6 review in ten questions — CFA Math, Day 42 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Bootstrap the curve, then shock it: the Week 6 review in ten questions",
+    "path": "reports/cfa/l1/day-42.html",
+    "summary": "Day 42 of CFA Math, the Week 6 review: the formulas of Days 36–41 in one box, a spot rate bootstrapped by hand, a 15-year bond stress-tested with approximate duration and convexity on the calculator, then ten graded questions with new numbers on bootstrapping, spot-rate pricing, forward and par rates, the G-spread and OAS, Macaulay duration and the duration gap, the duration-plus-convexity estimate and portfolio duration.",
+    "headlines": [
+      "Day 42 of 90 · Fixed Income: Week 6 review of spot, forward and par rates, yield spreads, duration and convexity",
+      "Calculator: a bootstrapped spot rate, a spot-rate price, a par rate, a Macaulay duration and a duration-plus-convexity estimate, on the BA II Plus",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Bootstrap the curve, then shock it: the Week 6 review in ten questions</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Six lessons on one page: the week&rsquo;s formulas in one box, one spot rate bootstrapped by hand, one long bond stress-tested on the calculator, then ten exam-style questions with new numbers.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 42 of 90 &middot; Review &middot; Week 6: the yield curve and rate risk</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="42">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 41 and Day 15, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="8.85" data-tol="0.01" data-pct data-show="+8.85%">
+          <p class="cq-stem"><b>From Day 41.</b> A bond has an annual modified duration of 11.2 and an annual convexity of 160. Its yield <em>falls</em> by 75 basis points. Using duration and convexity, estimate the percentage change in its price. As a percent, to two decimals (a minus sign for a fall).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two terms. A fall makes &Delta;Yield = &minus;0.0075. The convexity term is added whichever way yields move.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Duration part: &minus;11.2 &times; (&minus;0.0075) = +0.0840. Convexity part: &frac12; &times; 160 &times; (&minus;0.0075)<sup>2</sup> = 0.5 &times; 160 &times; 0.00005625 = +0.0045. Total +0.0885 = <b>+8.85%</b>.</p>
+            <p>BA II Plus: <kbd>11.2</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>160</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>0.0885</samp>. TI-84 Plus: <kbd>11.2</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>160</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0885</samp>.</p>
+            <p>The traps: 9.30% forgets the &frac12;; 7.95% subtracts the convexity term; 8.40% is duration alone.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 15.</b> A 15-year bond pays a 5.25% coupon semiannually, and the market yield is 4.6%. Its price per 100 of par is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 68.20</span></label>
+              <p class="cq-why">The yield was not halved: I/Y = 4.6 with N = 30 discounts each half-year at the full annual rate.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 106.99</span></label>
+              <p class="cq-why">Right: N = 30, I/Y = 2.3, PMT = 2.625, FV = 100. A premium, because the 5.25% coupon is above the 4.6% yield.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 163.42</span></label>
+              <p class="cq-why">The coupon was not halved: PMT = 5.25 every half-year is a 10.5% coupon.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Semiannual: halve the coupon and the yield, double the years. BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>30</kbd> <kbd>N</kbd> <kbd>2.3</kbd> <kbd>I/Y</kbd> <kbd>2.625</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;106.9873</samp>. TI-84 Plus: TVM Solver <samp>N=30</samp>, <samp>I%=2.3</samp>, <samp>PV=0</samp>, <samp>PMT=2.625</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;106.9873</samp>.</p>
+            <p>The sneaky one: annual inputs (N = 15, I/Y = 4.6, PMT = 5.25) give 106.93, close enough to look right.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>This week traded the single yield for a whole curve, then asked how hard a rate move hits. Days 36 and 37 priced each cash flow at the spot rate for its own date, bootstrapped those spot rates one maturity at a time from par bonds, read forward rates as the links between them, and found the par rate: the coupon that prices a bond at 100 on that curve. Day 38 measured the extra yield a riskier bond pays: over an interpolated government yield (G-spread), over every spot rate (Z-spread), and with the embedded option taken out (OAS). Days 39 to 41 measured rate risk: Macaulay duration is the PV-weighted average time to the cash, modified duration turns it into percent per unit of yield, repricing at &plusmn;&Delta;Yield estimates both duration and convexity, money duration turns them into currency, and convexity bends the straight-line estimate back toward the truth.</p>
+
+      <h3>The week&rsquo;s formulas</h3>
+      <div class="sie-block memorize">
+        <b>Memorize &middot; Days 36&ndash;41</b>
+        <ul>
+          <li><b>Day 36.</b> Price with spot rates: PV = &Sigma; CF<sub>t</sub> / (1 + Z<sub>t</sub>)<sup>t</sup>, each cash flow at its own spot rate. Discount factor: DF<sub>t</sub> = 1 / (1 + Z<sub>t</sub>)<sup>t</sup>.</li>
+          <li><b>Day 36.</b> Bootstrapping an N-year par bond with coupon c: 100 = c &times; DF<sub>1</sub> + &hellip; + c &times; DF<sub>N&minus;1</sub> + (100 + c) &times; DF<sub>N</sub> &rarr; solve DF<sub>N</sub>, then Z<sub>N</sub> = DF<sub>N</sub><sup>&minus;1/N</sup> &minus; 1. The YTM is the single rate that gives the same price: a weighted average of the spot rates.</li>
+          <li><b>Day 37.</b> Implied forward: (1 + Z<sub>A</sub>)<sup>A</sup> &times; (1 + IFR<sub>A,B&minus;A</sub>)<sup>B&minus;A</sup> = (1 + Z<sub>B</sub>)<sup>B</sup>; 1y1y = (1 + Z<sub>2</sub>)<sup>2</sup> / (1 + Z<sub>1</sub>) &minus; 1. Forwards sit above an upward-sloping spot curve, below an inverted one.</li>
+          <li><b>Day 37.</b> Par rate = (1 &minus; DF<sub>N</sub>) / (DF<sub>1</sub> + DF<sub>2</sub> + &hellip; + DF<sub>N</sub>).</li>
+          <li><b>Day 38.</b> G-spread = YTM &minus; (interpolated) government YTM of the same maturity; I-spread = YTM &minus; swap rate. Interpolation: y = y<sub>short</sub> + (T &minus; T<sub>short</sub>) / (T<sub>long</sub> &minus; T<sub>short</sub>) &times; (y<sub>long</sub> &minus; y<sub>short</sub>).</li>
+          <li><b>Day 38.</b> Z-spread: the constant Z with PV = &Sigma; CF<sub>t</sub> / (1 + z<sub>t</sub> + Z)<sup>t</sup>. OAS = Z-spread &minus; option value (callable: OAS &lt; Z-spread). FRN per period: coupon = (MRR + QM)/m &times; 100, discount rate = (MRR + DM)/m.</li>
+          <li><b>Day 39.</b> MacDur = &Sigma; t &times; [CF<sub>t</sub> / (1 + r)<sup>t</sup>] / PV; ModDur = MacDur / (1 + r); %&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield. A zero&rsquo;s MacDur = its maturity. Semiannual: AnnModDur = MacDur(periods) / (1 + r/2) / 2.</li>
+          <li><b>Day 39.</b> Duration gap = MacDur &minus; investment horizon. Positive: price risk dominates. Negative: reinvestment risk dominates.</li>
+          <li><b>Day 40.</b> ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Yield &times; PV<sub>0</sub>); ApproxMacDur = ApproxModDur &times; (1 + r).</li>
+          <li><b>Day 40.</b> MoneyDur = AnnModDur &times; PV<sub>full</sub>; &Delta;PV &asymp; &minus;MoneyDur &times; &Delta;Yield. PVBP = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / 2 at &plusmn;1 bp. D<sub>p</sub> &asymp; &Sigma; w<sub>i</sub> &times; D<sub>i</sub>, market-value weights.</li>
+          <li><b>Day 41.</b> ApproxCon = (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>) / [(&Delta;Yield)<sup>2</sup> &times; PV<sub>0</sub>].</li>
+          <li><b>Day 41.</b> %&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield + &frac12; &times; AnnConvexity &times; (&Delta;Yield)<sup>2</sup>; MoneyCon = AnnConvexity &times; PV<sub>full</sub>. For an option-free bond the convexity term is always positive; longer maturity, lower coupon, lower yield and more dispersed cash flows give more of it.</li>
+        </ul>
+      </div>
+
+      <h3>Worked example: bootstrap, then price</h3>
+      <p><b>Problem.</b> The 1-year and 2-year par yields are 2.5% and 3.2% (annual coupons). Bootstrap the 2-year spot rate, then price a 2-year bond with a 5% annual coupon at the spot rates, per 100 of par.</p>
+      <div class="worked">
+        <b>By hand (Day 36)</b>
+        <ol>
+          <li>A 1-year par bond is a zero: Z<sub>1</sub> = 2.5%, so DF<sub>1</sub> = 1/1.025 = 0.975610.</li>
+          <li>A 2-year par bond pays 3.2 and 103.2 and costs exactly 100: 100 = 3.2 &times; DF<sub>1</sub> + 103.2 &times; DF<sub>2</sub>.</li>
+          <li>3.2 &times; 0.975610 = 3.121951, so DF<sub>2</sub> = (100 &minus; 3.121951)/103.2 = 96.878049/103.2 = 0.938741.</li>
+          <li>Z<sub>2</sub> = DF<sub>2</sub><sup>&minus;1/2</sup> &minus; 1 = 0.938741<sup>&minus;0.5</sup> &minus; 1 = <b>3.2113%</b>. A touch above the 3.2% par yield: the first coupon used the lower 1-year rate, so the last payment needs a higher one.</li>
+          <li>Price = 5 &times; DF<sub>1</sub> + 105 &times; DF<sub>2</sub> = 4.8780 + 98.5678 = <b>103.4458</b>.</li>
+          <li>Its YTM at that price is 3.1941%: between the two spot rates, close to the 2-year one, where most of the money sits.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator: stress-test a long bond</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem (Days 40&ndash;41).</b> A 15-year bond pays a 2% annual coupon and yields 4%. Price it at 4.0%, 3.9% and 4.1%, storing each price. Find its approximate modified duration and approximate convexity (&Delta;Yield = 0.001). Then estimate the percentage price change if yields <em>fall</em> 100 bp, and check it by repricing at 3%.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Price it at 4.0% (PV<sub>0</sub>) and store the price as a positive number</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>15</kbd> <kbd>N</kbd> <kbd>4</kbd> <kbd>I/Y</kbd> <kbd>2</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=15</samp>, <samp>I%=4</samp>, <samp>PV=0</samp>, <samp>PMT=2</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd>. Solving there does not set Ans, so store it from the home screen: <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (the order is N, I%, PMT, FV)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;77.7632</samp>, then <samp>77.7632</samp> (BA II Plus) / <samp>PV=&minus;77.7632</samp>, then <samp>77.7632</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Yield down 10 bp, to 3.9%: PV<sub>&minus;</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.9</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>2</kbd> (N, PMT and FV stay in memory)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>,</kbd> <kbd>3.9</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (or <kbd>2nd</kbd> <kbd>ENTER</kbd> (ENTRY) to edit the last line)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;78.7266</samp>, then <samp>78.7266</samp> (BA II Plus) / <samp>78.7266</samp> (TI-84). Up 0.9634.</p>
+          </li>
+          <li>
+            <p class="calc-what">Yield up 10 bp, to 4.1%: PV<sub>+</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4.1</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>,</kbd> <kbd>4.1</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;76.8138</samp>, then <samp>76.8138</samp> (BA II Plus) / <samp>76.8138</samp> (TI-84). Down only 0.9494: the gain beat the loss. That gap is convexity.</p>
+          </li>
+          <li>
+            <p class="calc-what">ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) &divide; (2 &times; 0.001 &times; PV<sub>0</sub>), and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.001</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd>, then <kbd>STO</kbd> <kbd>4</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.001</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (D is above <kbd>x⁻¹</kbd>)</div>
+            <p class="calc-see">Display: <samp>12.2987</samp> (both calculators). The 2 is there because the two prices sit two steps apart.</p>
+          </li>
+          <li>
+            <p class="calc-what">ApproxCon = (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>) &divide; (0.001<sup>2</sup> &times; PV<sub>0</sub>), and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.001</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd>, then <kbd>STO</kbd> <kbd>5</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.001</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>ENTER</kbd> (E is above <kbd>SIN</kbd>)</div>
+            <p class="calc-see">Display: <samp>179.2005</samp> (both calculators). Retype the rounded prices instead and you get 180.0337: the top is a tiny difference of big numbers, so recall, don&rsquo;t retype.</p>
+          </li>
+          <li>
+            <p class="calc-what">Estimate for a 100 bp fall, &Delta;Yield = &minus;0.01: &minus;ApproxModDur &times; (&minus;0.01) + &frac12; &times; ApproxCon &times; (&minus;0.01)<sup>2</sup>. Minus times minus is plus, and a square is never negative, so both terms are added</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.1319</samp>, then <samp>13.1947</samp> (BA II Plus) / <samp>.1319</samp>, then <samp>13.1947</samp> (TI-84). Duration gives 0.1230 of it (+12.30%), convexity the other 0.0090 (+0.90%).</p>
+          </li>
+          <li>
+            <p class="calc-what">Check: reprice at 3% and find the true change</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>, before the 1)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;88.0621</samp>, <samp>0.1324</samp>, then <samp>13.2438</samp> (BA II Plus) / <samp>.1324</samp>, then <samp>13.2438</samp> (TI-84)</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: ApproxModDur 12.2987, ApproxCon 179.2005. Duration alone says +12.30%; with convexity, +13.19%; the true change is +13.24%. Duration missed by 0.95 of a point, duration plus convexity by 0.05.</p>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>The 2 in 2 &times; &Delta;Yield, with &Delta;Yield as a decimal.</b> PV<sub>&minus;</sub> and PV<sub>+</sub> are two steps apart. Drop the 2 and the walkthrough&rsquo;s 12.2987 becomes 24.5974; type 10 bp as 0.1 instead of 0.001 and it becomes 0.1230.</li>
+          <li><b>The &frac12; in the convexity term, and its sign.</b> It is always +&frac12; &times; Convexity &times; (&Delta;Yield)<sup>2</sup>, whichever way yields move. In the walkthrough, no &frac12; gives +14.09%; subtracting it &ldquo;because yields fell&rdquo; gives +11.40%. The right answer is +13.19%.</li>
+          <li><b>2y1y versus 1y2y.</b> The first number is when it starts, the second how long it lasts. 2y1y = (1 + Z<sub>3</sub>)<sup>3</sup> / (1 + Z<sub>2</sub>)<sup>2</sup> &minus; 1. 1y2y = [(1 + Z<sub>3</sub>)<sup>3</sup> / (1 + Z<sub>1</sub>)]<sup>1/2</sup> &minus; 1: a two-year rate needs the square root. On Day 37&rsquo;s curve (2.5%, 3.0%, 3.4%) they are 4.2047% and 3.8530%.</li>
+          <li><b>A par yield is not a spot rate.</b> On a rising curve the N-year spot rate sits above the N-year par yield (3.2113% against 3.2% in the worked example). And when spot rates are given, discount each cash flow at its own one, not everything at one rate.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions, all with new numbers, in the week&rsquo;s order, graded here. Five are marked for the calculator (1, 2, 4, 7 and 9), so keep it in hand. Each names its day, so a miss tells you which lesson to reopen. Work each before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="3.5087935962872407" data-tol="0.005" data-pct data-show="3.509%">
+          <p class="cq-stem"><b>1. Bootstrapping (Day 36) &middot; calculator.</b> The 1-year par yield is 3.0% and the 2-year par yield is 3.5% (annual coupons). What is the 2-year spot rate? As a percent, to three decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The 1-year spot rate is the 1-year par yield. A 2-year par bond pays 3.5 and 103.5 and is worth exactly 100: solve 100 = 3.5 &times; DF<sub>1</sub> + 103.5 &times; DF<sub>2</sub> for DF<sub>2</sub>, then Z<sub>2</sub> = DF<sub>2</sub><sup>&minus;1/2</sup> &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>DF<sub>1</sub> = 1/1.03 = 0.970874. DF<sub>2</sub> = (100 &minus; 3.5 &times; 0.970874)/103.5 = 96.6019/103.5 = 0.933352. Z<sub>2</sub> = 0.933352<sup>&minus;0.5</sup> &minus; 1 = 3.5088%: <b>3.509%</b>.</p>
+            <p>BA II Plus: <kbd>1.03</kbd> <kbd>1/x</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.9709</samp>; <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>3.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>96.6019</samp>; <kbd>&divide;</kbd> <kbd>103.5</kbd> <kbd>=</kbd> &rarr; <samp>0.9334</samp>, <kbd>STO</kbd> <kbd>2</kbd>; <kbd>yˣ</kbd> <kbd>.5</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd> &rarr; <samp>1.0351</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>3.5088</samp>.</p>
+            <p>TI-84 Plus: <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9709</samp>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>3.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>103.5</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9334</samp>; <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>.5</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.5088</samp>.</p>
+            <p>Check: 3.5/1.03 + 103.5/1.035088<sup>2</sup> = 100.0000. The trap is 3.5, the par yield itself: the spot rate sits a little above it, because the first coupon was discounted at the lower 1-year rate.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="num" data-answer="99.79976730524804" data-tol="0.01" data-show="99.80">
+          <p class="cq-stem"><b>2. Pricing with spot rates (Day 36) &middot; calculator.</b> The 1-, 2- and 3-year spot rates are 3.0%, 3.6% and 4.1%. What is the price per 100 of par of a 3-year bond paying a 4% annual coupon? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100 of par</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Each payment at its own spot rate: 4 at 3.0% for one year, 4 at 3.6% for two years, 104 at 4.1% for three.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>4/1.03 = 3.8835; 4/1.036<sup>2</sup> = 3.7268; 104/1.041<sup>3</sup> = 92.1894. Total 99.7998: <b>99.80</b>.</p>
+            <p>BA II Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>+</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.036</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>104</kbd> <kbd>&divide;</kbd> <kbd>1.041</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>99.7998</samp> (AOS does the powers and divisions before adding).</p>
+            <p>TI-84 Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>+</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.036</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>104</kbd> <kbd>&divide;</kbd> <kbd>1.041</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> &rarr; <samp>99.7998</samp>.</p>
+            <p>The trap: all three payments at the 3-year rate, 4.1%, gives 99.7230. The bond&rsquo;s YTM at 99.7998 is 4.0723%: a blend of the three spot rates, pulled toward 4.1% because most of the money comes in year 3.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>3. Forward rates (Day 37).</b> The same spot curve: 3.0%, 3.6% and 4.1% for 1, 2 and 3 years. The 2y1y implied forward rate is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c3" value="A"> <span>A. 5.11%</span></label>
+              <p class="cq-why">Right: 1.041<sup>3</sup> / 1.036<sup>2</sup> &minus; 1 = 1.128112 / 1.073296 &minus; 1 = 5.1073%.</p></li>
+            <li><label><input type="radio" name="c3" value="B"> <span>B. 4.65%</span></label>
+              <p class="cq-why">That is the 1y2y, two years starting in one: (1.041<sup>3</sup> / 1.03)<sup>1/2</sup> &minus; 1. The 2y1y is one year starting in two.</p></li>
+            <li><label><input type="radio" name="c3" value="C"> <span>C. 3.85%</span></label>
+              <p class="cq-why">The plain average of the 2- and 3-year spot rates. A forward links two spot rates; it is not their average, and on a rising curve it sits above both.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Two roads to year 3 must end at the same place: 1.036<sup>2</sup> &times; (1 + 2y1y) = 1.041<sup>3</sup>. So 1 + 2y1y = 1.128112 / 1.073296 = 1.051073, and 2y1y = <b>5.1073%</b>.</p>
+            <p>BA II Plus: <kbd>1.041</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>1.036</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0511</samp>. TI-84 Plus: <kbd>1.041</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>1.036</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0511</samp>.</p>
+            <p>A quick sanity check: 3 &times; 4.1 &minus; 2 &times; 3.6 = 5.1. Three years at 4.1 minus two years at 3.6 leaves about 5.1 for the third year.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="num" data-answer="4.0717932065234885" data-tol="0.005" data-pct data-show="4.072%">
+          <p class="cq-stem"><b>4. Par rate (Day 37) &middot; calculator.</b> The same spot curve. What coupon rate would price a 3-year annual-coupon bond at exactly par? As a percent, to three decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Par rate = (1 &minus; DF<sub>3</sub>) / (DF<sub>1</sub> + DF<sub>2</sub> + DF<sub>3</sub>), with DF<sub>t</sub> = 1/(1 + Z<sub>t</sub>)<sup>t</sup>. Store the three discount factors.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>DF<sub>1</sub> = 1/1.03 = 0.970874; DF<sub>2</sub> = 1/1.036<sup>2</sup> = 0.931709; DF<sub>3</sub> = 1/1.041<sup>3</sup> = 0.886437. Sum 2.789020. Par rate = (1 &minus; 0.886437)/2.789020 = 0.113563/2.789020 = 4.0718%: <b>4.072%</b>.</p>
+            <p>BA II Plus: <kbd>1.03</kbd> <kbd>1/x</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.9709</samp>; <kbd>1.036</kbd> <kbd>x&sup2;</kbd> <kbd>1/x</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>0.9317</samp>; <kbd>1.041</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>1/x</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>0.8864</samp>; <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.0718</samp>.</p>
+            <p>TI-84 Plus: <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9709</samp>; <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.036</kbd> <kbd>x&sup2;</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9317</samp>; <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.041</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.8864</samp>; <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.0718</samp>.</p>
+            <p>Check: a 3-year bond with a 4.0718% coupon, priced with these discount factors, is worth 100.0000. It sits below the 4.1% 3-year spot rate because its early coupons are discounted at lower rates.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="num" data-answer="140" data-tol="0.5" data-show="140">
+          <p class="cq-stem"><b>5. G-spread (Day 38).</b> A 7-year corporate bond yields 5.40%. Government bonds yield 3.80% at 5 years and 4.30% at 10 years. What is the corporate bond&rsquo;s G-spread? In basis points, to the nearest basis point.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">bp</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> There is no 7-year government bond, so interpolate: 7 years is 2/5 of the way from 5 to 10.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Interpolated 7-year government yield: 3.80 + (7 &minus; 5)/(10 &minus; 5) &times; (4.30 &minus; 3.80) = 3.80 + 0.4 &times; 0.50 = 4.00%. G-spread = 5.40 &minus; 4.00 = 1.40 percentage points = <b>140 bp</b>.</p>
+            <p>BA II Plus: <kbd>5.4</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>3.8</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.3</kbd> <kbd>&minus;</kbd> <kbd>3.8</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.4000</samp>. TI-84 Plus: the same keys, <kbd>ENTER</kbd> instead of <kbd>=</kbd> &rarr; <samp>1.4000</samp>. Times 100 for basis points.</p>
+            <p>The traps: 160 bp against the 5-year (an unmatched maturity), 110 bp against the 10-year, 135 bp against the plain average of the two.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>6. Option-adjusted spread (Day 38).</b> A callable corporate bond has a G-spread of 140 bp and a Z-spread of 150 bp. Its embedded call option is worth 35 bp. Its OAS is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c6" value="A"> <span>A. 185 bp</span></label>
+              <p class="cq-why">The option value was added. A call belongs to the issuer and works against the holder, so it comes out of the spread; adding is the putable-bond direction.</p></li>
+            <li><label><input type="radio" name="c6" value="B"> <span>B. 115 bp</span></label>
+              <p class="cq-why">Right: OAS = Z-spread &minus; option value = 150 &minus; 35 = 115 bp.</p></li>
+            <li><label><input type="radio" name="c6" value="C"> <span>C. 105 bp</span></label>
+              <p class="cq-why">Subtracted from the G-spread. The OAS is built on the spot curve, so it starts from the Z-spread.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>The 150 bp Z-spread pays the holder for credit risk, liquidity and the call he has sold to the issuer. Take out the call&rsquo;s 35 bp and <b>115 bp</b> is left for credit and liquidity. For a callable bond, OAS &lt; Z-spread.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="num" data-answer="3.8231247344847774" data-tol="0.001" data-show="3.823">
+          <p class="cq-stem"><b>7. Macaulay duration (Day 39) &middot; calculator.</b> A 4-year bond pays a 3% annual coupon and yields 4.5%. What is its Macaulay duration? In years, to three decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two NPVs at 4.5%: of the cash flows 3, 3, 3, 103 (the price) and of each cash flow times its year, 3, 6, 9, 412 (&Sigma; t &times; PV). MacDur is the second over the first.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Price = 94.6187. &Sigma; t &times; PV = 361.7391. MacDur = 361.7391 / 94.6187 = 3.8231: <b>3.823 years</b>. The last payment carries 91% of the value, so the average sits close to 4.</p>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>103</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>4.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 94.6187</samp>, <kbd>STO</kbd> <kbd>1</kbd>; <kbd>CF</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>412</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 361.7391</samp>, <kbd>STO</kbd> <kbd>2</kbd>; <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>3.8231</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>4.5</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>103</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>94.6187</samp>, <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd>; <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>4.5</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>6</kbd> <kbd>,</kbd> <kbd>9</kbd> <kbd>,</kbd> <kbd>412</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>361.7391</samp>, <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd>; <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.8231</samp>.</p>
+            <p>The traps: 3.658 is the modified duration (&divide; 1.045), not what was asked. 3.839 weights the years by the cash flows instead of their present values.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>8. Duration gap (Day 39).</b> An investor with a 4-year horizon buys a bond whose Macaulay duration is 6.4 years. Right after she buys it, yields rise and stay higher. Which statement is correct?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c8" value="A"> <span>A. Reinvestment risk dominates, so her return over the 4 years rises.</span></label>
+              <p class="cq-why">That is what a negative gap (duration shorter than the horizon) would mean. Here the duration is longer, so the sign is reversed.</p></li>
+            <li><label><input type="radio" name="c8" value="B"> <span>B. Nothing changes, because she holds the bond to maturity.</span></label>
+              <p class="cq-why">She holds it for 4 years, not to maturity: at year 4 she must sell, at whatever price higher yields leave.</p></li>
+            <li><label><input type="radio" name="c8" value="C"> <span>C. The duration gap is +2.4 years, so price risk dominates and her horizon return falls.</span></label>
+              <p class="cq-why">Right: gap = 6.4 &minus; 4 = +2.4 years. The fall in the price she sells at outweighs the extra she earns reinvesting coupons.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Higher yields do two things: her coupons are reinvested at more (good), and the bond she sells at year 4 is worth less (bad). Macaulay duration is the horizon at which the two roughly cancel. Her horizon is 2.4 years shorter, so the price effect wins.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="-6.521591300390521" data-tol="0.02" data-pct data-show="&minus;6.52%">
+          <p class="cq-stem"><b>9. Duration plus convexity (Days 40&ndash;41) &middot; calculator.</b> An 8-year bond pays a 3.5% annual coupon and yields 4.2%. Reprice it at 4.15% and 4.25%, then use approximate duration and convexity to estimate the percentage price change if yields <em>rise</em> 100 bp. As a percent, to two decimals (a minus sign for a fall).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The walkthrough&rsquo;s keys with N = 8, PMT = 3.5, yields 4.20, 4.15, 4.25 and &Delta;Yield = 0.0005 (5 bp). Store each price. This time yields rise, so the duration term is negative; the convexity term is still added.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>PV<sub>0</sub> = 95.3258, PV<sub>&minus;</sub> = 95.6507, PV<sub>+</sub> = 95.0022. ApproxModDur = (95.6507 &minus; 95.0022)/(2 &times; 0.0005 &times; 95.3258) = 6.8033. ApproxCon = 0.001343/(0.0005<sup>2</sup> &times; 95.3258) = 56.35. Estimate: &minus;6.8033 &times; 0.01 + &frac12; &times; 56.35 &times; 0.01<sup>2</sup> = &minus;0.0680 + 0.0028 = &minus;0.0652: <b>&minus;6.52%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>8</kbd> <kbd>N</kbd> <kbd>4.2</kbd> <kbd>I/Y</kbd> <kbd>3.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;95.3258</samp>, <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>1</kbd>; <kbd>4.15</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;95.6507</samp>, <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>2</kbd>; <kbd>4.25</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;95.0022</samp>, <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>3</kbd>; <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0005</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>6.8033</samp>, <kbd>STO</kbd> <kbd>4</kbd>; <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.0005</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>56.3462</samp>, <kbd>STO</kbd> <kbd>5</kbd>; <kbd>RCL</kbd> <kbd>4</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0652</samp>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>&minus;6.5216</samp>.</p>
+            <p>TI-84 Plus (solver still at P/Y = 1, C/Y = 1, END): <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>,</kbd> <kbd>4.2</kbd> <kbd>,</kbd> <kbd>3.5</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>95.3258</samp>; the same with <kbd>4.15</kbd> into <kbd>ALPHA</kbd> <kbd>B</kbd> &rarr; <samp>95.6507</samp> and <kbd>4.25</kbd> into <kbd>ALPHA</kbd> <kbd>C</kbd> &rarr; <samp>95.0022</samp>; <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0005</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.8033</samp>; <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.0005</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>ENTER</kbd> &rarr; <samp>56.3462</samp>; <kbd>(&minus;)</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&times;</kbd> <kbd>.01</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0652</samp>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;6.5216</samp>.</p>
+            <p>Repricing at 5.2% gives 89.1008, a true fall of 6.5302%: the estimate is within 0.01 of a point. The traps: no &frac12; gives &minus;6.24%, a subtracted convexity term &minus;7.09%, duration alone &minus;6.80%. Retyped 4-decimal prices give ApproxCon 54.55 and &minus;6.53%: still accepted, but store the prices.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="num" data-answer="-310000" data-tol="500" data-signless data-show="310,000">
+          <p class="cq-stem"><b>10. Portfolio duration (Day 40).</b> A portfolio holds &pound;6 million (market value) of a bond with modified duration 4.0 and &pound;4 million of a bond with modified duration 9.5. If all yields rise by 50 basis points, about how much does the portfolio lose? In pounds, to the nearest thousand.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">pounds</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Market-value weights, 6/10 and 4/10. Then money duration &times; &Delta;Yield, with 50 bp = 0.005.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>p</sub> = 0.6 &times; 4.0 + 0.4 &times; 9.5 = 2.4 + 3.8 = 6.2. Money duration = 6.2 &times; &pound;10,000,000 = &pound;62,000,000. Loss &asymp; &pound;62,000,000 &times; 0.005 = <b>&pound;310,000</b>.</p>
+            <p>Bond by bond, as a check: 4.0 &times; &pound;6,000,000 &times; 0.005 = &pound;120,000 and 9.5 &times; &pound;4,000,000 &times; 0.005 = &pound;190,000; together &pound;310,000.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>9.5</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>10000000</kbd> <kbd>&times;</kbd> <kbd>.005</kbd> <kbd>=</kbd> &rarr; <samp>310,000.0000</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>310000.0000</samp>.</p>
+            <p>The traps: equal weights give a duration of 6.75 and a loss of &pound;337,500; typing 50 bp as 0.05 gives &pound;3,100,000.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income: The Term Structure of Interest Rates: Spot, Par, and Forward Curves (spot rates, bootstrapping, implied forward rates, par rates); Yield and Yield Spread Measures for Fixed-Rate Bonds (G-spread, I-spread, Z-spread, OAS, interpolation); Yield-Based Bond Duration Measures and Properties (Macaulay, modified, approximate and money duration, PVBP, the duration gap); Yield-Based Bond Convexity and Portfolio Properties (approximate convexity, the duration-and-convexity estimate, portfolio duration). Warm-up from Fixed-Income Bond Valuation: Prices and Yields.</p>
+      <p><strong>Sources.</strong> No story today: every question uses new, invented numbers. The true stories behind this week&rsquo;s ideas are in Days 36 to 41.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-41.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

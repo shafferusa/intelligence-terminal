@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>8 August 2011: stocks fell 6.66% and gold settled at a record. Why markets pay for beta, not volatility — CFA Math, Day 52 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "8 August 2011: stocks fell 6.66% and gold settled at a record. Why markets pay for beta, not volatility",
+    "path": "reports/cfa/l1/day-52.html",
+    "summary": "Day 52 of CFA Math: only risk that cannot be diversified away is rewarded, so beta (ρσᵢ/σₘ) sets a stock's CAPM required return; Logan computes a stock's beta (1.20), its required return (10.60%) and its alpha against an analyst's 14% forecast (+3.40%, undervalued), and sees why gold, about as volatile as stocks, can be priced to earn little more than cash.",
+    "headlines": [
+      "Day 52 of 90 · Portfolio Construction: only systematic risk is rewarded, so beta sets the CAPM required return on the security market line",
+      "Calculator: beta, the CAPM required return and alpha with stored values, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>8 August 2011: stocks fell 6.66% and gold settled at a record. Why markets pay for beta, not volatility</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Only the risk you cannot diversify away earns a reward: beta measures it, and the CAPM turns it into the return a stock must offer.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Portfolio Construction</p>
+      <span class="track-progress">Day 52 of 90 &middot; Portfolio Risk and Return: Part II &middot; Beta, CAPM and the security market line</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="52">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 51 and 45, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="73.69979369959579" data-tol="0.01" data-show="73.70">
+          <p class="cq-stem"><b>From Day 51.</b> A log-lin trend fitted to a company&rsquo;s sales gives ln(Sales) = 3.50 + 0.08t, with sales in $ millions. What is the sales forecast for t = 10? In $ millions, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">$ millions</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Forecast ln(Sales) first, then convert back to sales with e<sup>x</sup>.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>In logs: 3.50 + 0.08 &times; 10 = 4.30. Back to sales: e<sup>4.30</sup> = <b>73.70</b> ($ millions). Stopping at 4.30 is the trap: that is ln(Sales), not sales.</p>
+            <p>BA II Plus: <kbd>3.5</kbd> <kbd>+</kbd> <kbd>0.08</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>=</kbd> (<samp>4.3000</samp>) <kbd>2ND</kbd> <kbd>eˣ</kbd> &rarr; <samp>73.6998</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ; the screen shows <samp>e^(</samp>) <kbd>3.5</kbd> <kbd>+</kbd> <kbd>0.08</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>73.6998</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 45.</b> Two funds are compared over the same 25 months. The mean monthly difference in their returns is 0.60% and the standard deviation of those differences is 1.50%. The t-statistic for H<sub>0</sub>: &mu;<sub>d</sub> = 0 is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 0.40</span></label>
+              <p class="cq-why">That is 0.60 / 1.50: divided by s<sub>d</sub> itself instead of the standard error s<sub>d</sub> / &radic;n.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 2.00</span></label>
+              <p class="cq-why">Right. Standard error = 1.50 / &radic;25 = 0.30, so t = 0.60 / 0.30 = 2.00, with 25 &minus; 1 = 24 degrees of freedom.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 10.00</span></label>
+              <p class="cq-why">That is 0.60 / (1.50 / 25): the standard error divides by &radic;n = 5, not by n = 25.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>The same months make the samples dependent, so this is the paired-comparisons test: t = d&#772; / (s<sub>d</sub> / &radic;n), df = n &minus; 1 = 24.</p></details>
+        </div>
+      </section>
+
+      <h3>The day gold went up</h3>
+      <p>After the close on Friday 5 August 2011, Standard &amp; Poor&rsquo;s cut the United States&rsquo; credit rating from AAA to AA+.</p>
+      <p>On Monday 8 August the S&amp;P 500 fell 79.92 points, or 6.66%, to 1,119.46.</p>
+      <p>Gold went the other way. December gold futures settled at a record $1,713.20 an ounce on Comex, up $61.40, or 3.7%. On 6 September spot gold touched a new record above $1,920.</p>
+      <p>Now the odd part. Gold is no calmer than stocks. Over the 30 years to 2019, State Street measured gold&rsquo;s annualized volatility at 15.44%, against 14.32% for the S&amp;P 500.</p>
+      <p>Yet over two centuries gold has barely beaten inflation. Jeremy Siegel&rsquo;s figures for 1802&ndash;2012 give stocks a real return of about 6.6% a year, and gold about 0.7%.</p>
+      <p>If gold swings about as much as stocks, why have investors accepted roughly 6 percentage points a year less for holding it? Which kind of risk does the market actually pay for?</p>
+
+      <h3>The idea</h3>
+      <p>Split any stock&rsquo;s risk in two.</p>
+      <p><b>Systematic (market) risk</b> comes from the whole economy: recessions, rate shocks, a downgrade of the US government. Nearly every stock feels it, so no amount of diversifying removes it.</p>
+      <p><b>Unsystematic (specific) risk</b> is news about one company: a failed product, a lawsuit, a chief executive who quits. Spread over many stocks, these surprises mostly cancel.</p>
+      <p>The second kind can be removed for free, just by owning many stocks. So nobody is paid to carry it. The market pays only for the first kind.</p>
+      <p><b>Beta</b> measures the first kind: how far the stock moves, on average, when the market moves. &beta; = 1.2: the market up 10%, the stock up 12% on average. &beta; = 0: no link. &beta; below 0: it tends to rise when the market falls.</p>
+      <p>The <b>market model</b> writes the split as an equation: R<sub>i</sub> = &alpha;<sub>i</sub> + &beta;<sub>i</sub>R<sub>m</sub> + e<sub>i</sub>. The &beta;<sub>i</sub>R<sub>m</sub> part follows the market; e<sub>i</sub> is the stock&rsquo;s own noise.</p>
+      <p>The <b>CAPM</b> (capital asset pricing model) puts a price on beta: required return = risk-free rate + beta &times; market risk premium. Draw it with beta across and return up and you get a straight line, the <b>security market line</b> (SML).</p>
+
+      <h3>Why it works</h3>
+      <p><b>Step 1: what one stock adds to a big portfolio.</b> Day 32&rsquo;s portfolio variance, with N stocks in equal weights, comes to: &sigma;<sub>p</sub><sup>2</sup> = (1/N) &times; average variance + (1 &minus; 1/N) &times; average covariance.</p>
+      <p>As N grows, the first term melts away. Stocks with &sigma; = 36% and pairwise &rho; = 0.3: one stock, &sigma;<sub>p</sub> = 36.0%; thirty, 20.5%; a thousand, 19.7%, the floor &radic;0.03888. Covariance is what stays. So inside a diversified portfolio, a stock&rsquo;s risk is its covariance with the market.</p>
+      <p><b>Step 2: count it in market units.</b> Divide by the market&rsquo;s variance: &beta;<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / &sigma;<sub>m</sub><sup>2</sup>, so the market&rsquo;s own beta is 1. Put in Day 25&rsquo;s Cov = &rho;&sigma;<sub>i</sub>&sigma;<sub>m</sub> and one &sigma;<sub>m</sub> cancels: &beta;<sub>i</sub> = &rho;<sub>im</sub>&sigma;<sub>i</sub> / &sigma;<sub>m</sub>. Day 50 found the same number as the slope of R<sub>i</sub> on R<sub>m</sub>.</p>
+      <p><b>Step 3: build a copy you can price.</b> T-bills: &beta; = 0, return R<sub>f</sub>. The market: &beta; = 1, return E(R<sub>m</sub>). Put half your money in each: beta 0.5 &times; 0 + 0.5 &times; 1 = 0.5, expected return 0.5R<sub>f</sub> + 0.5E(R<sub>m</sub>) = R<sub>f</sub> + 0.5[E(R<sub>m</sub>) &minus; R<sub>f</sub>]. Swap 0.5 for any &beta;<sub>i</sub>: R<sub>f</sub> + &beta;<sub>i</sub>[E(R<sub>m</sub>) &minus; R<sub>f</sub>]. (Above &beta; = 1, borrow at R<sub>f</sub>; same algebra.)</p>
+      <p><b>Step 4: same priced risk, same return.</b> A stock with that beta carries the same market risk as the mix; its extra noise e<sub>i</sub> diversifies away. If it offered less, investors would hold the mix. If more (positive alpha), they would buy it, pushing its price up and its return down to the line. That line is the CAPM.</p>
+      <p><b>Step 5: SML, not CML.</b> Day 34&rsquo;s CML prices by &sigma;, but only efficient portfolios (T-bills plus the market) sit on it: their risk is all systematic, so &rho; = 1, &beta; = &sigma;<sub>p</sub> / &sigma;<sub>m</sub>, and the SML becomes the CML. A single stock&rsquo;s &sigma; includes diversifiable risk, so pricing it by &sigma; overcharges.</p>
+      <p><b>Several priced risks.</b> The arbitrage pricing theory (APT) allows several systematic factors, each with a sensitivity &beta;<sub>k</sub> and a premium &lambda;<sub>k</sub>: E(R) = R<sub>F</sub> + &lambda;<sub>1</sub>&beta;<sub>1</sub> + &hellip; + &lambda;<sub>K</sub>&beta;<sub>K</sub>. The CAPM is the one-factor case.</p>
+      <p><b>In plain words:</b> you are paid only for the risk you cannot get rid of, and beta counts how much of it you hold.</p>
+      <div class="formula">
+        <p class="expr">&beta;<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / &sigma;<sub>m</sub><sup>2</sup> = &rho;<sub>im</sub> &sigma;<sub>i</sub> / &sigma;<sub>m</sub></p>
+        <p class="expr">E(R<sub>i</sub>) = R<sub>f</sub> + &beta;<sub>i</sub>[E(R<sub>m</sub>) &minus; R<sub>f</sub>]</p>
+        <p class="expr">&alpha;<sub>i</sub> = forecast return &minus; E(R<sub>i</sub>)</p>
+        <dl>
+          <dt>&beta;<sub>i</sub></dt><dd>beta: the stock&rsquo;s market risk, in units of the market&rsquo;s (market = 1)</dd>
+          <dt>Cov(R<sub>i</sub>, R<sub>m</sub>)</dt><dd>covariance of the stock&rsquo;s return with the market&rsquo;s</dd>
+          <dt>&sigma;<sub>i</sub>, &sigma;<sub>m</sub></dt><dd>standard deviations (total risk) of the stock and of the market; &sigma;<sub>m</sub><sup>2</sup> is the market&rsquo;s variance</dd>
+          <dt>&rho;<sub>im</sub></dt><dd>correlation between the stock and the market</dd>
+          <dt>R<sub>f</sub></dt><dd>risk-free rate (T-bills, &beta; = 0)</dd>
+          <dt>E(R<sub>m</sub>)</dt><dd>expected return on the market (&beta; = 1)</dd>
+          <dt>E(R<sub>m</sub>) &minus; R<sub>f</sub></dt><dd>market (equity) risk premium</dd>
+          <dt>E(R<sub>i</sub>)</dt><dd>CAPM required (expected) return: the height of the SML at &beta;<sub>i</sub></dd>
+          <dt>&alpha;<sub>i</sub></dt><dd>alpha: above 0, the stock plots above the SML (undervalued); below 0, overvalued</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Beta: &beta;<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / &sigma;<sub>m</sub><sup>2</sup> = &rho;<sub>im</sub> &times; &sigma;<sub>i</sub> / &sigma;<sub>m</sub></li>
+          <li>Capital asset pricing model: E(R<sub>i</sub>) = R<sub>f</sub> + &beta;<sub>i</sub> &times; [E(R<sub>m</sub>) &minus; R<sub>f</sub>]</li>
+          <li>Alpha against the SML: &alpha; = forecast (or actual) return &minus; CAPM required return; &alpha; &gt; 0 &rarr; undervalued</li>
+          <li>Arbitrage pricing / multi-factor model: E(R<sub>p</sub>) = R<sub>F</sub> + &lambda;<sub>1</sub> &beta;<sub>p,1</sub> + &hellip; + &lambda;<sub>K</sub> &beta;<sub>p,K</sub></li>
+          <li>CML vs SML x-axis: CML: total risk &sigma; (efficient portfolios); SML: beta (any asset or portfolio)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A stock&rsquo;s returns have a covariance of 0.0216 with the market&rsquo;s, and the market&rsquo;s standard deviation is 15%. R<sub>f</sub> = 3% and E(R<sub>m</sub>) = 9%. Find beta and the CAPM required return. An analyst forecasts 8%: undervalued or overvalued?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>&beta; = Cov / &sigma;<sub>m</sub><sup>2</sup> = 0.0216 / 0.15<sup>2</sup> = 0.0216 / 0.0225 = <b>0.96</b>. Keep both in decimals.</li>
+          <li>Same answer in correlation form: if &sigma;<sub>i</sub> = 24%, &rho; = 0.0216 / (0.24 &times; 0.15) = 0.0216 / 0.036 = 0.60, and &beta; = 0.60 &times; 24 / 15 = 0.96.</li>
+          <li>Market risk premium = 9% &minus; 3% = 6%.</li>
+          <li>E(R<sub>i</sub>) = 3% + 0.96 &times; 6% = 3% + 5.76% = <b>8.76%</b>.</li>
+          <li>&alpha; = 8% &minus; 8.76% = <b>&minus;0.76%</b>. The forecast plots below the SML, so the stock is <b>overvalued</b>: its price is too high for the return it offers.</li>
+          <li>On the SML the x-axis is beta (0.96), not &sigma;. The CML uses &sigma; and applies only to efficient portfolios.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A stock has a correlation of 0.6 with the market, &sigma;<sub>i</sub> = 36% and &sigma;<sub>m</sub> = 18%. R<sub>f</sub> = 4% and the equity risk premium is 5.5%. Find beta and the CAPM required return. An analyst forecasts 14%: find alpha and say whether the stock is undervalued or overvalued.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Check the setup: the calculator must multiply before it adds</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>FORMAT</kbd>, <kbd>&darr;</kbd> until the line shows <samp>AOS</samp> or <samp>Chn</samp>; if it says <samp>Chn</samp>, press <kbd>2ND</kbd> <kbd>SET</kbd> once; then <kbd>2ND</kbd> <kbd>QUIT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, <kbd>CLEAR</kbd>. It always multiplies first; nothing to set.</div>
+          </li>
+          <li>
+            <p class="calc-what">Beta = &rho; &times; &sigma;<sub>i</sub> / &sigma;<sub>m</sub>, stored for the next step (the % units cancel, so type 36 and 18)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>36</kbd> <kbd>&divide;</kbd> <kbd>18</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>36</kbd> <kbd>&divide;</kbd> <kbd>18</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is the green letter above <kbd>APPS</kbd>)</div>
+            <p class="calc-see">Display: <samp>1.2000</samp> (BA II Plus) / <samp>1.2000</samp> (TI-84). The stock moves 1.2% for each 1% the market moves.</p>
+          </li>
+          <li>
+            <p class="calc-what">Required return = R<sub>f</sub> + &beta; &times; premium, stored too</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>5.5</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>4</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&times;</kbd> <kbd>5.5</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>R</kbd> <kbd>ENTER</kbd> (R is above <kbd>&times;</kbd>)</div>
+            <p class="calc-see">Display: <samp>10.6000</samp> (BA II Plus) / <samp>10.6000</samp> (TI-84). A BA II Plus showing <samp>28.6000</samp> is in Chn mode and did (4 + 1.2) &times; 5.5: back to step 1.</p>
+          </li>
+          <li>
+            <p class="calc-what">Alpha = forecast &minus; required return</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>14</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>14</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>R</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>3.4000</samp> (BA II Plus) / <samp>3.4000</samp> (TI-84). Positive: the forecast sits above the SML.</p>
+          </li>
+          <li>
+            <p class="calc-what">Bonus: how much of the 36% is priced? The market model&rsquo;s R<sup>2</sup> (Day 48) is &rho;<sup>2</sup>, the systematic share of the variance</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0.6</kbd> <kbd>x&sup2;</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>0.6</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.3600</samp> (BA II Plus) / <samp>.3600</samp> (TI-84). Only 36% of this stock&rsquo;s variance is market risk; the CAPM pays for that part alone.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: &beta; = 1.20; required return 10.60%; &alpha; = +3.40%. The forecast plots above the SML, so the stock is undervalued (a buy).</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The CAPM does not price gold&rsquo;s &sigma;. It prices how gold moves with the market, and on 8 August 2011 it moved the other way: stocks down 6.66%, gold up 3.7%.</p>
+      <p>Suppose, for illustration only, that gold&rsquo;s correlation with stocks is 0.1 (an assumption, not a measurement). With State Street&rsquo;s volatilities, &beta; = 0.1 &times; 15.44 / 14.32 = 0.108. With R<sub>f</sub> = 4% and a 5.5% premium, the CAPM asks only 4.59% a year: little more than cash.</p>
+      <p>A stock with the same 15.44% volatility but a correlation of 0.9 has &beta; = 0.970 and must offer 9.34%. Same &sigma;, required returns 4.74 points apart.</p>
+      <p>At &rho; = 0.1 only &rho;<sup>2</sup> = 1% of gold&rsquo;s variance is market risk; the other 99% diversifies away. The CAPM cannot prove Siegel&rsquo;s numbers, but it explains their direction: the market pays for beta, not for volatility.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Multiplying beta by the market return instead of the market risk premium. In the worked example, 3% + 0.96 &times; 9% = 11.64%, not 8.76%. Check whether a question gives E(R<sub>m</sub>) or the premium.</li>
+          <li>Using &sigma; (the CML) to price a single stock. For the walkthrough stock, 4% + (5.5 / 18) &times; 36 = 15.00%: 4.40 points too much, charged for risk that diversifies away, and it would wrongly call the 14% forecast overvalued.</li>
+          <li>Calling a stock above the SML overvalued. Above the line = more return than its beta requires = price too low = undervalued.</li>
+          <li>Mixing decimals and percents. A covariance of 0.0216 is in decimals, so &sigma;<sub>m</sub> must be 0.15: dividing by 15<sup>2</sup> gives a beta of 0.000096.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="-1.4" data-tol="0.01" data-pct data-show="&minus;1.40%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A stock has a correlation of 0.45 with the market, &sigma;<sub>i</sub> = 40% and &sigma;<sub>m</sub> = 20%. R<sub>f</sub> = 3.5% and the equity risk premium is 6%. An analyst forecasts 7.5%. What is the stock&rsquo;s alpha? As a percent, to two decimals (keep the sign).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The walkthrough&rsquo;s three steps with new inputs: &rho;, &sigma;<sub>i</sub> and &sigma;<sub>m</sub> for beta, then R<sub>f</sub> and the premium, then the forecast.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&beta; = 0.45 &times; 40 / 20 = 0.90. Required return = 3.5% + 0.90 &times; 6% = 8.90%. &alpha; = 7.5% &minus; 8.90% = <b>&minus;1.40%</b>: below the SML, so the stock is overvalued.</p>
+            <p>BA II Plus: <kbd>0.45</kbd> <kbd>&times;</kbd> <kbd>40</kbd> <kbd>&divide;</kbd> <kbd>20</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (<samp>0.9000</samp>); <kbd>3.5</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> (<samp>8.9000</samp>); <kbd>7.5</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>&minus;1.4000</samp>.</p>
+            <p>TI-84 Plus: <kbd>0.45</kbd> <kbd>&times;</kbd> <kbd>40</kbd> <kbd>&divide;</kbd> <kbd>20</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (<samp>.9000</samp>); <kbd>3.5</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>R</kbd> <kbd>ENTER</kbd> (<samp>8.9000</samp>); <kbd>7.5</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>R</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;1.4000</samp>.</p>
+            <p>A BA II Plus in Chn mode would show 26.4000 at the second step: (3.5 + 0.9) &times; 6.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> Why does the CAPM reward beta rather than total risk &sigma;?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Unsystematic risk can be diversified away at almost no cost, so no one is paid to bear it; only market risk, measured by beta, earns a premium</span></label>
+              <p class="cq-why">Right. Whatever anyone can shed for free by diversifying cannot command a reward; what is left in a diversified portfolio is each stock&rsquo;s covariance with the market, and beta measures exactly that.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because &sigma; is harder to estimate than beta</span></label>
+              <p class="cq-why">Estimation is not the reason; beta is itself built from &sigma;&rsquo;s and a correlation (or a regression). The reason is what diversification removes.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because high-&sigma; assets always have high betas, so beta captures &sigma; anyway</span></label>
+              <p class="cq-why">They need not: &beta; = &rho;&sigma;<sub>i</sub> / &sigma;<sub>m</sub>, so a low correlation gives a low beta even with a high &sigma;. Gold, about as volatile as stocks, is the example.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>In a portfolio of many stocks the own-variance term (1/N &times; average variance) melts away and only covariance stays (Step 1). So the risk a stock adds is its covariance with the market, which beta measures in market units. The stock&rsquo;s own noise e<sub>i</sub> can be removed for free, so competition leaves no premium for it.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="1.4" data-tol="0.005" data-show="1.40">
+          <p class="cq-stem"><b>3. Twist: solve for beta.</b> A stock&rsquo;s CAPM required return is 12.4%. The risk-free rate is 4% and the expected return on the market is 10%. What beta does that imply? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">&beta;</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Rearrange the CAPM: subtract R<sub>f</sub> from both sides, then divide by the market risk premium E(R<sub>m</sub>) &minus; R<sub>f</sub>.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>12.4 = 4 + &beta;(10 &minus; 4), so 8.4 = 6&beta; and &beta; = 8.4 / 6 = <b>1.40</b>. Check: 4 + 1.4 &times; 6 = 12.4.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>12.4</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.4000</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>12.4</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.4000</samp>.</p>
+            <p>Dividing 8.4 by 10 (the market return) instead of 6 (the premium) gives 0.84: the same trap as multiplying by the market return.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> A stock has a beta of 1.3. The risk-free rate is 3% and the expected return on the market is 9%. According to the CAPM, the stock&rsquo;s required return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 14.70%</span></label>
+              <p class="cq-why">That is 3% + 1.3 &times; 9%: beta multiplied by the market return instead of the market risk premium.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 7.80%</span></label>
+              <p class="cq-why">That is 1.3 &times; (9% &minus; 3%): the premium is right, but R<sub>f</sub> was left out.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 10.80%</span></label>
+              <p class="cq-why">Right: 3% + 1.3 &times; (9% &minus; 3%) = 3% + 7.8% = 10.80%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>E(R<sub>i</sub>) = R<sub>f</sub> + &beta;[E(R<sub>m</sub>) &minus; R<sub>f</sub>]. A quick sense check: a beta above 1 must ask more than the market&rsquo;s 9%, and 10.80% does; 7.80% asks less, so it cannot be right.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: how can gold be about as volatile as stocks yet be expected to earn much less?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Only systematic risk is rewarded, because the rest diversifies away. Gold&rsquo;s beta, &rho;&sigma;<sub>gold</sub> / &sigma;<sub>m</sub>, is small when its correlation with stocks is low, however large its &sigma;, so its CAPM required return, R<sub>f</sub> + &beta;[E(R<sub>m</sub>) &minus; R<sub>f</sub>], sits close to the risk-free rate.</p>
+            <p>A complete answer says: (1) only systematic (market) risk, measured by beta, is priced, because unsystematic risk diversifies away; (2) &beta; = &rho;&sigma;<sub>i</sub> / &sigma;<sub>m</sub>, so a low correlation gives a low beta even with a high &sigma;; (3) the CAPM required return is then close to R<sub>f</sub>.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Portfolio Construction, Portfolio Risk and Return: Part II (systematic and unsystematic risk, the market model, beta, the capital asset pricing model, the security market line against the capital market line, alpha; arbitrage pricing and multi-factor models described). Portfolio Risk and Return: Part II is the module&rsquo;s 2024&ndash;2026 title; the 2027 curriculum places it in the Portfolio Construction topic, and its 2027 module title was not confirmed.</p>
+      <p><strong>Sources.</strong> Reuters via Investing.com, &ldquo;US STOCKS-Wall St sinks as fear jumps after historic downgrade&rdquo;, 8 August 2011 (S&amp;P 500 down 79.92 points, or 6.66%, to 1,119.46), and Wikipedia, &ldquo;Black Monday (2011)&rdquo;; CoinNews, &ldquo;Gold prices top $1,700, silver rallies 3.7%&rdquo;, 8 August 2011, and AP via the Vindicator, &ldquo;Gold at record, silver surges as other prices fall&rdquo;, 8 August 2011 (December Comex gold settled at a record $1,713.20, up $61.40); AFP via Naharnet, &ldquo;Gold strikes record high above $1,700&rdquo;, 8 August 2011; Reuters via Fox Business, &ldquo;Gold surges 1 percent to record on growth woes&rdquo;, 6 September 2011, and JCK, &ldquo;Gold hits new record over $1,900&rdquo;, 6 September 2011 (spot record above $1,920); State Street Global Advisors (SPDR), &ldquo;Debunking 5 common gold misconceptions&rdquo;, November 2019 (30-year annualized volatility: gold 15.44%, S&amp;P 500 14.32%); Jeremy Siegel, <em>Stocks for the Long Run</em>, 5th edition (2014), as summarized by getAbstract (1802&ndash;2012 real annual returns: stocks 6.6%, gold 0.7%; other editions differ slightly). The correlations of 0.1 and 0.9 in &ldquo;Back to the story&rdquo; are illustrative assumptions, not measured values.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-51.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Galton’s tall parents had not-quite-as-tall children. The best line through the cloud explains why — CFA Math, Day 47 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Galton’s tall parents had not-quite-as-tall children. The best line through the cloud explains why",
+    "path": "reports/cfa/l1/day-47.html",
+    "summary": "Day 47 of CFA Math: least squares fits the line Ŷ = b̂0 + b̂1X that makes the sum of squared vertical misses smallest, which gives slope b̂1 = Cov(X, Y)/Var(X) = r × sY/sX and a line through the means; Logan fits five families’ heights on the BA II Plus and the TI-84, reads the intercept, slope and r, predicts a child’s height, and learns the four assumptions and residual plots.",
+    "headlines": [
+      "Day 47 of 90 · Quantitative Methods: least squares fits the line with slope Cov(X, Y)/Var(X), through the means",
+      "Calculator: intercept, slope, r and a predicted height for five families, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Galton&rsquo;s tall parents had not-quite-as-tall children. The best line through the cloud explains why</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Least squares draws the one line whose squared vertical misses add up to the least: its slope is Cov(X, Y) / Var(X), and it always runs through the point of means.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 47 of 90 &middot; LM10 Applications of Simple Linear Regression in Finance &middot; Least squares: fitting the line</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="47">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 46 and 25, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="23.4375" data-tol="0.01" data-show="23.44">
+          <p class="cq-stem"><b>From Day 46.</b> A fund&rsquo;s prospectus claims a monthly standard deviation of 2.0%. Over 16 months the sample SD is 2.5%. To test whether the true variance is higher than claimed, what is the &chi;<sup>2</sup> statistic? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> &chi;<sup>2</sup> = (n &minus; 1)s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup>. Square both SDs first.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&chi;<sup>2</sup> = (16 &minus; 1) &times; 2.5<sup>2</sup> / 2.0<sup>2</sup> = 15 &times; 6.25 / 4 = 93.75 / 4 = <b>23.44</b>, with 15 df.</p>
+            <p>The 5% upper critical value for 15 df is 24.996, so 23.44 falls short: fail to reject (TI-84 p = 0.0753). The sample variance is 56% above the claim, but 16 months cannot prove it.</p>
+            <p>BA II Plus: <kbd>15</kbd> <kbd>&times;</kbd> <kbd>2.5</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>23.4375</samp>. TI-84 Plus: <kbd>15</kbd> <kbd>&times;</kbd> <kbd>2.5</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>23.4375</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 25.</b> Two funds&rsquo; returns have a sample covariance of 12 (%<sup>2</sup>). Their standard deviations are s<sub>X</sub> = 4% and s<sub>Y</sub> = 6%. Their correlation is:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 0.50</span></label>
+              <p class="cq-why">Right: r = s<sub>XY</sub> / (s<sub>X</sub> s<sub>Y</sub>) = 12 / (4 &times; 6) = 12 / 24.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 0.02</span></label>
+              <p class="cq-why">That divides by the variances, 16 &times; 36 = 576, instead of the SDs.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 0.75</span></label>
+              <p class="cq-why">That is 12 / 16: s<sub>X</sub> twice, no s<sub>Y</sub>. It is Cov / Var(X), which is today&rsquo;s slope, not the correlation.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>r = 12 / 24 = 0.50. Keep option C in mind: covariance divided by the variance of X, 12 / 16 = 0.75, is exactly the least-squares slope you build today.</p></details>
+        </div>
+      </section>
+
+      <h3>Galton and the not-quite-as-tall children</h3>
+      <p>In 1886 Francis Galton published a paper with a blunt title: &ldquo;Regression towards mediocrity in hereditary stature&rdquo;, in the <i>Journal of the Anthropological Institute</i>.</p>
+      <p>His data were family heights: 930 adult children of 205 sets of parents, by the count in his text. His summary table adds up to 928.</p>
+      <p>Two choices made the families comparable. To put men and women on one scale, he multiplied every female height by 1.08. And he summarized each couple by one number, their average: the &ldquo;mid-parent&rdquo;.</p>
+      <p>Then he set each child against its mid-parent. Tall parents had tall children, as you would expect. But on average the children were less extreme than their parents. The children of short parents were short, but less short.</p>
+      <p>How much less? The children&rsquo;s distance from the average was about two-thirds of the mid-parent&rsquo;s: &ldquo;as 2 to 3&rdquo;, in his words.</p>
+      <p>He called it regression towards mediocrity, and his word stuck: the method is still called regression.</p>
+      <p>Why should the children of exceptional parents be less exceptional? And of all the lines you could draw through 928 scattered points, which one is the &ldquo;best&rdquo;?</p>
+
+      <h3>The idea</h3>
+      <p>Plot each family as a dot: mid-parent X along the bottom, child Y up the side. You get a tilted cloud. The simplest rule for predicting Y from X is a straight line: &#374; = b&#770;<sub>0</sub> + b&#770;<sub>1</sub>X.</p>
+      <p>Y is the <b>dependent</b> variable, the one being explained. X is the <b>independent</b> (explanatory) variable. &#374;, &ldquo;Y-hat&rdquo;, is the prediction; hats mark numbers estimated from a sample.</p>
+      <p>Every dot misses the line by a vertical gap, its <b>residual</b>: e = Y &minus; &#374;. Vertical, because the job is predicting Y.</p>
+      <p><b>Least squares</b> picks the one line whose squared residuals add up to the least. Squared for Day 24&rsquo;s reasons: misses above and below cannot cancel, and a big miss counts extra.</p>
+      <p>Reading the line: the <b>slope</b> b&#770;<sub>1</sub> is how much the predicted Y changes when X rises by 1. The <b>intercept</b> b&#770;<sub>0</sub> is the predicted Y when X = 0, which only means something if X = 0 is near the data.</p>
+      <p><b>When to trust it.</b> The tests and forecasts built on the line assume four things about the errors:</p>
+      <ul>
+        <li><b>Linearity</b>: the true relation is a straight line.</li>
+        <li><b>Homoskedasticity</b>: the errors spread equally at every X.</li>
+        <li><b>Independence</b>: one error says nothing about the next.</li>
+        <li><b>Normality</b>: the errors are normally distributed.</li>
+      </ul>
+      <p>Check them with a <b>residual plot</b> (residuals against X): you want a shapeless band around zero. A curve means not linear; a widening fan, heteroskedasticity; long same-sign runs over time, dependent errors.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Score a line.</b> For any candidate line, point i misses by e<sub>i</sub> = Y<sub>i</sub> &minus; (b&#770;<sub>0</sub> + b&#770;<sub>1</sub>X<sub>i</sub>). Score the line by SSE = &Sigma;e<sub>i</sub><sup>2</sup>, the sum of squared errors. Lowest score wins.</p>
+      <p><b>Step 1: the intercept is Day 24.</b> Hold the slope fixed. Then e<sub>i</sub> = (Y<sub>i</sub> &minus; b&#770;<sub>1</sub>X<sub>i</sub>) &minus; b&#770;<sub>0</sub>: one number, b&#770;<sub>0</sub>, taken from each of the numbers Y<sub>i</sub> &minus; b&#770;<sub>1</sub>X<sub>i</sub>. Day 24: the single number with the smallest sum of squared deviations is the mean. So b&#770;<sub>0</sub> = mean of (Y &minus; b&#770;<sub>1</sub>X) = &#562; &minus; b&#770;<sub>1</sub>X&#772;.</p>
+      <p>Two results follow. The residuals add to zero, as deviations from a mean do. And at X = X&#772; the line gives &#374; = &#562; &minus; b&#770;<sub>1</sub>X&#772; + b&#770;<sub>1</sub>X&#772; = &#562;: it passes through the point of means.</p>
+      <p><b>Step 2: measure from the means.</b> Put that b&#770;<sub>0</sub> back: e<sub>i</sub> = (Y<sub>i</sub> &minus; &#562;) &minus; b&#770;<sub>1</sub>(X<sub>i</sub> &minus; X&#772;). Call the deviations y<sub>i</sub> and x<sub>i</sub>: e<sub>i</sub> = y<sub>i</sub> &minus; b&#770;<sub>1</sub>x<sub>i</sub>. Only the slope is left.</p>
+      <p><b>Step 3: find the bottom.</b> Square and add: SSE = &Sigma;y<sup>2</sup> &minus; 2b&#770;<sub>1</sub>&Sigma;xy + b&#770;<sub>1</sub><sup>2</sup>&Sigma;x<sup>2</sup>. As the slope changes, that traces a U (a parabola). The bottom of Ab<sup>2</sup> + Bb + C sits at b = &minus;B / (2A), so b&#770;<sub>1</sub> = 2&Sigma;xy / 2&Sigma;x<sup>2</sup> = &Sigma;xy / &Sigma;x<sup>2</sup>.</p>
+      <p>Test it on the worked example below (&Sigma;x<sup>2</sup> = 10, &Sigma;xy = 9, &Sigma;y<sup>2</sup> = 10): SSE = 10 &minus; 18b + 10b<sup>2</sup>. Slope 0.8 scores 2.0, slope 0.9 scores 1.9, slope 1.0 scores 2.0. The bottom: 18 / 20 = 0.9.</p>
+      <p><b>Step 4: recognize it.</b> Divide top and bottom by n &minus; 1 (it cancels): b&#770;<sub>1</sub> = Cov(X, Y) / Var(X), Day 25&rsquo;s covariance over Day 24&rsquo;s variance. And Cov = r s<sub>X</sub> s<sub>Y</sub> (Day 25), so b&#770;<sub>1</sub> = r s<sub>Y</sub> / s<sub>X</sub>.</p>
+      <p><b>Another view.</b> &Sigma;xy / &Sigma;x<sup>2</sup> = &Sigma;x<sup>2</sup>(y/x) / &Sigma;x<sup>2</sup>: each point&rsquo;s own slope from the centre, y/x, averaged with weights x<sup>2</sup>. Points far out in X get the most say; a point at X&#772; gets none. Worked example: own slopes 1, 1, 0, 1, weights 4, 1, 1, 4, so (4 + 1 + 0 + 4) / 10 = 0.9.</p>
+      <p><b>In plain words:</b> put the line through the middle of the dots, and tilt it until the up-and-down misses, squared, are as small as they can be.</p>
+      <div class="formula">
+        <p class="expr">&#374; = b&#770;<sub>0</sub> + b&#770;<sub>1</sub>X</p>
+        <p class="expr">b&#770;<sub>1</sub> = Cov(X, Y) / Var(X) = &Sigma;(X<sub>i</sub> &minus; X&#772;)(Y<sub>i</sub> &minus; &#562;) / &Sigma;(X<sub>i</sub> &minus; X&#772;)<sup>2</sup> = r &times; s<sub>Y</sub> / s<sub>X</sub></p>
+        <p class="expr">b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub>X&#772;</p>
+        <p class="expr">e<sub>i</sub> = Y<sub>i</sub> &minus; &#374;<sub>i</sub>; least squares minimizes &Sigma;e<sub>i</sub><sup>2</sup></p>
+        <dl>
+          <dt>Y</dt><dd>the dependent variable: the one being explained and predicted</dd>
+          <dt>X</dt><dd>the independent (explanatory) variable</dd>
+          <dt>&#374;</dt><dd>the line&rsquo;s prediction of Y</dd>
+          <dt>b&#770;<sub>1</sub></dt><dd>the slope: change in predicted Y when X rises by 1</dd>
+          <dt>b&#770;<sub>0</sub></dt><dd>the intercept: predicted Y when X = 0</dd>
+          <dt>X&#772;, &#562;</dt><dd>the sample means; the line passes through (X&#772;, &#562;)</dd>
+          <dt>Cov(X, Y), Var(X)</dt><dd>sample covariance (Day 25) and sample variance of X (Day 24); both divide by n &minus; 1, which cancels</dd>
+          <dt>r, s<sub>X</sub>, s<sub>Y</sub></dt><dd>the correlation and the two sample standard deviations</dd>
+          <dt>e<sub>i</sub></dt><dd>residual: point i&rsquo;s vertical miss, actual minus predicted</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Least squares slope: b&#770;<sub>1</sub> = Cov(X, Y) / Var(X) = &Sigma;(X<sub>i</sub> &minus; X&#772;)(Y<sub>i</sub> &minus; &#562;) / &Sigma;(X<sub>i</sub> &minus; X&#772;)<sup>2</sup> = r &times; s<sub>Y</sub> / s<sub>X</sub></li>
+          <li>Least squares intercept: b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub> &times; X&#772;</li>
+          <li>Residual: e<sub>i</sub> = Y<sub>i</sub> &minus; &#374;<sub>i</sub> = Y<sub>i</sub> &minus; (b&#770;<sub>0</sub> + b&#770;<sub>1</sub> X<sub>i</sub>)</li>
+          <li>Four assumptions of simple linear regression: Linearity; homoskedasticity (constant error variance); independence of errors; normally distributed errors</li>
+          <li>BA II Plus LIN output names: a = intercept b&#770;<sub>0</sub>; b = slope b&#770;<sub>1</sub>; r = correlation</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Five countries&rsquo; money-supply growth X (%) and inflation Y (%): (1, 2), (2, 3), (3, 5), (4, 4), (5, 6). Fit &#374; = b&#770;<sub>0</sub> + b&#770;<sub>1</sub>X by least squares, predict inflation at X = 6%, and find the residual of the third country.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Means: X&#772; = 15 / 5 = 3; &#562; = 20 / 5 = 4.</li>
+          <li>Deviations: x = &minus;2, &minus;1, 0, +1, +2; y = &minus;2, &minus;1, +1, 0, +2.</li>
+          <li>&Sigma;xy = (&minus;2)(&minus;2) + (&minus;1)(&minus;1) + (0)(1) + (1)(0) + (2)(2) = 4 + 1 + 0 + 0 + 4 = 9.</li>
+          <li>&Sigma;x<sup>2</sup> = 4 + 1 + 0 + 1 + 4 = 10.</li>
+          <li>b&#770;<sub>1</sub> = 9 / 10 = <b>0.9</b>. (Same as Cov / Var = 2.25 / 2.5: the n &minus; 1 cancels.)</li>
+          <li>b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub>X&#772; = 4 &minus; 0.9 &times; 3 = <b>1.3</b>. The line: &#374; = 1.3 + 0.9X.</li>
+          <li>Prediction at X = 6: 1.3 + 0.9 &times; 6 = <b>6.7%</b>.</li>
+          <li>Residual of country 3: Y &minus; &#374; = 5 &minus; (1.3 + 0.9 &times; 3) = 5 &minus; 4.0 = <b>+1.0</b>: one point more inflation than the line predicts.</li>
+          <li>All five residuals: &minus;0.2, &minus;0.1, +1.0, &minus;0.9, +0.2. They add to 0, and their squares add to 1.9: the bottom of the U above.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Five families (illustrative, not Galton&rsquo;s records). Mid-parent heights X (inches) = 64, 66, 68, 70, 72; adult child heights Y = 66.0, 66.4, 68.6, 68.2, 70.3. Find the intercept, slope and correlation, then predict the child&rsquo;s height for a mid-parent of 75 inches.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data and open the data screen</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (the screen shows <samp>X01</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>; then onto the <samp>L2</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the families: the mid-parent (what you predict <em>from</em>) as X, the child as Y</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>64</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66.4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>70</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>72</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>70.3</kbd> <kbd>ENTER</kbd> (X01, Y01, X02, Y02 &hellip; Y05)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> down L1 from its first row: <kbd>64</kbd> <kbd>ENTER</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>68</kbd> <kbd>ENTER</kbd> <kbd>70</kbd> <kbd>ENTER</kbd> <kbd>72</kbd> <kbd>ENTER</kbd>; then down L2 from its first row: <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>66.4</kbd> <kbd>ENTER</kbd> <kbd>68.6</kbd> <kbd>ENTER</kbd> <kbd>68.2</kbd> <kbd>ENTER</kbd> <kbd>70.3</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: <samp>Y05 = 70.3000</samp> (BA II Plus) / five rows in each list (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Run the regression: read the intercept a, the slope b and r</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> eight times, past <samp>n</samp>, <samp>x&#772;</samp>, <samp>Sx</samp>, <samp>&sigma;x</samp>, <samp>&#563;</samp>, <samp>Sy</samp> and <samp>&sigma;y</samp>, to <samp>a</samp>; <kbd>&darr;</kbd> to <samp>b</samp>; <kbd>&darr;</kbd> to <samp>r</samp></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> (the line reads <samp>LinReg(a+bx) L1,L2</samp>). Not <samp>4:LinReg(ax+b)</samp>: there a is the slope. No r on screen? Turn on <samp>DiagnosticOn</samp> as on Day 25.</div>
+            <p class="calc-see">Display: on the way <samp>x&#772; = 68.0000</samp> and <samp>&#563; = 67.9000</samp>, then <samp>a = 32.5400</samp>, <samp>b = 0.5200</samp>, <samp>r = 0.9416</samp> (BA II Plus) / <samp>a=32.5400</samp>, <samp>b=.5200</samp>, <samp>r&#178;=.8866</samp>, <samp>r=.9416</samp> (TI-84; r&#178; is Day 48). The line: &#374; = 32.54 + 0.52X.</p>
+          </li>
+          <li>
+            <p class="calc-what">Predict the child of a 75-inch mid-parent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> from <samp>r</samp>, <kbd>&darr;</kbd> to <samp>X'</samp>, <kbd>75</kbd> <kbd>ENTER</kbd>, <kbd>&darr;</kbd> to <samp>Y'</samp>, <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">2:a</kbd> <kbd>+</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">3:b</kbd> <kbd>&times;</kbd> <kbd>75</kbd> <kbd>ENTER</kbd> (the line reads <samp>a+b*75</samp>)</div>
+            <p class="calc-see">Display: <samp>Y' = 71.5400</samp> (BA II Plus) / <samp>71.5400</samp> (TI-84). By hand: 32.54 + 0.52 &times; 75 = 71.54.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check that the line runs through the means: predict at X = X&#772; = 68</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&uarr;</kbd> to <samp>X'</samp>, <kbd>68</kbd> <kbd>ENTER</kbd>, <kbd>&darr;</kbd> to <samp>Y'</samp>, <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>ENTER</kbd> (ENTRY) brings the last line back; <kbd>&#9668;</kbd> <kbd>&#9668;</kbd>, type <kbd>68</kbd> over the 75, <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>Y' = 67.9000</samp> (BA II Plus) / <samp>67.9000</samp> (TI-84): exactly &#562;. That is b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub>X&#772; at work.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: &#374; = 32.54 + 0.52X, r = 0.9416. A 75-inch mid-parent predicts a 71.54-inch child.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Of all the lines through Galton&rsquo;s cloud, the best is the least-squares one: smallest sum of squared vertical misses, through the point of means, slope r &times; s<sub>Y</sub> / s<sub>X</sub>.</p>
+      <p>That answers his puzzle too. Subtract the means and divide by the SDs: (&#374; &minus; &#562;) / s<sub>Y</sub> = r &times; (X &minus; X&#772;) / s<sub>X</sub>. With r below 1, every prediction sits fewer SDs from the average than its parent. Parents explain only part of a child&rsquo;s height, so the best guess leans back toward the middle.</p>
+      <p>Galton&rsquo;s two-thirds is his slope, not r. A mid-parent averages two people, so it varies less than single children (s<sub>Y</sub> &gt; s<sub>X</sub>), and his r was lower still. A slope of two-thirds means a mid-parent 3 inches above average predicts a child about 2 inches above.</p>
+      <p>Today&rsquo;s five families: slope 0.52. A 75-inch mid-parent, 7 above the mean of 68, predicts 71.54: only 3.64 above the children&rsquo;s mean of 67.9. In SDs: 2.21 for the parent, 0.9416 &times; 2.21 = 2.08 for the prediction.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Swapping X and Y.</b> You predict the child from the parent, so the parent is X. Enter the children as X and you fit a different line: slope 1.7049 (Cov / Var(Y) = 5.2 / 3.05), not 0.52, and not 1 / 0.52 = 1.9231 either. Each line minimizes misses in its own Y.</li>
+          <li><b>Reading a as the slope.</b> On the LIN screen a = 32.5400 is the intercept and b = 0.5200 the slope. Swap them and a 75-inch mid-parent &ldquo;predicts&rdquo; a 2,441.02-inch child. On the TI-84, <samp>8:LinReg(a+bx)</samp> uses the same letters as the BA; <samp>4:LinReg(ax+b)</samp> swaps them.</li>
+          <li><b>Taking the intercept literally.</b> a = 32.54 is the predicted child of a 0-inch mid-parent: nonsense, because X = 0 is far outside the data (64 to 72). It anchors the line; it is not a fact about anyone. The same goes for predictions beyond the data: even today&rsquo;s 75 is a step past 72.</li>
+          <li><b>Mixing sample and population SDs.</b> r &times; Sy / Sx and r &times; &sigma;y / &sigma;x both give 0.5200, since the n &minus; 1 cancels. Mix them, r &times; Sy / &sigma;x, and you get 0.5814.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="0.5037037037037043" data-tol="0.001" data-show="0.5037">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Five new families. Mid-parent X (inches) = 62, 65, 67, 70, 71; child Y = 64.8, 66.0, 67.9, 68.4, 69.5. What is the least-squares slope? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same steps as the walkthrough with new pairs: clear the old data first, mid-parent as X. Read b, not a.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>b&#770;<sub>1</sub> = <b>0.5037</b>, with a = 33.5719 and r = 0.9772: &#374; = 33.57 + 0.5037X. By hand: X&#772; = 67, &#562; = 67.32, &Sigma;xy = 27.2, &Sigma;x<sup>2</sup> = 54, and 27.2 / 54 = 0.5037.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>62</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>64.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>65</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>67</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>67.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>70</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68.4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>71</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>69.5</kbd> <kbd>ENTER</kbd>; <kbd>2ND</kbd> <kbd>STAT</kbd> (<samp>LIN</samp>), <kbd>&darr;</kbd> nine times to <samp>b</samp> &rarr; <samp>b = 0.5037</samp>.</p>
+            <p>TI-84 Plus: L1 = 62, 65, 67, 70, 71 and L2 = 64.8, 66, 67.9, 68.4, 69.5 (clear both titles first); <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>a=33.5719</samp>, <samp>b=.5037</samp>, <samp>r=.9772</samp>.</p>
+            <p>If you got 1.8957, X and Y were swapped.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> Why does the least-squares line always pass through the point of means (X&#772;, &#562;)?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It does so only when the correlation is perfect (r = &plusmn;1); otherwise it misses the means</span></label>
+              <p class="cq-why">It always passes through them, whatever r is: walkthrough step 5 had r = 0.9416 and still got &#562; back at X&#772;.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because once both variables are standardized, X&#772; and &#562; are equal</span></label>
+              <p class="cq-why">Standardized means are both 0, but that is not the reason. The line runs through the means in the original units, as step 5 showed with 68 and 67.9.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. For any slope, the best intercept makes the residuals&rsquo; mean zero (Day 24), so b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub>X&#772;</span></label>
+              <p class="cq-why">Right. Minimizing &Sigma;e<sup>2</sup> over the intercept is Day 24&rsquo;s problem: the best single number is a mean. That forces the residuals to sum to zero and puts (X&#772;, &#562;) on the line.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>With the slope fixed, each point offers the number Y &minus; b&#770;<sub>1</sub>X, and the intercept that minimizes the squared misses is their mean, &#562; &minus; b&#770;<sub>1</sub>X&#772;. Put X = X&#772; into &#374; = (&#562; &minus; b&#770;<sub>1</sub>X&#772;) + b&#770;<sub>1</sub>X and the slope terms cancel, leaving &#374; = &#562;.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="4.92" data-tol="0.01" data-pct data-show="4.92">
+          <p class="cq-stem"><b>3. Twist: no data, only summary statistics.</b> The correlation between a fund&rsquo;s return (Y) and the market&rsquo;s (X) is 0.6. Their standard deviations are s<sub>Y</sub> = 8% and s<sub>X</sub> = 5%, and their means are &#562; = 3% and X&#772; = 2%. What return does the least-squares line predict when the market returns 4%? In percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Build the slope from r and the two SDs (Why it works, step 4). Then use the fact that the line runs through the means.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>b&#770;<sub>1</sub> = r &times; s<sub>Y</sub> / s<sub>X</sub> = 0.6 &times; 8 / 5 = 0.96. b&#770;<sub>0</sub> = &#562; &minus; b&#770;<sub>1</sub>X&#772; = 3 &minus; 0.96 &times; 2 = 1.08. &#374; = 1.08 + 0.96 &times; 4 = <b>4.92%</b>.</p>
+            <p>Quicker, from the means: &#374; = &#562; + b&#770;<sub>1</sub>(X &minus; X&#772;) = 3 + 0.96 &times; (4 &minus; 2) = 4.92%. Using r as the slope gives 4.20; flipping the SDs (5 / 8) gives 3.75.</p>
+            <p>BA II Plus (AOS): <kbd>3</kbd> <kbd>+</kbd> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>4.9200</samp>. TI-84 Plus: the same keys, ending <kbd>ENTER</kbd> &rarr; <samp>4.9200</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> An analyst regresses a stock&rsquo;s return Y (%) on an economic indicator X. After entering the data, the BA II Plus LIN screen shows a = 1.20 and b = 0.45. The predicted return when X = 4 is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 5.25</span></label>
+              <p class="cq-why">That is 0.45 + 1.20 &times; 4: a read as the slope and b as the intercept. On the BA II Plus, a is the intercept.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 3.00</span></label>
+              <p class="cq-why">Right: &#374; = a + bX = 1.20 + 0.45 &times; 4 = 3.00.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 6.22</span></label>
+              <p class="cq-why">That is (4 &minus; 1.20) / 0.45: the line solved backwards for X, as if 4 were a value of Y.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>&#374; = 1.20 + 0.45 &times; 4 = 3.00. On the calculator itself: in LIN, <kbd>&darr;</kbd> to <samp>X'</samp>, <kbd>4</kbd> <kbd>ENTER</kbd>, <kbd>&darr;</kbd> to <samp>Y'</samp>, <kbd>CPT</kbd> &rarr; <samp>Y' = 3.0000</samp>.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does least squares minimize, and what does the slope tell you?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Least squares picks the line that minimizes the sum of the squared vertical misses, &Sigma;(Y &minus; &#374;)<sup>2</sup>, and that line passes through the means (X&#772;, &#562;). Its slope, Cov(X, Y) / Var(X), is how much the predicted Y changes when X rises by one unit.</p>
+            <p>A complete answer says: (1) it minimizes the sum of squared vertical residuals, Y &minus; &#374;; (2) the slope is the change in predicted Y per one-unit change in X, equal to Cov / Var(X); (3) the line passes through the means.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 10: Applications of Simple Linear Regression in Finance (the least-squares slope and intercept, residuals, the dependent and independent variables, interpreting the coefficients, and the four assumptions with residual plots).</p>
+      <p><strong>Sources.</strong> F. Galton, &ldquo;Regression Towards Mediocrity in Hereditary Stature&rdquo;, <i>Journal of the Anthropological Institute of Great Britain and Ireland</i> 15 (1886): 246&ndash;263 (930 adult children of 205 parentages in the text; female heights multiplied by 1.08; the mid-parent; the children&rsquo;s deviations to the mid-parents&rsquo; &ldquo;as 2 to 3&rdquo;), with the transcription by P. M. Lee, University of York (Table I totals 928); HistData R package documentation, &ldquo;Galton: Galton&rsquo;s data on the heights of parents and their children&rdquo; (928 adult children of 205 fathers and mothers; female heights multiplied by 1.08); J. A. Hanley, reanalysis of Galton&rsquo;s family data (the 1.08 adjustment). The five families and the five countries are illustrative, not Galton&rsquo;s records; their arithmetic is this lesson&rsquo;s own.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-46.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

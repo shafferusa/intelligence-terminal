@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Lehman’s bonds were rated A in September 2008. On 10 October an auction valued them at 8.625 cents — CFA Math, Day 55 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Lehman’s bonds were rated A in September 2008. On 10 October an auction valued them at 8.625 cents",
+    "path": "reports/cfa/l1/day-55.html",
+    "summary": "Day 55 of CFA Math: credit risk, with expected loss = probability of default × loss given default, LGD = exposure × (1 − recovery rate), a credit spread as roughly that expected loss paid each year, and the price hit when a spread widens; Logan computes Lehman’s loss given default from its 8.625 auction price, an expected loss and spread, and a bond’s price change for a 300 bp widening.",
+    "headlines": [
+      "Day 55 of 90 · Fixed Income: expected loss = POD × LGD, and a credit spread is roughly that expected loss, paid a year at a time",
+      "Calculator: Lehman’s loss given default, an expected loss and spread, and the price hit from a 300 bp spread widening, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Lehman&rsquo;s bonds were rated A in September 2008. On 10 October an auction valued them at 8.625 cents</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A default costs you whatever is not recovered; multiply that by the chance of default and you have the expected loss, which a bond&rsquo;s credit spread roughly pays you back one year at a time.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 55 of 90 &middot; Credit Risk &middot; Expected loss and credit spreads</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="55">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 54 and 48, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="2.847571189279737" data-tol="0.005" data-show="2.85">
+          <p class="cq-stem"><b>From Day 54.</b> A callable bond is priced at 99.50. A model reprices it at 100.30 if the benchmark curve falls 30 bp and at 98.60 if it rises 30 bp. What is its effective duration? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>), with &Delta;Curve as a decimal: 30 bp = 0.003.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>EffDur = (100.30 &minus; 98.60) / (2 &times; 0.003 &times; 99.50) = 1.70 / 0.5970 = <b>2.85</b>. (Forgetting the 2 gives 5.70.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>100.3</kbd> <kbd>&minus;</kbd> <kbd>98.6</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.003</kbd> <kbd>&times;</kbd> <kbd>99.5</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>2.8476</samp>.</p>
+            <p>TI-84 Plus: the same keys, ending with <kbd>ENTER</kbd> &rarr; <samp>2.8476</samp>.</p>
+            <p>Notice the asymmetry: a 30 bp fall adds 0.80, a 30 bp rise takes away 0.90. That is Day 54&rsquo;s negative convexity.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 48.</b> A regression on 32 monthly observations has SST = 0.0800 and SSE = 0.0300. Its R&sup2; and standard error of estimate (SEE) are:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. R&sup2; = 0.375, SEE = 0.0316</span></label>
+              <p class="cq-why">0.375 = SSE/SST is the share the line does <em>not</em> explain. R&sup2; = SSR/SST = 1 &minus; 0.375.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. R&sup2; = 0.625, SEE = 0.0311</span></label>
+              <p class="cq-why">R&sup2; is right, but 0.0311 = &radic;(0.03/31) divides by n &minus; 1. A regression estimates two parameters, so divide by n &minus; 2 = 30.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. R&sup2; = 0.625, SEE = 0.0316</span></label>
+              <p class="cq-why">Right: SSR = 0.0800 &minus; 0.0300 = 0.0500, R&sup2; = 0.05/0.08 = 0.625, and SEE = &radic;(0.03/30) = &radic;0.001 = 0.0316.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>R&sup2; = SSR/SST = (SST &minus; SSE)/SST = 0.625. MSE = SSE/(n &minus; 2) = 0.03/30 = 0.001, and SEE = &radic;MSE = 0.0316.</p></details>
+        </div>
+      </section>
+
+      <h3>8.625 cents on the dollar</h3>
+      <p>In the second week of September 2008, Lehman Brothers was still rated A by Standard &amp; Poor&rsquo;s and A2 by Moody&rsquo;s. Both agencies had just put it under review: S&amp;P on 9 September, Moody&rsquo;s on 10 September.</p>
+      <p>Early on Monday 15 September, Lehman filed for Chapter 11 bankruptcy.</p>
+      <p>Lehman&rsquo;s debt was also the reference for credit default swaps (CDS), contracts that work like insurance. The protection buyer pays a yearly premium. If the issuer defaults, the seller pays face value minus what the bonds are still worth. So someone had to say what Lehman&rsquo;s bonds were worth.</p>
+      <p>On Friday 10 October 2008, an auction run by Creditex and Markit under an ISDA protocol did it. At 2 p.m. it set the final price: <b>8.625 per 100</b> of face value. Sellers of protection paid buyers 91.375 for every 100 they had insured.</p>
+      <p>Weeks earlier, those bonds had been rated A. What does a default actually cost a bondholder? And how big a yield spread should have paid for that risk in advance?</p>
+
+      <h3>The idea</h3>
+      <p>Lending to a company is a bet that it keeps paying. Each year there is some chance it defaults, and if it does you lose part of what you lent. Two numbers describe that risk.</p>
+      <p><b>Probability of default (POD)</b>: the chance it happens, usually over one year.</p>
+      <p><b>Loss given default (LGD)</b>: how much you lose if it does. Creditors rarely lose everything; they recover part of their claim, as Lehman&rsquo;s holders recovered 8.625 per 100. LGD is the part <em>not</em> recovered.</p>
+      <p>Multiply them and you get the <b>expected loss</b>: what you lose on average, per year.</p>
+      <p>A corporate bond pays a <b>credit spread</b>, extra yield over a government bond of the same maturity (Day 38). Think of it as a yearly insurance premium paid <em>to you</em> for carrying that expected loss: spread &asymp; POD &times; LGD.</p>
+      <p>The spread is not fixed. If the market decides the borrower got riskier, the spread widens and the price falls, before anyone defaults.</p>
+      <p><b>Where the inputs come from.</b> POD from the borrower&rsquo;s finances: coverage (EBITDA/interest, higher is safer) and leverage (debt/EBITDA and debt/capital, higher is riskier; FFO/debt, higher is safer). LGD from the bond&rsquo;s place in the queue: secured debt is paid first, then senior unsecured, then subordinated, so recovery falls down the ladder. And ratings drift: a downgrade (credit migration) widens the spread.</p>
+
+      <h3>Why it works</h3>
+      <p><b>1. Start with Day 26&rsquo;s expected value.</b> Over one year, two things can happen. The bond defaults (chance POD) and you lose LGD. Or it doesn&rsquo;t (chance 1 &minus; POD) and you lose 0.</p>
+      <p><b>2. Weight each loss by its chance.</b> E(loss) = POD &times; LGD + (1 &minus; POD) &times; 0 = POD &times; LGD. That is the expected loss.</p>
+      <p><b>3. LGD from the recovery.</b> Recover a fraction RR of the exposure and you lose the rest: LGD = exposure &times; (1 &minus; RR). Lehman: 100 &times; (1 &minus; 0.08625) = 91.375.</p>
+      <p><b>4. From expected loss to spread.</b> Lend 100 to each of 100 such borrowers, with POD 2% and RR 40%. In a typical year about 2 default, and each costs 60: 120 lost out of 10,000, or 1.2%. To end the year level with a Treasury holder, each bond must pay 1.2% extra. So spread &asymp; 2% &times; 60% = POD &times; LGD.</p>
+      <p><b>5. Why only &ldquo;&asymp;&rdquo;.</b> It ignores timing (recoveries come later) and the extra investors want for uncertainty and illiquidity. Real spreads usually exceed the expected loss; POD &times; LGD is the core.</p>
+      <p><b>6. From spread to price.</b> A corporate bond&rsquo;s yield = benchmark yield + spread. Move the spread by &Delta;Spread with the benchmark still, and the yield moves by exactly &Delta;Spread. So Day 41&rsquo;s estimate applies, with &Delta;Spread in place of &Delta;Yield.</p>
+      <p><b>7. Line, then bend.</b> Duration draws the straight line: &minus;ModDur &times; &Delta;Spread. Convexity bends it toward the true curve: &frac12; &times; Convexity &times; (&Delta;Spread)&sup2;. The square is positive whichever way the spread moves, so for an option-free bond the correction always adds: losses a little smaller, gains a little bigger. (Day 54&rsquo;s callables are the exception.)</p>
+      <p><b>In plain words:</b> expected loss is the chance of losing times how much you would lose. The spread is the yearly fee that pays for it. When the market raises the fee, the bond&rsquo;s price falls until its yield pays the new fee.</p>
+      <div class="formula">
+        <p class="expr">EL = POD &times; LGD</p>
+        <p class="expr">LGD = Exposure &times; (1 &minus; RR)</p>
+        <p class="expr">Spread &asymp; POD &times; LGD (per year, LGD as a share of exposure)</p>
+        <p class="expr">%&Delta;PV &asymp; &minus;ModDur &times; &Delta;Spread + &frac12; &times; Convexity &times; (&Delta;Spread)&sup2;</p>
+        <dl>
+          <dt>EL</dt><dd>expected loss over the period (usually a year), in currency or as a % of the exposure</dd>
+          <dt>POD</dt><dd>probability of default over the period, as a decimal</dd>
+          <dt>LGD</dt><dd>loss given default: what is lost if default happens</dd>
+          <dt>Exposure</dt><dd>the amount owed when default happens (exposure at default); here the face value</dd>
+          <dt>RR</dt><dd>recovery rate: the share of the exposure you get back, as a decimal</dd>
+          <dt>Spread</dt><dd>the bond&rsquo;s yield minus the benchmark (government) yield</dd>
+          <dt>ModDur</dt><dd>modified duration (the curriculum may write spread duration, EffSpreadDur; for a bond without options it is the same number)</dd>
+          <dt>Convexity</dt><dd>the bond&rsquo;s annual convexity (Day 41)</dd>
+          <dt>&Delta;Spread</dt><dd>the change in the spread, as a decimal: 300 bp = 0.03, a narrowing is negative</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Expected loss: EL = probability of default &times; loss given default</li>
+          <li>Loss given default: LGD = exposure &times; (1 &minus; recovery rate)</li>
+          <li>Credit spread approximation: Spread &asymp; POD &times; LGD (as % of exposure per year)</li>
+          <li>Price change from a spread change: %&Delta;PV &asymp; &minus;ModDur &times; &Delta;Spread + &frac12; &times; Convexity &times; (&Delta;Spread)&sup2;</li>
+          <li>Leverage ratios used by credit analysts: Debt/EBITDA, FFO/debt, debt/capital; coverage: EBITDA/interest</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> You hold $10 million of a senior unsecured bond. The annual probability of default is 2% and the expected recovery is 40%. Find the loss given default, the expected loss and the approximate spread. Then the spread narrows by 50 bp: estimate the price change for ModDur 4.2 and convexity 22.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>LGD = $10,000,000 &times; (1 &minus; 0.40) = <b>$6,000,000</b>.</li>
+          <li>EL = 0.02 &times; $6,000,000 = <b>$120,000</b> a year, which is 1.2% of the exposure.</li>
+          <li>Spread &asymp; POD &times; LGD = 2% &times; 60% = <b>1.20%</b> (120 bp).</li>
+          <li>A narrowing is negative: &Delta;Spread = &minus;0.005. Duration term: &minus;4.2 &times; (&minus;0.005) = +0.021 = +2.10%.</li>
+          <li>Convexity term: &frac12; &times; 22 &times; (&minus;0.005)&sup2; = 11 &times; 0.000025 = 0.000275 = +0.0275%.</li>
+          <li>%&Delta;PV &asymp; +2.10% + 0.0275% = +2.1275%, about <b>+2.13%</b>. The convexity term is positive whichever way the spread moves, because (&Delta;Spread)&sup2; is positive.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Lehman&rsquo;s bonds were valued at 8.625 per 100 at the CDS auction. Find the loss given default per 100. With an illustrative 3% annual default probability, find the expected loss and the approximate spread. Then estimate the % price change of a bond with ModDur 6.5 and convexity 55 whose spread widens by 300 bp. Plain arithmetic: the spread change goes in as a decimal (300 bp = .03), and &times; 100 at the end turns each term into percent.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">LGD per 100 = 100 &minus; recovery. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>8.625</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>8.625</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>L</kbd> <kbd>ENTER</kbd> (L is above the <kbd>)</kbd> key)</div>
+            <p class="calc-see">Display: <samp>91.3750</samp> (both). The holders lost 91.375 of every 100.</p>
+          </li>
+          <li>
+            <p class="calc-what">Expected loss per 100 = POD &times; LGD. Per 100 of face it reads straight as a percent: the spread</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>.03</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>L</kbd> <kbd>&times;</kbd> <kbd>.03</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.7413</samp> (both). Expected loss 2.74 per 100 a year, so spread &asymp; 2.74%, about 274 bp.</p>
+          </li>
+          <li>
+            <p class="calc-what">Duration term: &minus;ModDur &times; &Delta;Spread, in percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>6.5</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.03</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>6.5</kbd> <kbd>&times;</kbd> <kbd>.03</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>-19.5000</samp> (both). The straight-line estimate: a 19.5% fall.</p>
+          </li>
+          <li>
+            <p class="calc-what">Convexity term: &frac12; &times; Convexity &times; (&Delta;Spread)&sup2;, in percent. Square the decimal</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>55</kbd> <kbd>&times;</kbd> <kbd>.03</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> (<kbd>x&sup2;</kbd> squares .03 at once and shows <samp>0.0009</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>55</kbd> <kbd>&times;</kbd> <kbd>.03</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.4750</samp> (both). Positive: the curve gives back 2.475 points of the line&rsquo;s loss.</p>
+          </li>
+          <li>
+            <p class="calc-what">Add the duration term</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>+</kbd> <kbd>19.5</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>+</kbd> <kbd>(&minus;)</kbd> <kbd>19.5</kbd> <kbd>ENTER</kbd> (the TI-84 types <samp>Ans+</samp> for you)</div>
+            <p class="calc-see">Display: <samp>-17.0250</samp> (both).</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: LGD = 91.375 per 100; expected loss 2.74 per 100 a year, so spread &asymp; 2.74%; and the 300 bp widening cuts the price by about 17.03% (&minus;19.50% + 2.475% = &minus;17.025%). Subtracting the convexity term instead would give &minus;21.975%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Lehman&rsquo;s holders recovered 8.625 per 100, so the loss given default was 91.375: almost everything.</p>
+      <p>Spread &asymp; POD &times; LGD prices that loss a year at a time. With Lehman&rsquo;s LGD, each 1% of annual default probability needs about 91 bp of spread; an illustrative 3% chance needs 2.74%.</p>
+      <p>The recovery assumption matters as much as the default probability. A common modelling assumption is 40% recovery (LGD 60%); on it, a 1% spread implies a 1.67% annual chance of default. With Lehman&rsquo;s actual LGD of 91.375%, the same spread covered only a 1.09% chance.</p>
+      <p>And a widening spread hurts before any default: for the illustrative bond above, 300 bp of widening costs about 17% of its price.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Using the recovery rate where the LGD is needed. With 40% recovery the LGD is 60%: the expected loss on $10 million at a 2% POD is $120,000, not 0.02 &times; 0.40 &times; $10 million = $80,000.</li>
+          <li>Giving the convexity term the wrong sign. (&Delta;Spread)&sup2; is positive whether the spread widens or narrows, so for an option-free bond the term is added: &minus;19.50 + 2.475 = &minus;17.025%, not &minus;21.975%.</li>
+          <li>Squaring the change in percent. Square the decimal: 0.03&sup2; = 0.0009, so &frac12; &times; 55 &times; 0.0009 = 2.475%. Squaring 3 gives a convexity term of 247.5 and a &ldquo;+228%&rdquo; price change for a widening: the units slipped.</li>
+          <li>Treating a lower EBITDA/interest ratio as stronger credit. Coverage (EBITDA/interest, FFO/debt) is stronger when <em>higher</em>; leverage (debt/EBITDA, debt/capital) is stronger when <em>lower</em>.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="-10.0125" data-tol="0.01" data-pct data-show="&minus;10.01%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A bond has modified duration 7.2 and convexity 70. Its credit spread widens by 150 bp while the Treasury yield stays put. Estimate the percentage change in its price. As a percent, to two decimals (a fall is negative).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same three steps as the walkthrough&rsquo;s price part, with ModDur 7.2, convexity 70 and &Delta;Spread = 0.015. Duration term first, then the convexity term, then add.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Duration term: &minus;7.2 &times; 0.015 = &minus;0.108 = &minus;10.80%. Convexity term: &frac12; &times; 70 &times; 0.015&sup2; = 35 &times; 0.000225 = 0.007875 = +0.7875%.</p>
+            <p>%&Delta;PV &asymp; &minus;10.80 + 0.7875 = <b>&minus;10.01%</b> (&minus;10.0125). The wrong convexity sign gives &minus;11.59%.</p>
+            <p>BA II Plus: <kbd>7.2</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>-10.8000</samp>; <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>70</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>0.7875</samp>; <kbd>+</kbd> <kbd>10.8</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd> &rarr; <samp>-10.0125</samp>.</p>
+            <p>TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>7.2</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>-10.8000</samp>; <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>70</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>.7875</samp>; <kbd>+</kbd> <kbd>(&minus;)</kbd> <kbd>10.8</kbd> <kbd>ENTER</kbd> &rarr; <samp>-10.0125</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Why is a bond&rsquo;s yield spread roughly POD &times; LGD?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The spread equals the POD alone, because the recovery is paid later</span></label>
+              <p class="cq-why">Late or not, the recovery is money you get back. With 40% recovery only 60% is lost, so a 2% POD needs about 1.2% of spread, not 2%.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The spread is the extra yield that pays, year by year, for the loss investors expect: the chance of default that year times what is lost if it happens</span></label>
+              <p class="cq-why">Right. Expected loss = POD &times; LGD (Day 26&rsquo;s expected value with a zero loss in the no-default branch), and the spread is what covers it each year.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The spread equals the recovery rate times the POD</span></label>
+              <p class="cq-why">That multiplies by what is <em>recovered</em>, not what is lost: 2% &times; 40% = 0.8% instead of 2% &times; 60% = 1.2%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Lend to 100 such borrowers: on average POD &times; 100 of them default, and each costs LGD. Spread over the whole book, that is POD &times; LGD per bond per year. A spread that size leaves you level with a Treasury holder after the expected defaults; anything above it pays for uncertainty and illiquidity.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="4" data-tol="0.01" data-pct data-show="4.00%">
+          <p class="cq-stem"><b>3. Twist: work backwards.</b> A bond trades 240 bp over Treasuries, and the expected recovery if it defaults is 40%. Using spread &asymp; POD &times; LGD, what annual probability of default does the spread imply? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Divide instead of multiply: POD &asymp; spread / LGD, with LGD as a share of the exposure, 1 &minus; 0.40.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>POD &asymp; 2.40% / (1 &minus; 0.40) = 2.40% / 0.60 = <b>4.00%</b>. Check: 4% &times; 60% = 2.40%. Dividing by the recovery rate instead gives 6.00%.</p>
+            <p>BA II Plus: <kbd>2.4</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.4</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>4.0000</samp>.</p>
+            <p>TI-84 Plus: <kbd>2.4</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.0000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor holds $5 million of a corporate bond. The annual probability of default is 2.5% and the expected recovery rate is 30%. The expected loss over the next year is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $87,500</span></label>
+              <p class="cq-why">Right: LGD = $5,000,000 &times; 0.70 = $3,500,000, and EL = 0.025 &times; $3,500,000 = $87,500.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $37,500</span></label>
+              <p class="cq-why">Used the recovery rate instead of the LGD: 0.025 &times; 0.30 &times; $5,000,000.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $125,000</span></label>
+              <p class="cq-why">Ignored the recovery: 0.025 &times; $5,000,000 assumes every dollar is lost in a default.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>EL = POD &times; exposure &times; (1 &minus; RR) = 0.025 &times; 5,000,000 &times; 0.70 = <b>$87,500</b>, or 1.75% of the exposure: roughly the spread this bond needs.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what did Lehman&rsquo;s 8.625 teach about credit spreads?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A default costs the loss given default, exposure &times; (1 &minus; recovery), which for Lehman was 91.375 per 100; a spread only covers the expected loss, roughly POD &times; LGD a year, so if the recovery turns out far lower than assumed, the spread was too thin for the risk, and a widening spread cuts the price (about &minus;ModDur &times; &Delta;Spread, softened by convexity) even before any default.</p>
+            <p>A complete answer says: (1) EL = POD &times; LGD, with LGD = exposure &times; (1 &minus; recovery); (2) the spread compensates the expected loss, roughly POD &times; LGD a year; (3) a recovery lower than assumed means the spread was too thin; (4) widening hits the price through &minus;ModDur &times; &Delta;Spread, softened by convexity.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, module Credit Risk (its 2024&ndash;2026 title; the 2027 title was not confirmed): probability of default, loss given default and recovery, expected loss, the yield spread &asymp; POD &times; LGD approximation, and the price impact of a spread change. Credit ratios, seniority and credit migration as in the curriculum&rsquo;s credit analysis of corporate issuers; duration and convexity from Yield-Based Bond Convexity and Portfolio Properties (Day 41).</p>
+      <p><strong>Sources.</strong> Risk.net, &ldquo;Lehman recovery rate set at 8.625%&rdquo;, October 2008 (final price 8.625 determined at 2 p.m. on Friday 10 October 2008; protection sellers pay 91.375% of par). Hedgeweek, &ldquo;Creditex and Markit announce final results of Lehman credit event auction&rdquo; (the auction under the ISDA 2008 Lehman CDS Protocol, administered by Creditex and Markit). Ratings before the bankruptcy: S&amp;P placed Lehman&rsquo;s &lsquo;A&rsquo; rating on CreditWatch with negative implications on 9 September 2008, and Moody&rsquo;s placed its A2 senior rating on review on 10 September 2008 (Calculated Risk and Mortgage News Daily, 9 September 2008; Moody&rsquo;s release in the Lehman examiner&rsquo;s documents; Lehman Brothers Holdings prospectus supplement, 2008). Chapter 11 petition of Lehman Brothers Holdings Inc., 15 September 2008. The default probabilities, the 40% recovery assumption and the bonds&rsquo; duration and convexity are illustrative; the arithmetic is ours.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-54.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

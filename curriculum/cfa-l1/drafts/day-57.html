@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>20 April 2020: May oil settled at −$37.63 while June was +$20.43. The gap was the price of carry — CFA Math, Day 57 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "20 April 2020: May oil settled at −$37.63 while June was +$20.43. The gap was the price of carry",
+    "path": "reports/cfa/l1/day-57.html",
+    "summary": "Day 57 of CFA Math: no arbitrage makes a forward price the spot price carried to delivery at the risk-free rate, plus the present value of holding costs and minus that of income, F0(T) = [S0 − PV(I) + PV(C)](1 + r)^T, and a forward’s value later is the present value of the change in the forward price; Logan prices a 3-month oil forward with storage costs (22.05), values the long position a month later (−4.05), and sees why May 2020 oil settled at −$37.63 while June was +$20.43.",
+    "headlines": [
+      "Day 57 of 90 · Derivatives: no arbitrage makes the forward price the spot price plus the cost of carry, and a forward’s value is the PV of the change in that price",
+      "Calculator: a 3-month oil forward price with storage costs, then the long forward’s value a month later, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>20 April 2020: May oil settled at &minus;$37.63 while June was +$20.43. The gap was the price of carry</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A forward price is today&rsquo;s price carried to the delivery date: add the interest and the storage, take off any income the owner would have collected. Any other price hands someone a free profit.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Derivatives</p>
+      <span class="track-progress">Day 57 of 90 &middot; Pricing and Valuation of Forward Contracts and for an Underlying with Varying Maturities &middot; Forward prices and the cost of carry</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="57">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 54 and 50, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="5.837719308562428" data-tol="0.01" data-pct data-show="5.84%">
+          <p class="cq-stem"><b>From Day 54.</b> A mortgage pool&rsquo;s single monthly mortality (SMM) is 0.5%. What is its conditional prepayment rate (CPR)? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> CPR = 1 &minus; (1 &minus; SMM)<sup>12</sup>, with SMM as a decimal. Not 12 &times; SMM.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>CPR = 1 &minus; 0.995<sup>12</sup> = 1 &minus; 0.9416 = 0.0584 = <b>5.84%</b>. Twelve times 0.5% = 6.00% overstates it: each month&rsquo;s 0.5% applies only to what is still left in the pool.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.995</kbd> <kbd>yˣ</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>5.8377</samp>.</p>
+            <p>TI-84 Plus: <kbd>100</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.995</kbd> <kbd>^</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.8377</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 50.</b> A fund&rsquo;s 30 monthly returns are regressed on the market&rsquo;s. The slope (beta) is 0.85 with a standard error of 0.10. Testing H<sub>0</sub>: &beta; = 1 at 5%, two-tailed (critical t = 2.048 with 28 df):</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. t = &minus;1.50: fail to reject; the data cannot tell this beta from 1</span></label>
+              <p class="cq-why">Right: t = (0.85 &minus; 1)/0.10 = &minus;1.50, and |&minus;1.50| is below 2.048.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. t = 8.50: reject; beta differs from 1</span></label>
+              <p class="cq-why">0.85/0.10 puts 0 in the numerator: it tests &beta; = 0, not &beta; = 1.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. t = &minus;8.22: reject; beta is below 1</span></label>
+              <p class="cq-why">Divided 0.10 by &radic;30 again, as if it were a standard deviation. The regression&rsquo;s standard error of the slope is already s<sub>b&#770;1</sub>.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>)/s<sub>b&#770;1</sub> = (0.85 &minus; 1)/0.10 = &minus;1.50, with n &minus; 2 = 28 df. |t| &lt; 2.048, so fail to reject. That is not proof that beta is 1: the 95% interval, 0.85 &plusmn; 2.048 &times; 0.10, still runs from 0.65 to 1.05.</p></details>
+        </div>
+      </section>
+
+      <h3>Minus $37.63 a barrel</h3>
+      <p>On Monday 20 April 2020, the May contract for West Texas Intermediate (WTI) crude oil on NYMEX had one day left before it expired. It settled at <b>&minus;$37.63 a barrel</b>: the first negative price since the contract was listed 37 years earlier. During the session it traded lower still; the widely reported low is &minus;$40.32.</p>
+      <p>The pandemic had collapsed demand for fuel. The contract ends in real barrels, delivered at Cushing, Oklahoma, and working storage at Cushing was near capacity. Anyone still long at expiry had to take oil there, with almost nowhere to put it. So holders paid others to take it off their hands.</p>
+      <p>The same day, the June contract, for the same oil delivered a month later, settled at <b>+$20.43</b>. The physical spot price at Cushing was &minus;$36.98.</p>
+      <p>How can oil for May delivery be worth &minus;$37.63, and the same oil a month later +$20.43? What ties today&rsquo;s price to the price for later delivery?</p>
+
+      <h3>The idea</h3>
+      <p>A <b>forward contract</b> is a deal made today to buy something later, at a price fixed today: the <b>forward price</b> F. Signing costs nothing. At delivery the buyer (the <b>long</b>) pays F and gets the asset.</p>
+      <p>Two ways to own a barrel of oil in three months. <b>Route 1:</b> buy it today at the spot price S, with borrowed money, and store it. <b>Route 2:</b> sign a forward today and pay F on delivery.</p>
+      <p>Both end with the same barrel on the same day, so they must cost the same. If the forward were dearer, you would buy spot, store it and sell forward: a riskless profit (<b>cash-and-carry</b>). Cheaper, and you would do the reverse. That is <b>no arbitrage</b>, the logic of Day 37&rsquo;s forward rates.</p>
+      <p>What separates F from S is the <b>cost of carry</b>: interest on the money, plus storage and insurance, minus any income the owner collects (dividends, coupons, the convenience of having oil on hand).</p>
+      <p>F above S is <b>contango</b>; F below S is <b>backwardation</b>. <b>Futures</b> are exchange-traded forwards, like the WTI contract, <b>marked to market</b> daily: each day&rsquo;s gains and losses are settled in cash.</p>
+      <p>A commodity futures investor earns three returns: <b>price</b> (the spot price&rsquo;s change), <b>roll</b> (from selling each expiring contract and buying the next; negative in contango) and <b>collateral</b> (interest on the cash posted).</p>
+
+      <h3>Why it works</h3>
+      <p><b>1. No carry: Day 1.</b> Route 1 costs S<sub>0</sub> today. Borrow it at r and at T you repay S<sub>0</sub>(1 + r)<sup>T</sup>. Route 2 must cost the same: F<sub>0</sub>(T) = S<sub>0</sub>(1 + r)<sup>T</sup>. T is in years: three months is 0.25. Oil at $20, r = 1%: 20 &times; 1.01<sup>0.25</sup> = 20.0498.</p>
+      <p><b>2. Add the costs.</b> Storage must be paid too. Add its present value, PV(C) (Day 2), to the price and finance the lot: F<sub>0</sub>(T) = [S<sub>0</sub> + PV(C)](1 + r)<sup>T</sup>. With $2 of storage: 22 &times; 1.01<sup>0.25</sup> = 22.0548.</p>
+      <p><b>3. Take off the income.</b> If the asset pays a dividend or coupon before T, the owner gets it; the forward buyer does not. Its present value, PV(I), comes off: F<sub>0</sub>(T) = [S<sub>0</sub> &minus; PV(I) + PV(C)](1 + r)<sup>T</sup>.</p>
+      <p><b>4. Arbitrage holds it there.</b> If the forward traded at 23: borrow 22, buy and store the barrel, sell forward at 23. At T, repay 22.0548 and keep 0.9452, risk-free. At 21, a holder sells her oil, invests the 22 (20 plus the storage saved) and buys it back forward: 1.0548 a barrel.</p>
+      <p><b>5. Continuous version: Day 4.</b> With continuous compounding, costs and income become yields c and i that add to or come off the rate: F<sub>0</sub>(T) = S<sub>0</sub>e<sup>(r + c &minus; i)T</sup>.</p>
+      <p><b>6. Price is not value.</b> F<sub>0</sub> is chosen so the contract is worth zero when signed. Later, at time t, a new forward for the same date costs F<sub>t</sub>. The long can lock in the difference by selling one: at T she buys at F<sub>0</sub>, sells at F<sub>t</sub> and keeps F<sub>t</sub> &minus; F<sub>0</sub>, for sure. A sure amount at T is worth its PV now (Day 2), discounted over the time left, T &minus; t.</p>
+      <p><b>7. Check at delivery.</b> At T a forward for immediate delivery costs the spot price S<sub>T</sub>, and nothing is left to discount: V<sub>T</sub> = S<sub>T</sub> &minus; F<sub>0</sub>, the long&rsquo;s payoff.</p>
+      <p><b>In plain words:</b> the forward price is today&rsquo;s price plus what it costs to hold the thing until delivery. A forward&rsquo;s value is how far the price has moved since you locked yours in, brought back to today.</p>
+      <div class="formula">
+        <p class="expr">F<sub>0</sub>(T) = S<sub>0</sub> &times; (1 + r)<sup>T</sup></p>
+        <p class="expr">F<sub>0</sub>(T) = [S<sub>0</sub> &minus; PV<sub>0</sub>(I) + PV<sub>0</sub>(C)] &times; (1 + r)<sup>T</sup></p>
+        <p class="expr">F<sub>0</sub>(T) = S<sub>0</sub> &times; e<sup>(r + c &minus; i)T</sup></p>
+        <p class="expr">V<sub>t</sub>(T) = [F<sub>t</sub>(T) &minus; F<sub>0</sub>(T)] / (1 + r)<sup>(T &minus; t)</sup></p>
+        <dl>
+          <dt>F<sub>0</sub>(T)</dt><dd>forward price agreed at time 0 for delivery at T</dd>
+          <dt>S<sub>0</sub></dt><dd>spot price today</dd>
+          <dt>r</dt><dd>risk-free rate per year, as a decimal (continuously compounded in the e formula)</dd>
+          <dt>T</dt><dd>time to delivery, in years (3 months = 0.25)</dd>
+          <dt>PV<sub>0</sub>(I)</dt><dd>present value of the income the asset pays before T (dividends, coupons)</dd>
+          <dt>PV<sub>0</sub>(C)</dt><dd>present value of the costs of holding it to T (storage, insurance)</dd>
+          <dt>c, i</dt><dd>continuously compounded cost and income (or convenience) yields, per year</dd>
+          <dt>t</dt><dd>time since the contract was signed, in years; T &minus; t is the time left</dd>
+          <dt>F<sub>t</sub>(T)</dt><dd>the forward price at time t for the same delivery date T</dd>
+          <dt>V<sub>t</sub>(T)</dt><dd>value at t of the long forward; the short&rsquo;s value is the same number with the sign flipped</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Forward price with no carry: F<sub>0</sub>(T) = S<sub>0</sub> &times; (1 + r)<sup>T</sup></li>
+          <li>Forward price with income and costs: F<sub>0</sub>(T) = [S<sub>0</sub> &minus; PV<sub>0</sub>(I) + PV<sub>0</sub>(C)] &times; (1 + r)<sup>T</sup></li>
+          <li>Forward price, continuous compounding: F<sub>0</sub>(T) = S<sub>0</sub> &times; e<sup>(r + c &minus; i) T</sup></li>
+          <li>Value of a long forward at time t: V<sub>t</sub>(T) = [F<sub>t</sub>(T) &minus; F<sub>0</sub>(T)] / (1 + r)<sup>(T &minus; t)</sup></li>
+          <li>Commodity futures return components: Total return = price return + roll return + collateral return</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A stock trades at 100 and will pay a dividend of 2 in three months. The risk-free rate is 4% a year. Find the no-arbitrage price of a six-month forward. Then: over a year, a long commodity futures position had a price (spot) return of +5%, a roll return of &minus;3% (contango) and a collateral return of 4%. What was its total return?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Times in years: the dividend comes at 0.25, delivery at T = 0.5.</li>
+          <li>PV(I) = 2 / 1.04<sup>0.25</sup> = 2 / 1.009853 = <b>1.9805</b>.</li>
+          <li>S<sub>0</sub> &minus; PV(I) = 100 &minus; 1.9805 = 98.0195.</li>
+          <li>F<sub>0</sub> = 98.0195 &times; 1.04<sup>0.5</sup> = 98.0195 &times; 1.019804 = 99.9607, about <b>99.96</b>.</li>
+          <li>Check another way: carry the price, 100 &times; 1.04<sup>0.5</sup> = 101.9804, and take off the dividend carried from month 3 to month 6, 2 &times; 1.04<sup>0.25</sup> = 2.0197. 101.9804 &minus; 2.0197 = 99.9607. Same.</li>
+          <li>Ignoring the dividend gives 101.98: too high, because the forward buyer never gets the dividend.</li>
+          <li>Commodity futures: total = 5% + (&minus;3%) + 4% = <b>6%</b>.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Oil trades at a spot price of $20 a barrel. Storing a barrel for three months costs $2 in present-value terms, and the risk-free rate is 1% a year. Find the no-arbitrage 3-month forward price. One month later the forward price for the same delivery date is $18: what is the long forward worth then? Times go in as years: 3 months = .25, and the 2 months left = 2/12.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Spot price plus the PV of storage: what you pay for and finance today</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>20</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>20</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>22.0000</samp> (both).</p>
+          </li>
+          <li>
+            <p class="calc-what">Carry it three months at 1%: that is F<sub>0</sub>. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&times;</kbd> <kbd>1.01</kbd> <kbd>yˣ</kbd> <kbd>.25</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&times;</kbd> <kbd>1.01</kbd> <kbd>^</kbd> <kbd>.25</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>ENTER</kbd> (the TI-84 types <samp>Ans*</samp> for you; F is above the <kbd>COS</kbd> key)</div>
+            <p class="calc-see">Display: <samp>22.0548</samp> (both). The forward price: $22.05 a barrel.</p>
+          </li>
+          <li>
+            <p class="calc-what">One month later: how far has the forward price moved? New F<sub>t</sub> minus F<sub>0</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>18</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>18</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>-4.0548</samp> (both). The long is locked into paying 4.0548 more than a new forward costs, at T.</p>
+          </li>
+          <li>
+            <p class="calc-what">Bring that back to today: discount over the 2 months left</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&divide;</kbd> <kbd>1.01</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&divide;</kbd> <kbd>1.01</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (it types <samp>Ans/</samp> for you)</div>
+            <p class="calc-see">Display: <samp>-4.0481</samp> (both).</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: F<sub>0</sub> = $22.05 a barrel (22.0548). A month later the long forward is worth &minus;$4.05 a barrel (&minus;4.0481): the 4.0548 fall in the forward price, discounted over the 2 months left. The short is worth +4.0481. On the day it was signed, each side was worth 0.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Run the formula backwards. With interest rates near zero, (1 + r)<sup>T</sup> is close to 1, so F &minus; S &asymp; PV(C) &minus; PV(I): the gap between later and now is the cost of carry.</p>
+      <p>On 20 April 2020, June minus May was 20.43 &minus; (&minus;37.63) = <b>$58.06</b> a barrel; June minus spot, 20.43 + 36.98 = $57.41. That was the market&rsquo;s price for holding a barrel about a month.</p>
+      <p>Anyone with an empty tank could be paid $37.63 to take a May barrel, sell it forward for June at $20.43 and lock in $58.06, less the storage: the cash-and-carry trade that normally closes the gap. Almost no one had an empty tank. Storage, not oil, was the scarce good, so the near price fell until someone with space was paid to take the barrels.</p>
+      <p>Contango, at its most extreme. Anyone rolling into the next contract sold cheap and bought dear: a negative roll return.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Getting the signs backwards. Costs (storage, insurance) are <em>added</em> to the spot; income (dividends, coupons, convenience yield) is <em>subtracted</em>. Oil at 20 with storage of 2: finance 22 (F = 22.0548), not 18 (18.0448).</li>
+          <li>Using months for T. Three months is T = 0.25. Typing 3 gives 22 &times; 1.01<sup>3</sup> = 22.6666 instead of 22.0548.</li>
+          <li>Confusing the forward <em>price</em> with its <em>value</em>. F<sub>0</sub> = 22.0548 is a price, fixed at the start; the contract&rsquo;s value then is 0. A month later the long is worth &minus;4.0481.</li>
+          <li>Discounting the value over the wrong time. Use the time left, T &minus; t (2/12 here): &minus;4.0481. Over the full 0.25 you get &minus;4.0447; not discounting at all, &minus;4.0548.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="1957.1675962982836" data-tol="0.01" data-show="1,957.17">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Gold trades at $1,900 an ounce. Storing an ounce for six months costs $10 in present-value terms, and the risk-free rate is 5% a year. What is the no-arbitrage 6-month forward price? In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keys as steps 2 and 3 of the walkthrough: spot plus storage, then carry it at 1.05 for T = 0.5 (six months in years).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>F<sub>0</sub> = (1,900 + 10) &times; 1.05<sup>0.5</sup> = 1,910 &times; 1.024695 = <b>1,957.17</b>. Subtracting the storage instead gives 1,936.67; ignoring it, 1,946.92.</p>
+            <p>BA II Plus: <kbd>1900</kbd> <kbd>+</kbd> <kbd>10</kbd> <kbd>=</kbd> &rarr; <samp>1,910.0000</samp>; <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>yˣ</kbd> <kbd>.5</kbd> <kbd>=</kbd> &rarr; <samp>1,957.1676</samp>.</p>
+            <p>TI-84 Plus: <kbd>1900</kbd> <kbd>+</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> &rarr; <samp>1910.0000</samp>; <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>^</kbd> <kbd>.5</kbd> <kbd>ENTER</kbd> &rarr; <samp>1957.1676</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> Why must storage costs <em>raise</em> the forward price of a commodity?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Storage makes the commodity scarcer later, so it will be worth more at delivery</span></label>
+              <p class="cq-why">The forward price is not a forecast. Nothing in F<sub>0</sub>(T) = [S<sub>0</sub> &minus; PV(I) + PV(C)](1 + r)<sup>T</sup> is a guess about the future spot price; it is the cost of the route that delivers the same barrel.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The forward seller must be paid for the risk that prices rise</span></label>
+              <p class="cq-why">A seller who buys spot and stores it has no price risk at all: the barrel is already hers. No risk premium appears in the no-arbitrage price.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The forward must cost the same as buying now and carrying to T (spot plus storage, financed at r); otherwise a cash-and-carry trade, or its reverse, earns a riskless profit</span></label>
+              <p class="cq-why">Right. Whoever delivers can buy today and store, so her cost is [S<sub>0</sub> + PV(C)](1 + r)<sup>T</sup>; the storage is part of the price of getting a barrel to T.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Route 1 (buy, store, finance) and route 2 (the forward) deliver the same barrel on the same day. Storage is a cost of route 1, so it must be in the price of route 2. In the walkthrough, $2 of storage lifts the forward from 20.0498 to 22.0548. Price the forward lower and everyone takes the forward; higher, and cash-and-carry traders sell it until the gap closes.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="81.61610720214046" data-tol="0.01" data-show="81.62">
+          <p class="cq-stem"><b>3. Twist: continuous compounding.</b> A commodity&rsquo;s spot price is 80. The continuously compounded risk-free rate is 3% a year, storage costs a continuous 2% a year and the convenience yield is 1% a year. What is the 6-month forward price? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> F<sub>0</sub>(T) = S<sub>0</sub>e<sup>(r + c &minus; i)T</sup>: the cost adds to the rate, the convenience yield comes off; T = 0.5.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Exponent: (0.03 + 0.02 &minus; 0.01) &times; 0.5 = 0.02. e<sup>0.02</sup> = 1.0202. F<sub>0</sub> = 80 &times; 1.0202013 = 81.6161, about <b>81.62</b>. Adding the convenience yield instead gives 82.44.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.03</kbd> <kbd>+</kbd> <kbd>.02</kbd> <kbd>&minus;</kbd> <kbd>.01</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>=</kbd> &rarr; <samp>0.0200</samp>; <kbd>2ND</kbd> <kbd>eˣ</kbd> &rarr; <samp>1.0202</samp>; <kbd>&times;</kbd> <kbd>80</kbd> <kbd>=</kbd> &rarr; <samp>81.6161</samp>.</p>
+            <p>TI-84 Plus: <kbd>80</kbd> <kbd>&times;</kbd> <kbd>2nd</kbd> <kbd>LN</kbd> (types <samp>e^(</samp>) <kbd>(</kbd> <kbd>.03</kbd> <kbd>+</kbd> <kbd>.02</kbd> <kbd>&minus;</kbd> <kbd>.01</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>81.6161</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> A stock trades at 50. The present value of the dividends it will pay over the next year is 1.20, and the risk-free rate is 4%. The price of a one-year forward on the stock is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 52.00</span></label>
+              <p class="cq-why">Ignored the dividend: 50 &times; 1.04. The forward buyer does not receive dividends paid before delivery.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 53.25</span></label>
+              <p class="cq-why">Added the dividend as if it were a cost: (50 + 1.20) &times; 1.04 = 53.248. Income comes off.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 50.75</span></label>
+              <p class="cq-why">Right: (50 &minus; 1.20) &times; 1.04 = 48.80 &times; 1.04 = 50.752.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>F<sub>0</sub>(T) = [S<sub>0</sub> &minus; PV(I)](1 + r)<sup>T</sup> = (50 &minus; 1.20) &times; 1.04<sup>1</sup> = <b>50.75</b>. BA II Plus: <kbd>(</kbd> <kbd>50</kbd> <kbd>&minus;</kbd> <kbd>1.2</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>1.04</kbd> <kbd>=</kbd> &rarr; <samp>50.7520</samp>. TI-84 Plus: the same keys, ending with <kbd>ENTER</kbd> &rarr; <samp>50.7520</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is the difference between a forward&rsquo;s price and its value, and what does the cost of carry say about the &minus;$37.63 day?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The forward price is the delivery price fixed at the start, set at the spot price carried forward, [S &minus; PV(I) + PV(C)](1 + r)<sup>T</sup>, so the contract is worth zero when signed; its value later is the present value of how far the forward price has moved since, [F<sub>t</sub> &minus; F<sub>0</sub>]/(1 + r)<sup>(T &minus; t)</sup>. Because the gap between later and near prices is the cost of carry, when storage ran out in April 2020 the price of carrying a barrel for a month jumped to about $58, and the near price had to fall far below the later one, even below zero.</p>
+            <p>A complete answer says: (1) the forward price is set at inception so the contract&rsquo;s value is zero; (2) its value later is the PV of (new forward price &minus; old); (3) F = [S &minus; PV(I) + PV(C)](1 + r)<sup>T</sup>, so a huge cost of storage can push the near price far below the later one, even below zero.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Derivatives, module Pricing and Valuation of Forward Contracts and for an Underlying with Varying Maturities (its 2024&ndash;2026 title; the 2027 title was not confirmed): the no-arbitrage forward price with income and costs, its continuous-compounding form, and the value of a forward during its life. Cost of carry, contango and backwardation as in the curriculum&rsquo;s module on arbitrage, replication and the cost of carry; daily marking to market as in its futures pricing module; the commodity futures return (price, roll and collateral returns) from Alternative Investments.</p>
+      <p><strong>Sources.</strong> CFTC, <em>Interim Staff Report: Trading in NYMEX WTI Crude Oil Futures Contract Leading up to, on, and around April 20, 2020</em> (November 2020): the May 2020 contract settled at &minus;$37.63 on 20 April 2020, the first negative price since it was listed 37 years earlier, with working storage at Cushing near capacity. S&amp;P Global Platts, &ldquo;NYMEX WTI falls below &minus;$5/b to all-time record low&rdquo;, 20 April 2020, and Hart Energy, 20 April 2020: the June contract settled at $20.43. WTI Cushing spot price &minus;$36.98 on 20 April 2020, in the EIA&rsquo;s spot price series (as analysed by datahub.io); the June and May settlements are also tabulated in an AEA 2023 conference deck. The session low of &minus;$40.32 is widely reported but was not confirmed in a primary source in our check. The walkthrough, worked-example and question prices are illustrative; the arithmetic is ours.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-56.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

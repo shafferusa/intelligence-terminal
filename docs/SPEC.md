@@ -219,7 +219,8 @@ chose both calculators side by side and about 20 minutes a day.
 - **Each lesson** (~20 minutes): a warm-up of two questions from earlier days (spaced recall) →
   a real, verified story that poses the puzzle → The idea → Why it works (the formula built up,
   nothing taken on trust) → Memorize → Worked example by hand → **On your calculator** (one problem,
-  keystroke by keystroke, **BA II Plus and TI-84 Plus side by side**, switchable) → Back to the
+  keystroke by keystroke on the **BA II Plus**; Logan uses the exam calculator, so the TI-84 lines Days
+  1-30 were written with are hidden, 2026-11-11) → Back to the
   story → Exam traps → **Check your understanding** (five questions **graded on the page**: number
   answers within a tolerance with a hint and one retry, three-option multiple choice with a reason
   for every option, and an explain-it-back rated against a model answer). 80% right the first time

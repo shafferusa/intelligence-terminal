@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Is beta really 1? Is the fund really good? Is the bond really safe? Week 8 in ten questions — CFA Math, Day 56 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Is beta really 1? Is the fund really good? Is the bond really safe? Week 8 in ten questions",
+    "path": "reports/cfa/l1/day-56.html",
+    "summary": "Day 56 of CFA Math, the Week 8 review of Days 50–55: Logan recaps the week’s formulas, finds a beta by regression, its CAPM return and its t-tests against 0 and 1 on the calculator, then answers ten graded questions with new numbers on beta and correlation tests, prediction intervals, log-lin forecasts, the APT and CAPM alpha, M², effective duration, expected loss and a spread shock, plus a describe-only note on financial data science (LM11).",
+    "headlines": [
+      "Day 56 of 90 · Quantitative Methods, Portfolio Construction and Fixed Income: Week 8 review of slope tests, forecasts, CAPM, performance measures, effective duration and credit risk",
+      "Calculator: beta by regression, a CAPM return, slope t-tests, a log-lin forecast, M², effective duration and expected loss, on the BA II Plus",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Is beta really 1? Is the fund really good? Is the bond really safe? Week 8 in ten questions</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        No new idea today: the week&rsquo;s six lessons in one box, a beta found and tested on the calculator, then ten exam-style questions with new numbers, five of them on the calculator.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods, Portfolio Construction and Fixed Income</p>
+      <span class="track-progress">Day 56 of 90 &middot; Review &middot; Week 8: regression to credit</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="56">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 55 and one from Day 29, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="2.769230769230769" data-tol="0.01" data-pct data-show="2.77%">
+          <p class="cq-stem"><b>From Day 55.</b> A bond trades 180 bp over Treasuries, and the expected recovery if it defaults is 35%. Using spread &asymp; POD &times; LGD, what annual probability of default does the spread imply? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Work backwards: POD &asymp; spread / LGD, with LGD as a share of the exposure, 1 &minus; 0.35.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>LGD = 1 &minus; 0.35 = 0.65. POD &asymp; 1.80% / 0.65 = <b>2.77%</b>. Check: 2.7692% &times; 0.65 = 1.80%.</p>
+            <p>BA II Plus: <kbd>1.8</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.35</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>2.7692</samp>. TI-84 Plus: the same keys, ending with <kbd>ENTER</kbd> &rarr; <samp>2.7692</samp>.</p>
+            <p>Dividing by the recovery rate instead gives 5.14%: the spread pays for what is <em>lost</em>, not what is recovered.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 29.</b> A fund beats its benchmark in any year with probability 0.6, independently of other years. The probability that it beats the benchmark in exactly 4 of the next 5 years is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 5.18%</span></label>
+              <p class="cq-why">That is one particular order, 0.6<sup>4</sup> &times; 0.4. The missed year can be any of the five, so multiply by <sub>5</sub>C<sub>4</sub> = 5.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 33.70%</span></label>
+              <p class="cq-why">That is P(at least 4): it adds P(all 5) = 0.6<sup>5</sup> = 7.78%. The question says exactly 4.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 25.92%</span></label>
+              <p class="cq-why">Right: <sub>5</sub>C<sub>4</sub> &times; 0.6<sup>4</sup> &times; 0.4 = 5 &times; 0.1296 &times; 0.4 = 0.2592.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Each order with four beats and one miss has probability 0.6<sup>4</sup> &times; 0.4 = 0.05184, and there are 5 such orders. 5 &times; 0.05184 = <b>25.92%</b>.</p>
+            <p>BA II Plus: <kbd>5</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>5.0000</samp>; <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>yˣ</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>=</kbd> &rarr; <samp>0.2592</samp>. TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">A:binompdf(</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>.6</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.2592</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>Every lesson this week asked the same thing: how much risk are you really taking, and are you paid for it?</p>
+      <p>Day 50 tested whether a fitted slope is real. A stock&rsquo;s beta is the slope of its returns on the market&rsquo;s, and t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>)/s<sub>b&#770;1</sub> with n &minus; 2 df says whether it differs from 0, or from 1. Day 51 put error bars on a forecast and used logs to fit growth with a straight line.</p>
+      <p>Days 52 and 53 priced risk. CAPM pays only for beta; alpha is how far a return sits above the SML; Sharpe, Treynor, M&sup2; and Jensen score a manager per unit of the risk that matters. Day 54 measured bonds whose cash flows move with rates by repricing them. Day 55 turned default into a number: expected loss = POD &times; LGD, which a spread roughly pays back each year.</p>
+
+      <h3>The week&rsquo;s formulas</h3>
+      <div class="sie-block memorize">
+        <b>Memorize &middot; Days 50&ndash;55</b>
+        <ul>
+          <li><b>Day 50.</b> Slope test: t = (b&#770;<sub>1</sub> &minus; B<sub>1</sub>) / s<sub>b&#770;1</sub>, df = n &minus; 2, with s<sub>b&#770;1</sub> = SEE / &radic;&Sigma;(X<sub>i</sub> &minus; X&#772;)<sup>2</sup>. Intercept (alpha): t = (b&#770;<sub>0</sub> &minus; B<sub>0</sub>) / s<sub>b&#770;0</sub>.</li>
+          <li><b>Day 50.</b> Correlation test: t = r &radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>), df = n &minus; 2: the same number as the slope t for b<sub>1</sub> = 0, and F = t<sup>2</sup>. Beta = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>) = the slope of R<sub>i</sub> regressed on R<sub>m</sub>.</li>
+          <li><b>Day 51.</b> Forecast &#374;<sub>f</sub> = b&#770;<sub>0</sub> + b&#770;<sub>1</sub>X<sub>f</sub>; s<sub>f</sub><sup>2</sup> = SEE<sup>2</sup> &times; [1 + 1/n + (X<sub>f</sub> &minus; X&#772;)<sup>2</sup> / ((n &minus; 1) s<sub>X</sub><sup>2</sup>)]; prediction interval &#374;<sub>f</sub> &plusmn; t<sub>c</sub> &times; s<sub>f</sub>, df = n &minus; 2.</li>
+          <li><b>Day 51.</b> Log-lin ln Y = b<sub>0</sub> + b<sub>1</sub>X: b<sub>1</sub> = continuous growth rate per unit of X; forecast Y = e<sup>(b<sub>0</sub> + b<sub>1</sub>X)</sup>. Lin-log Y = b<sub>0</sub> + b<sub>1</sub> ln X. Log-log: b<sub>1</sub> = elasticity.</li>
+          <li><b>Day 52.</b> &beta;<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / &sigma;<sub>m</sub><sup>2</sup> = &rho;<sub>im</sub> &sigma;<sub>i</sub> / &sigma;<sub>m</sub>. CAPM: E(R<sub>i</sub>) = R<sub>f</sub> + &beta;<sub>i</sub>[E(R<sub>m</sub>) &minus; R<sub>f</sub>]. &alpha; = forecast (or actual) &minus; CAPM required return; &alpha; &gt; 0 &rarr; undervalued.</li>
+          <li><b>Day 52.</b> APT / multi-factor: E(R<sub>p</sub>) = R<sub>F</sub> + &lambda;<sub>1</sub>&beta;<sub>p,1</sub> + &hellip; + &lambda;<sub>K</sub>&beta;<sub>p,K</sub>. CML: x-axis &sigma; (efficient portfolios); SML: x-axis &beta; (any asset).</li>
+          <li><b>Day 53.</b> Sharpe = (R<sub>p</sub> &minus; R<sub>f</sub>) / &sigma;<sub>p</sub>; Treynor = (R<sub>p</sub> &minus; R<sub>f</sub>) / &beta;<sub>p</sub>; M<sup>2</sup> = (R<sub>p</sub> &minus; R<sub>f</sub>) &times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub> &minus; (R<sub>m</sub> &minus; R<sub>f</sub>); Jensen &alpha;<sub>p</sub> = R<sub>p</sub> &minus; [R<sub>f</sub> + &beta;<sub>p</sub>(R<sub>m</sub> &minus; R<sub>f</sub>)].</li>
+          <li><b>Day 53.</b> Sortino = (R<sub>p</sub> &minus; MAR) / downside deviation; Calmar = annualized return / maximum drawdown.</li>
+          <li><b>Day 54.</b> EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>); EffCon = [PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>] / [(&Delta;Curve)<sup>2</sup> &times; PV<sub>0</sub>]; key rate durations add up to effective duration.</li>
+          <li><b>Day 54.</b> CPR = 1 &minus; (1 &minus; SMM)<sup>12</sup>. Negative convexity: the price rises less when rates fall than it falls when rates rise (callables, MBS).</li>
+          <li><b>Day 55.</b> EL = POD &times; LGD; LGD = exposure &times; (1 &minus; recovery rate); spread &asymp; POD &times; LGD (as % of exposure per year).</li>
+          <li><b>Day 55.</b> %&Delta;PV &asymp; &minus;ModDur &times; &Delta;Spread + &frac12; &times; Convexity &times; (&Delta;Spread)<sup>2</sup>. Leverage: debt/EBITDA, FFO/debt, debt/capital; coverage: EBITDA/interest.</li>
+        </ul>
+      </div>
+
+      <h3>Worked example: one stock, three verdicts</h3>
+      <p><b>Problem.</b> A stock with &beta; = 1.15 returned 13.0% while the market returned 10.0% and R<sub>f</sub> = 3.0%. Find the CAPM required return, Jensen&rsquo;s alpha and the Treynor ratio, and compare it with the market&rsquo;s.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Market risk premium: 10.0 &minus; 3.0 = 7.0%. Required return = 3 + 1.15 &times; 7 = 3 + 8.05 = <b>11.05%</b>.</li>
+          <li>Jensen&rsquo;s alpha = 13.0 &minus; 11.05 = <b>+1.95%</b>: the stock plots above the SML.</li>
+          <li>Treynor = (13 &minus; 3) / 1.15 = <b>8.6957</b>; the market&rsquo;s = (10 &minus; 3) / 1 = 7.00. More excess return per unit of beta.</li>
+          <li>The verdicts agree, and not by luck: &alpha; = (R<sub>p</sub> &minus; R<sub>f</sub>) &minus; &beta;(R<sub>m</sub> &minus; R<sub>f</sub>) = &beta; &times; (Treynor<sub>p</sub> &minus; Treynor<sub>m</sub>) = 1.15 &times; 1.6957 = 1.95.</li>
+          <li>Neither looks at total risk &sigma;. If this stock were your whole portfolio, you would need Sharpe or M&sup2;.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator: find a beta, then test it</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Five months of returns (%). Market X: 2.0, &minus;1.5, 3.2, 0.4, &minus;2.1. Stock Y: 2.6, &minus;2.4, 3.9, 0.1, &minus;3.0. Find beta by regressing the stock on the market, then the CAPM required return with R<sub>f</sub> = 3% and an equity risk premium of 5%. Then test the slope (n &minus; 2 = 3 df, table critical t = 3.182 at 5%, two-tailed): is beta different from 0? From 1?</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (the screen shows <samp>X01</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>; then onto the <samp>L2</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the months: the market (what explains) as X, the stock as Y</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.5</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.1</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> (X01, Y01, X02 &hellip; Y05)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> down L1 from its first row: <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>1.5</kbd> <kbd>ENTER</kbd> <kbd>3.2</kbd> <kbd>ENTER</kbd> <kbd>.4</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>2.1</kbd> <kbd>ENTER</kbd>; then down L2: <kbd>2.6</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>2.4</kbd> <kbd>ENTER</kbd> <kbd>3.9</kbd> <kbd>ENTER</kbd> <kbd>.1</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>3</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: <samp>Y05 = &minus;3.0000</samp> (BA II Plus) / five rows in each list (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Run the regression. Store beta (the slope b) and r</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> eight times, past <samp>n</samp>, <samp>x&#772;</samp>, <samp>Sx</samp>, <samp>&sigma;x</samp>, <samp>&#563;</samp>, <samp>Sy</samp> and <samp>&sigma;y</samp>, to <samp>a</samp>; <kbd>&darr;</kbd> to <samp>b</samp>, <kbd>STO</kbd> <kbd>1</kbd>; <kbd>&darr;</kbd> to <samp>r</samp>, <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd>. The calculator keeps a and b for later; no r on screen? Turn on <samp>DiagnosticOn</samp> as on Day 25.</div>
+            <p class="calc-see">Display: <samp>a = &minus;0.2958</samp>, <samp>b = 1.3396</samp>, <samp>r = 0.9987</samp> (BA II Plus) / <samp>a=&minus;.2958</samp>, <samp>b=1.3396</samp>, <samp>r&#178;=.9974</samp>, <samp>r=.9987</samp> (TI-84). Beta is the slope: 1.34. Entered the other way round, the slope would be 0.7445.</p>
+          </li>
+          <li>
+            <p class="calc-what">CAPM required return = R<sub>f</sub> + &beta; &times; equity risk premium</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd>, then <kbd>3</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>=</kbd> (AOS multiplies first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>3</kbd> <kbd>+</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">3:b</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>9.6979</samp> (both). Retyping the rounded 1.3396 gives 9.6980: store, don&rsquo;t retype.</p>
+          </li>
+          <li>
+            <p class="calc-what">Is beta different from 0? t = r &radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>), the same number as b / s<sub>b</sub>. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>3</kbd> <kbd>&radic;x</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&radic;x</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS), <kbd>&#9660;</kbd> down to <kbd class="menu">F:LinRegTTest&hellip;</kbd> (<samp>E:</samp> before OS 2.30), <kbd>ENTER</kbd>. Set <samp>Xlist:L1</samp>, <samp>Ylist:L2</samp>, <samp>Freq:1</samp>; on <samp>&beta; &amp; &rho;:</samp> highlight <samp>&ne;0</samp> and press <kbd>ENTER</kbd>; cursor down to <samp>Calculate</samp>, <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>33.7678</samp> (BA II Plus) / <samp>t=33.7678</samp>, <samp>p=5.7094E&minus;5</samp>, then <samp>s=.1786</samp> (the SEE) further down (TI-84). Far beyond 3.182: reject &beta; = 0. The market clearly moves this stock.</p>
+          </li>
+          <li>
+            <p class="calc-what">Is beta different from 1? First s<sub>b</sub> = b / t, then t = (b &minus; 1) / s<sub>b</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>4</kbd>; then <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT); <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">3:b</kbd> <kbd>&divide;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TEST) <kbd class="menu">3:t</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>S</kbd> <kbd>ENTER</kbd> (S is above <kbd>LN</kbd>); then <kbd>(</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd class="menu">3:b</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>S</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0397</samp>, then <samp>8.5601</samp> (BA II Plus) / <samp>.0397</samp>, then <samp>8.5601</samp> (TI-84). Also beyond 3.182: reject &beta; = 1 too.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: &beta; = 1.34 and a CAPM required return of 9.70%. Against 0, t = 33.77; against 1, t = 8.56. Both exceed 3.182, so beta is not 0 and not 1 either: the 95% interval, 1.34 &plusmn; 3.182 &times; 0.0397, runs from about 1.21 to 1.47.</p>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>&beta; = 1 versus &beta; = 0.</b> &ldquo;Is beta different from 1?&rdquo; puts 1 in the numerator: t = (b&#770; &minus; 1)/s<sub>b</sub>. Against 0 the test only asks whether the market moves the stock at all. Above: 33.77 against 0, but 8.56 against 1. Both use n &minus; 2 df.</li>
+          <li><b>M&sup2; subtracts the market&rsquo;s excess return.</b> Scaling the fund to the market&rsquo;s &sigma; gives a risk-adjusted excess return; M&sup2; is that minus (R<sub>m</sub> &minus; R<sub>f</sub>). Day 53&rsquo;s fund: 9 &times; 15/4 = 33.75%, minus 7 = 26.75%. Stop early, or subtract R<sub>m</sub> itself (23.75%), and the answer is wrong.</li>
+          <li><b>Recovery versus LGD.</b> LGD = 1 &minus; recovery. With 40% recovery the LGD is 60%: a 2% POD costs about 1.20% a year, not 0.80%.</li>
+          <li><b>Log-lin forecasts come out in logs.</b> A forecast ln Y = 3.0 means Y = e<sup>3</sup> = 20.09, not 3.0. Exponentiate before you answer.</li>
+        </ul>
+      </div>
+
+      <h3>One module with no math: financial data science</h3>
+      <p>Quantitative Methods LM11, Introduction to Financial Data Science, has no calculations at Level I: know the ideas. <b>Big data</b> is described by its volume, velocity and variety (veracity is often added). <b>Alternative data</b> includes text, satellite images and sensor or transaction feeds.</p>
+      <p><b>Machine learning</b> is supervised (labelled data: regression and classification), unsupervised (no labels: clustering, dimension reduction) or deep learning (neural networks with many layers). <b>Overfitting</b> means a model has learned the noise in its training data and fails on new data.</p>
+      <p><b>Generative AI</b> and large language models produce text from patterns learned on huge bodies of text, and can state errors fluently, so their output is checked like any unverified source. The module&rsquo;s 2027 details were not confirmed: treat it as describe-only.</p>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions, in the week&rsquo;s order, all with new numbers, graded here. Five need the calculator: 1, 3, 4, 7 and 8. Each names its day, so a miss tells you which lesson to reopen. Work each before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="1.3984516129032258" data-tol="0.001" data-show="1.3985">
+          <p class="cq-stem"><b>1. Day 50 &middot; Beta by regression, on the calculator.</b> Six months of returns (%). Market: 1.5, &minus;2.0, 2.8, &minus;0.7, 1.1, 3.0. Stock: 1.9, &minus;2.9, 3.6, &minus;1.4, 0.8, 4.1. What is the stock&rsquo;s beta, from regressing its returns on the market&rsquo;s? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">beta</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Steps 1&ndash;3 of the walkthrough with six pairs. The market goes in as X; beta is the slope b.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>1.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.9</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.7</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4.1</kbd> <kbd>ENTER</kbd>. <kbd>2ND</kbd> <kbd>STAT</kbd> (<kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows, if it doesn&rsquo;t already), <kbd>&darr;</kbd> eight times to <samp>a = &minus;0.3119</samp>, <kbd>&darr;</kbd> <samp>b = 1.3985</samp>, <kbd>&darr;</kbd> <samp>r = 0.9961</samp>.</p>
+            <p>TI-84 Plus: clear L1 and L2, then L1 = 1.5, &minus;2, 2.8, &minus;.7, 1.1, 3 and L2 = 1.9, &minus;2.9, 3.6, &minus;1.4, .8, 4.1 (minus signs with <kbd>(&minus;)</kbd>). <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>a=&minus;.3119</samp>, <samp>b=1.3985</samp>, <samp>r=.9961</samp>.</p>
+            <p>Beta = <b>1.3985</b>. The stock entered as X gives 0.7095; reading r (0.9961) instead of b is the other slip.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Day 50 &middot; Correlation test.</b> Two return series have a sample correlation of 0.40 over 27 months. At the 5% level (two-tailed critical t = 2.060 with 25 df), the t-statistic for H<sub>0</sub>: &rho; = 0 and the decision are:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. t = 2.18; reject H<sub>0</sub></span></label>
+              <p class="cq-why">Right: 0.40 &times; &radic;25 / &radic;(1 &minus; 0.16) = 2.00 / 0.9165 = 2.18, above 2.060.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. t = 2.00; fail to reject H<sub>0</sub></span></label>
+              <p class="cq-why">Left out the &radic;(1 &minus; r<sup>2</sup>) in the denominator. Dividing by 0.9165 is what lifts t over the line.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. t = 0.44; fail to reject H<sub>0</sub></span></label>
+              <p class="cq-why">Left out &radic;(n &minus; 2). That factor is how sample size enters: 0.40 from 27 months is far stronger evidence than 0.40 from 3.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>t = r &radic;(n &minus; 2) / &radic;(1 &minus; r<sup>2</sup>) = 0.40 &times; 5 / 0.9165 = <b>2.18</b> &gt; 2.060: reject &rho; = 0. In a simple regression of one series on the other, the slope t for b<sub>1</sub> = 0 is this same 2.18.</p>
+            <p>This test is included as insurance: its place in the 2027 curriculum is uncertain.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="4.717718314475425" data-tol="0.01" data-show="4.72">
+          <p class="cq-stem"><b>3. Day 51 &middot; Prediction interval, on the calculator.</b> A regression on n = 20 observations has SEE = 2.0. Its X values have mean 5 and sample variance s<sub>X</sub><sup>2</sup> = 4. For X<sub>f</sub> = 9, what is the half-width of the 95% prediction interval (t<sub>c</sub> = 2.101, 18 df)? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">units of Y</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Half-width = t<sub>c</sub> &times; s<sub>f</sub>, with s<sub>f</sub> = SEE &times; &radic;[1 + 1/n + (X<sub>f</sub> &minus; X&#772;)<sup>2</sup> / ((n &minus; 1) s<sub>X</sub><sup>2</sup>)].</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>(9 &minus; 5)<sup>2</sup> = 16; (n &minus; 1)s<sub>X</sub><sup>2</sup> = 19 &times; 4 = 76. Bracket: 1 + 0.05 + 16/76 = 1 + 0.05 + 0.2105 = 1.2605. s<sub>f</sub> = 2.0 &times; &radic;1.2605 = 2.2455. Half-width = 2.101 &times; 2.2455 = <b>4.72</b>.</p>
+            <p>BA II Plus: <kbd>1</kbd> <kbd>+</kbd> <kbd>20</kbd> <kbd>1/x</kbd> <kbd>+</kbd> <kbd>16</kbd> <kbd>&divide;</kbd> <kbd>76</kbd> <kbd>=</kbd> &rarr; <samp>1.2605</samp>; <kbd>&radic;x</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>2.101</kbd> <kbd>=</kbd> &rarr; <samp>4.7177</samp>.</p>
+            <p>TI-84 Plus: <kbd>2.101</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>1</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>20</kbd> <kbd>+</kbd> <kbd>16</kbd> <kbd>&divide;</kbd> <kbd>76</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.7177</samp>.</p>
+            <p>Using the SEE alone gives 2.101 &times; 2.0 = 4.20, too narrow. At X<sub>f</sub> = X&#772; = 5 the half-width would be 4.31: forecasts far from the data are less certain.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="num" data-answer="25.533721747351528" data-tol="0.01" data-show="25.53">
+          <p class="cq-stem"><b>4. Day 51 &middot; Log-lin forecast, on the calculator.</b> A log-lin model of a company&rsquo;s sales ($ millions) is ln Y = 1.8 + 0.12X. Forecast sales Y at X = 12. To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">$ millions</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The model forecasts ln Y. Undo the log with e<sup>x</sup>.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>ln &#374; = 1.8 + 0.12 &times; 12 = 3.24. &#374; = e<sup>3.24</sup> = <b>25.53</b>.</p>
+            <p>BA II Plus: <kbd>1.8</kbd> <kbd>+</kbd> <kbd>.12</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>=</kbd> &rarr; <samp>3.2400</samp>; <kbd>2ND</kbd> <kbd>eˣ</kbd> &rarr; <samp>25.5337</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ) <kbd>1.8</kbd> <kbd>+</kbd> <kbd>.12</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>25.5337</samp>.</p>
+            <p>Answering 3.24 is the trap: that is ln Y, not Y. The slope 0.12 is continuous growth of 12.75% per unit of X (e<sup>0.12</sup> &minus; 1).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="num" data-answer="9.7" data-tol="0.01" data-pct data-show="9.70%">
+          <p class="cq-stem"><b>5. Day 52 &middot; Multi-factor (APT) return.</b> R<sub>F</sub> = 3%. Two factors are priced: the market, with risk premium &lambda;<sub>1</sub> = 5%, and size, with &lambda;<sub>2</sub> = 2%. A portfolio&rsquo;s sensitivities are &beta;<sub>1</sub> = 1.1 and &beta;<sub>2</sub> = 0.6. What is its expected return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Each premium times its sensitivity, added to the risk-free rate.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>E(R) = 3 + 1.1 &times; 5 + 0.6 &times; 2 = 3 + 5.5 + 1.2 = <b>9.70%</b>. Leaving out R<sub>F</sub> gives 6.70%.</p>
+            <p>BA II Plus: <kbd>3</kbd> <kbd>+</kbd> <kbd>1.1</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>+</kbd> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>9.7000</samp> (AOS). TI-84 Plus: the same keys, ending with <kbd>ENTER</kbd> &rarr; <samp>9.7000</samp>.</p>
+            <p>CAPM is the one-factor case: only the market, with &lambda; = E(R<sub>m</sub>) &minus; R<sub>f</sub>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>6. Day 52 &middot; CAPM alpha.</b> A stock has &beta; = 1.4. R<sub>f</sub> = 3% and the expected market return is 8%. An analyst forecasts a 9.3% return. Based on CAPM, the stock is:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c6" value="A"> <span>A. Undervalued, &alpha; = +1.30%</span></label>
+              <p class="cq-why">Compared the forecast with the market return (9.3 &minus; 8). A stock with &beta; = 1.4 must beat the market just to be fairly priced.</p></li>
+            <li><label><input type="radio" name="c6" value="B"> <span>B. Overvalued, &alpha; = &minus;0.70%</span></label>
+              <p class="cq-why">Right: required return = 3 + 1.4 &times; (8 &minus; 3) = 10.0%, and 9.3 &minus; 10.0 = &minus;0.70%. Below the SML.</p></li>
+            <li><label><input type="radio" name="c6" value="C"> <span>C. Overvalued, &alpha; = &minus;4.90%</span></label>
+              <p class="cq-why">Multiplied beta by the market return, not the premium: 3 + 1.4 &times; 8 = 14.2%. The verdict happens to match; the alpha does not.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Required 10.0%, forecast 9.3%: the stock offers 0.70% less than its beta demands, so its price is too high. <b>Overvalued, &alpha; = &minus;0.70%.</b></p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="num" data-answer="0.666666666666667" data-tol="0.01" data-pct data-show="0.67%">
+          <p class="cq-stem"><b>7. Day 53 &middot; M&sup2;, on the calculator.</b> A fund returned 10% with &sigma; = 18%. The market returned 8% with &sigma; = 15%. R<sub>f</sub> = 2%. What is the fund&rsquo;s M&sup2;? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Scale the fund&rsquo;s excess return to the market&rsquo;s risk (&times; &sigma;<sub>m</sub>/&sigma;<sub>p</sub>), then subtract the market&rsquo;s excess return.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Excess returns: fund 10 &minus; 2 = 8, market 8 &minus; 2 = 6. M&sup2; = 8 &times; 15/18 &minus; 6 = 6.6667 &minus; 6 = <b>0.67%</b>. At the market&rsquo;s risk the fund would have earned 2 + 6.67 = 8.67%, against the market&rsquo;s 8%.</p>
+            <p>BA II Plus: <kbd>8</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&divide;</kbd> <kbd>18</kbd> <kbd>&minus;</kbd> <kbd>6</kbd> <kbd>=</kbd> &rarr; <samp>0.6667</samp>. TI-84 Plus: <kbd>(</kbd> <kbd>10</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&divide;</kbd> <kbd>18</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6667</samp>.</p>
+            <p>Forgetting to subtract (R<sub>m</sub> &minus; R<sub>f</sub>) gives 6.67%. Check through Sharpe: (0.4444 &minus; 0.4000) &times; 15 = 0.67.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="num" data-answer="4.70588235294116" data-tol="0.005" data-show="4.71">
+          <p class="cq-stem"><b>8. Day 54 &middot; Effective duration, on the calculator.</b> A mortgage-backed security is priced at 102.00. A prepayment model reprices it at 103.10 if the benchmark curve falls 25 bp and at 100.70 if it rises 25 bp. What is its effective duration? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> EffDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Curve &times; PV<sub>0</sub>), with &Delta;Curve as a decimal: 25 bp = 0.0025.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>EffDur = (103.10 &minus; 100.70) / (2 &times; 0.0025 &times; 102.00) = 2.40 / 0.51 = <b>4.71</b>. Forgetting the 2 gives 9.41.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>103.1</kbd> <kbd>&minus;</kbd> <kbd>100.7</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0025</kbd> <kbd>&times;</kbd> <kbd>102</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>4.7059</samp>. TI-84 Plus: the same keys, ending with <kbd>ENTER</kbd> &rarr; <samp>4.7059</samp>.</p>
+            <p>The fall adds 1.10 while the rise takes away 1.30: negative convexity, from prepayments.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="225000" data-tol="1" data-signless data-show="225,000">
+          <p class="cq-stem"><b>9. Day 55 &middot; Expected loss.</b> You hold $20 million of a bond. Its annual probability of default is 1.5% and the expected recovery rate is 25%. What is the expected loss over the next year? In dollars.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> LGD first: exposure &times; (1 &minus; recovery). Then multiply by the POD.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>LGD = $20,000,000 &times; 0.75 = $15,000,000. EL = 0.015 &times; $15,000,000 = <b>$225,000</b>, or 1.125% of the exposure: roughly the spread this bond needs.</p>
+            <p>BA II Plus: <kbd>20000000</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.25</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>225,000.0000</samp>. TI-84 Plus: the same keys, ending with <kbd>ENTER</kbd> &rarr; <samp>225000.0000</samp>.</p>
+            <p>Using the recovery rate gives $75,000; ignoring recovery gives $300,000.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>10. Day 55 &middot; Spread shock.</b> A bond has modified duration 5 and convexity 40. Its credit spread widens by 200 bp while the benchmark yield is unchanged. The estimated percentage change in its price is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c10" value="A"> <span>A. &minus;10.80%</span></label>
+              <p class="cq-why">Subtracted the convexity term. (&Delta;Spread)<sup>2</sup> is positive whichever way the spread moves, so for this bond the term is added.</p></li>
+            <li><label><input type="radio" name="c10" value="B"> <span>B. &minus;10.00%</span></label>
+              <p class="cq-why">Duration only: &minus;5 &times; 0.02. Convexity was ignored.</p></li>
+            <li><label><input type="radio" name="c10" value="C"> <span>C. &minus;9.20%</span></label>
+              <p class="cq-why">Right: &minus;5 &times; 0.02 + &frac12; &times; 40 &times; 0.02<sup>2</sup> = &minus;10.00% + 0.80%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Duration term: &minus;5 &times; 0.02 = &minus;10.00%. Convexity term: &frac12; &times; 40 &times; 0.0004 = +0.80%. Total <b>&minus;9.20%</b>. Square the decimal (0.02), not the 2.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I. Quantitative Methods: Learning Module 10, Applications of Simple Linear Regression in Finance (slope and intercept tests, beta by regression, forecasts and prediction intervals, log transformations), with the correlation t-test included as insurance, its 2027 coverage being uncertain; Learning Module 11, Introduction to Financial Data Science, described only (its 2027 contents were not confirmed). Portfolio Construction: Portfolio Risk and Return: Part II (CAPM, the security market line, the APT, Sharpe, Treynor, M&sup2;, Jensen&rsquo;s alpha and Sortino; its 2024&ndash;2026 title, the 2027 title was not confirmed), with Calmar from Alternative Investments. Fixed Income: Curve-Based and Empirical Fixed-Income Risk Measures (effective duration and convexity, prepayment rates) and Credit Risk (expected loss, loss given default, spread price impact).</p>
+      <p><strong>Sources.</strong> No story today: every question uses new, invented numbers. The true stories behind this week&rsquo;s ideas are in Days 50 to 55.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-55.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

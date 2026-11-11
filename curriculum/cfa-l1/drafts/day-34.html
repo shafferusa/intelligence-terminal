@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>A game with an infinite expected payout that a reasonable man would sell for twenty ducats — CFA Math, Day 34 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "A game with an infinite expected payout that a reasonable man would sell for twenty ducats",
+    "path": "reports/cfa/l1/day-34.html",
+    "summary": "Day 34 of CFA Math: a risk-averse investor scores a portfolio by its utility, U = E(r) − ½Aσ², a sure-return equivalent; Logan builds the risk penalty from Bernoulli’s log rule and Day 12’s geometric mean, derives the capital allocation line and the best risky weight w* = (E(Ri) − Rf)/(Aσi²), and computes that an investor with A = 4 should put 43.75% in a 10%-return, 20%-risk portfolio for a utility of 4.53%, plus a CAL return and Roy’s safety-first ratio.",
+    "headlines": [
+      "Day 34 of 90 · Quantitative Methods: utility U = E(r) − ½Aσ² picks each investor’s point on the capital allocation line",
+      "Calculator: utilities, the optimal risky weight, a CAL return and a safety-first ratio, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>A game with an infinite expected payout that a reasonable man would sell for twenty ducats</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Investors score a portfolio by its expected return minus a penalty for risk, and that one score tells each of them how to split money between T-bills and the risky portfolio.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 34 of 90 &middot; LM8 The Return and Risk of a Financial Portfolio &middot; Utility and the capital allocation line</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="34">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 33 and 27, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="76.59574468085107" data-tol="0.01" data-pct data-show="76.60%">
+          <p class="cq-stem"><b>From Day 33.</b> Asset 1 has a standard deviation of 16%, asset 2 of 24%, and their correlation is 0.3. What weight in asset 1 gives the minimum-variance portfolio? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> w<sub>1</sub>* = (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov) / (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov), with Cov = &rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub>. Work in percent: Cov = 0.3 &times; 16 &times; 24.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Cov = 0.3 &times; 16 &times; 24 = 115.2 (%<sup>2</sup>). Top: 576 &minus; 115.2 = 460.8. Bottom: 256 + 576 &minus; 230.4 = 601.6. w<sub>1</sub>* = 460.8 / 601.6 = 0.7660 = <b>76.60%</b>, and 23.40% in asset 2. That mix&rsquo;s &sigma;<sub>p</sub> is 14.93%, below both 16% and 24%.</p>
+            <p>BA II Plus: <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>16</kbd> <kbd>&times;</kbd> <kbd>24</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>115.2000</samp>; <kbd>(</kbd> <kbd>24</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>16</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>24</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.7660</samp>.</p>
+            <p>TI-84 Plus: <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>16</kbd> <kbd>&times;</kbd> <kbd>24</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>115.2000</samp>; <kbd>(</kbd> <kbd>24</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>16</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>24</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.7660</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 27.</b> 20% of the stocks a fund screens turn out to be winners. An analyst rates 60% of the winners &ldquo;buy&rdquo;, but also 25% of the rest. A stock gets a buy rating. The probability that it is a winner is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 60.00%</span></label>
+              <p class="cq-why">That is P(buy | winner), the conditional turned the wrong way round: the prosecutor&rsquo;s fallacy.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 37.50%</span></label>
+              <p class="cq-why">Right. P(buy) = 0.60 &times; 0.20 + 0.25 &times; 0.80 = 0.12 + 0.20 = 0.32, so P(winner | buy) = 0.12 / 0.32 = 37.50%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 12.00%</span></label>
+              <p class="cq-why">That is the joint probability P(buy and winner) = 0.60 &times; 0.20. It still has to be divided by P(buy) = 0.32.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Posterior = P(information | event) &times; prior / P(information), and P(information) adds up every way a buy rating can happen. The rating lifts the chance from 20% to 37.5%, yet most buy-rated stocks still are not winners.</p></details>
+        </div>
+      </section>
+
+      <h3>The game worth infinity that no one will buy</h3>
+      <p>On 9 September 1713 Nicolaus Bernoulli sent a puzzle to the French mathematician Pierre R&eacute;mond de Montmort. His version used a die.</p>
+      <p>In 1738 his cousin, the Swiss mathematician Daniel Bernoulli, published the best-known version, with a coin, in a paper written in St Petersburg and printed there. The puzzle still carries the city&rsquo;s name.</p>
+      <p>The game: Peter tosses a coin until it lands heads. He pays Paul 1 ducat if heads comes on the first toss, 2 if on the second, 4 if on the third, doubling each time.</p>
+      <p>What is Paul&rsquo;s chance worth? Use Day 26&rsquo;s expected value. Heads on toss 1: probability &frac12;, pays 1, worth &frac12; ducat. Toss 2: &frac14; &times; 2, another &frac12;. Toss 3: &frac18; &times; 4, another &frac12;. Every possible toss adds &frac12; ducat, and the possible tosses never run out. The expected payout is infinite.</p>
+      <p>Yet half the time Paul gets 1 ducat, and his chance of 1,024 ducats or more is 1 in 1,024. Daniel wrote that &ldquo;any fairly reasonable man would sell his chance, with great pleasure, for twenty ducats.&rdquo;</p>
+      <p>So the puzzle. If a gamble&rsquo;s expected payoff is infinite, why won&rsquo;t a sensible person pay much to play it? And how can you put a number on how much risk someone will accept?</p>
+
+      <h3>The idea</h3>
+      <p>Expected value is not the whole score. Offer most people a sure $50 or a coin flip for $0 or $100, and they take the $50. Both average $50; the flip adds risk, and risk costs something.</p>
+      <p>So the CFA curriculum scores a portfolio by its expected return minus a penalty for risk. That score is its <b>utility</b>: U = E(r) &minus; &frac12;A&sigma;<sup>2</sup>. Read U as a sure return: the T-bill rate that would leave you exactly as happy as the risky portfolio. A is your personal dial for how much you mind risk.</p>
+      <p>Second move: you are not stuck choosing between T-bills and the risky portfolio. You can split your money. Every split lands on one straight line, from the T-bill rate through the risky portfolio and beyond it if you borrow to buy more. That is the <b>capital allocation line</b> (CAL).</p>
+      <p>Each investor slides along the line to the point with the highest U. A cautious investor (high A) stops near T-bills; a bold one (low A) goes further out, even borrowing. When the risky portfolio is the whole market, the line is the <b>capital market line</b> (CML).</p>
+
+      <h3>Why it works</h3>
+      <p><b>Step 1: Bernoulli&rsquo;s investor uses Day 12&rsquo;s geometric mean.</b> His rule scores an outcome by the log of what you end up with, and averaging logs is the same as taking a geometric mean (the log of a product is the sum of the logs). So a 50/50 bet of +20% or &minus;20%, which averages 0%, is worth no more to him than a sure return of &radic;(1.20 &times; 0.80) &minus; 1 = &minus;2.02%: a loss.</p>
+      <p><b>Step 2: where &frac12;&sigma;<sup>2</sup> comes from.</b> Day 12&rsquo;s rough rule: geometric &asymp; arithmetic &minus; &sigma;<sup>2</sup>/2. The bet&rsquo;s &sigma; is 0.20, so it is worth about 0 &minus; &frac12; &times; 0.20<sup>2</sup> = &minus;2.00%, close to the exact &minus;2.02%. Risk costs &frac12;&sigma;<sup>2</sup>: double the swing, four times the cost.</p>
+      <p><b>Step 3: put a dial on it.</b> U = E(r) &minus; &frac12;A&sigma;<sup>2</sup>. A = 1 is roughly Bernoulli&rsquo;s investor; A = 4 minds risk four times as much; A = 0 ignores it (risk-neutral: the expected-value rule that broke in St Petersburg); A &lt; 0 enjoys it (risk-seeking). T-bills have &sigma; = 0, so their U is just R<sub>f</sub>: U is a sure return. Points of equal U form an <b>indifference curve</b>: more &sigma; needs more E, so it slopes up, more steeply for a larger A.</p>
+      <p><b>Step 4: the line is Day 32 with a riskless asset.</b> Put w in the risky portfolio and 1 &minus; w in T-bills. Return: E(R<sub>p</sub>) = R<sub>f</sub> + w[E(R<sub>i</sub>) &minus; R<sub>f</sub>]. Risk: the T-bill&rsquo;s &sigma; of 0 kills its own term and the cross term, leaving &sigma;<sub>p</sub> = w&sigma;<sub>i</sub>. Both grow in step with w, so the mixes lie on a straight line; swap w for &sigma;<sub>p</sub>/&sigma;<sub>i</sub> and you have the CAL. Past w = 1 you are borrowing at R<sub>f</sub>. With the market as the risky portfolio it is the CML: everyone holds the same market portfolio, in different amounts.</p>
+      <p><b>Step 5: the best point.</b> On the line &sigma;<sub>p</sub> = w&sigma;<sub>i</sub>, so U = R<sub>f</sub> + w[E(R<sub>i</sub>) &minus; R<sub>f</sub>] &minus; &frac12;Aw<sup>2</sup>&sigma;<sub>i</sub><sup>2</sup>. The gain grows with w, the penalty with w<sup>2</sup>, so the gain over T-bills rises like a thrown ball and falls back to zero at w = 2[E(R<sub>i</sub>) &minus; R<sub>f</sub>]/(A&sigma;<sub>i</sub><sup>2</sup>). The arc is symmetric, so the top is halfway: w* = [E(R<sub>i</sub>) &minus; R<sub>f</sub>]/(A&sigma;<sub>i</sub><sup>2</sup>). Today: zero at 0 and 0.875, peak at 0.4375.</p>
+      <p><b>Roy&rsquo;s safety-first</b> is Day 30&rsquo;s z: the threshold R<sub>L</sub> lies SFRatio standard deviations below the mean, so the highest ratio gives the smallest chance of falling short (if returns are normal).</p>
+      <p><b>In plain words:</b> risk carries a fee that grows with the square of the wobble, so you buy the risky portfolio only until one more slice no longer earns its fee.</p>
+      <div class="formula">
+        <p class="expr">U = E(r) &minus; &frac12; &times; A &times; &sigma;<sup>2</sup></p>
+        <p class="expr">E(R<sub>p</sub>) = R<sub>f</sub> + [(E(R<sub>i</sub>) &minus; R<sub>f</sub>) / &sigma;<sub>i</sub>] &times; &sigma;<sub>p</sub>, with &sigma;<sub>p</sub> = w &times; &sigma;<sub>i</sub></p>
+        <p class="expr">w* = [E(R<sub>i</sub>) &minus; R<sub>f</sub>] / (A &times; &sigma;<sub>i</sub><sup>2</sup>)</p>
+        <p class="expr">SFRatio = [E(R<sub>p</sub>) &minus; R<sub>L</sub>] / &sigma;<sub>p</sub></p>
+        <dl>
+          <dt>U</dt><dd>utility: the certainty-equivalent (sure) return, as a decimal</dd>
+          <dt>E(r), &sigma;</dt><dd>the portfolio&rsquo;s expected return and standard deviation, as decimals (&sigma;<sup>2</sup> is its variance)</dd>
+          <dt>A</dt><dd>the risk-aversion coefficient: above 0 risk-averse (larger = more averse), 0 risk-neutral, below 0 risk-seeking</dd>
+          <dt>R<sub>f</sub></dt><dd>the risk-free (T-bill) rate</dd>
+          <dt>E(R<sub>i</sub>), &sigma;<sub>i</sub></dt><dd>expected return and standard deviation of the risky portfolio (the market portfolio on the CML)</dd>
+          <dt>w, w*</dt><dd>the share of your money in the risky portfolio (1 &minus; w goes in T-bills; above 1 means borrowing); w* is the best one for you</dd>
+          <dt>E(R<sub>p</sub>), &sigma;<sub>p</sub></dt><dd>expected return and standard deviation of the mix</dd>
+          <dt>R<sub>L</sub></dt><dd>the threshold (minimum acceptable) return in Roy&rsquo;s safety-first ratio</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Mean&ndash;variance utility: U = E(r) &minus; &frac12; &times; A &times; &sigma;<sup>2</sup> (decimals)</li>
+          <li>Capital allocation line (and CML with the market portfolio): E(R<sub>p</sub>) = R<sub>f</sub> + [(E(R<sub>i</sub>) &minus; R<sub>f</sub>) / &sigma;<sub>i</sub>] &times; &sigma;<sub>p</sub></li>
+          <li>Optimal weight in the risky portfolio: w* = [E(R<sub>i</sub>) &minus; R<sub>f</sub>] / (A &times; &sigma;<sub>i</sub><sup>2</sup>)</li>
+          <li>Roy&rsquo;s safety-first ratio: SFRatio = [E(R<sub>p</sub>) &minus; R<sub>L</sub>] / &sigma;<sub>p</sub>; choose the portfolio with the highest ratio</li>
+          <li>Risk attitude and the coefficient A: A &gt; 0 risk-averse (larger A = more averse); A = 0 risk-neutral; A &lt; 0 risk-seeking</li>
+          <li>What the utility number U means: the certainty-equivalent return, the sure (risk-free) return the investor would accept instead of the risky portfolio</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> An investor with A = 3 chooses between portfolio X (E = 8%, &sigma; = 10%) and portfolio Y (E = 12%, &sigma; = 20%). Which does she prefer? Which would a risk-neutral investor prefer? Which wins on Roy&rsquo;s safety-first criterion with a 3% threshold?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>U<sub>X</sub> = 0.08 &minus; &frac12; &times; 3 &times; 0.10<sup>2</sup> = 0.08 &minus; 0.015 = 0.065 (6.5%).</li>
+          <li>U<sub>Y</sub> = 0.12 &minus; &frac12; &times; 3 &times; 0.20<sup>2</sup> = 0.12 &minus; 0.06 = 0.060 (6.0%). She prefers X: Y&rsquo;s extra 4 points of return cost her 4.5 points of penalty.</li>
+          <li>Risk-neutral (A = 0): U = E(r), so Y (12%) wins; risk costs nothing. The two tie at A = 2.67; anyone less averse picks Y.</li>
+          <li>Safety-first, R<sub>L</sub> = 3%: SF<sub>X</sub> = (8 &minus; 3)/10 = 0.50; SF<sub>Y</sub> = (12 &minus; 3)/20 = 0.45. X has the higher ratio.</li>
+          <li>If returns are normal, the chance of earning less than 3% is N(&minus;0.50) = 30.85% for X and N(&minus;0.45) = 32.64% for Y (Day 30&rsquo;s z-table). X is the safer bet.</li>
+        </ol>
+      </div>
+      <p><b>Answer.</b> A = 3 &rarr; X (U = 6.5% vs 6.0%); A = 0 &rarr; Y; safety-first &rarr; X (0.50 vs 0.45).</p>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> An investor with A = 4 can hold T-bills at R<sub>f</sub> = 3% and a risky portfolio with E(R) = 10% and &sigma; = 20%. Find (1) the utility of all T-bills and of all risky; (2) the best weight w* in the risky portfolio and that mix&rsquo;s utility; (3) the CAL&rsquo;s expected return at &sigma;<sub>p</sub> = 12%; (4) Roy&rsquo;s safety-first ratio for the risky portfolio with R<sub>L</sub> = 2%. Type decimals: .1, not 10.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear, then the utility of holding only the risky portfolio: 0.10 &minus; &frac12; &times; 4 &times; 0.20<sup>2</sup></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd>, then <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> (AOS, set on Day 1, multiplies before it subtracts; <kbd>x&sup2;</kbd> squares the .2 at once)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd>, then <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.0200</samp> (BA II Plus) / <samp>.0200</samp> (TI-84). U = 2.00%. All T-bills needs no keys: &sigma; = 0, so U = R<sub>f</sub> = 0.0300. Alone, the risky portfolio loses to T-bills.</p>
+          </li>
+          <li>
+            <p class="calc-what">The best weight, w* = (0.10 &minus; 0.03) / (4 &times; 0.20<sup>2</sup>), and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.4375</samp> / <samp>.4375</samp>. Put 43.75% in the risky portfolio and 56.25% in T-bills.</p>
+          </li>
+          <li>
+            <p class="calc-what">The mix&rsquo;s expected return, R<sub>f</sub> + w* &times; 0.07 (0.07 = 0.10 &minus; 0.03, the risk premium)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.03</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>.07</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.03</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&times;</kbd> <kbd>.07</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.0606</samp> / <samp>.0606</samp>. The full 0.060625 is stored, so nothing is lost to rounding.</p>
+          </li>
+          <li>
+            <p class="calc-what">The mix&rsquo;s risk, &sigma;<sub>p</sub> = w* &times; 0.20</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (C is above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.0875</samp> / <samp>.0875</samp>. &sigma;<sub>p</sub> = 8.75%.</p>
+          </li>
+          <li>
+            <p class="calc-what">The mix&rsquo;s utility, E(R<sub>p</sub>) &minus; &frac12; &times; 4 &times; &sigma;<sub>p</sub><sup>2</sup></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0453</samp> / <samp>.0453</samp>. U = 4.53%: better than all T-bills (3%) and all risky (2%).</p>
+          </li>
+          <li>
+            <p class="calc-what">A point on the CAL: the expected return at &sigma;<sub>p</sub> = 12%, 0.03 + (0.07 / 0.20) &times; 0.12</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.03</kbd> <kbd>+</kbd> <kbd>.07</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>.12</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.03</kbd> <kbd>+</kbd> <kbd>.07</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>.12</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0720</samp> / <samp>.0720</samp>. The slope, 0.07 / 0.20 = 0.35, is the extra return per unit of &sigma;; &sigma;<sub>p</sub> = 12% means w = 0.12 / 0.20 = 0.6.</p>
+          </li>
+          <li>
+            <p class="calc-what">Roy&rsquo;s safety-first ratio with R<sub>L</sub> = 2%: (0.10 &minus; 0.02) / 0.20</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.02</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.02</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.4000</samp> / <samp>.4000</samp>. The 2% threshold sits 0.40 standard deviations below the mean.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: U(T-bills) = 3.00%, U(all risky) = 2.00%; w* = 0.4375, giving E(R<sub>p</sub>) = 6.06%, &sigma;<sub>p</sub> = 8.75% and U = 4.53%; the CAL at &sigma;<sub>p</sub> = 12% gives 7.20%; SFRatio = 0.40.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Bernoulli&rsquo;s answer: money&rsquo;s usefulness grows more slowly than the amount. He used the logarithm, under which each doubling of what you have adds the same one step of usefulness.</p>
+      <p>That tames the infinite tail. Each extra toss doubles the prize but halves its chance, and a doubled prize adds at most one step, so the far tosses add almost nothing.</p>
+      <p>By our computation with his rule, the chance is worth a sure 2 ducats to a player with nothing else, about 3.04 to one who owns 10 ducats, 4.39 to one with 100 and 5.97 to one with 1,000. Nowhere near twenty.</p>
+      <p>Those ducat figures are sure-value equivalents, and so is U = E(r) &minus; &frac12;A&sigma;<sup>2</sup>: the same idea for portfolios. At A = 4 the risky portfolio alone scores 2.00%, worse than a 3% T-bill. But the choice is not all or nothing: 43.75% in it scores 4.53%, better than either. Take risk, but only as much as it pays for.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Percentages in the utility formula. 10 &minus; &frac12; &times; 4 &times; 20<sup>2</sup> = &minus;790 is nonsense; in decimals, 0.10 &minus; &frac12; &times; 4 &times; 0.20<sup>2</sup> = 0.02 = 2%. Convert E and &sigma; to decimals, then square &sigma;.</li>
+          <li>Reading A backwards. A larger A means <em>more</em> risk-averse: a smaller w*, more T-bills, and the lower-&sigma; portfolio wins (A = 3 chose X; A = 0 chose Y).</li>
+          <li>Thinking every investor on the CML holds a different risky portfolio. They all hold the same market portfolio and differ only in the mix with the risk-free asset: lending (w &lt; 1) or borrowing (w &gt; 1).</li>
+          <li>Safety-first with R<sub>f</sub> in place of R<sub>L</sub>. (0.10 &minus; 0.03) / 0.20 = 0.35 is a reward-to-risk ratio (the Sharpe ratio, Day 53); safety-first subtracts the threshold: (0.10 &minus; 0.02) / 0.20 = 0.40. Then pick the highest ratio.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="66.8724279835391" data-tol="0.01" data-pct data-show="66.87%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> An investor with A = 3 can hold T-bills at R<sub>f</sub> = 2.5% and a risky portfolio with E(R) = 9% and &sigma; = 18%. What share of her money should go in the risky portfolio? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Step 2 of the walkthrough with new inputs: A = 3, E = .09, &sigma; = .18 and R<sub>f</sub> = .025. Decimals in; multiply the result by 100 for the percent.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>w* = (0.09 &minus; 0.025) / (3 &times; 0.18<sup>2</sup>) = 0.065 / (3 &times; 0.0324) = 0.065 / 0.0972 = 0.6687 = <b>66.87%</b>, with 33.13% in T-bills. That mix expects 6.85% with &sigma; = 12.04%, for U = 4.67%. (Forget to square &sigma; and you get 0.1204.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.025</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>.18</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.6687</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>66.8724</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.025</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>.18</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6687</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>66.8724</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> Same risky portfolio as the walkthrough (E = 10%, &sigma; = 20%, R<sub>f</sub> = 3%). An investor&rsquo;s A rises from 2 to 6. What happens to her weight w* in the risky portfolio?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It falls to one-third, from 0.8750 to 0.2917, because A divides the premium in w*</span></label>
+              <p class="cq-why">Right. w* = 0.07 / (A &times; 0.04): 0.07 / 0.08 = 0.8750 at A = 2 and 0.07 / 0.24 = 0.2917 at A = 6. Triple the aversion, a third of the weight.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It rises, because A measures how much risk she will tolerate</span></label>
+              <p class="cq-why">Backwards. A measures how much she <em>minds</em> risk: a larger A is more risk-averse and means a larger penalty, so she holds less of the risky portfolio.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. It stays the same, because everyone on the CML holds the same risky portfolio</span></label>
+              <p class="cq-why">Half right. Everyone holds the same risky portfolio, but in different amounts: A sets how much, through w*.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Step 5 of &ldquo;Why it works&rdquo;: the penalty &frac12;Aw<sup>2</sup>&sigma;<sup>2</sup> grows with A, so the top of the arc moves in: w* = (E &minus; R<sub>f</sub>)/(A&sigma;<sup>2</sup>). At A = 6 she still holds the same risky portfolio, just less of it, with 70.83% in T-bills.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="1.2857142857142856" data-tol="0.0001" data-show="1.2857">
+          <p class="cq-stem"><b>3. Twist: a target return.</b> Same CAL as the walkthrough: R<sub>f</sub> = 3%, risky portfolio E = 10%, &sigma; = 20%. What weight in the risky portfolio gives an expected return of 12%? As a decimal, to four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">weight</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Set R<sub>f</sub> + w &times; (E &minus; R<sub>f</sub>) equal to 0.12 and solve for w. The answer can be above 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>0.03 + w &times; 0.07 = 0.12, so w = 0.09 / 0.07 = <b>1.2857</b>. Above 1: a borrowing portfolio. For each $1 of her own she borrows $0.2857 at 3% and puts $1.2857 in the risky portfolio. Check: 1.2857 &times; 10% &minus; 0.2857 &times; 3% = 12%. Its risk: &sigma;<sub>p</sub> = 1.2857 &times; 20% = 25.71%. (12% / 10% = 1.20 forgets that only the return above R<sub>f</sub> grows with w.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.12</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.2857</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>.12</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.2857</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor has a risk-aversion coefficient of 2. A portfolio has an expected return of 11% and a standard deviation of 25%. The investor&rsquo;s utility from the portfolio is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;14.00%</span></label>
+              <p class="cq-why">That uses &sigma; instead of &sigma;<sup>2</sup>: 0.11 &minus; &frac12; &times; 2 &times; 0.25 = &minus;0.14.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;1.50%</span></label>
+              <p class="cq-why">That drops the &frac12;: 0.11 &minus; 2 &times; 0.0625 = &minus;0.015.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 4.75%</span></label>
+              <p class="cq-why">Right: 0.11 &minus; &frac12; &times; 2 &times; 0.25<sup>2</sup> = 0.11 &minus; 0.0625 = 0.0475.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Decimals, square &sigma;, keep the &frac12;. The 4.75% is the sure return she would swap the portfolio for: she would rather hold a 5% T-bill.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why do investors with very different risk aversion all hold the same risky portfolio on the CML, yet end up with different portfolios overall?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The CML is the straight line from the risk-free rate through the market portfolio, the best risk&ndash;return trade-off on offer, so no one gains by holding a different risky portfolio. Each investor then picks a point on that line by mixing the market with the risk-free asset in the proportion w* = (E &minus; R<sub>f</sub>)/(A&sigma;<sup>2</sup>): a high-A investor lends (w &lt; 1, partly in T-bills), a low-A investor borrows (w &gt; 1).</p>
+            <p>A complete answer says: (1) the CAL/CML is a straight line from R<sub>f</sub> through the optimal risky (market) portfolio, the best trade-off available; (2) each investor picks a point on it by mixing that portfolio with the risk-free asset, w* = (E &minus; R<sub>f</sub>)/(A&sigma;<sup>2</sup>); (3) high A means more lending (w &lt; 1), low A means borrowing (w &gt; 1).</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 8: The Return and Risk of a Financial Portfolio (risk aversion and mean&ndash;variance utility U = E(r) &minus; &frac12;A&sigma;<sup>2</sup>; risk-averse, risk-neutral and risk-seeking investors; indifference curves; the capital allocation line and the optimal weight in the risky portfolio; the capital market line with lending and borrowing portfolios; Roy&rsquo;s safety-first ratio, included in case it is tested in 2027).</p>
+      <p><strong>Sources.</strong> Daniel Bernoulli, &ldquo;Specimen theoriae novae de mensura sortis&rdquo;, <em>Commentarii Academiae Scientiarum Imperialis Petropolitanae</em> 5 (1738); English translation by Louise Sommer, &ldquo;Exposition of a New Theory on the Measurement of Risk&rdquo;, <em>Econometrica</em> 22(1), January 1954, pp. 23&ndash;36 (the coin game and the &ldquo;twenty ducats&rdquo; remark, quoted as given by Wikipedia); Stanford Encyclopedia of Philosophy, &ldquo;The St. Petersburg Paradox&rdquo; (Nicolaus Bernoulli&rsquo;s letter to Montmort of 9 September 1713, framed with a die; Daniel&rsquo;s 1738 article); Wikipedia, &ldquo;St. Petersburg paradox&rdquo;. The ticket values of 2, 3.04, 4.39 and 5.97 ducats are our computation with Bernoulli&rsquo;s log rule, not figures he printed; the portfolio figures are illustrations computed for this lesson.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-33.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

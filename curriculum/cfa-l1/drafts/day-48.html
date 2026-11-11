@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Four datasets, one line, one R²: Anscombe’s 1973 warning about what a good fit really means — CFA Math, Day 48 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Four datasets, one line, one R²: Anscombe’s 1973 warning about what a good fit really means",
+    "path": "reports/cfa/l1/day-48.html",
+    "summary": "Day 48 of CFA Math: the variation in Y splits into an explained and an unexplained part, SST = SSR + SSE, read three ways (R² = SSR/SST, the standard error of the estimate √[SSE/(n − 2)] and F = MSR/MSE); Logan builds an ANOVA table, computes R², the SEE and the F-test of the slope on both calculators, checks that R² = r², and sees in Anscombe’s quartet why a high R² is not proof of a good model.",
+    "headlines": [
+      "Day 48 of 90 · Quantitative Methods: SST = SSR + SSE, read as R², the standard error of the estimate and the F-statistic",
+      "Calculator: R², the MSE, the SEE and the F-test of the slope from an ANOVA table, then R² = r² from data, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Four datasets, one line, one R²: Anscombe’s 1973 warning about what a good fit really means</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Every regression splits the variation in Y into the part the line explains and the part it misses, SST = SSR + SSE. R<sup>2</sup>, the standard error of the estimate and the F-statistic are three ways of reading that split.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 48 of 90 &middot; LM10 Applications of Simple Linear Regression in Finance &middot; ANOVA, R&sup2; and the standard error</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="48">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 47 and 41, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="3.8" data-tol="0.01" data-pct data-show="3.80">
+          <p class="cq-stem"><b>From Day 47.</b> A stock&rsquo;s monthly returns (Y) are regressed on the market&rsquo;s (X). The covariance of the two is 18 (%<sup>2</sup>), the market&rsquo;s variance is 15 (%<sup>2</sup>), and the average monthly returns are 1.0% for the market and 1.4% for the stock. What return does the least-squares line predict for the stock in a month when the market returns 3.0%? In %, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Slope first: b&#770;<sub>1</sub> = Cov(X, Y) / Var(X). The line passes through the two means, and that gives the intercept.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>b&#770;<sub>1</sub> = 18 / 15 = 1.2. b&#770;<sub>0</sub> = Y&#772; &minus; b&#770;<sub>1</sub>X&#772; = 1.4 &minus; 1.2 &times; 1.0 = 0.2. Prediction: 0.2 + 1.2 &times; 3.0 = 0.2 + 3.6 = <b>3.80%</b>.</p>
+            <p>The two usual slips: Var / Cov = 15 / 18 = 0.8333 as the slope (it gives 3.07%), and forgetting the intercept (1.2 &times; 3 = 3.60%).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 41.</b> A bond has an annual modified duration of 8.0 and an annual convexity of 90. If its yield falls by 100 bp, the estimated percentage price change is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. +7.55%</span></label>
+              <p class="cq-why">That gives the convexity term a minus sign because yields fell. (&Delta;Yield)<sup>2</sup> is positive whichever way yields move, so the convexity term always adds.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. +8.90%</span></label>
+              <p class="cq-why">That forgets the &frac12;: 90 &times; 0.01<sup>2</sup> = 0.90%, but the term is &frac12; &times; 90 &times; 0.01<sup>2</sup> = 0.45%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. +8.45%</span></label>
+              <p class="cq-why">Right: &minus;8.0 &times; (&minus;0.01) = +8.00%, plus &frac12; &times; 90 &times; (&minus;0.01)<sup>2</sup> = +0.45%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>%&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield + &frac12; &times; AnnConvexity &times; (&Delta;Yield)<sup>2</sup> = &minus;8.0 &times; (&minus;0.01) + &frac12; &times; 90 &times; 0.0001 = 0.0800 + 0.0045 = +8.45%.</p></details>
+        </div>
+      </section>
+
+      <h3>Anscombe&rsquo;s quartet: four datasets, one line</h3>
+      <p>In 1973 the statistician Francis Anscombe published a short paper, &ldquo;Graphs in Statistical Analysis&rdquo;, in <i>The American Statistician</i>. In it he built four small datasets of 11 points each.</p>
+      <p>On paper the four are twins. The same mean of X (9) and of Y (7.50). The same variance of X (11), and almost the same variance of Y (4.12 to 4.13). The same correlation, 0.816. And the same least-squares line: Y = 3.00 + 0.500X.</p>
+      <p>Plotted, they look nothing alike.</p>
+      <p>Set I is a fuzzy straight line, the kind of cloud a regression is made for. Set II is a smooth curve. Set III is a perfect straight line, knocked off course by one outlier. Set IV is a vertical stack of points, with the slope set entirely by a single far-off point.</p>
+      <p>Feed any of the four to a regression and it prints the same line. Today you will see it also prints the same R<sup>2</sup>, the number analysts quote for &ldquo;how good is the fit&rdquo;.</p>
+      <p>So: if all four have the same line and the same R<sup>2</sup>, does the regression fit all four equally well? And what does R<sup>2</sup> actually measure?</p>
+
+      <h3>The idea</h3>
+      <p>Day 47 drew the line. Today asks how good it is.</p>
+      <p>Picture guessing every Y with no information at all. Your best single guess is the average, Y&#772;, every time. Square each miss and add them up: that is <b>SST</b>, the total sum of squares. It is all the variation there is to explain.</p>
+      <p>Now guess with the line instead: Y&#770; for each X. Some misses remain. Squared and added, they are <b>SSE</b>, the sum of squared errors (the residuals). What the line took away is <b>SSR</b>, the regression sum of squares: the explained part. So <b>SST = SSR + SSE</b>.</p>
+      <p>Three numbers read that split:</p>
+      <ul>
+        <li><b>R<sup>2</sup></b> (the coefficient of determination) = SSR / SST: the share of the variation the line explains, from 0 to 1.</li>
+        <li><b>SEE</b> (the standard error of the estimate): the size of a typical miss that is left, in Y&rsquo;s own units.</li>
+        <li><b>F</b> = MSR / MSE: is the explained part bigger than a line through pure noise would manage?</li>
+      </ul>
+      <p>The exam lays this out as an <b>ANOVA table</b> (analysis of variance): rows for regression, error (residual) and total; columns for degrees of freedom, sums of squares and mean squares.</p>
+
+      <h3>Why it works</h3>
+      <p><b>No line.</b> Without X, every guess is Y&#772;, and the squared misses add to SST = &Sigma;(Y &minus; Y&#772;)<sup>2</sup>. That is Day 24&rsquo;s variance before dividing: SST = (n &minus; 1)s<sub>Y</sub><sup>2</sup>.</p>
+      <p><b>Split each miss.</b> Y &minus; Y&#772; = (Y&#770; &minus; Y&#772;) + (Y &minus; Y&#770;). The first piece is how far the line moved the guess off the average: explained. The second is the residual e (Day 47): still missed.</p>
+      <p><b>Square and add.</b> (a + b)<sup>2</sup> = a<sup>2</sup> + b<sup>2</sup> + 2ab, so &Sigma;(Y &minus; Y&#772;)<sup>2</sup> = &Sigma;(Y&#770; &minus; Y&#772;)<sup>2</sup> + &Sigma;(Y &minus; Y&#770;)<sup>2</sup> + 2&Sigma;(Y&#770; &minus; Y&#772;)e.</p>
+      <p><b>The cross term is zero.</b> Least squares makes the residuals add to zero and not move with X. Since Y&#770; &minus; Y&#772; = b&#770;<sub>1</sub>(X &minus; X&#772;), the cross term is 2b&#770;<sub>1</sub>&Sigma;(X &minus; X&#772;)e = 0. So SST = SSR + SSE: Pythagoras, with the two pieces at right angles.</p>
+      <p><b>R<sup>2</sup> is a share.</b> R<sup>2</sup> = SSR / SST. With one X it equals r<sup>2</sup> (Day 25): SSR = b&#770;<sub>1</sub><sup>2</sup>&Sigma;(X &minus; X&#772;)<sup>2</sup>, and b&#770;<sub>1</sub> = r &times; s<sub>Y</sub>/s<sub>X</sub>, so SSR = r<sup>2</sup> &times; (n &minus; 1)s<sub>Y</sub><sup>2</sup> = r<sup>2</sup> &times; SST.</p>
+      <p><b>Divide by degrees of freedom.</b> Day 24 used n &minus; 1 because one estimate, X&#772;, used up one degree of freedom. The residuals rest on two estimates, b&#770;<sub>0</sub> and b&#770;<sub>1</sub>: MSE = SSE / (n &minus; 2), and SEE = &radic;MSE is their standard deviation. One slope, so MSR = SSR / 1.</p>
+      <p><b>F: does the line beat noise?</b> As on Day 46, F compares two variance estimates and sits near 1 when nothing is going on: with a true slope of zero, MSR and MSE both measure only noise. Written out, F = (SSR / SSE) &times; (n &minus; 2): explained against unexplained, scaled by the residuals&rsquo; df.</p>
+      <p><b>In plain words:</b> total miss = explained + left over. R<sup>2</sup> is the explained share, SEE the typical leftover miss, and F asks whether the explained part beats luck.</p>
+      <div class="formula">
+        <p class="expr">SST = SSR + SSE</p>
+        <p class="expr">R<sup>2</sup> = SSR / SST</p>
+        <p class="expr">SEE = &radic;MSE = &radic;[SSE / (n &minus; 2)]</p>
+        <p class="expr">F = MSR / MSE = (SSR / 1) / [SSE / (n &minus; 2)], df = 1 and n &minus; 2</p>
+        <dl>
+          <dt>SST</dt><dd>total sum of squares, &Sigma;(Y<sub>i</sub> &minus; Y&#772;)<sup>2</sup>: all the variation in Y around its mean</dd>
+          <dt>SSR</dt><dd>regression (explained) sum of squares, &Sigma;(Y&#770;<sub>i</sub> &minus; Y&#772;)<sup>2</sup></dd>
+          <dt>SSE</dt><dd>sum of squared errors (unexplained), &Sigma;(Y<sub>i</sub> &minus; Y&#770;<sub>i</sub>)<sup>2</sup>: the residuals squared</dd>
+          <dt>R<sup>2</sup></dt><dd>coefficient of determination: the share of SST explained, 0 to 1; equals r<sup>2</sup> with one independent variable</dd>
+          <dt>MSR, MSE</dt><dd>mean square regression and mean square error: each sum of squares divided by its df, k = 1 and n &minus; k &minus; 1 = n &minus; 2</dd>
+          <dt>SEE</dt><dd>standard error of the estimate: the residuals&rsquo; standard deviation, in Y&rsquo;s units</dd>
+          <dt>n</dt><dd>number of observations</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Decomposition of variation: SST = SSR + SSE</li>
+          <li>Coefficient of determination: R<sup>2</sup> = SSR / SST (= r<sup>2</sup> with one independent variable)</li>
+          <li>Mean squared error: MSE = SSE / (n &minus; 2)</li>
+          <li>Standard error of estimate: SEE = &radic;MSE = &radic;[SSE / (n &minus; 2)]</li>
+          <li>F-statistic in simple regression: F = MSR / MSE = (SSR / 1) / [SSE / (n &minus; 2)], df = 1 and n &minus; 2</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Day 47&rsquo;s money growth X = 1, 2, 3, 4, 5 and inflation Y = 2, 3, 5, 4, 6 (%), with line Y&#770; = 1.3 + 0.9X. Build the ANOVA and test the slope at 5%.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Y&#772; = 4. SST = &Sigma;(Y &minus; Y&#772;)<sup>2</sup> = 4 + 1 + 1 + 0 + 4 = <b>10</b>.</li>
+          <li>Fitted values Y&#770; = 2.2, 3.1, 4.0, 4.9, 5.8; residuals &minus;0.2, &minus;0.1, 1.0, &minus;0.9, 0.2. SSE = 0.04 + 0.01 + 1.00 + 0.81 + 0.04 = <b>1.90</b>.</li>
+          <li>Y&#770; &minus; Y&#772; = &minus;1.8, &minus;0.9, 0, 0.9, 1.8. SSR = 3.24 + 0.81 + 0 + 0.81 + 3.24 = <b>8.10</b>. Check: 8.10 + 1.90 = 10, and the cross products add to 0.36 + 0.09 + 0 &minus; 0.81 + 0.36 = 0.</li>
+          <li>R<sup>2</sup> = 8.10 / 10 = <b>0.81</b>. Here r = 0.9, and 0.9<sup>2</sup> = 0.81.</li>
+          <li>MSE = 1.90 / (5 &minus; 2) = 0.6333; SEE = &radic;0.6333 = <b>0.7958</b>.</li>
+          <li>F = (8.10 / 1) / 0.6333 = <b>12.79</b>, df (1, 3). Critical F(1, 3) at 5% = 10.13. 12.79 &gt; 10.13: reject H<sub>0</sub>: b<sub>1</sub> = 0. The slope is significant.</li>
+          <li>As the exam&rsquo;s ANOVA table: Regression df 1, SS 8.10, MS 8.10; Error df 3, SS 1.90, MS 0.6333; Total df 4, SS 10.00; F = 12.79.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A regression on 30 monthly returns has SSR = 0.0040 and SSE = 0.0060. Find R<sup>2</sup>, the MSE, the standard error of the estimate and the F-statistic with its p-value, and test the slope at 5%. Then use Day 47&rsquo;s five families to see R<sup>2</sup> = r<sup>2</sup> on the calculator. The BA II Plus has no F function: on the exam the critical value comes from a table in the question, so the BA line reads it from the table.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Plain calculator, cleared; then R<sup>2</sup> = SSR / (SSR + SSE)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd>, then <kbd>.004</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.004</kbd> <kbd>+</kbd> <kbd>.006</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd>, then <kbd>.004</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.004</kbd> <kbd>+</kbd> <kbd>.006</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.4000</samp> (BA II Plus) / <samp>.4000</samp> (TI-84). SST = 0.0100, and the line explains 40% of it.</p>
+          </li>
+          <li>
+            <p class="calc-what">MSE = SSE / (n &minus; 2) = 0.006 / 28, stored for the next two steps</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.006</kbd> <kbd>&divide;</kbd> <kbd>28</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.006</kbd> <kbd>&divide;</kbd> <kbd>28</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is the green letter above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.0002</samp> (BA II Plus: only 4 decimals show, but memory 1 holds 0.000214286) / <samp>2.1429E-4</samp> (TI-84: below 0.001 it switches to scientific notation). This is why you store it: retyping 0.0002 would make F 20.0000 instead of 18.6667.</p>
+          </li>
+          <li>
+            <p class="calc-what">SEE = &radic;MSE</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&radic;x</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0146</samp> (BA II Plus) / <samp>.0146</samp> (TI-84). A typical month misses the line by about 1.46 percentage points. Without the line, Y&rsquo;s own SD is &radic;(0.0100 / 29) = 0.0186.</p>
+          </li>
+          <li>
+            <p class="calc-what">F = MSR / MSE, with MSR = SSR / 1 = 0.004</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.004</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.004</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>18.6667</samp> (BA II Plus) / <samp>18.6667</samp> (TI-84). Same as (SSR / SSE) &times; (n &minus; 2) = (0.004 / 0.006) &times; 28.</p>
+          </li>
+          <li>
+            <p class="calc-what">Decide at 5%: df = 1 and 30 &minus; 2 = 28</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no keys: the F-table gives F(1, 28) at 5% = 4.20</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">0:Fcdf(</kbd> (<samp>9:Fcdf(</samp> before OS 2.30), then <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>28</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the line reads <samp>Fcdf(Ans,1E99,1,28)</samp>: the area above F)</div>
+            <p class="calc-see">Display: <samp>1.7699E-4</samp> (TI-84), a p-value of 0.0002. 18.67 &gt; 4.20 and p &lt; 0.05: reject H<sub>0</sub>: b<sub>1</sub> = 0.</p>
+          </li>
+          <li>
+            <p class="calc-what">Day 47&rsquo;s five families: X = 64, 66, 68, 70, 72; Y = 66.0, 66.4, 68.6, 68.2, 70.3 (skip if they are still stored)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>64</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66.4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>70</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>68.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>72</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>70.3</kbd> <kbd>ENTER</kbd> (X01, Y01, X02, Y02 &hellip; Y05)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>, the same for <samp>L2</samp>. Down L1: <kbd>64</kbd> <kbd>ENTER</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>68</kbd> <kbd>ENTER</kbd> <kbd>70</kbd> <kbd>ENTER</kbd> <kbd>72</kbd> <kbd>ENTER</kbd>; down L2: <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>66.4</kbd> <kbd>ENTER</kbd> <kbd>68.6</kbd> <kbd>ENTER</kbd> <kbd>68.2</kbd> <kbd>ENTER</kbd> <kbd>70.3</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: <samp>Y05 = 70.3000</samp> (BA II Plus) / five rows in each list (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Read r, then square it: R<sup>2</sup> = r<sup>2</sup></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> ten times (past n, x&#772;, Sx, &sigma;x, &#563;, Sy, &sigma;y, a, b) to <samp>r</samp>; <kbd>STO</kbd> <kbd>2</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> (r<sup>2</sup> shows once DiagnosticOn is set, as on Day 25: <kbd>2nd</kbd> <kbd>0</kbd> (CATALOG), <samp>DiagnosticOn</samp>, <kbd>ENTER</kbd> <kbd>ENTER</kbd>)</div>
+            <p class="calc-see">Display: <samp>r = 0.9416</samp>, then <samp>0.8866</samp> (BA II Plus) / <samp>a=32.5400</samp>, <samp>b=.5200</samp>, <samp>r&#178;=.8866</samp>, <samp>r=.9416</samp> (TI-84). By the sums of squares: SSR / SST = 10.816 / 12.2 = 0.8866, the same number.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: R<sup>2</sup> = 0.40; MSE = 0.000214; SEE = 0.0146; F = 18.67 &gt; 4.20 (p = 0.0002): reject H<sub>0</sub>, the slope explains something. For Day 47&rsquo;s families, R<sup>2</sup> = r<sup>2</sup> = 0.8866.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Run Anscombe&rsquo;s set I through today&rsquo;s split. SST = 41.27 (10 &times; Y&rsquo;s variance of 4.127), SSR = 27.51 and SSE = 13.76.</p>
+      <p>R<sup>2</sup> = 27.51 / 41.27 = 0.667: two-thirds explained. SEE = &radic;(13.76 / 9) = 1.237. F = 27.51 / (13.76 / 9) = 17.99, far above the 5% critical value of 5.12 for (1, 9) df.</p>
+      <p>Sets II, III and IV give the same: R<sup>2</sup> 0.67, SEE 1.24, F about 18. On every number in today&rsquo;s lesson, the four fits are identical.</p>
+      <p>They are not equally good. R<sup>2</sup> only reports the share of Y&rsquo;s variation the line accounts for. It cannot say whether a straight line is the right shape (set II), whether one point is doing all the work (sets III and IV), or whether the errors behave. That is why Anscombe insisted on plotting the data, and why regression&rsquo;s assumptions (Day 47) are checked with residual plots.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>n &minus; 1 instead of n &minus; 2.</b> In the walkthrough, 0.006 / 29 gives SEE 0.0144 and F 19.33 instead of 0.0146 and 18.67. Two coefficients were estimated, so the residuals have n &minus; 2 df.</li>
+          <li><b>SEE is not the slope&rsquo;s standard error.</b> SEE is the typical miss of one Y around the line, in Y&rsquo;s units. The standard error of the slope, which Day 50 uses to test b&#770;<sub>1</sub>, is SEE / &radic;&Sigma;(X &minus; X&#772;)<sup>2</sup>: in the worked example 0.7958 / &radic;10 = 0.2517, not 0.7958.</li>
+          <li><b>A high R<sup>2</sup> proves neither cause nor a good model.</b> Anscombe&rsquo;s four sets share R<sup>2</sup> = 0.67, and only set I suits a straight line. R<sup>2</sup> is a share of variation, not evidence that X drives Y.</li>
+          <li><b>R<sup>2</sup> = SSR / SST, not SSR / SSE.</b> In the worked example 8.10 / 1.90 = 4.26, which is impossible: R<sup>2</sup> can never exceed 1.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="12.666666666666666" data-tol="0.01" data-show="12.67">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A regression on 40 quarterly returns has SSR = 0.0125 and SSE = 0.0375. What is the F-statistic for the slope? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 2 and 4: n &minus; 2 is now 38, and MSR = SSR / 1 = 0.0125. Store the MSE rather than retyping it.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>MSE = 0.0375 / 38 = 0.000987; F = 0.0125 / 0.000987 = <b>12.67</b>, df (1, 38). Shortcut: (SSR / SSE) &times; (n &minus; 2) = (1/3) &times; 38 = 12.67. Also R<sup>2</sup> = 0.0125 / 0.0500 = 0.25 and SEE = 0.0314.</p>
+            <p>The 5% critical F(1, 38) is about 4.10, so 12.67 &gt; 4.10: reject, the slope is significant (TI-84 p = 0.0010).</p>
+            <p>BA II Plus: <kbd>.0375</kbd> <kbd>&divide;</kbd> <kbd>38</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (shows <samp>0.0010</samp>), <kbd>.0125</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>12.6667</samp>.</p>
+            <p>TI-84 Plus: <kbd>.0375</kbd> <kbd>&divide;</kbd> <kbd>38</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (shows <samp>9.8684E-4</samp>), <kbd>.0125</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>12.6667</samp>; then <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">0:Fcdf(</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> <kbd>99</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>38</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0010</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Why is SSE divided by n &minus; 2, not n &minus; 1, to get the MSE?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Because the F-statistic has 2 degrees of freedom in its numerator</span></label>
+              <p class="cq-why">The numerator df is k = 1, one slope. n &minus; 2 is the denominator&rsquo;s df, and it comes from the residuals, not the other way round.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because the line&rsquo;s two coefficients, b&#770;<sub>0</sub> and b&#770;<sub>1</sub>, were estimated from the same data, and each uses up one degree of freedom</span></label>
+              <p class="cq-why">Right. The residuals must add to zero and be uncorrelated with X: two conditions, so only n &minus; 2 of them are free to vary.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because it makes the MSE an unbiased estimate of the variance of Y around its own mean</span></label>
+              <p class="cq-why">That is SST / (n &minus; 1) = s<sub>Y</sub><sup>2</sup>, Day 24&rsquo;s variance, with one estimate (Y&#772;). The MSE measures the scatter around the line, not around the mean.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Day 24 divided by n &minus; 1 because deviations from the mean must add to zero: one condition. Least-squares residuals obey two, &Sigma;e = 0 and &Sigma;(X &minus; X&#772;)e = 0, one for each coefficient. Know any n &minus; 2 residuals and the last two are forced. With n = 5, as in the worked example, only 3 residuals are free: MSE = 1.90 / 3.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="0.03162277660168379" data-tol="0.0005" data-show="0.0316">
+          <p class="cq-stem"><b>3. Twist: work backwards from R<sup>2</sup>.</b> A regression on 20 observations has SST = 0.0500 and R<sup>2</sup> = 0.64. What is the standard error of the estimate? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> R<sup>2</sup> is the explained share, so 1 &minus; R<sup>2</sup> is the share left in SSE. Then divide by n &minus; 2 = 18 and take the square root.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>SSE = (1 &minus; 0.64) &times; 0.0500 = 0.0180. MSE = 0.0180 / 18 = 0.0010. SEE = &radic;0.0010 = <b>0.0316</b>.</p>
+            <p>The same table gives SSR = 0.64 &times; 0.0500 = 0.0320 and F = 0.0320 / 0.0010 = 32.00, df (1, 18): far above the 5% critical value of 4.41.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.64</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>.05</kbd> <kbd>&divide;</kbd> <kbd>18</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd> &rarr; <samp>0.0316</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.64</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>.05</kbd> <kbd>&divide;</kbd> <kbd>18</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0316</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A simple linear regression on 25 monthly observations has a sum of squared errors (SSE) of 0.0460. The standard error of the estimate is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 0.0447</span></label>
+              <p class="cq-why">Right: &radic;[0.0460 / (25 &minus; 2)] = &radic;0.0020 = 0.0447.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 0.0438</span></label>
+              <p class="cq-why">That divides by n &minus; 1 = 24, the sample-variance habit. A regression estimates two coefficients: divide by n &minus; 2.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 0.0020</span></label>
+              <p class="cq-why">That is the MSE, 0.0460 / 23. The standard error is its square root.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>SEE = &radic;[SSE / (n &minus; 2)] = &radic;(0.0460 / 23) = &radic;0.0020 = 0.0447.</p>
+            <p>BA II Plus: <kbd>.046</kbd> <kbd>&divide;</kbd> <kbd>23</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd> &rarr; <samp>0.0447</samp>. TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>.046</kbd> <kbd>&divide;</kbd> <kbd>23</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0447</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does R<sup>2</sup> measure, and what does Anscombe&rsquo;s quartet show it cannot tell you?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>R<sup>2</sup> = SSR / SST is the share of the variation in Y that the regression explains. Anscombe&rsquo;s four datasets have the same line and the same R<sup>2</sup> (0.67), yet only one suits a straight line: R<sup>2</sup> cannot tell you whether a line is the right shape, whether an outlier or one influential point drives the fit, or whether X causes Y, so plot the data and the residuals.</p>
+            <p>A complete answer says: (1) R<sup>2</sup> is the share of Y&rsquo;s variation explained by the regression, SSR / SST, from 0 to 1; (2) it says nothing about whether the linear form is right, about outliers or influential points, or about causation; (3) so plot the data and the residuals.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 10: Applications of Simple Linear Regression in Finance (the analysis of variance, SST = SSR + SSE; the coefficient of determination; the standard error of the estimate; the F-test of the slope).</p>
+      <p><strong>Sources.</strong> F. J. Anscombe, &ldquo;Graphs in Statistical Analysis&rdquo;, <i>The American Statistician</i> 27(1), 1973, pp. 17&ndash;21, doi:10.1080/00031305.1973.10478966; Robert Kosara, &ldquo;Anscombe&rsquo;s Quartet&rdquo;, eagereyes.org, 2011 (the four datasets and their shared statistics); Wikipedia, &ldquo;Anscombe&rsquo;s quartet&rdquo; (shared means and variances, correlation 0.816, line y = 3.00 + 0.500x). The sums of squares, R<sup>2</sup>, SEE and F for the four sets are this lesson&rsquo;s own arithmetic on the published data.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-47.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

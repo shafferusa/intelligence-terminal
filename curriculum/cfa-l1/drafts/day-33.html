@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>LTCM lost $553 million in one day in 1998 when its ‘unrelated’ bets all fell together — CFA Math, Day 33 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "LTCM lost $553 million in one day in 1998 when its ‘unrelated’ bets all fell together",
+    "path": "reports/cfa/l1/day-33.html",
+    "summary": "Day 33 of CFA Math: mixing two risky assets has a lowest-risk point, and the correlation decides how low it goes; Logan derives the minimum-variance weight w1* = (σ2² − Cov)/(σ1² + σ2² − 2Cov) as the bottom of a U-shaped curve, meets the zero-risk mix at ρ = −1 and the efficient frontier, and computes the least risky mix of two strategies (σ = 10% and 12%): 8.05% at ρ = 0.1 but 9.83% at ρ = 0.7.",
+    "headlines": [
+      "Day 33 of 90 · Quantitative Methods: the lower the correlation, the less risky the minimum-variance portfolio, and the efficient frontier lies above it",
+      "Calculator: the minimum-variance weights and lowest σp of two strategies at ρ = 0.1 and ρ = 0.7, on the BA II Plus",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>LTCM lost $553 million in one day in 1998 when its ‘unrelated’ bets all fell together</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Every mix of two risky assets has a least risky point, and the correlation decides how low it goes: near &minus;1 the risk can vanish, near +1 mixing barely helps.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 33 of 90 &middot; LM8 The Return and Risk of a Financial Portfolio &middot; Minimum-variance portfolio and efficient frontier</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="33">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 32 and 23, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="11.6940155635265" data-tol="0.01" data-pct data-show="11.69%">
+          <p class="cq-stem"><b>From Day 32.</b> A portfolio holds 30% in asset X (&sigma; = 25%) and 70% in asset Y (&sigma; = 10%). The correlation between them is 0.3. What is the portfolio&rsquo;s standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Three pieces, then the root: each asset&rsquo;s own term (weight<sup>2</sup> &times; &sigma;<sup>2</sup>), plus the cross term 2w<sub>X</sub>w<sub>Y</sub>&rho;&sigma;<sub>X</sub>&sigma;<sub>Y</sub>. Work in percent.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>0.3<sup>2</sup> &times; 25<sup>2</sup> = 56.25; 0.7<sup>2</sup> &times; 10<sup>2</sup> = 49; 2 &times; 0.3 &times; 0.7 &times; 0.3 &times; 25 &times; 10 = 31.5. Variance = 136.75 (%<sup>2</sup>); &sigma;<sub>p</sub> = &radic;136.75 = 11.6940 = <b>11.69%</b>. (The weighted-average SD, 14.50%, would be right only at &rho; = +1; forgetting the 2 gives 11.00%.)</p>
+            <p>BA II Plus: <kbd>.3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>.7</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>=</kbd> &rarr; <samp>136.7500</samp>; <kbd>&radic;x</kbd> &rarr; <samp>11.6940</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>.3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>.7</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>11.6940</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 23.</b> Seven monthly returns (%), as reported: &minus;2, 18, 4, &minus;6, 5, 1, 3. Using L<sub>y</sub> = (n + 1)y/100, the 75th percentile is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 4.25%</span></label>
+              <p class="cq-why">That uses the location n &times; y/100 = 7 &times; 0.75 = 5.25 and interpolates a quarter of the way from the 5th sorted value (4) to the 6th (5). The CFA location is (n + 1)y/100.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 5.00%</span></label>
+              <p class="cq-why">Right. Sorted: &minus;6, &minus;2, 1, 3, 4, 5, 18. L<sub>75</sub> = 8 &times; 0.75 = 6, a whole number, so the 75th percentile is the 6th value: 5%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 1.00%</span></label>
+              <p class="cq-why">That is the 6th number in the list as reported. Sort first.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Sort, locate with (n + 1)y/100, and interpolate only when the location has a fractional part. Notice that the 18% month does not move the answer: percentiles ignore how extreme the extremes are. A standard deviation does not, and today&rsquo;s story is about a month like that.</p></details>
+        </div>
+      </section>
+
+      <h3>LTCM&rsquo;s worst day</h3>
+      <p>Long-Term Capital Management was a hedge fund in Greenwich, Connecticut, run by John Meriwether. Among its partners were two Nobel laureates, Robert Merton and Myron Scholes.</p>
+      <p>It spread leveraged bets across markets around the world, bets that looked unrelated to one another. By one later account, the correlations between its positions had historically been 10% or less, and its risk models allowed for up to 30%.</p>
+      <p>On 17 August 1998 Russia devalued the rouble and defaulted on its domestic debt. Investors everywhere fled to safety. By the same account, the correlations rose to about 70%.</p>
+      <p>On Friday 21 August, LTCM lost $553 million in a single day, about 15% of its capital. By Roger Lowenstein&rsquo;s account in <em>When Genius Failed</em>, its models had judged a one-day loss above $35 million unlikely.</p>
+      <p>On 23 September, 14 banks and securities firms, convened by the Federal Reserve Bank of New York, agreed to put in about $3.6 billion. In under four months the fund had lost about $4.6 billion.</p>
+      <p>Here is the puzzle. LTCM&rsquo;s bets looked unrelated, so their risks should have largely cancelled. Why did diversification fail just when it was needed? And how much does a portfolio&rsquo;s risk depend on the correlation?</p>
+
+      <h3>The idea</h3>
+      <p>Day 32 showed that a mix can be less risky than its parts. Today: which mix is the <em>least</em> risky, and how low can it go?</p>
+      <p>Take two strategies: strategy 1 with &sigma; = 10%, strategy 2 with &sigma; = 12%, correlation 0.1. Slide the weight on strategy 1, w, from 0 to 1 in steps of 0.2. The portfolio&rsquo;s &sigma; goes 12.00%, 10.00%, 8.58%, 8.05%, 8.58%, 10.00%.</p>
+      <p>Down, a bottom, back up: a U. The bottom, 8.05% at 60/40, is the <b>minimum-variance portfolio</b>. It is less risky than either strategy alone.</p>
+      <p>Now raise &rho; to 0.7 and slide again: 12.00%, 11.09%, 10.40%, 9.97%, 9.83%, 10.00%. The U is nearly flat. The best mix reaches 9.83%, barely under 10%.</p>
+      <p>Correlation sets the depth. The lowest &sigma;<sub>p</sub> for this pair is 10% at &rho; = +1 (just hold the safer one), 9.33% at 0.5, 7.68% at 0, 5.45% at &minus;0.5, and 0% at &minus;1.</p>
+      <p>With many assets, plot the least risky mix for every expected return (risk across, return up). The curve, shaped like a bullet on its side, is the <b>minimum-variance frontier</b>; its leftmost point is the <b>global minimum-variance portfolio</b>.</p>
+      <p>The part above that point is the <b>efficient frontier</b>. Every portfolio on the lower part has one straight above it with the same risk and more return, so nobody should hold it.</p>
+
+      <h3>Why it works</h3>
+      <p>Start from Day 32. Call the weight on asset 1 simply w, so asset 2 gets 1 &minus; w:</p>
+      <p>&sigma;<sub>p</sub><sup>2</sup> = w<sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + (1 &minus; w)<sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> + 2w(1 &minus; w)Cov</p>
+      <p><b>Step 1: multiply out.</b> (1 &minus; w)<sup>2</sup> = 1 &minus; 2w + w<sup>2</sup> and 2w(1 &minus; w) = 2w &minus; 2w<sup>2</sup>. Collect the w<sup>2</sup> pieces, the w pieces and the rest:</p>
+      <p>&sigma;<sub>p</sub><sup>2</sup> = (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov)w<sup>2</sup> &minus; 2(&sigma;<sub>2</sub><sup>2</sup> &minus; Cov)w + &sigma;<sub>2</sub><sup>2</sup></p>
+      <p>Name the brackets a = &sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov and b = &sigma;<sub>2</sub><sup>2</sup> &minus; Cov. Then &sigma;<sub>p</sub><sup>2</sup> = aw<sup>2</sup> &minus; 2bw + &sigma;<sub>2</sub><sup>2</sup>.</p>
+      <p><b>Step 2: it is a U.</b> a is the variance of the gap R<sub>1</sub> &minus; R<sub>2</sub> (Day 32&rsquo;s formula with weights +1 and &minus;1). A variance is never negative, so the curve opens upward.</p>
+      <p><b>Step 3: two equal heights.</b> At w = 0 the curve is &sigma;<sub>2</sub><sup>2</sup>. Since aw<sup>2</sup> &minus; 2bw = w(aw &minus; 2b), it is &sigma;<sub>2</sub><sup>2</sup> again at w = 2b/a.</p>
+      <p><b>Step 4: the bottom is halfway.</b> This U is a parabola, the shape of y = x<sup>2</sup>, and a parabola is mirror-symmetric. So its lowest point sits midway between two equal heights: w<sub>1</sub>* = b/a = (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov)/(&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov).</p>
+      <p>Check it on the idea&rsquo;s pair (Cov = 0.1 &times; 10 &times; 12 = 12): &sigma;<sub>p</sub><sup>2</sup> = 220w<sup>2</sup> &minus; 264w + 144. That is 144 at w = 0 and at w = 1.2, so the bottom is at 0.6. You saw the symmetry: 8.58% at both 0.4 and 0.8.</p>
+      <p><b>Step 5: read it.</b> The top, &sigma;<sub>2</sub><sup>2</sup> &minus; Cov, is asset 2&rsquo;s risk that asset 1 does not share. The more of it, the more goes into asset 1.</p>
+      <p><b>Step 6: &rho; = &minus;1.</b> Cov = &minus;&sigma;<sub>1</sub>&sigma;<sub>2</sub>, so the top becomes &sigma;<sub>2</sub>(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) and a becomes (&sigma;<sub>1</sub> + &sigma;<sub>2</sub>)<sup>2</sup>. Cancel: w<sub>1</sub> = &sigma;<sub>2</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) and w<sub>2</sub> = &sigma;<sub>1</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>). Then w<sub>1</sub>&sigma;<sub>1</sub> = w<sub>2</sub>&sigma;<sub>2</sub>, and Day 32&rsquo;s &sigma;<sub>p</sub> = |w<sub>1</sub>&sigma;<sub>1</sub> &minus; w<sub>2</sub>&sigma;<sub>2</sub>| is 0.</p>
+      <p><b>Step 7: &rho; = +1.</b> &sigma;<sub>p</sub> is the weighted average of the SDs, a straight line, so the safest choice is all in the safer asset: mixing removes nothing. (The formula then asks for a weight above 1, a short sale, which comes later.)</p>
+      <p><b>In plain words:</b> risk plotted against the mix is a U, the formula finds its bottom, and the lower the correlation, the deeper the U.</p>
+      <div class="formula">
+        <p class="expr">w<sub>1</sub>* = (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov<sub>12</sub>) / (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov<sub>12</sub>), &nbsp; w<sub>2</sub>* = 1 &minus; w<sub>1</sub>*</p>
+        <p class="expr">Cov<sub>12</sub> = &rho;<sub>12</sub>&sigma;<sub>1</sub>&sigma;<sub>2</sub></p>
+        <p class="expr">&rho;<sub>12</sub> = &minus;1: &nbsp; w<sub>1</sub> = &sigma;<sub>2</sub> / (&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) and &sigma;<sub>p</sub> = 0</p>
+        <dl>
+          <dt>w<sub>1</sub>*, w<sub>2</sub>*</dt><dd>the weights of the minimum-variance portfolio: the share of the money in each asset</dd>
+          <dt>&sigma;<sub>1</sub>, &sigma;<sub>2</sub></dt><dd>the two assets&rsquo; standard deviations (&sigma;<sub>1</sub><sup>2</sup>, &sigma;<sub>2</sub><sup>2</sup> are their variances)</dd>
+          <dt>Cov<sub>12</sub></dt><dd>the covariance of their returns, in the same units as the variances (%<sup>2</sup> with percent, decimals with decimals)</dd>
+          <dt>&rho;<sub>12</sub></dt><dd>the correlation of their returns, from &minus;1 to +1</dd>
+          <dt>&sigma;<sub>p</sub></dt><dd>the portfolio&rsquo;s standard deviation</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Two-asset minimum-variance weight on asset 1: w<sub>1</sub>* = (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov<sub>12</sub>) / (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2 Cov<sub>12</sub>)</li>
+          <li>Zero-risk weights when &rho; = &minus;1: w<sub>1</sub> = &sigma;<sub>2</sub> / (&sigma;<sub>1</sub> + &sigma;<sub>2</sub>)</li>
+          <li>Efficient frontier: the part of the minimum-variance frontier above (higher return than) the global minimum-variance portfolio</li>
+          <li>When does diversification reduce risk? Whenever &rho; &lt; +1; the lower &rho;, the larger the reduction</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Asset 1 has &sigma; = 20%, asset 2 has &sigma; = 30%. Find the minimum-variance weight on asset 1 and the lowest &sigma;<sub>p</sub> when (a) &rho; = 0 and (b) &rho; = &minus;1. Work in decimals.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) &rho; = 0, so Cov = 0 and the Cov terms drop out: w<sub>1</sub>* = &sigma;<sub>2</sub><sup>2</sup>/(&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup>) = 0.09/(0.04 + 0.09) = 0.09/0.13 = <b>0.6923</b>. So w<sub>2</sub> = 0.3077: more in the safer asset, but not all of it.</li>
+          <li>&sigma;<sub>p</sub><sup>2</sup> = 0.6923<sup>2</sup> &times; 0.04 + 0.3077<sup>2</sup> &times; 0.09 + 0 = 0.01917 + 0.00852 = 0.02769.</li>
+          <li>&sigma;<sub>p</sub> = &radic;0.02769 = 0.1664 = <b>16.64%</b>, below both 20% and 30%.</li>
+          <li>(b) &rho; = &minus;1: w<sub>1</sub> = &sigma;<sub>2</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) = 0.30/0.50 = <b>0.60</b>, so w<sub>2</sub> = 0.40.</li>
+          <li>&sigma;<sub>p</sub> = |0.60 &times; 20% &minus; 0.40 &times; 30%| = |12% &minus; 12%| = <b>0%</b>. Each asset&rsquo;s swing is exactly offset by the other&rsquo;s.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Strategy 1 has &sigma; = 10%, strategy 2 has &sigma; = 12%. Find the minimum-variance weight w<sub>1</sub>* and the lowest &sigma;<sub>p</sub> when &rho; = 0.1; then again when &rho; = 0.7. Work in percent (type 10, not 0.10), so the variances and the covariance are in %<sup>2</sup>.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear, then the covariance at &rho; = 0.1, Cov = &rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub>, and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd>, then <kbd>.1</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd>, then <kbd>.1</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>12.0000</samp> on both. Cov = 12 (%<sup>2</sup>).</p>
+          </li>
+          <li>
+            <p class="calc-what">The minimum-variance weight, (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov) &divide; (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov), stored</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>; the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.6000</samp> (BA II Plus) / <samp>.6000</samp> (TI-84). That is 132 &divide; 220: 60% in strategy 1.</p>
+          </li>
+          <li>
+            <p class="calc-what">The weight on strategy 2, 1 &minus; w<sub>1</sub>*, stored</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (C is above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.4000</samp> / <samp>.4000</samp>.</p>
+          </li>
+          <li>
+            <p class="calc-what">The variance at that mix, Day 32&rsquo;s formula: w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> + 2w<sub>1</sub>w<sub>2</sub>Cov</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> (AOS, set on Day 1, squares and multiplies first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>64.8000</samp> on both (36 + 23.04 + 5.76, in %<sup>2</sup>).</p>
+          </li>
+          <li>
+            <p class="calc-what">Take the square root: the lowest &sigma;<sub>p</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&radic;x</kbd> (it acts on the <samp>64.8000</samp> on the display)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>8.0498</samp> on both: 8.05%, below both 10% and 12%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Now &rho; = 0.7: store the new covariance, then repeat Steps 2 to 5 key for key</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (shows <samp>84.0000</samp>), then exactly the keys of Steps 2, 3, 4 and 5 again</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>&times;</kbd> <kbd>12</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (shows <samp>84.0000</samp>), then Steps 2 to 5 again (shortcut: <kbd>2nd</kbd> <kbd>ENTER</kbd> (ENTRY) brings back earlier lines; press it until the line you want appears, then <kbd>ENTER</kbd>)</div>
+            <p class="calc-see">Display: Step 2 <samp>0.7895</samp> / <samp>.7895</samp>; Step 3 <samp>0.2105</samp> / <samp>.2105</samp>; Step 4 <samp>96.6316</samp>; Step 5 <samp>9.8301</samp> on both.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: at &rho; = 0.1, w<sub>1</sub>* = 0.60 and the lowest &sigma;<sub>p</sub> = 8.05%, 1.95 points below the safer strategy&rsquo;s 10%. At &rho; = 0.7, w<sub>1</sub>* = 0.7895 and &sigma;<sub>p</sub> = 9.83%, only 0.17 points below.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Diversification is a bet on correlations. At &rho; = 0.1 the best mix of our two strategies cuts risk to 8.05%. At &rho; = 0.7 it manages 9.83%, barely under the safer strategy&rsquo;s 10%.</p>
+      <p>LTCM held far more than two bets. Take 100 equal bets, each with &sigma; = 10%. Day 32&rsquo;s recipe gives 100 own terms, each (1/100)<sup>2</sup> &times; 10<sup>2</sup>, plus 9,900 cross terms (each of the 4,950 pairs counted twice, like Day 32&rsquo;s 2), each (1/100)<sup>2</sup> &times; &rho; &times; 10<sup>2</sup>. Add them: &sigma;<sub>p</sub> = 10% &times; &radic;(0.01 + 0.99&rho;).</p>
+      <p>At &rho; = 0.1 that is 3.30%. At 0.3, the models&rsquo; ceiling, 5.54%. At 0.7, 8.38%: two and a half times what a 0.1 correlation promised.</p>
+      <p>No number of bets gets below 10% &times; &radic;&rho; (8.37% at &rho; = 0.7): the shared part of the risk never cancels. When correlations jump toward +1, as by that account they did after Russia&rsquo;s default, the cushion shrinks just when it is needed.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Treating the global minimum-variance portfolio as the best portfolio for everyone. It is only the least risky one. Efficient portfolios above it offer more return for more risk, and which one suits an investor depends on risk aversion (Day 34).</li>
+          <li>Using &rho; where the formula needs Cov. In the walkthrough, typing 0.1 for the covariance gives w<sub>1</sub>* = 0.5902, not 0.6000. Turn &rho; into Cov = &rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub> first, in the same units as the variances: 12 with percent, 0.0012 with decimals, never mixed.</li>
+          <li>Assuming diversification still works when correlations jump toward +1. Moving &rho; from 0.1 to 0.7 raised the lowest &sigma;<sub>p</sub> from 8.05% to 9.83%; at &rho; = +1 mixing removes nothing.</li>
+          <li>Turning the &rho; = &minus;1 shortcut upside down. In w<sub>1</sub> = &sigma;<sub>2</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) the <em>other</em> asset&rsquo;s &sigma; is on top: the riskier asset gets the smaller weight.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="13.887301496588272" data-tol="0.01" data-pct data-show="13.89%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Asset 1 has &sigma; = 15%, asset 2 has &sigma; = 25%, and the correlation between them is 0.2. Find the minimum-variance portfolio of the two. What is its standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough with 15, 25 and &rho; = 0.2. Start with Cov = 0.2 &times; 15 &times; 25 = 75 (%<sup>2</sup>).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Cov = 75. w<sub>1</sub>* = (625 &minus; 75)/(225 + 625 &minus; 150) = 550/700 = 0.7857, so w<sub>2</sub> = 0.2143. With the stored weights, variance = w<sub>1</sub><sup>2</sup> &times; 225 + w<sub>2</sub><sup>2</sup> &times; 625 + 2w<sub>1</sub>w<sub>2</sub> &times; 75 = 192.8571 (%<sup>2</sup>), and &sigma;<sub>p</sub> = 13.8873 = <b>13.89%</b>, below the safer asset&rsquo;s 15%. (Typing &rho; = 0.2 where Cov belongs gives 13.95%.)</p>
+            <p>BA II Plus: <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>75.0000</samp>; <kbd>(</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>0.7857</samp>; <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>0.2143</samp>; <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>192.8571</samp>; <kbd>&radic;x</kbd> &rarr; <samp>13.8873</samp>.</p>
+            <p>TI-84 Plus: <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>75.0000</samp>; <kbd>(</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.7857</samp>; <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.2143</samp>; <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>192.8571</samp>; <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>13.8873</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> As the correlation between two risky assets falls from +1 to &minus;1, what happens to the lowest portfolio standard deviation you can reach by mixing them?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Nothing: the minimum-variance weights adjust, so the lowest risk stays the same</span></label>
+              <p class="cq-why">The weights do adjust, but they cannot undo the correlation. For the 10%/12% pair the lowest &sigma;<sub>p</sub> goes from 10% at &rho; = +1 to 7.68% at 0 and 0% at &minus;1.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It falls, but it can never reach zero, because both assets are risky</span></label>
+              <p class="cq-why">At &rho; = &minus;1 it reaches exactly zero. With w<sub>1</sub> = &sigma;<sub>2</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) the two swings cancel: the worked example&rsquo;s 0.60 &times; 20% &minus; 0.40 &times; 30% = 0.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. It falls steadily and reaches zero at &rho; = &minus;1, because the cross term 2w<sub>1</sub>w<sub>2</sub>Cov shrinks, turns negative, and can cancel the two own terms</span></label>
+              <p class="cq-why">Right. Only the cross term depends on &rho;; the lower it is, the deeper the U.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The own terms, w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup>, do not care about &rho;. The cross term does: lower &rho;, smaller (then negative) cross term, deeper U. For &sigma; = 10% and 12% the bottom of the U is 10% at &rho; = +1, 9.33% at 0.5, 7.68% at 0, 5.45% at &minus;0.5 and 0% at &minus;1.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="7.6" data-tol="0.01" data-pct data-show="7.60%">
+          <p class="cq-stem"><b>3. Twist: the riskless mix.</b> Asset 1 has &sigma; = 12% and an expected return of 6%. Asset 2 has &sigma; = 18% and an expected return of 10%. Their correlation is &minus;1. Find the weights that make the portfolio riskless. What is that portfolio&rsquo;s expected return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> At &rho; = &minus;1, w<sub>1</sub> = &sigma;<sub>2</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>), with the other asset&rsquo;s &sigma; on top. Then Day 32: the expected return is the weighted average.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>w<sub>1</sub> = 18/(12 + 18) = 0.60, w<sub>2</sub> = 0.40. Check: &sigma;<sub>p</sub> = |0.60 &times; 12 &minus; 0.40 &times; 18| = |7.2 &minus; 7.2| = 0. E(R<sub>p</sub>) = 0.60 &times; 6% + 0.40 &times; 10% = 3.6 + 4.0 = <b>7.60%</b>. (Swap the weights, with 12 on top, and you get 8.40% from a portfolio whose &sigma;<sub>p</sub> is 6%, not zero.)</p>
+            <p>BA II Plus: <kbd>18</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>12</kbd> <kbd>+</kbd> <kbd>18</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.6000</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>+</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>=</kbd> &rarr; <samp>7.6000</samp>.</p>
+            <p>TI-84 Plus: <kbd>18</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>12</kbd> <kbd>+</kbd> <kbd>18</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6000</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>+</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> &rarr; <samp>7.6000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> Asset 1 has a standard deviation of 20% and asset 2 a standard deviation of 15%. The correlation between their returns is 0.25. The weight in asset 1 that minimizes the portfolio&rsquo;s variance is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 0.3158</span></label>
+              <p class="cq-why">Right. Cov = 0.25 &times; 0.20 &times; 0.15 = 0.0075; w<sub>1</sub>* = (0.0225 &minus; 0.0075)/(0.04 + 0.0225 &minus; 0.015) = 0.0150/0.0475 = 0.3158.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 0.4286</span></label>
+              <p class="cq-why">That is the &rho; = &minus;1 shortcut, &sigma;<sub>2</sub>/(&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) = 15/35. It holds only for perfectly negative correlation.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 0.3600</span></label>
+              <p class="cq-why">That ignores the covariance: &sigma;<sub>2</sub><sup>2</sup>/(&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup>) = 0.0225/0.0625, right only if &rho; = 0.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Turn &rho; into Cov first, then use the full formula. In percent units it is the same: (225 &minus; 75)/(400 + 225 &minus; 150) = 150/475 = 0.3158. Sense check: asset 1 is the riskier one, so it gets less than half.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is the efficient frontier, and why isn&rsquo;t the global minimum-variance portfolio the best choice for everyone?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The minimum-variance frontier holds the least risky portfolio for each expected return; the efficient frontier is its upper part, above the global minimum-variance portfolio, because every portfolio below has one straight above it with the same risk and more return. The global minimum-variance portfolio is only the least risky efficient portfolio: an investor willing to bear more risk earns more expected return further up, so the best point depends on how risk-averse the investor is.</p>
+            <p>A complete answer says: (1) the minimum-variance frontier gives the lowest &sigma; for each expected return; (2) the efficient frontier is its upper part, above the global minimum-variance portfolio, and points below it are dominated (same risk, less return); (3) which efficient portfolio is best depends on the investor&rsquo;s risk aversion (Day 34).</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 8: The Return and Risk of a Financial Portfolio (the two-asset minimum-variance weight; the zero-risk portfolio when &rho; = &minus;1 and no diversification benefit when &rho; = +1; the minimum-variance frontier, the global minimum-variance portfolio and the efficient frontier; why the benefit of diversifying shrinks when correlations rise).</p>
+      <p><strong>Sources.</strong> US General Accounting Office, &ldquo;Long-Term Capital Management: Regulators Need to Focus Greater Attention on Systemic Risk&rdquo; (GGD-00-3, 1999) and letter GGD-00-67R (2000) (14 banks and securities firms agreed on 23 September 1998 to recapitalize LTCM, contributing about $3.6 billion); Federal Reserve History, &ldquo;Near Failure of Long-Term Capital Management&rdquo; (fourteen firms, $3.625 billion, convened by the New York Fed); Roger Lowenstein, <em>When Genius Failed</em> (Random House, 2000), as summarised by the Kirkus review and Wikipedia ($553 million lost on 21 August 1998, about 15% of capital; the models&rsquo; $35 million one-day bound); Michael Mauboussin, presentation to the Greenwich Roundtable (2006), as excerpted by trendfollowing.com, the one account behind the 10%, 30% and 70% correlation figures; Wikipedia, &ldquo;Long-Term Capital Management&rdquo; (about $4.6 billion lost in under four months; Russia&rsquo;s devaluation and default of 17 August 1998). The two-strategy and 100-bet figures are illustrations computed for this lesson, not LTCM&rsquo;s actual positions.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-32.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>
