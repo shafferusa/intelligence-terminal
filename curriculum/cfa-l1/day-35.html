@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Count the orders, measure the tails, mix the risks: the Week 5 review in ten questions — CFA Math, Day 35 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Count the orders, measure the tails, mix the risks: the Week 5 review in ten questions",
+    "path": "reports/cfa/l1/day-35.html",
+    "summary": "Day 35 of CFA Math, the Week 5 review: the formulas of Days 29–34 in one box, the three slips that cost the most points, then ten graded questions with new numbers on a binomial probability, a normal tail and the 95% band, skew and kurtosis, log returns and Monte Carlo, a two-asset portfolio’s risk, covariance from a joint probability table, the minimum-variance weight and utility.",
+    "headlines": [
+      "Day 35 of 90 · Quantitative Methods: Week 5 review of binomial counting, the normal curve and fat tails, log returns and simulation, portfolio risk and utility",
+      "Calculator: a binomial probability, a normal tail, a log return, a portfolio σ, a covariance from a joint table and a minimum-variance weight, on the BA II Plus and the TI-84",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Count the orders, measure the tails, mix the risks: the Week 5 review in ten questions</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Six lessons on one page: the week&rsquo;s formulas in one box, the three slips that cost the most points, then ten exam-style questions with new numbers, six of them on the calculator.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 35 of 90 &middot; Review &middot; Week 5: probability to portfolios</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="35">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 34 and 24, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="54.6875" data-tol="0.01" data-pct data-show="54.69%">
+          <p class="cq-stem"><b>From Day 34.</b> An investor with a risk-aversion coefficient A = 5 can hold T-bills at 4% or a risky portfolio with an expected return of 11% and a standard deviation of 16%. What share of her money should go in the risky portfolio? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> w* = [E(R<sub>i</sub>) &minus; R<sub>f</sub>] / (A &times; &sigma;<sub>i</sub><sup>2</sup>), with decimals in. Square the &sigma;.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>w* = (0.11 &minus; 0.04) / (5 &times; 0.16<sup>2</sup>) = 0.07 / (5 &times; 0.0256) = 0.07 / 0.128 = 0.5469 = <b>54.69%</b>, with 45.31% in T-bills. That mix scores U = 5.91%, better than all T-bills (4.00%) or all risky (4.60%). (Forget to square &sigma; and you get 8.75%.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.04</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.16</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.5469</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>54.6875</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.04</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.16</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.5469</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>54.6875</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 24.</b> A fund&rsquo;s five annual returns: 9%, &minus;3%, 5%, 12% and &minus;8%. Their mean absolute deviation is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 8.34%</span></label>
+              <p class="cq-why">That is the sample standard deviation, &radic;(278 / 4): it squares the deviations. MAD averages their plain sizes.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 8.50%</span></label>
+              <p class="cq-why">That divides 34 by n &minus; 1 = 4. The n &minus; 1 belongs to the sample variance; MAD divides by n.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 6.80%</span></label>
+              <p class="cq-why">Right. Mean 15 / 5 = 3%. Distances from it: 6, 6, 2, 9, 11, adding to 34. 34 / 5 = 6.80%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>MAD = &Sigma; |X<sub>i</sub> &minus; X&#772;| / n: the average distance from the mean. The signs must go, because signed deviations always add to zero: +6 &minus; 6 + 2 + 9 &minus; 11 = 0. The standard deviation squares first, which weights the big misses more, so it comes out larger.</p>
+            <p>BA II Plus: <kbd>6</kbd> <kbd>+</kbd> <kbd>6</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>9</kbd> <kbd>+</kbd> <kbd>11</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>=</kbd> &rarr; <samp>6.8000</samp>. TI-84 Plus: <kbd>(</kbd> <kbd>6</kbd> <kbd>+</kbd> <kbd>6</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>9</kbd> <kbd>+</kbd> <kbd>11</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.8000</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>This week went from single outcomes to whole distributions, then to portfolios. Day 29 counted: a binomial probability is the number of orders times the chance of one order, <sub>n</sub>C<sub>x</sub> p<sup>x</sup>(1 &minus; p)<sup>n &minus; x</sup>. Day 30 measured distance in standard deviations, z = (X &minus; &mu;) / &sigma;, so one table serves every normal curve, and showed where real returns break the bell: skew pulls the mean away from the median, and excess kurtosis fattens the tails. Day 31 turned a price path into a sum of log returns, ln(P<sub>1</sub> / P<sub>0</sub>), which makes prices lognormal and lets Monte Carlo simulation deal out thousands of possible years. Days 32 to 34 built portfolios: returns average but risks do not (the cross term), one mix has the least variance, and utility, U = E(r) &minus; &frac12;A&sigma;<sup>2</sup>, picks each investor&rsquo;s point on the capital allocation line.</p>
+      <p>Learning Module 11, on financial data science, has no calculations, so this math course does not test it.</p>
+
+      <h3>The week&rsquo;s formulas</h3>
+      <div class="sie-block memorize">
+        <b>Memorize &middot; Days 29&ndash;34</b>
+        <ul>
+          <li><b>Day 29.</b> P(X = x) = <sub>n</sub>C<sub>x</sub> &times; p<sup>x</sup> &times; (1 &minus; p)<sup>(n &minus; x)</sup>; E(X) = np; Var(X) = np(1 &minus; p).</li>
+          <li><b>Day 29.</b> Combinations (order does not matter): <sub>n</sub>C<sub>r</sub> = n! / [(n &minus; r)! &times; r!]. Permutations (order matters): <sub>n</sub>P<sub>r</sub> = n! / (n &minus; r)!. Continuous uniform on [a, b]: P(x<sub>1</sub> &le; X &le; x<sub>2</sub>) = (x<sub>2</sub> &minus; x<sub>1</sub>) / (b &minus; a); mean = (a + b) / 2.</li>
+          <li><b>Day 30.</b> z = (X &minus; &mu;) / &sigma;. Bands: 68% &asymp; &mu; &plusmn; 1&sigma;; 90% = &mu; &plusmn; 1.645&sigma;; 95% = &mu; &plusmn; 1.96&sigma;; 99% = &mu; &plusmn; 2.58&sigma;. One tail: 5% &rarr; 1.645; 2.5% &rarr; 1.96; 1% &rarr; 2.33.</li>
+          <li><b>Day 30.</b> Positive skew (long right tail): mean &gt; median &gt; mode; negative skew (long left tail): mean &lt; median &lt; mode. Excess kurtosis = kurtosis &minus; 3; above 0 (leptokurtic) means fatter tails than the normal. Value at risk: the minimum loss expected a given small % of the time, a left-tail percentile.</li>
+          <li><b>Day 31.</b> r<sub>cc</sub> = ln(P<sub>1</sub> / P<sub>0</sub>) = ln(1 + HPR); log returns add, r<sub>0,T</sub> = r<sub>1</sub> + r<sub>2</sub> + &hellip; + r<sub>T</sub>; P<sub>T</sub> = P<sub>0</sub> &times; e<sup>r<sub>0,T</sub></sup>. If ln(P<sub>T</sub>) is normal, P<sub>T</sub> is lognormal: bounded below by 0 and skewed right.</li>
+          <li><b>Day 31.</b> Monte Carlo: specify the model and the distribution of each random input &rarr; draw random values &rarr; compute the outcome &rarr; repeat many times &rarr; summarize. Historical simulation replays the actual past returns; bootstrap resampling draws from them at random, WITH replacement.</li>
+          <li><b>Day 32.</b> E(R<sub>p</sub>) = &Sigma; w<sub>i</sub> &times; E(R<sub>i</sub>); &sigma;<sub>p</sub><sup>2</sup> = w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> + 2w<sub>1</sub>w<sub>2</sub>&rho;<sub>12</sub>&sigma;<sub>1</sub>&sigma;<sub>2</sub>, with Cov<sub>12</sub> = &rho;<sub>12</sub> &times; &sigma;<sub>1</sub> &times; &sigma;<sub>2</sub>.</li>
+          <li><b>Day 32.</b> From a joint probability table: Cov(R<sub>A</sub>, R<sub>B</sub>) = &Sigma; P &times; [R<sub>A</sub> &minus; E(R<sub>A</sub>)] &times; [R<sub>B</sub> &minus; E(R<sub>B</sub>)], with no n &minus; 1.</li>
+          <li><b>Day 33.</b> w<sub>1</sub>* = (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov<sub>12</sub>) / (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov<sub>12</sub>); at &rho; = &minus;1, w<sub>1</sub> = &sigma;<sub>2</sub> / (&sigma;<sub>1</sub> + &sigma;<sub>2</sub>) and &sigma;<sub>p</sub> = 0. Diversification cuts risk whenever &rho; &lt; +1, more the lower &rho;. Efficient frontier: the part of the minimum-variance frontier above the global minimum-variance portfolio.</li>
+          <li><b>Day 34.</b> U = E(r) &minus; &frac12; &times; A &times; &sigma;<sup>2</sup> (decimals): the certainty-equivalent return. A &gt; 0 risk-averse (larger A = more averse); A = 0 risk-neutral; A &lt; 0 risk-seeking.</li>
+          <li><b>Day 34.</b> CAL (the CML with the market portfolio): E(R<sub>p</sub>) = R<sub>f</sub> + [(E(R<sub>i</sub>) &minus; R<sub>f</sub>) / &sigma;<sub>i</sub>] &times; &sigma;<sub>p</sub>. Best weight: w* = [E(R<sub>i</sub>) &minus; R<sub>f</sub>] / (A &times; &sigma;<sub>i</sub><sup>2</sup>). Roy&rsquo;s safety-first: SFRatio = [E(R<sub>p</sub>) &minus; R<sub>L</sub>] / &sigma;<sub>p</sub>; choose the highest.</li>
+        </ul>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>One tail or two?</b> 1.645 puts 5% in <em>one</em> tail: the z for a 5% value at risk or any one-sided 5% cutoff, and the edge of the 90% band (5% per tail). 1.96 puts 2.5% in each tail: the 95% band. Ask where the 5% sits before you choose the z.</li>
+          <li><b>The 2 in the cross term.</b> Drop it and Day 32&rsquo;s 60/40 mix comes out at 12.72% instead of 13.02%. Picture the (a + b)<sup>2</sup> square: two rectangles, so 2w<sub>1</sub>w<sub>2</sub>Cov. The same 2 sits in the minimum-variance weight&rsquo;s bottom line, &sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov.</li>
+          <li><b>Percent versus decimal in utility.</b> U needs decimals: 0.10 &minus; &frac12; &times; 4 &times; 0.20<sup>2</sup> = 0.02 = 2%, while 10 &minus; &frac12; &times; 4 &times; 20<sup>2</sup> = &minus;790 is nonsense. Square &sigma; and keep the &frac12;. (The portfolio-&sigma; formula works in either unit, as long as you never mix them.)</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions, all with new numbers, graded here. Six need the calculator, so keep it in hand. Work each before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="23.04" data-tol="0.01" data-pct data-show="23.04%">
+          <p class="cq-stem"><b>1. Binomial (Day 29) &middot; calculator.</b> A fund manager beats her benchmark in any one year with probability 0.4, independently of other years. What is the probability that she beats it in exactly 3 of the next 5 years? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Number of orders (<sub>5</sub>C<sub>3</sub>) times the chance of one order: 0.4 for each beat, 0.6 for each miss.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p><sub>5</sub>C<sub>3</sub> = 10 orders. One order: 0.4<sup>3</sup> &times; 0.6<sup>2</sup> = 0.064 &times; 0.36 = 0.02304. P(X = 3) = 10 &times; 0.02304 = 0.2304 = <b>23.04%</b>.</p>
+            <p>BA II Plus: <kbd>5</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>10.0000</samp>; <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>0.2304</samp> (AOS does the power before the &times;); <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>23.0400</samp>.</p>
+            <p>TI-84 Plus: <kbd>5</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (to PRB; PROB on a CE) <kbd class="menu">3:nCr</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> &rarr; <samp>10.0000</samp>; <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>.2304</samp>. Or <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">A:binompdf(</kbd> (<samp>0:binompdf(</samp> before OS 2.30) <kbd>5</kbd> <kbd>,</kbd> <kbd>.4</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.2304</samp>.</p>
+            <p>Leave out <sub>5</sub>C<sub>3</sub> and you get 2.30%, the chance of one particular order. &ldquo;At least 3&rdquo; would be 23.04% + 7.68% + 1.02% = 31.74%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="num" data-answer="9.680048458561036" data-tol="0.01" data-pct data-show="9.68%">
+          <p class="cq-stem"><b>2. Normal tail (Day 30) &middot; calculator.</b> A portfolio&rsquo;s annual returns are normal with mean 8% and standard deviation 10%. What is the probability of a year worse than &minus;5%? As a percent, to two decimals. (For the BA II Plus, a z-table excerpt, P(Z &le; z): 1.25 &rarr; 0.8944; 1.30 &rarr; 0.9032; 1.35 &rarr; 0.9115.)</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Standardize first: z = (X &minus; &mu;) / &sigma;. The table gives the area left of a positive z; for a negative z use symmetry, 1 minus the table value.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>z = (&minus;5 &minus; 8) / 10 = &minus;1.30. P(Z &lt; &minus;1.30) = 1 &minus; P(Z &le; 1.30) = 1 &minus; 0.9032 = 0.0968 = <b>9.68%</b>: about one year in ten. (Leave out the mean, z = &minus;0.50, and you get 30.85%.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>5</kbd> <kbd>+|&minus;</kbd> <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>10</kbd> <kbd>=</kbd> &rarr; <samp>&minus;1.3000</samp>; table: P(Z &le; 1.30) = 0.9032; <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.9032</kbd> <kbd>=</kbd> &rarr; <samp>0.0968</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">2:normalcdf(</kbd> <kbd>(&minus;)</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>(&minus;)</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>8</kbd> <kbd>,</kbd> <kbd>10</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0968</samp>. The line reads <samp>normalcdf(&minus;1E99,&minus;5,8,10)</samp>: from minus infinity up to &minus;5, then &mu; and &sigma;.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>3. Confidence band (Day 30).</b> Annual returns on a portfolio are normally distributed with a mean of 9% and a standard deviation of 12%. The interval expected to contain 95% of annual returns is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c3" value="A"> <span>A. &minus;10.74% to 28.74%</span></label>
+              <p class="cq-why">That is 9 &plusmn; 1.645 &times; 12, the 90% band: 1.645 leaves 5% in each tail.</p></li>
+            <li><label><input type="radio" name="c3" value="B"> <span>B. &minus;14.52% to 32.52%</span></label>
+              <p class="cq-why">Right: 9 &plusmn; 1.96 &times; 12 = 9 &plusmn; 23.52.</p></li>
+            <li><label><input type="radio" name="c3" value="C"> <span>C. &minus;21.96% to 39.96%</span></label>
+              <p class="cq-why">That is 9 &plusmn; 2.58 &times; 12, the 99% band.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>95% in the middle leaves 2.5% in each tail, and the z that cuts off 2.5% in one tail is 1.96. 1.645 is for 5% in one tail, the value-at-risk number.</p></details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Skew and tails (Day 30).</b> A series of monthly returns has a mean of 0.8%, a median of 1.2% and a sample excess kurtosis of 1.8. Compared with a normal distribution, the series is best described as:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. Negatively skewed and fat-tailed</span></label>
+              <p class="cq-why">Right. The mean sits below the median, so a long left tail is dragging it down; excess kurtosis above 0 means fatter tails than the normal (leptokurtic).</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. Positively skewed and fat-tailed</span></label>
+              <p class="cq-why">The mean&ndash;median order read backwards. A long right tail would pull the mean <em>above</em> the median; here it is below.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. Negatively skewed and thin-tailed, because 1.8 is below 3</span></label>
+              <p class="cq-why">1.8 is already the <em>excess</em> kurtosis (kurtosis &minus; 3). The kurtosis itself is 4.8, and any excess above 0 means fat tails.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>A long tail drags the mean toward it while the median barely moves: mean 0.8% &lt; median 1.2% puts the tail on the left. Compare kurtosis with 3, or excess kurtosis with 0, never excess kurtosis with 3. Fat tails mean extreme months come more often than the normal curve predicts.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="num" data-answer="-6.453852113757118" data-tol="0.01" data-pct data-show="&minus;6.45%">
+          <p class="cq-stem"><b>5. Log return (Day 31) &middot; calculator.</b> A share closes at 64, then 72 the next day, then 60 the day after. What is its two-day continuously compounded return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> r = ln(P<sub>end</sub> / P<sub>start</sub>). Add the two daily log returns, or take one log of the whole move: the same number.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>ln(60 / 64) = ln 0.9375 = &minus;0.0645 = <b>&minus;6.45%</b>. Day by day: ln(72 / 64) = 0.1178 and ln(60 / 72) = &minus;0.1823, which add to the same &minus;0.0645. (Adding the simple returns, +12.50% and &minus;16.67%, gives &minus;4.17%; the holding-period return is &minus;6.25%. Neither is continuously compounded.)</p>
+            <p>BA II Plus: <kbd>60</kbd> <kbd>&divide;</kbd> <kbd>64</kbd> <kbd>=</kbd> <kbd>LN</kbd> &rarr; <samp>&minus;0.0645</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>&minus;6.4539</samp>.</p>
+            <p>TI-84 Plus: <kbd>LN</kbd> <kbd>60</kbd> <kbd>&divide;</kbd> <kbd>64</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0645</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;6.4539</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>6. Simulation (Day 31).</b> An analyst assumes a fund&rsquo;s monthly returns are normal with a mean of 0.7% and a standard deviation of 4.5%. She draws 10,000 random 12-month paths from that distribution and records each path&rsquo;s annual return. This is best described as:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c6" value="A"> <span>A. Bootstrap resampling</span></label>
+              <p class="cq-why">The bootstrap draws, with replacement, from the fund&rsquo;s actual past returns, not from an assumed distribution.</p></li>
+            <li><label><input type="radio" name="c6" value="B"> <span>B. Historical simulation</span></label>
+              <p class="cq-why">Historical simulation is built from the actual past returns; it assumes no distribution.</p></li>
+            <li><label><input type="radio" name="c6" value="C"> <span>C. Monte Carlo simulation</span></label>
+              <p class="cq-why">Right: random draws from an assumed probability distribution, repeated many times, then summarized.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The giveaway is &ldquo;assumes &hellip; normal with a mean of &hellip; and a standard deviation of &hellip;&rdquo;: a chosen distribution. Monte Carlo can produce returns never seen before, but it is only as good as that assumption. The bootstrap and historical simulation keep the real shape of past returns, but cannot produce a return the sample never saw.</p></details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="num" data-answer="11.020435563080072" data-tol="0.01" data-pct data-show="11.02%">
+          <p class="cq-stem"><b>7. Portfolio risk (Day 32) &middot; calculator.</b> A portfolio holds 50% in an equity fund (&sigma; = 22%) and 50% in a bond fund (&sigma; = 9%). The correlation between them is &minus;0.2. What is the portfolio&rsquo;s standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two own terms, w<sup>2</sup>&sigma;<sup>2</sup>, plus the cross term, 2w<sub>1</sub>w<sub>2</sub>&rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub>, which is negative here. Add, then take the square root. Work in percent.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>0.5<sup>2</sup> &times; 22<sup>2</sup> = 121; 0.5<sup>2</sup> &times; 9<sup>2</sup> = 20.25; 2 &times; 0.5 &times; 0.5 &times; (&minus;0.2) &times; 22 &times; 9 = &minus;19.80. Variance 121.45 (%<sup>2</sup>); &sigma;<sub>p</sub> = &radic;121.45 = <b>11.02%</b>. The weighted average of the SDs, 15.50%, would hold only at &rho; = +1. (Forget the 2: 11.46%. Drop the minus sign: 12.69%.)</p>
+            <p>BA II Plus: <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>22</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>121.0000</samp>; <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>20.2500</samp>; <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>22</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>&minus;19.8000</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>121.4500</samp>; <kbd>&radic;x</kbd> &rarr; <samp>11.0204</samp>.</p>
+            <p>TI-84 Plus, in one line: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>22</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>22</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>11.0204</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="num" data-answer="-27.75" data-tol="0.01" data-show="&minus;27.75">
+          <p class="cq-stem"><b>8. Covariance from a joint table (Day 32) &middot; calculator.</b> Next year brings one of three states. Boom (probability 0.25): fund X returns 18%, fund Y 2%. Normal (0.50): X 8%, Y 5%. Slump (0.25): X &minus;6%, Y 11%. What is the covariance of the two funds&rsquo; returns? To two decimals, in %<sup>2</sup>.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%&sup2;</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Expected returns first. Then, state by state, probability &times; X&rsquo;s surprise &times; Y&rsquo;s surprise, and add. No n &minus; 1: the probabilities are the whole distribution.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>E(X) = 0.25 &times; 18 + 0.5 &times; 8 + 0.25 &times; (&minus;6) = 4.5 + 4 &minus; 1.5 = 7.00%. E(Y) = 0.5 + 2.5 + 2.75 = 5.75%.</p>
+            <p>Boom: 0.25 &times; 11 &times; (&minus;3.75) = &minus;10.3125. Normal: 0.5 &times; 1 &times; (&minus;0.75) = &minus;0.375. Slump: 0.25 &times; (&minus;13) &times; 5.25 = &minus;17.0625. Cov = <b>&minus;27.75</b> (%<sup>2</sup>), or &minus;0.002775 in decimals.</p>
+            <p>Every state votes &ldquo;opposite&rdquo;: with &sigma;<sub>X</sub> = 8.54% and &sigma;<sub>Y</sub> = 3.27%, &rho; = &minus;0.99. (Leave out the probabilities: &minus;110.25. Treat the three states as a sample of three years and divide by n &minus; 1: &minus;55.00.)</p>
+            <p>BA II Plus: <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>7.0000</samp>; <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>+</kbd> <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>11</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>5.7500</samp>; then <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>18</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>+</kbd> <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>+|&minus;</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>11</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>&minus;27.7500</samp>.</p>
+            <p>TI-84 Plus: <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>6</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>7.0000</samp>; <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>+</kbd> <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>11</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.7500</samp>; then <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>18</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>)</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>)</kbd> <kbd>+</kbd> <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>6</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>11</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;27.7500</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="14.556962025316459" data-tol="0.01" data-pct data-show="14.56%">
+          <p class="cq-stem"><b>9. Minimum-variance weight (Day 33) &middot; calculator.</b> Asset 1 has &sigma; = 18%, asset 2 has &sigma; = 10%, and the correlation between them is 0.3. What weight in asset 1 gives the minimum-variance portfolio? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Cov = &rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub> first. Then w<sub>1</sub>* = (&sigma;<sub>2</sub><sup>2</sup> &minus; Cov) / (&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup> &minus; 2Cov): the <em>other</em> asset&rsquo;s variance on top.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Cov = 0.3 &times; 18 &times; 10 = 54 (%<sup>2</sup>). w<sub>1</sub>* = (100 &minus; 54) / (324 + 100 &minus; 108) = 46 / 316 = 0.1456 = <b>14.56%</b>, with 85.44% in asset 2. In decimals, (0.01 &minus; 0.0054) / (0.0324 + 0.01 &minus; 0.0108) = 0.0046 / 0.0316: the same 0.1456. That mix&rsquo;s &sigma;<sub>p</sub> is 9.66%, below even the safer asset&rsquo;s 10%. (Type &rho; where Cov belongs and you get 23.55%; the &rho; = &minus;1 shortcut gives 35.71%.)</p>
+            <p>BA II Plus: <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>54.0000</samp>; <kbd>(</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>18</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>0.1456</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>14.5570</samp>. The lowest &sigma;<sub>p</sub>, if you want it: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd>; <kbd>RCL</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>93.3038</samp>; <kbd>&radic;x</kbd> &rarr; <samp>9.6594</samp>.</p>
+            <p>TI-84 Plus: <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>54.0000</samp>; <kbd>(</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>18</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1456</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>14.5570</samp>. The lowest &sigma;<sub>p</sub>: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd>; <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>9.6594</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>10. Utility (Day 34).</b> An investor with a risk-aversion coefficient of 4 must choose one of three portfolios. P1: expected return 5%, standard deviation 5%. P2: expected return 9%, standard deviation 12%. P3: expected return 14%, standard deviation 24%. Based on mean&ndash;variance utility, the investor chooses:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c10" value="A"> <span>A. P1</span></label>
+              <p class="cq-why">That is what &sigma; in place of &sigma;<sup>2</sup> gives (U = &minus;5.0%, &minus;15.0%, &minus;34.0%), and so do percents in place of decimals (&minus;45, &minus;279, &minus;1,138): the penalty swamps the return, so the least risky looks best.</p></li>
+            <li><label><input type="radio" name="c10" value="B"> <span>B. P2</span></label>
+              <p class="cq-why">Right. U = 0.05 &minus; &frac12; &times; 4 &times; 0.05<sup>2</sup> = 4.50%; 0.09 &minus; 2 &times; 0.0144 = 6.12%; 0.14 &minus; 2 &times; 0.0576 = 2.48%. P2 scores highest.</p></li>
+            <li><label><input type="radio" name="c10" value="C"> <span>C. P3</span></label>
+              <p class="cq-why">The highest expected return: the choice of a risk-neutral investor (A = 0). At A = 4, P3&rsquo;s risk costs 11.52 points of return.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>U = E(r) &minus; &frac12;A&sigma;<sup>2</sup>, decimals in, &sigma; squared. Penalties: P1 0.50 points, P2 2.88, P3 11.52. Moving from P2 to P3 adds 5 points of expected return but 8.64 points of penalty. A less averse investor, with A below about 2.31, would pick P3.</p>
+            <p>BA II Plus (AOS): <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.12</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>0.0612</samp>, and the same keys with each portfolio&rsquo;s numbers. TI-84 Plus: <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.12</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0612</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods: Learning Module 5, Statistical Characteristics of Asset Returns (skewness and kurtosis; the warm-up&rsquo;s mean absolute deviation); Learning Module 6, Statistical Distributions for Financial Asset Prices and Returns (the binomial and uniform distributions, the normal distribution and its confidence bands); Learning Module 8, The Return and Risk of a Financial Portfolio (portfolio return and variance, covariance from a joint probability table, the minimum-variance portfolio and the efficient frontier, utility, the capital allocation line); Learning Module 9, Simulation of Financial Asset Prices and Returns (continuously compounded returns, the lognormal distribution, Monte Carlo simulation, historical simulation and bootstrap resampling). The counting rules and Roy&rsquo;s safety-first ratio are included as insurance: their place in the 2027 curriculum is uncertain.</p>
+      <p><strong>Sources.</strong> No story today: every question uses new, invented numbers. The true stories behind this week&rsquo;s ideas are in Days 29 to 34.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-34.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>When gilts broke in 2022, duration’s straight line overstated the loss. Convexity bends it back — CFA Math, Day 41 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "When gilts broke in 2022, duration’s straight line overstated the loss. Convexity bends it back",
+    "path": "reports/cfa/l1/day-41.html",
+    "summary": "Day 41 of CFA Math: Logan learns why duration’s straight line overstates losses and understates gains after a big yield move, builds approximate convexity from three prices, and corrects the estimate for a 30-year 0.5% gilt hit by a 140 bp rise, on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 41 of 90 · Fixed Income: convexity adds ½ × Convexity × (ΔYield)² to the duration estimate, so losses shrink and gains grow",
+      "Calculator: a 30-year gilt’s approximate duration and convexity, and its price change for +140 bp by duration, duration + convexity and full repricing, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>When gilts broke in 2022, duration&rsquo;s straight line overstated the loss. Convexity bends it back</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Duration lays a straight line against a curve; add &frac12; &times; convexity &times; (&Delta;Yield)<sup>2</sup> and the estimate bends back toward the truth: smaller losses, bigger gains, and the bigger the move, the bigger the fix.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 41 of 90 &middot; Yield-Based Bond Convexity and Portfolio Properties &middot; Convexity</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="41">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 40 and Day 34, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="8.590006844626961" data-tol="0.005" data-show="8.59">
+          <p class="cq-stem"><b>From Day 40.</b> A bond is priced at 97.40 per 100. If its yield fell 30 bp the price would be 99.95; if it rose 30 bp, 94.93. What is its approximate modified duration? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>)/(2 &times; &Delta;Yield &times; PV<sub>0</sub>), with &Delta;Yield as a decimal: 30 bp = 0.003.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>(99.95 &minus; 94.93)/(2 &times; 0.003 &times; 97.40) = 5.02/0.5844 = <b>8.59</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>99.95</kbd> <kbd>&minus;</kbd> <kbd>94.93</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.003</kbd> <kbd>&times;</kbd> <kbd>97.4</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>8.5900</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>99.95</kbd> <kbd>&minus;</kbd> <kbd>94.93</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.003</kbd> <kbd>&times;</kbd> <kbd>97.4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>8.5900</samp>.</p>
+            <p>The traps: without the 2 you get 17.18; dividing by 100 instead of 97.40 gives 8.37. And notice: the gain for a 30 bp fall (2.55) is bigger than the loss for a 30 bp rise (2.47). Today is about that difference.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 34.</b> An investor with a risk-aversion coefficient A = 3 looks at a portfolio with an expected return of 10% and a standard deviation of 18%. Its mean&ndash;variance utility is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 5.14%</span></label>
+              <p class="cq-why">Right: U = 0.10 &minus; &frac12; &times; 3 &times; 0.18<sup>2</sup> = 0.10 &minus; 0.0486 = 0.0514.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 0.28%</span></label>
+              <p class="cq-why">The &frac12; was dropped: 0.10 &minus; 3 &times; 0.0324 = 0.0028.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. &minus;17.00%</span></label>
+              <p class="cq-why">&sigma; was not squared: 0.10 &minus; &frac12; &times; 3 &times; 0.18 = &minus;0.17. Utility uses the variance.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>U = E(r) &minus; &frac12; &times; A &times; &sigma;<sup>2</sup>, in decimals. BA II Plus: <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>.18</kbd> <kbd>x²</kbd> <kbd>=</kbd> &rarr; <samp>0.0514</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>.0514</samp>.</p>
+            <p>Keep an eye on that &frac12;. Today&rsquo;s convexity term has one too, and you will see exactly why.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The week that broke the gilt market</h3>
+      <p>Friday 23 September 2022. The UK government&rsquo;s &ldquo;mini-budget&rdquo; of tax cuts set off a sell-off in long-dated government bonds, known as gilts.</p>
+      <p>On the eve of the statement the 30-year gilt yielded between about 3.5% and 3.7% (sources differ). In three trading days the yield rose about 1.2 percentage points. Early on Wednesday 28 September it touched about 5.1%, its highest since 2002.</p>
+      <p>Pension funds using liability-driven investment (LDI) strategies faced collateral calls. They had to sell gilts into the falling market, which pushed yields higher still.</p>
+      <p>That day the Bank of England announced emergency purchases of long-dated gilts. The 30-year yield fell more than a full percentage point, closing near 3.9% by Reuters&rsquo; figures.</p>
+      <p>Now take a stylized long gilt, an illustration rather than a particular bond: 30 years to maturity, a 0.5% annual coupon. Start it at 3.7%, the top of that eve-of-statement range. Its modified duration is about 25.4, so duration says the 1.4-point jump to 5.1% costs about 25.4 &times; 1.4 = 35.6% of its value.</p>
+      <p>Is that right? And if not, does the straight line overstate the damage or understate it?</p>
+
+      <h3>The idea</h3>
+      <p>Duration is a ruler laid against a curve. It reads the price&rsquo;s slope at today&rsquo;s yield and assumes the slope never changes. For small moves that is fine. For big ones it is not.</p>
+      <p>Picture a playground slide: steep at the top, flattening out toward the bottom. Price against yield has that shape. As yields rise, the price falls more and more slowly. As yields fall, it climbs faster and faster. That bend is <b>convexity</b>.</p>
+      <p>The ruler touches the curve at one point and lies below it everywhere else. So duration alone <b>overstates losses and understates gains</b>.</p>
+      <p>The fix grows with the <em>square</em> of the move. For the gilt it is 1.79 percentage points for a 70 bp move, 7.17 for 140 bp, 28.67 for 280 bp. Double the move, four times the fix. This is the piece Day 39 was missing, when duration alone had Austria&rsquo;s century bond losing an impossible 171%.</p>
+      <p>More convexity comes from the same things that raise duration: longer maturity, a lower coupon, a lower yield. The gilt&rsquo;s convexity, 731, is more than nine times the worked example&rsquo;s 10-year 4% bond (78).</p>
+
+      <h3>Why it works</h3>
+      <p>Take Day 40&rsquo;s three prices for the gilt (3.7%, steps of 10 bp) and look at each half:</p>
+      <ol>
+        <li><b>Gain versus loss.</b> A 10 bp fall adds PV<sub>&minus;</sub> &minus; PV<sub>0</sub> = 1.0994. A 10 bp rise takes away PV<sub>0</sub> &minus; PV<sub>+</sub> = 1.0683. On a straight line they would match. The gain is bigger by 0.0311: the curve is steeper on the left.</li>
+        <li><b>Duration uses the sum.</b> Day 40&rsquo;s numerator, PV<sub>&minus;</sub> &minus; PV<sub>+</sub>, is gain + loss: the average slope, the ruler.</li>
+        <li><b>Convexity uses the difference.</b> Gain &minus; loss = (PV<sub>&minus;</sub> &minus; PV<sub>0</sub>) &minus; (PV<sub>0</sub> &minus; PV<sub>+</sub>) = PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2PV<sub>0</sub>. It is how much the slope changed from the left half to the right half.</li>
+        <li><b>Make it a rate.</b> A slope is a price change &divide; &Delta;Yield, so the change in slope is (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2PV<sub>0</sub>)/&Delta;Yield. That happened over one step of &Delta;Yield: divide again, and by PV<sub>0</sub> for a share of the price. That is ApproxCon.</li>
+        <li><b>A car first.</b> A car at speed v, speeding up steadily by a, goes from v to v + a&middot;t. Its average speed is v + &frac12;a&middot;t, so the distance is v&middot;t + &frac12;a&middot;t<sup>2</sup>. The &frac12;: the extra speed is all there only at the end, so on average it is half.</li>
+        <li><b>Now the bond.</b> Measured as a share of PV<sub>0</sub>, its slope starts at &minus;AnnModDur and changes steadily by AnnConvexity per unit of yield. Over the move the average slope is &minus;AnnModDur + &frac12; &times; AnnConvexity &times; &Delta;Yield. Times the move: %&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield + &frac12; &times; AnnConvexity &times; (&Delta;Yield)<sup>2</sup>.</li>
+        <li><b>Always plus.</b> (&Delta;Yield)<sup>2</sup> is positive whether yields rise or fall, and an option-free bond&rsquo;s convexity is positive. So the fix always adds: a smaller loss, a bigger gain.</li>
+        <li><b>In money.</b> Multiply by the position&rsquo;s value: MoneyCon = AnnConvexity &times; PV<sub>full</sub>.</li>
+      </ol>
+      <p>Why long bonds? Duration weighted each payment by its time t (Day 39); convexity weights it by roughly t<sup>2</sup>. Far payments count hugely, and spreading payments out raises convexity even at the same duration.</p>
+      <p>In plain words: duration guesses with a ruler, convexity adds back the bend, and the bend matters more the further you go.</p>
+      <div class="formula">
+        <p class="expr">ApproxCon = (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>) / [(&Delta;Yield)<sup>2</sup> &times; PV<sub>0</sub>]</p>
+        <p class="expr">%&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield + &frac12; &times; AnnConvexity &times; (&Delta;Yield)<sup>2</sup></p>
+        <p class="expr">&Delta;PV &asymp; &minus;MoneyDur &times; &Delta;Yield + &frac12; &times; MoneyCon &times; (&Delta;Yield)<sup>2</sup></p>
+        <dl>
+          <dt>PV<sub>0</sub></dt><dd>the bond&rsquo;s (full) price at today&rsquo;s yield</dd>
+          <dt>PV<sub>&minus;</sub>, PV<sub>+</sub></dt><dd>its price with the yield a small step lower, and a small step higher</dd>
+          <dt>&Delta;Yield</dt><dd>in ApproxCon, that small step; in the estimate, the actual change in the annual yield. Always a decimal: 10 bp = 0.001</dd>
+          <dt>AnnModDur</dt><dd>annual modified duration (Day 39); ApproxModDur estimates it (Day 40)</dd>
+          <dt>AnnConvexity</dt><dd>annual convexity; ApproxCon estimates it, already annual when the steps are in annual yield</dd>
+          <dt>MoneyDur</dt><dd>AnnModDur &times; PV<sub>full</sub> of the position</dd>
+          <dt>MoneyCon</dt><dd>money convexity, AnnConvexity &times; PV<sub>full</sub> of the position</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Approximate convexity: ApproxCon = (PV<sub>&minus;</sub> + PV<sub>+</sub> &minus; 2 &times; PV<sub>0</sub>) / [(&Delta;Yield)<sup>2</sup> &times; PV<sub>0</sub>]</li>
+          <li>Price change with duration and convexity: %&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield + &frac12; &times; AnnConvexity &times; (&Delta;Yield)<sup>2</sup></li>
+          <li>Money convexity and the currency price change: MoneyCon = AnnConvexity &times; PV<sub>full</sub>; &Delta;PV &asymp; &minus;MoneyDur &times; &Delta;Yield + &frac12; &times; MoneyCon &times; (&Delta;Yield)<sup>2</sup></li>
+          <li>Sign of the convexity adjustment for an option-free bond: Always positive (adds to the estimate for yield rises and falls)</li>
+          <li>What gives a bond more convexity? Longer maturity, lower coupon, lower yield, and (for the same duration) more dispersed cash flows</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A 10-year bond with a 4% annual coupon yields 5%; its price is 92.2783 per 100. Repriced at 4.75% it is 94.1377; at 5.25%, 90.4639. Estimate the % price change for a 150 bp rise with duration alone and with convexity, and compare with the exact change (the price at 6.5% is 82.0279).</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>The repricing step is 25 bp: &Delta;Yield = 0.0025.</li>
+          <li>ApproxModDur = (94.1377 &minus; 90.4639)/(2 &times; 0.0025 &times; 92.2783) = 3.6738/0.4613915 = <b>7.9624</b>.</li>
+          <li>ApproxCon = (94.1377 + 90.4639 &minus; 184.5566)/(0.00000625 &times; 92.2783) = 0.0450/0.00057674 = <b>78.0248</b>.</li>
+          <li>Duration term = &minus;7.9624 &times; 0.015 = &minus;11.9437%.</li>
+          <li>Convexity term = &frac12; &times; 78.0248 &times; 0.015<sup>2</sup> = &frac12; &times; 78.0248 &times; 0.000225 = +0.8778%.</li>
+          <li>Estimate = &minus;11.9437% + 0.8778% = <b>&minus;11.0659%</b>.</li>
+          <li>Exact = 82.0279/92.2783 &minus; 1 = <b>&minus;11.1081%</b>. Duration alone missed by 0.84 of a point; with convexity, by 0.04.</li>
+          <li>One warning: unrounded prices give ApproxCon = 78.30, not 78.02. The numerator is a tiny difference of big numbers, so rounding moves it. That is why the walkthrough stores every price.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> The story&rsquo;s stylized gilt: 30 years, 0.5% annual coupon, 100 face, yield 3.7%. Price it at 3.7%, 3.6% and 3.8% and store each price. Compute ApproxModDur and ApproxCon, estimate the % price change for a jump to 5.1% with duration alone and with convexity, then check by repricing at 5.1%.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Enter the gilt, price it at 3.7% (that is PV<sub>0</sub>) and store it as a positive number</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>30</kbd> <kbd>N</kbd> <kbd>3.7</kbd> <kbd>I/Y</kbd> <kbd>.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>1</kbd> (P/Y = 1 and END, set on Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=30</samp>, <samp>I%=3.7</samp>, <samp>PV=0</samp>, <samp>PMT=.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd>. Then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (with no brackets, tvm_PV reprices with the solver&rsquo;s values; A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;42.5929</samp> (BA II Plus) / <samp>PV=&minus;42.5929</samp> in the solver, then <samp>42.5929</samp> on the home screen (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Reprice 10 bp lower (PV<sub>&minus;</sub>, store 2 / B) and 10 bp higher (PV<sub>+</sub>, store 3 / C)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.6</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>2</kbd>, then <kbd>3.8</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>3</kbd> (N, PMT and FV stay in)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>30</kbd> <kbd>,</kbd> <kbd>3.6</kbd> <kbd>,</kbd> <kbd>.5</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd>, then the same with <kbd>3.8</kbd> and <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> (in brackets: N, I%, PMT, FV; B is above <kbd>APPS</kbd>, C above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;43.6923</samp>, <samp>PV = &minus;41.5247</samp> (BA II Plus) / <samp>43.6923</samp>, <samp>41.5247</samp> (TI-84). Gain for &minus;10 bp: 1.0994; loss for +10 bp: 1.0683.</p>
+          </li>
+          <li>
+            <p class="calc-what">ApproxModDur, Day 40&rsquo;s average slope. Store it (4 / D)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.001</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>4</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.001</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (D is above <kbd>x⁻¹</kbd>)</div>
+            <p class="calc-see">Display: <samp>25.4465</samp> (both calculators)</p>
+          </li>
+          <li>
+            <p class="calc-what">ApproxCon, the change in slope. Store it (5 / E)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.001</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>5</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.001</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>ENTER</kbd> (E is above <kbd>SIN</kbd>)</div>
+            <p class="calc-see">Display: <samp>731.3412</samp> (both calculators). The numerator alone is only 0.0311: retyping rounded prices would give 732.5.</p>
+          </li>
+          <li>
+            <p class="calc-what">Duration only, for +140 bp (&Delta;Yield = 0.014), in percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.014</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&times;</kbd> <kbd>.014</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;35.6251</samp> (both calculators): the ruler&rsquo;s answer.</p>
+          </li>
+          <li>
+            <p class="calc-what">Add the convexity term, &frac12; &times; ApproxCon &times; 0.014<sup>2</sup>, in percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.014</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> (AOS works out the product first, then adds it to &minus;35.6251)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&times;</kbd> <kbd>.014</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (the line starts <samp>Ans+</samp> by itself)</div>
+            <p class="calc-see">Display: <samp>&minus;28.4580</samp> (both calculators). The convexity term was +7.1671.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check: reprice at 5.1% and find the true % change</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>5.1</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>30</kbd> <kbd>,</kbd> <kbd>5.1</kbd> <kbd>,</kbd> <kbd>.5</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>), then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;30.0857</samp>, <samp>&minus;0.2936</samp>, <samp>&minus;29.3645</samp> (BA II Plus) / <samp>30.0857</samp>, <samp>&minus;.2936</samp>, <samp>&minus;29.3645</samp> (TI-84)</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: ApproxModDur 25.4465, ApproxCon 731.3412. For +140 bp, duration alone says &minus;35.63%; with convexity, &minus;28.46%; the exact change is &minus;29.36%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Repriced at 5.1%, the stylized gilt is worth 30.0857 per 100, against 42.5929 at 3.7%. The true fall is <b>29.36%</b>, not 35.63%. Duration overstated the loss by about 6.3 percentage points, because the price curve bends up and away from its straight line.</p>
+      <p>Add &frac12; &times; 731.34 &times; 0.014<sup>2</sup> = +7.17% and the estimate becomes &minus;28.46%, within about 0.9 of a point of the truth.</p>
+      <p>Run the move in reverse, yields down 1.4 points, and the bond gains 43.92%, more than duration&rsquo;s +35.63% (with convexity, +42.79%). Smaller losses, bigger gains: that is positive convexity.</p>
+      <p>It softened the blow; it did not stop it. Even the true figure is a loss of almost 30% on a government bond.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Forgetting the &frac12;.</b> Without it the walkthrough adds 14.33 instead of 7.17 and lands on &minus;21.29%, not &minus;28.46%.</li>
+          <li><b>A minus sign on the convexity term because yields rose.</b> (&Delta;Yield)<sup>2</sup> is positive either way, so for an option-free bond the term always adds. Subtracting it gives &minus;42.79%, wrong.</li>
+          <li><b>&Delta;Yield in percent.</b> Use 0.014, not 1.4. Squaring 1.4 makes the term 10,000 times too big: &frac12; &times; 731.34 &times; 1.4<sup>2</sup> = 716.71, nonsense.</li>
+          <li><b>Rounding the prices before ApproxCon.</b> Its numerator is tiny (0.0311 here). Retyped 4-decimal prices give 732.5 instead of 731.3; store them.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="-18.279345872652673" data-tol="0.02" data-pct data-show="&minus;18.28%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A 20-year bond pays a 1% annual coupon and yields 3%. Reprice it at 2.9% and 3.1% to get its approximate duration and convexity. Then estimate, with duration and convexity, its percentage price change if the yield rises 120 bp. As a percent to two decimals (a fall is negative).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The walkthrough&rsquo;s keys with N = 20, PMT = 1, yields 3, 2.9 and 3.1, and &Delta;Yield = 0.012 for the move. PV<sub>0</sub> should be 70.2451.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Prices: 70.2451 at 3%, 71.4697 at 2.9%, 69.0442 at 3.1%. ApproxModDur = 17.2643; ApproxCon = 338.5845. Estimate = &minus;17.2643 &times; 0.012 + &frac12; &times; 338.5845 &times; 0.012<sup>2</sup> = &minus;20.72% + 2.44% = <b>&minus;18.28%</b>. (Exact, repricing at 4.2%: 57.2711, &minus;18.47%.)</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>20</kbd> <kbd>N</kbd> <kbd>3</kbd> <kbd>I/Y</kbd> <kbd>1</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>70.2451</samp>; <kbd>2.9</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>71.4697</samp>; <kbd>3.1</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>69.0442</samp>. Then <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.001</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>4</kbd> &rarr; <samp>17.2643</samp>; <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.001</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>5</kbd> &rarr; <samp>338.5845</samp>; <kbd>RCL</kbd> <kbd>4</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.012</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>&minus;20.7172</samp>; <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.012</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>&minus;18.2793</samp>.</p>
+            <p>TI-84 Plus, on the home screen (the solver still has P/Y = 1, C/Y = 1 and END): <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>20</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>70.2451</samp>; the same with <kbd>2.9</kbd> into B &rarr; <samp>71.4697</samp> and <kbd>3.1</kbd> into C &rarr; <samp>69.0442</samp>. Then <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.001</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>17.2643</samp>; <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.001</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>ENTER</kbd> &rarr; <samp>338.5845</samp>; <kbd>(&minus;)</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&times;</kbd> <kbd>.012</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;20.7172</samp>; <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>E</kbd> <kbd>&times;</kbd> <kbd>.012</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;18.2793</samp>.</p>
+            <p>The traps: without the &frac12;, &minus;15.84%; with a minus on the convexity term, &minus;23.15%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> For an option-free bond, why does the convexity term add to the estimate whether yields rise or fall?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It doesn&rsquo;t: the term takes the sign of &Delta;Yield, so it subtracts when yields rise</span></label>
+              <p class="cq-why">The sign trap. &Delta;Yield is squared, so its sign disappears: +140 bp and &minus;140 bp both give the gilt +7.17 points.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. (&Delta;Yield)<sup>2</sup> is positive either way, and the price curve bends upward, lying above duration&rsquo;s straight line on both sides</span></label>
+              <p class="cq-why">Right: the truth sits above the ruler for a rise and for a fall, so the fix is upward both times.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Coupons are reinvested at the new yield, which helps the holder either way</span></label>
+              <p class="cq-why">That is reinvestment risk (Day 39), and it does not even help both ways: lower yields hurt reinvestment. Convexity is about the shape of the price curve today.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>The gilt, &plusmn;140 bp. Yields up: duration says &minus;35.63%, the truth is &minus;29.36%, higher. Yields down: duration says +35.63%, the truth is +43.92%, higher again. Both times the curve is above the line, and the convexity term, +7.17 points, pushes the estimate up toward it.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="-11.5125" data-tol="0.01" data-show="&minus;11.51 million">
+          <p class="cq-stem"><b>3. Twist: in pounds.</b> A fund holds a gilt position worth &pound;50 million with an annual modified duration of 18.5 and an annual convexity of 420. Yields rise 150 bp. Using money duration and money convexity, estimate the change in the position&rsquo;s value. In millions of pounds, to two decimals (a loss is negative).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">&pound; million</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Work in millions. MoneyDur = 18.5 &times; 50 and MoneyCon = 420 &times; 50. &Delta;Yield = 0.015, squared in the convexity term.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>MoneyDur = 18.5 &times; 50 = 925; MoneyCon = 420 &times; 50 = 21,000 (&pound; millions). Duration part: &minus;925 &times; 0.015 = &minus;13.8750. Convexity part: &frac12; &times; 21,000 &times; 0.015<sup>2</sup> = &frac12; &times; 21,000 &times; 0.000225 = +2.3625. Total: <b>&minus;&pound;11.51 million</b> (&minus;11.5125), about 23% of the position.</p>
+            <p>BA II Plus: <kbd>18.5</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>420</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>x²</kbd> <kbd>=</kbd> &rarr; <samp>&minus;11.5125</samp>.</p>
+            <p>TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>18.5</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>420</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>&times;</kbd> <kbd>.015</kbd> <kbd>x²</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;11.5125</samp>.</p>
+            <p>The trap: without the &frac12;, &minus;9.15.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> A bond has an annual modified duration of 7.2 and an annual convexity of 65. If its yield rises by 75 basis points, the estimated percentage change in its price is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;5.58%</span></label>
+              <p class="cq-why">The convexity term was given a minus sign because yields rose: &minus;5.40 &minus; 0.18. (&Delta;Yield)<sup>2</sup> is positive, so it adds.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;5.03%</span></label>
+              <p class="cq-why">The &frac12; was forgotten: 65 &times; 0.0075<sup>2</sup> = 0.37 points instead of 0.18.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. &minus;5.22%</span></label>
+              <p class="cq-why">Right: &minus;5.40% + 0.18% = &minus;5.22%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>%&Delta;PV &asymp; &minus;7.2 &times; 0.0075 + &frac12; &times; 65 &times; 0.0075<sup>2</sup> = &minus;0.0540 + &frac12; &times; 65 &times; 0.00005625 = &minus;0.0540 + 0.0018 = <b>&minus;5.22%</b> (&minus;5.2172%).</p>
+            <p>BA II Plus: <kbd>7.2</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>65</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>x²</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0522</samp>. TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>7.2</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>65</kbd> <kbd>&times;</kbd> <kbd>.0075</kbd> <kbd>x²</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0522</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences, in your own words: after a big yield move, why does duration alone overstate the loss and understate the gain for an option-free bond?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Duration is a straight line, the tangent to the price&ndash;yield curve at today&rsquo;s yield, but the curve is convex: it bends upward and sits above that line on both sides. So after any move the true price is higher than duration says, a smaller loss if yields rose and a bigger gain if they fell, and the gap grows with the square of the move, which the convexity term &frac12; &times; Convexity &times; (&Delta;Yield)<sup>2</sup> adds back.</p>
+            <p>A complete answer says: (1) the price&ndash;yield curve is convex; (2) duration is the straight tangent line, so the curve lies above it whether yields rise or fall; (3) the error grows with (&Delta;Yield)<sup>2</sup>, and the convexity term adds it back.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Yield-Based Bond Convexity and Portfolio Properties (approximate convexity, the convexity adjustment to the duration estimate of the percentage price change, money convexity, the bond features that raise convexity, and duration alone against duration plus convexity and full repricing for large yield changes); building on Yield-Based Bond Duration Measures and Properties (Days 39 and 40).</p>
+      <p><strong>Sources.</strong> AJ Bell, &ldquo;Three years after the mini-Budget, why isn&rsquo;t the market panicking about higher gilt yields?&rdquo;, 2025 (the 30-year gilt yield up about 1.2 percentage points in three trading days, 22&ndash;27 September 2022); eco3min, &ldquo;2022 UK gilt crisis&rdquo;, citing Bank of England yield data (about 3.7% on the eve of the mini-budget; LDI collateral calls and forced gilt sales); other accounts give about 3.5% or 3.6% for the eve, hence the range; interactive investor, &ldquo;Bank of England intervenes to end bond market panic&rdquo;, 28 September 2022 (Reuters figures: 5.092% in early trading, the highest since 2002, then a close of 3.934%); Sir Jon Cunliffe&rsquo;s letter to the Treasury Committee, 5 October 2022, as reported by Professional Pensions and CNBC, 6 October 2022 (the intervention led to a more than 100 basis point fall in 30-year yields). The puzzle&rsquo;s gilt is stylized: 30 years, a 0.5% annual coupon, priced from 3.7%, the top of the eve-of-statement range.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-40.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

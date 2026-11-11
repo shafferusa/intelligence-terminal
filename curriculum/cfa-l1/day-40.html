@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>No borrower defaulted on SVB’s bonds, yet rising rates erased $15 billion: money duration shows how — CFA Math, Day 40 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "No borrower defaulted on SVB’s bonds, yet rising rates erased $15 billion: money duration shows how",
+    "path": "reports/cfa/l1/day-40.html",
+    "summary": "Day 40 of CFA Math: Logan learns to estimate a bond’s modified duration by repricing it at a yield a little lower and a little higher, and to turn that into money duration and the price value of a basis point; he computes a 10-year bond’s approximate duration, PVBP, money duration and the estimated loss on $10 million for a 200 bp rise on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 40 of 90 · Fixed Income: reprice a bond a hair below and above its yield to get its duration, then money duration and PVBP turn it into dollars",
+      "Calculator: a 10-year 3% bond’s approximate modified duration, PVBP, money duration and loss on $10 million for +200 bp, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>No borrower defaulted on SVB&rsquo;s bonds, yet rising rates erased $15 billion: money duration shows how</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Reprice a bond a hair below and a hair above its yield and the gap gives you its duration; multiply by what you hold and you know what every basis point costs in dollars.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 40 of 90 &middot; Yield-Based Bond Duration Measures and Properties &middot; Approximate duration, money duration and PVBP</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="40">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 39 and Day 10, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="1.6" data-tol="0.01" data-pct data-show="+1.60%">
+          <p class="cq-stem"><b>From Day 39.</b> A bond has a Macaulay duration of 8.40 years and an annual-pay yield of 5%. Its yield falls by 20 basis points. Estimate the percentage change in its price. As a percent, to two decimals (a minus sign for a fall).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Turn Macaulay into modified first. And a fall in yield moves the price which way?</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>ModDur = 8.40/1.05 = 8.00. %&Delta;PV &asymp; &minus;8.00 &times; (&minus;0.20) = <b>+1.60%</b>. Yield down, price up.</p>
+            <p>BA II Plus: <kbd>8.4</kbd> <kbd>&divide;</kbd> <kbd>1.05</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>=</kbd> &rarr; <samp>1.6000</samp>. TI-84 Plus: <kbd>8.4</kbd> <kbd>&divide;</kbd> <kbd>1.05</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.6000</samp>.</p>
+            <p>The traps: 8.40 &times; 0.20 = 1.68 uses Macaulay duration as the sensitivity; &minus;1.60 has the direction backwards.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 10.</b> A project costs 800 today and returns 250 at the end of each of years 1 to 3 and 300 at the end of year 4. At 8%, its NPV is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 64.78</span></label>
+              <p class="cq-why">Right: the inflows are worth 864.78 today, and 864.78 &minus; 800 = 64.78.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. &minus;311.32</span></label>
+              <p class="cq-why">F01 left at 1: the 250 was counted once, so the 300 landed in year 2.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 864.78</span></label>
+              <p class="cq-why">CF0 forgotten: that is the PV of the inflows alone, before paying the 800.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>800</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>250</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>300</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 64.7832</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>8</kbd> <kbd>,</kbd> <kbd>(&minus;)</kbd> <kbd>800</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>250</kbd> <kbd>,</kbd> <kbd>300</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>64.7832</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Silicon Valley Bank&rsquo;s $15 billion hole</h3>
+      <p>Thursday, 9 March 2023. Depositors tried to pull $42 billion out of Silicon Valley Bank in a single day. The next morning, 10 March, regulators closed it.</p>
+      <p>The hole had been dug earlier. In the deposit boom of 2020&ndash;21, SVB put much of its cash into long-dated bonds: mostly mortgage-backed securities from government agencies, many maturing in 10 years or more.</p>
+      <p>Then rates rose. At the end of 2022 the bank carried $91.3 billion of these bonds as &ldquo;held to maturity&rdquo;, at amortized cost: roughly what it had paid. Their fair value, what they would actually fetch, was $76.2 billion.</p>
+      <p>That is an unrealized loss of about $15 billion. The bank&rsquo;s equity was roughly $16 billion.</p>
+      <p>The Federal Reserve&rsquo;s review of the failure later put that portfolio&rsquo;s weighted-average duration at 6.2 years.</p>
+      <p>No issuer had defaulted on those bonds. Yet rising rates had nearly wiped out the bank&rsquo;s equity. How do you turn &ldquo;rates went up&rdquo; into dollars lost?</p>
+
+      <h3>The idea</h3>
+      <p>Yesterday you built duration from the cash flows: each payment&rsquo;s time, weighted by its PV. Today, a shortcut that needs no cash-flow table: <b>reprice the bond</b>.</p>
+      <p>Lower the yield a hair and price it: call that PV<sub>&minus;</sub>. Raise the yield by the same hair: PV<sub>+</sub>. The price gap, per unit of yield, is how steeply the price falls as the yield rises. Divide by today&rsquo;s price, PV<sub>0</sub>, and the steepness becomes a percent. That is the <b>approximate modified duration</b>.</p>
+      <p>Picture a hillside. To know how steep it is where you stand, take one step down and one step up and compare the heights. Height gap &divide; the distance between your feet = the slope.</p>
+      <p>Then turn the percent into money. <b>Money duration</b> = modified duration &times; what the position is worth. Multiply it by a yield change, as a decimal, and you get dollars. For one basis point (0.01%) that dollar figure has its own name: the <b>price value of a basis point</b>, PVBP.</p>
+
+      <h3>Why it works</h3>
+      <p>Start from yesterday&rsquo;s rule and turn it around.</p>
+      <ol>
+        <li><b>Duration is a slope.</b> Day 39: %&Delta;PV &asymp; &minus;ModDur &times; &Delta;Yield. So ModDur &asymp; &minus;%&Delta;PV/&Delta;Yield: the percent the price moves per unit of yield. Measure that and you have it.</li>
+        <li><b>Measure it with a big step, so you can see it.</b> The walkthrough&rsquo;s bond (10 years, 3% annual coupon) is worth 91.8891 at 4%. At 3% it is 100.0000, up 8.1109; at 5%, 84.5565, down 7.3326. As a percent of 91.8891, per unit of yield: 8.1109/(0.01 &times; 91.8891) = 8.8268 going down, 7.3326/(0.01 &times; 91.8891) = 7.9798 going up.</li>
+        <li><b>Two answers, because the price&ndash;yield line is a curve</b> (Day 41&rsquo;s convexity): a fall in yield helps more than a rise hurts. So average them: [(PV<sub>&minus;</sub> &minus; PV<sub>0</sub>) + (PV<sub>0</sub> &minus; PV<sub>+</sub>)] / (2 &times; &Delta;Yield &times; PV<sub>0</sub>). The PV<sub>0</sub>s on top cancel, leaving (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>)/(2 &times; &Delta;Yield &times; PV<sub>0</sub>). That is the formula. The 2 is there because the two prices sit two steps apart. Here: (8.8268 + 7.9798)/2 = 8.4033.</li>
+        <li><b>Shrink the step.</b> At &plusmn;1 bp the two sides nearly agree (8.3917 and 8.3832), and their average, 8.3874, is the exact modified duration to four decimals. Times (1 + r) it is the Macaulay duration (Day 39): 8.3874 &times; 1.04 = 8.7229.</li>
+        <li><b>Percent to dollars.</b> A percent change times the value is a dollar change: &Delta;PV &asymp; &minus;ModDur &times; &Delta;Yield &times; PV. Call ModDur &times; PV the money duration: &Delta;PV &asymp; &minus;MoneyDur &times; &Delta;Yield. With &Delta;Yield = 0.0001 that is the PVBP, which you can also read straight off the prices: (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>)/2, the average move for 1 bp.</li>
+        <li><b>A portfolio.</b> If every yield moves by the same &Delta;Yield, the dollar changes add: &minus;&Sigma; D<sub>i</sub> &times; MV<sub>i</sub> &times; &Delta;Yield. Divide by the total value, MV, and the portfolio&rsquo;s duration is &Sigma; (MV<sub>i</sub>/MV) &times; D<sub>i</sub>. Market-value weights, because the dollars at risk depend on what each bond is worth, not its face value.</li>
+      </ol>
+      <p>In plain words: wiggle the yield a tiny bit each way and see how far the price swings. That is how touchy the bond is. Times what you own, it is dollars.</p>
+      <div class="formula">
+        <p class="expr">ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Yield &times; PV<sub>0</sub>)</p>
+        <p class="expr">ApproxMacDur = ApproxModDur &times; (1 + r)</p>
+        <p class="expr">MoneyDur = AnnModDur &times; PV<sub>full</sub>; &nbsp; &Delta;PV &asymp; &minus;MoneyDur &times; &Delta;Yield</p>
+        <p class="expr">PVBP = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / 2, with yields &plusmn;1 bp</p>
+        <p class="expr">D<sub>p</sub> &asymp; &Sigma; w<sub>i</sub> &times; D<sub>i</sub></p>
+        <dl>
+          <dt>PV<sub>0</sub></dt><dd>the bond&rsquo;s price at today&rsquo;s yield</dd>
+          <dt>PV<sub>&minus;</sub></dt><dd>the price with the yield lowered by &Delta;Yield (the higher price)</dd>
+          <dt>PV<sub>+</sub></dt><dd>the price with the yield raised by &Delta;Yield (the lower price)</dd>
+          <dt>&Delta;Yield</dt><dd>the yield step or change, as a decimal: 1 bp = 0.0001, 25 bp = 0.0025</dd>
+          <dt>r</dt><dd>the yield per period, as a decimal</dd>
+          <dt>AnnModDur</dt><dd>annual modified duration; ApproxModDur estimates it</dd>
+          <dt>PV<sub>full</sub></dt><dd>the position&rsquo;s market value, including accrued interest (on a coupon date, just price &times; size)</dd>
+          <dt>MoneyDur</dt><dd>money duration, in currency: times &Delta;Yield it gives the estimated money change</dd>
+          <dt>PVBP</dt><dd>price value of a basis point: the money change for a 1 bp move</dd>
+          <dt>w<sub>i</sub>, D<sub>i</sub></dt><dd>bond i&rsquo;s share of the portfolio&rsquo;s market value, and its duration</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Approximate modified duration: ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / (2 &times; &Delta;Yield &times; PV<sub>0</sub>)</li>
+          <li>Money duration: MoneyDur = AnnModDur &times; PV<sub>full</sub> of the position; &Delta;PV &asymp; &minus;MoneyDur &times; &Delta;Yield</li>
+          <li>Price value of a basis point: PVBP = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) / 2, with yields &plusmn;1 bp</li>
+          <li>Portfolio duration (approximation): D<sub>p</sub> &asymp; &Sigma; w<sub>i</sub> &times; D<sub>i</sub>, w<sub>i</sub> = market-value weights</li>
+          <li>Approximate Macaulay duration: ApproxMacDur = ApproxModDur &times; (1 + r)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A bond is priced at 98.50 per 100. If its yield fell 25 bp the price would be 100.80; if it rose 25 bp, 96.25. Find its approximate modified duration, the money duration of a $5 million holding (market value), and the estimated change in value for a 10 bp rise.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>PV<sub>&minus;</sub> &minus; PV<sub>+</sub> = 100.80 &minus; 96.25 = 4.55.</li>
+          <li>2 &times; &Delta;Yield &times; PV<sub>0</sub> = 2 &times; 0.0025 &times; 98.50 = 0.4925.</li>
+          <li>ApproxModDur = 4.55/0.4925 = <b>9.2386</b>.</li>
+          <li>Money duration = 9.2386 &times; $5,000,000 = <b>$46,192,893</b>.</li>
+          <li>+10 bp: &Delta;PV &asymp; &minus;$46,192,893 &times; 0.0010 = <b>&minus;$46,193</b>.</li>
+          <li>Each basis point: $46,192,893 &times; 0.0001 = $4,619, the holding&rsquo;s PVBP.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A 10-year bond pays a 3% annual coupon and yields 4%. Price it per 100 at 4.00%, 3.99% and 4.01%, storing each price. Then find its approximate modified duration and its PVBP per 100. You hold $10 million par: what is the money duration, and about how much do you lose if yields jump 200 bp?</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Price it at 4.00% (PV<sub>0</sub>) and store the price as a positive number</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>4</kbd> <kbd>I/Y</kbd> <kbd>3</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=10</samp>, <samp>I%=4</samp>, <samp>PV=0</samp>, <samp>PMT=3</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd>. Solving there does not set Ans, so store it from the home screen: <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (the order is N, I%, PMT, FV; P/Y, C/Y and END come from the solver)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;91.8891</samp>, then <samp>91.8891</samp> (BA II Plus) / <samp>PV=&minus;91.8891</samp>, then <samp>91.8891</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Yield down 1 bp, to 3.99%: PV<sub>&minus;</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.99</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>2</kbd> (N, PMT and FV stay in memory)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>3.99</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (shortcut: <kbd>2nd</kbd> <kbd>ENTER</kbd> (ENTRY) brings back the last line to edit)</div>
+            <p class="calc-see">Display: <samp>PV = &minus;91.9662</samp>, then <samp>91.9662</samp> (BA II Plus) / <samp>91.9662</samp> (TI-84). Up 0.0771.</p>
+          </li>
+          <li>
+            <p class="calc-what">Yield up 1 bp, to 4.01%: PV<sub>+</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4.01</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>4.01</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;91.8121</samp>, then <samp>91.8121</samp> (BA II Plus) / <samp>91.8121</samp> (TI-84). Down 0.0770: a hair less than the gain. That is the curve.</p>
+          </li>
+          <li>
+            <p class="calc-what">ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) &divide; (2 &times; 0.0001 &times; PV<sub>0</sub>), and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0001</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd>, then <kbd>STO</kbd> <kbd>4</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0001</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (D is above <kbd>x⁻¹</kbd>)</div>
+            <p class="calc-see">Display: <samp>8.3874</samp> (both calculators). Times 1.04 it is 8.7229, the Macaulay duration. Retype the rounded prices instead of recalling them and you get 8.3851: store, don&rsquo;t retype.</p>
+          </li>
+          <li>
+            <p class="calc-what">PVBP per 100 of par = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>) &divide; 2</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0771</samp> (BA II Plus) / <samp>.0771</samp> (TI-84). About 7.7 cents per 100 of par for each basis point.</p>
+          </li>
+          <li>
+            <p class="calc-what">The position&rsquo;s market value, then money duration = ApproxModDur &times; that value</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>10000000</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>100</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>10000000</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&divide;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>9,188,910.422</samp>, then <samp>77,071,256.23</samp> (BA II Plus) / <samp>9188910.422</samp>, then <samp>77071256.23</samp> (TI-84). Both screens hold 10 digits, so big numbers lose decimals.</p>
+          </li>
+          <li>
+            <p class="calc-what">Estimated change for +200 bp = &minus;money duration &times; 0.02</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&times;</kbd> <kbd>.02</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>.02</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;1,541,425.125</samp> (BA II Plus) / <samp>&minus;1541425.125</samp> (TI-84)</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: ApproxModDur 8.3874 (ApproxMacDur 8.7229); PVBP 0.0771 per 100, about $7,707 on the position; money duration $77,071,256; a 200 bp rise costs about $1,541,425. Repricing at 6% gives a loss of $1,396,937: on a move this big the straight line overstates the loss. That gap is convexity, Day 41.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Money duration answers it. Run it backwards first: treat the 6.2 years as a modified duration (a simplification) and the $91.3 billion cost as the starting value. The $15.1 billion loss is 16.54% of that, so yields must have risen about 16.54 &divide; 6.2 = 2.67 percentage points.</p>
+      <p>Compare the 5-year Treasury yield: about 1.37% to 3.99% during 2022, up 2.62 points. Money duration turns that into 6.2 &times; 0.0262 &times; $91.3 billion = about $14.8 billion. Close to the real hole.</p>
+      <p>Now forwards. At its $76.2 billion market value, the portfolio&rsquo;s money duration was 6.2 &times; $76.2 billion = $472.44 billion: about $4.72 billion for every further 1-point rise, $47.2 million per basis point (its PVBP).</p>
+      <p>A rough check: the bonds were bought at different times, and mortgage bonds&rsquo; duration lengthens as rates rise. But no borrower defaulted. Duration alone turned a rate chart into a hole in the balance sheet.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>The 2 in the denominator.</b> PV<sub>&minus;</sub> and PV<sub>+</sub> are two steps apart. Drop the 2 and the walkthrough&rsquo;s 8.3874 doubles to 16.7748.</li>
+          <li><b>&Delta;Yield as a decimal.</b> 1 bp = 0.0001, 25 bp = 0.0025, 50 bp = 0.005. Typing 0.01 for one basis point gives 0.0839, a duration 100 times too small.</li>
+          <li><b>Money duration uses market value, not par.</b> $10 million par of the walkthrough&rsquo;s bond is worth $9,188,910. Using par gives a money duration of $83,874,206 and a 200 bp loss of $1,677,484 instead of $1,541,425.</li>
+          <li><b>Portfolio weights are market-value weights.</b> D<sub>p</sub> &asymp; &Sigma; w<sub>i</sub> &times; D<sub>i</sub> with w<sub>i</sub> = MV<sub>i</sub>/MV. Weighting by par value, or taking a plain average, gives the wrong duration.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="7.0732828015632485" data-tol="0.005" data-show="7.07">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> An 8-year bond pays a 2.5% annual coupon and yields 3.5%. Reprice it at 3.49% and 3.51% and find its approximate modified duration. To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough with N = 8, PMT = 2.5 and the yields 3.50, 3.49, 3.51. Store each price. PV<sub>0</sub> should be 93.1260.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Prices: PV<sub>0</sub> = 93.1260, PV<sub>&minus;</sub> = 93.1919, PV<sub>+</sub> = 93.0602. ApproxModDur = (93.1919 &minus; 93.0602)/(2 &times; 0.0001 &times; 93.1260) = <b>7.07</b> (7.0733 from the stored prices).</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>8</kbd> <kbd>N</kbd> <kbd>3.5</kbd> <kbd>I/Y</kbd> <kbd>2.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;93.1260</samp>, <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>1</kbd>; <kbd>3.49</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;93.1919</samp>, <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>2</kbd>; <kbd>3.51</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;93.0602</samp>, <kbd>+|&minus;</kbd> <kbd>STO</kbd> <kbd>3</kbd>; then <kbd>(</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0001</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>7.0733</samp>.</p>
+            <p>TI-84 Plus (solver still at P/Y = 1, C/Y = 1, END): <kbd>(&minus;)</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">4:tvm_PV</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>,</kbd> <kbd>3.5</kbd> <kbd>,</kbd> <kbd>2.5</kbd> <kbd>,</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>93.1260</samp>; the same with <kbd>3.49</kbd> into <kbd>ALPHA</kbd> <kbd>B</kbd> &rarr; <samp>93.1919</samp> and <kbd>3.51</kbd> into <kbd>ALPHA</kbd> <kbd>C</kbd> &rarr; <samp>93.0602</samp>; then <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.0001</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>7.0733</samp>.</p>
+            <p>On the way: PVBP = (93.1919 &minus; 93.0602)/2 = 0.0659 per 100, and ApproxMacDur = 7.0733 &times; 1.035 = 7.3208.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> Why does the approximate modified duration formula divide by 2 &times; &Delta;Yield?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Because duration is measured in half-years</span></label>
+              <p class="cq-why">No: the answer comes out per unit of annual yield. The 2 has nothing to do with how often the coupon is paid.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. To average the gain and the loss so that convexity cancels exactly</span></label>
+              <p class="cq-why">Averaging the two sides shrinks the curvature error but does not remove it: with &plusmn;1-point steps the walkthrough&rsquo;s bond gives 8.4033, against 8.3874 with &plusmn;1 bp.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because PV<sub>&minus;</sub> and PV<sub>+</sub> are priced two yield steps apart, from &minus;&Delta;Yield to +&Delta;Yield</span></label>
+              <p class="cq-why">Right: the price gap spans a yield change of 2 &times; &Delta;Yield, so that is what you divide by to get the change per unit of yield.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>A slope is rise over run. The run from 3.99% to 4.01% is 0.0002, two basis points, not one. Equivalently, the formula is the average of the two one-sided slopes, (PV<sub>&minus;</sub> &minus; PV<sub>0</sub>)/(&Delta;Yield &times; PV<sub>0</sub>) and (PV<sub>0</sub> &minus; PV<sub>+</sub>)/(&Delta;Yield &times; PV<sub>0</sub>): add them and halve, and the 2 appears.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="-150000" data-tol="1" data-signless data-show="150,000">
+          <p class="cq-stem"><b>3. Twist: a portfolio.</b> You hold two bonds. Bond X: par $6.5 million, market value $6.0 million, modified duration 4.0. Bond Y: par $3.5 million, market value $4.0 million, modified duration 9.0. If all yields rise by 25 basis points, about how much does the portfolio lose? In dollars, to the nearest dollar.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Weight each duration by its share of the market value, not the par. Then money duration &times; &Delta;Yield (25 bp = 0.0025).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Total market value $10 million; weights 6/10 = 0.60 and 4/10 = 0.40. D<sub>p</sub> = 0.60 &times; 4.0 + 0.40 &times; 9.0 = 6.0. Money duration = 6.0 &times; $10,000,000 = $60,000,000. Loss &asymp; $60,000,000 &times; 0.0025 = <b>$150,000</b>.</p>
+            <p>Check bond by bond: 4.0 &times; $6,000,000 &times; 0.0025 = $60,000 and 9.0 &times; $4,000,000 &times; 0.0025 = $90,000; together $150,000.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>10000000</kbd> <kbd>&times;</kbd> <kbd>.0025</kbd> <kbd>=</kbd> &rarr; <samp>150,000.0000</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>150000.0000</samp>.</p>
+            <p>The trap: par weights (0.65 and 0.35) give a duration of 5.75 and a loss of $143,750.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A bond is priced at 101.50. If its yield falls by 50 basis points its price would be 104.10; if its yield rises by 50 basis points, 99.00. Its approximate modified duration is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 10.05</span></label>
+              <p class="cq-why">The 2 was dropped: 5.10/(0.005 &times; 101.50). The two prices are two 50 bp steps apart.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 5.02</span></label>
+              <p class="cq-why">Right: (104.10 &minus; 99.00)/(2 &times; 0.005 &times; 101.50) = 5.10/1.015 = 5.02.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 5.10</span></label>
+              <p class="cq-why">Divided by par (100) instead of the bond&rsquo;s price, PV<sub>0</sub> = 101.50.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>ApproxModDur = (PV<sub>&minus;</sub> &minus; PV<sub>+</sub>)/(2 &times; &Delta;Yield &times; PV<sub>0</sub>) = (104.10 &minus; 99.00)/(2 &times; 0.005 &times; 101.50) = 5.10/1.015 = <b>5.02</b>.</p>
+            <p>BA II Plus: <kbd>5.1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.005</kbd> <kbd>&times;</kbd> <kbd>101.5</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>5.0246</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>5.0246</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> A bank treasurer holds $50 billion (market value) of bonds with a modified duration of 5. In one or two sentences, explain money duration and PVBP to the treasurer, with the numbers.</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Your money duration is modified duration times market value, 5 &times; $50 billion = $250 billion; multiply it by a yield change in decimals to get dollars, so a 1-point rise (0.01) costs about $2.5 billion. The PVBP is the dollar change for one basis point, $250 billion &times; 0.0001 = $25 million. Both are straight-line estimates, good for small moves; for big ones convexity matters.</p>
+            <p>A complete answer says: (1) money duration = annual modified duration &times; market value, and money duration &times; &Delta;Yield (as a decimal) is the estimated dollar change; (2) PVBP = the dollar change for a 1 bp move, money duration &times; 0.0001; (3) it is a straight-line approximation that holds for small moves; large moves need convexity.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Yield-Based Bond Duration Measures and Properties (approximate modified and Macaulay duration, money duration, the price value of a basis point), with portfolio duration as treated in Yield-Based Bond Convexity and Portfolio Properties; building on Day 39 (Macaulay and modified duration), on Fixed-Income Bond Valuation: Prices and Yields, and on Quantitative Methods, Learning Module 4: The Time Value of Money in Finance.</p>
+      <p><strong>Sources.</strong> Board of Governors of the Federal Reserve System, &ldquo;Review of the Federal Reserve&rsquo;s Supervision and Regulation of Silicon Valley Bank&rdquo; (Michael Barr), 28 April 2023, section &ldquo;Evolution of Silicon Valley Bank&rdquo; (the held-to-maturity portfolio&rsquo;s 6.2-year weighted-average duration at 31 December 2022, mostly agency mortgage-backed securities maturing in 10 years or more; closure on 10 March 2023); SVB Financial Group, Form 10-K for 2022 (held-to-maturity securities of $91.3 billion at amortized cost and $76.2 billion at fair value; stockholders&rsquo; equity of $16.0 billion), as summarized by The Rational Walk, &ldquo;The Fall of Silicon Valley Bank&rdquo;, March 2023; Bloomberg, &ldquo;SVB Depositors, Investors Tried to Pull $42 Billion Thursday&rdquo;, 11 March 2023, and CNBC, 28 March 2023 (the 9 March withdrawals); Federal Reserve H.15 via FRED, series DGS5 (5-year Treasury yield 1.37% on 3 January 2022 and 3.99% on 30 December 2022). Treating the 6.2-year weighted-average duration as a modified duration is this lesson&rsquo;s simplification.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-39.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

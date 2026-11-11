@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In 1982 Wall Street cut Treasury bonds into pieces, and each piece needed its own interest rate — CFA Math, Day 36 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "In 1982 Wall Street cut Treasury bonds into pieces, and each piece needed its own interest rate",
+    "path": "reports/cfa/l1/day-36.html",
+    "summary": "Day 36 of CFA Math: Logan learns why each of a bond’s cash flows is discounted at the spot rate for its own date and how to bootstrap spot rates from par yields one maturity at a time, then prices a bond at the spot rates and finds its YTM on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 36 of 90 · Fixed Income: each cash flow is discounted at its own spot rate, and spot rates are bootstrapped from par yields one maturity at a time",
+      "Calculator: bootstrapped discount factors and spot rates, a bond priced at the spot rates and its YTM, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>In 1982 Wall Street cut Treasury bonds into pieces, and each piece needed its own interest rate</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Every payment a bond makes falls on its own date, so it gets its own rate, the spot rate; and spot rates can be peeled out of par bonds one maturity at a time.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 36 of 90 &middot; The Term Structure of Interest Rates: Spot, Par, and Forward Curves &middot; Spot rates and bootstrapping</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="36">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 33 and 29, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="4.8" data-tol="0.01" data-pct data-show="4.80%">
+          <p class="cq-stem"><b>From Day 33.</b> Asset 1 has a standard deviation of 8%, asset 2 of 6%, and their returns are uncorrelated (&rho; = 0). What is the standard deviation of their minimum-variance portfolio? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> With &rho; = 0 the covariance is 0, so w<sub>1</sub>* = &sigma;<sub>2</sub><sup>2</sup>/(&sigma;<sub>1</sub><sup>2</sup> + &sigma;<sub>2</sub><sup>2</sup>). Then Day 32&rsquo;s variance formula and the square root. Work in percent.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>w<sub>1</sub>* = 36/(64 + 36) = 0.36, so w<sub>2</sub> = 0.64. Variance = 0.36<sup>2</sup> &times; 64 + 0.64<sup>2</sup> &times; 36 + 0 = 8.2944 + 14.7456 = 23.04 (%<sup>2</sup>), and &sigma;<sub>p</sub> = &radic;23.04 = <b>4.80%</b>: below both 8% and 6%. (A 50/50 mix gives 5.00%; the weighted average of the SDs, 6.72%, would be right only at &rho; = +1.)</p>
+            <p>BA II Plus: <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.3600</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>.64</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>23.0400</samp>; <kbd>&radic;x</kbd> &rarr; <samp>4.8000</samp>.</p>
+            <p>TI-84 Plus: <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3600</samp>; <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>.64</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.8000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 29.</b> A portfolio holds 6 bonds. Each defaults this year with probability 10%, independently of the others. The probability that <em>exactly one</em> defaults is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 5.90%</span></label>
+              <p class="cq-why">That is 0.1 &times; 0.9<sup>5</sup>, the chance of one particular order (bond 1 defaults, the other five don&rsquo;t). Any of the 6 bonds could be the one: <sub>6</sub>C<sub>1</sub> = 6 orders.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 46.86%</span></label>
+              <p class="cq-why">That is 1 &minus; 0.9<sup>6</sup>, the chance of <em>at least</em> one default. It also counts two, three or more.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 35.43%</span></label>
+              <p class="cq-why">Right: <sub>6</sub>C<sub>1</sub> &times; 0.1<sup>1</sup> &times; 0.9<sup>5</sup> = 6 &times; 0.1 &times; 0.59049 = 0.3543.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Binomial with n = 6, p = 0.1, x = 1. BA II Plus: <kbd>6</kbd> <kbd>&times;</kbd> <kbd>.1</kbd> <kbd>&times;</kbd> <kbd>.9</kbd> <kbd>yˣ</kbd> <kbd>5</kbd> <kbd>=</kbd> &rarr; <samp>0.3543</samp> (AOS does the power first). TI-84 Plus: <kbd>6</kbd> <kbd>&times;</kbd> <kbd>.1</kbd> <kbd>&times;</kbd> <kbd>.9</kbd> <kbd>^</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3543</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Cutting a Treasury bond into zeros</h3>
+      <p>In 1982 Merrill Lynch began buying long-term US Treasury bonds, placing them in a trust, and selling separate receipts: one for each coupon, one for the principal.</p>
+      <p>It called them Treasury Investment Growth Receipts, or TIGRs. Each receipt paid one sum on one date and nothing before it: a zero-coupon bond, backed by Treasuries. Salomon Brothers answered with its own version, CATS.</p>
+      <p>In January 1985 the Treasury announced a program of its own, STRIPS: Separate Trading of Registered Interest and Principal of Securities. From February 1985 each coupon and the principal of eligible Treasury bonds could trade on its own, as a zero-coupon security.</p>
+      <p>That month a <em>Christian Science Monitor</em> headline called the private receipts &ldquo;the Treasury&rsquo;s feline menagerie&rdquo;: CATS and TIGRS, it said, were fine for retirement accounts (IRAs) but not for short-term investing.</p>
+      <p>So one bond became a pile of single payments, each with its own market price.</p>
+      <p>Here is the puzzle. Once a bond is cut into separate payments, what rate should each payment be discounted at? And what does that say about the price of the whole bond?</p>
+
+      <h3>The idea</h3>
+      <p>A coupon bond is a bundle of IOUs. A 3-year bond with a 6% coupon is three promises: 6 in one year, 6 in two years, 106 in three. Cut apart, each promise is a <b>zero-coupon bond</b>: one payment, nothing before it.</p>
+      <p>A zero&rsquo;s yield is the <b>spot rate</b> for its date, written Z<sub>t</sub> (Z for zero). Money due in 1 year and money due in 3 years are different goods, so their rates can differ. Spot rates plotted against maturity form the <b>spot curve</b>.</p>
+      <p>So instead of one rate for the whole bond (Day 15), discount each payment at the spot rate for its own date.</p>
+      <p>What $1 due at date t costs today is the <b>discount factor</b>, DF<sub>t</sub>. A 2-year strip paying 100 that sells for 90.70 has DF<sub>2</sub> = 0.9070 and a spot rate of (100/90.70)<sup>1/2</sup> &minus; 1 = 5.00%.</p>
+      <p>Curves are often quoted as <b>par yields</b> instead: the coupon that prices a bond at exactly 100. <b>Bootstrapping</b> pulls spot rates out of them one maturity at a time. The 1-year bond gives Z<sub>1</sub>; with Z<sub>1</sub> known, the 2-year bond gives Z<sub>2</sub>; and so on.</p>
+      <p>Picture a fruit basket priced by its pieces: if it cost less than its fruit sold one by one, you would buy baskets and sell fruit.</p>
+
+      <h3>Why it works</h3>
+      <p>Start from Day 2: PV = FV/(1 + r)<sup>N</sup>, and backwards, r = (FV/PV)<sup>1/N</sup> &minus; 1.</p>
+      <ol>
+        <li><b>One payment, one rate.</b> A zero paying 1 at date t costs DF<sub>t</sub>. Day 2 with FV = 1 and PV = DF<sub>t</sub> gives DF<sub>t</sub> = 1/(1 + Z<sub>t</sub>)<sup>t</sup>, and backwards Z<sub>t</sub> = (1/DF<sub>t</sub>)<sup>1/t</sup> &minus; 1 (the same as DF<sub>t</sub><sup>&minus;1/t</sup> &minus; 1). A payment of 6 at date t costs 6 &times; DF<sub>t</sub>.</li>
+        <li><b>A bond is a bundle.</b> Price = CF<sub>1</sub> &times; DF<sub>1</sub> + &hellip; + CF<sub>N</sub> &times; DF<sub>N</sub>. If the bond cost less than its pieces, dealers would buy it, strip it and sell the pieces; if more, buy the pieces and rebuild it. So the gap closes. Day 15 was the special case of one rate for every date.</li>
+        <li><b>Par bonds give equations.</b> A par bond costs 100 and its coupon c (per 100) equals its yield. The 1-year one pays only 100 + c<sub>1</sub>: 100 = (100 + c<sub>1</sub>) &times; DF<sub>1</sub>, so Z<sub>1</sub> is the 1-year par yield.</li>
+        <li><b>One new unknown at a time.</b> 2-year: 100 = c<sub>2</sub> &times; DF<sub>1</sub> + (100 + c<sub>2</sub>) &times; DF<sub>2</sub>. DF<sub>1</sub> is known, so DF<sub>2</sub> = (100 &minus; c<sub>2</sub> &times; DF<sub>1</sub>)/(100 + c<sub>2</sub>). 3-year: DF<sub>3</sub> = [100 &minus; c<sub>3</sub> &times; (DF<sub>1</sub> + DF<sub>2</sub>)]/(100 + c<sub>3</sub>). Each step stands on the ones below it: the bootstrap.</li>
+        <li><b>Prices add; rates don&rsquo;t.</b> That is why you solve for the DFs, each a plain sum with one unknown, and turn them into rates only at the end (step 1).</li>
+        <li><b>Why Z<sub>2</sub> beats the par yield on a rising curve.</b> The first coupon is discounted at the lower Z<sub>1</sub>, so it takes a bit more of the 100. The final payment must be worth a bit less: a higher rate.</li>
+        <li><b>Where the YTM fits.</b> The YTM is the one rate that gives the step-2 price: a blend of the spot rates, pulled toward the date with the biggest payment, usually the last.</li>
+      </ol>
+      <p><b>In plain words:</b> a bond is a stack of IOUs with different dates. Each date has its own price, so its own rate; bootstrapping reads those rates off par bonds, shortest first.</p>
+      <div class="formula">
+        <p class="expr">PV = CF<sub>1</sub>/(1 + Z<sub>1</sub>)<sup>1</sup> + CF<sub>2</sub>/(1 + Z<sub>2</sub>)<sup>2</sup> + &hellip; + CF<sub>N</sub>/(1 + Z<sub>N</sub>)<sup>N</sup></p>
+        <p class="expr">DF<sub>t</sub> = 1/(1 + Z<sub>t</sub>)<sup>t</sup> &nbsp; &middot; &nbsp; Z<sub>t</sub> = (1/DF<sub>t</sub>)<sup>1/t</sup> &minus; 1</p>
+        <p class="expr">N-year par bond, coupon c: &nbsp; DF<sub>N</sub> = [100 &minus; c &times; (DF<sub>1</sub> + &hellip; + DF<sub>N&minus;1</sub>)] / (100 + c)</p>
+        <dl>
+          <dt>PV</dt><dd>the bond&rsquo;s price, per 100 of par</dd>
+          <dt>CF<sub>t</sub></dt><dd>the cash flow at date t: the coupon, plus 100 on the last date</dd>
+          <dt>Z<sub>t</sub></dt><dd>the spot rate for date t: the annual yield on a zero-coupon bond paying then, as a decimal</dd>
+          <dt>DF<sub>t</sub></dt><dd>the discount factor: what 1 due at date t costs today</dd>
+          <dt>t, N</dt><dd>the date in years, and the last date (the maturity)</dd>
+          <dt>c</dt><dd>the par bond&rsquo;s coupon per 100, equal to its par yield (2.6 for 2.6%)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Bond price using spot rates: PV = &Sigma; CF<sub>t</sub> / (1 + Z<sub>t</sub>)<sup>t</sup> (each cash flow at its own spot rate)</li>
+          <li>Discount factor from a spot rate: DF<sub>t</sub> = 1 / (1 + Z<sub>t</sub>)<sup>t</sup></li>
+          <li>Bootstrapping step for an N-year par bond with coupon c (per 100): 100 = c &times; DF<sub>1</sub> + &hellip; + c &times; DF<sub>N&minus;1</sub> + (100 + c) &times; DF<sub>N</sub> &rarr; solve DF<sub>N</sub>, then Z<sub>N</sub> = DF<sub>N</sub><sup>&minus;1/N</sup> &minus; 1</li>
+          <li>How the YTM relates to spot rates: the YTM is the single discount rate that gives the same price as discounting each cash flow at its own spot rate &mdash; a weighted average of the spot rates</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> The 1-year spot rate is 4% and the 2-year par yield (annual coupons) is 5%. Bootstrap the 2-year spot rate.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>DF<sub>1</sub> = 1/1.04 = 0.961538.</li>
+          <li>A 2-year par bond with a 5% coupon pays 5, then 105, and is priced at 100: 100 = 5 &times; DF<sub>1</sub> + 105 &times; DF<sub>2</sub>.</li>
+          <li>5 &times; DF<sub>1</sub> = 4.807692, so DF<sub>2</sub> = (100 &minus; 4.807692)/105 = 95.192308/105 = 0.906593.</li>
+          <li>Z<sub>2</sub> = (1/0.906593)<sup>1/2</sup> &minus; 1 = 1.103030<sup>1/2</sup> &minus; 1 = 1.050252 &minus; 1 = <b>5.0252%</b>.</li>
+          <li>Check: 5/1.04 + 105/1.050252<sup>2</sup> = 100.00. The 2-year spot rate sits above the 5% par yield because the first coupon was discounted at the lower 1-year rate.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Par yields (annual coupons) are 2.0% for 1 year, 2.6% for 2 years and 3.0% for 3 years. Bootstrap DF<sub>1</sub>, DF<sub>2</sub>, DF<sub>3</sub> and the spot rates Z<sub>2</sub>, Z<sub>3</sub>. Then price a 3-year bond with a 6% annual coupon at the spot rates, and find its YTM. Store every discount factor; never retype a rounded display.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear, then DF<sub>1</sub> = 1 &divide; 1.02 (the 1-year par bond pays 102 for 100), stored</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd>, then <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd>, then <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.9804</samp> (BA II Plus) / <samp>.9804</samp> (TI-84). A dollar due in 1 year costs 98.04 cents.</p>
+          </li>
+          <li>
+            <p class="calc-what">DF<sub>2</sub> from the 2-year par bond: (100 &minus; 2.6 &times; DF<sub>1</sub>) &divide; 102.6, stored</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>2.6</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>102.6</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> (AOS, set on Day 1, multiplies before it subtracts)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>2.6</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>102.6</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>; the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.9498</samp> / <samp>.9498</samp>.</p>
+          </li>
+          <li>
+            <p class="calc-what">Z<sub>2</sub> = (1/DF<sub>2</sub>)<sup>1/2</sup> &minus; 1, then as a percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>1/x</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (the TI-84 puts <samp>Ans</samp> in front of the &times; for you)</div>
+            <p class="calc-see">Display: <samp>0.0261</samp>, then <samp>2.6078</samp> (BA II Plus) / <samp>.0261</samp>, then <samp>2.6078</samp> (TI-84). Z<sub>2</sub> = 2.6078%, a touch above the 2.6% par yield.</p>
+          </li>
+          <li>
+            <p class="calc-what">DF<sub>3</sub> from the 3-year par bond: (100 &minus; 3 &times; (DF<sub>1</sub> + DF<sub>2</sub>)) &divide; 103, stored</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>103</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>103</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (C is above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.9147</samp> / <samp>.9147</samp>.</p>
+          </li>
+          <li>
+            <p class="calc-what">Z<sub>3</sub> = (1/DF<sub>3</sub>)<sup>1/3</sup> &minus; 1: Step 3&rsquo;s keys with 3 in place of 2</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>1/x</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0302</samp>, then <samp>3.0183</samp> / <samp>.0302</samp>, then <samp>3.0183</samp>. The spot curve: 2.0000%, 2.6078%, 3.0183%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Price the 3-year 6% bond at the spot rates: 6 &times; (DF<sub>1</sub> + DF<sub>2</sub>) + 106 &times; DF<sub>3</sub>, stored</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>6</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>+</kbd> <kbd>106</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>4</kbd> (AOS does both &times; before the +)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>6</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>)</kbd> <kbd>+</kbd> <kbd>106</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (D is the green letter above <kbd>x&#8315;&#185;</kbd>)</div>
+            <p class="calc-see">Display: <samp>108.5346</samp> on both: three strips worth 5.8824 + 5.6989 + 96.9533.</p>
+          </li>
+          <li>
+            <p class="calc-what">Its YTM: the one rate that gives the same price (END mode, P/Y = 1 from Day 1)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd>, then <kbd>3</kbd> <kbd>N</kbd> <kbd>RCL</kbd> <kbd>4</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>6</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> (if <samp>BGN</samp> shows, first <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=3</samp>; at <samp>PV=</samp> type <kbd>(&minus;)</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (it shows <samp>&minus;108.5346</samp>; typing <kbd>(&minus;)</kbd> <kbd>108.5346</kbd> works too); <samp>PMT=6</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 2.9837</samp> (BA II Plus) / <samp>I%=2.9837</samp> (TI-84). Between Z<sub>1</sub> and Z<sub>3</sub>, close to Z<sub>3</sub>: 89% of the bond&rsquo;s value arrives in year 3.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: DF<sub>1</sub> = 0.9804, DF<sub>2</sub> = 0.9498, DF<sub>3</sub> = 0.9147; Z<sub>2</sub> = 2.6078%, Z<sub>3</sub> = 3.0183%. The 3-year 6% bond is worth 108.5346 per 100 at the spot rates, and its YTM is 2.9837%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Each strip is a zero-coupon bond, so its price reveals the spot rate for its own date. That answers the first half: discount each payment at its own date&rsquo;s spot rate.</p>
+      <p>From par yields of 2.0%, 2.6% and 3.0% you bootstrapped spot rates of 2.0000%, 2.6078% and 3.0183%. A 3-year 6% bond is just three strips: 5.8824 + 5.6989 + 96.9533 = 108.5346 per 100.</p>
+      <p>The second half is arbitrage. If the bond sold for less than its strips, dealers would buy it, strip it and sell the pieces. If it sold for more, they would buy the strips and put the bond back together. So the bond must equal the sum of its parts.</p>
+      <p>And its YTM, 2.9837%, is just the one rate that reproduces that price: a blend of the three spot rates, not the rate for any one date.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>One rate for every cash flow when spot rates are given.</b> Discount the walkthrough&rsquo;s 6% bond at Z<sub>3</sub> = 3.0183% throughout and you get 108.4311, not 108.5346. The early coupons deserve the lower early rates.</li>
+          <li><b>Par yield = spot rate.</b> True only at 1 year. The 2-year par yield was 2.6% but Z<sub>2</sub> = 2.6078%; using the par yields as spot rates prices the bond at 108.5871. On a rising curve, spot rates sit above par yields.</li>
+          <li><b>Rounding too early.</b> Retype the displayed 0.9147 instead of recalling DF<sub>3</sub> and Z<sub>3</sub> comes out 3.0166%, not 3.0183%. Store each discount factor and recall it.</li>
+          <li><b>Forgetting the root.</b> 1/DF<sub>3</sub> &minus; 1 = 9.3309% is the growth over all three years. The annual spot rate needs the 1/3 power: 3.0183%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.4137982449868423" data-tol="0.001" data-pct data-show="2.414%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Par yields (annual coupons) are 1.5% for 1 year, 2.0% for 2 years and 2.4% for 3 years. Bootstrap the 3-year spot rate Z<sub>3</sub>. As a percent, to three decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The walkthrough&rsquo;s keys with new par yields: DF<sub>1</sub> = 1 &divide; 1.015; the 2-year bond pays 2, then 102; the 3-year bond pays 2.4, 2.4, then 102.4. Store each DF.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>DF<sub>1</sub> = 1/1.015 = 0.9852; DF<sub>2</sub> = (100 &minus; 2 &times; DF<sub>1</sub>)/102 = 0.9611 (so Z<sub>2</sub> = 2.0050%); DF<sub>3</sub> = [100 &minus; 2.4 &times; (DF<sub>1</sub> + DF<sub>2</sub>)]/102.4 = 0.930946; Z<sub>3</sub> = (1/0.930946)<sup>1/3</sup> &minus; 1 = 2.4138% = <b>2.414%</b>. (Retyping the displayed 0.9309 gives 2.4155%: wrong in the third decimal. Taking the 2.4% par yield as Z<sub>3</sub> is wrong too.)</p>
+            <p>BA II Plus: <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.015</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.9852</samp>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>102</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>0.9611</samp>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>2.4</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>102.4</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>0.9309</samp>; <kbd>RCL</kbd> <kbd>3</kbd> <kbd>1/x</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0241</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>2.4138</samp>.</p>
+            <p>TI-84 Plus: <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>1.015</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9852</samp>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>102</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9611</samp>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>2.4</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>102.4</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9309</samp>; <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0241</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.4138</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> The yield curve slopes upward. Why is the 2-year spot rate above the 2-year par yield?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Spot rates include a liquidity premium that par yields do not</span></label>
+              <p class="cq-why">No: bootstrapping adds no premium. The gap comes from the arithmetic alone, using the same bonds in the same market.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The par bond&rsquo;s first coupon is discounted at the lower 1-year rate, so its final payment must be discounted at a higher rate for the price to stay at 100</span></label>
+              <p class="cq-why">Right: the early coupon takes a slightly bigger share of the 100, so the last payment gets a smaller one, which means a higher rate.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Par yields are semiannual and spot rates are annual</span></label>
+              <p class="cq-why">No: here both are on the same annual basis, and the gap still appears (worked example: par 5%, spot 5.0252%, both annual).</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Worked example: the coupon of 5 at the 4% spot rate is worth 4.8077; at the 5% par yield it would be worth 4.7619. So the 105 at year 2 must be worth 95.1923 instead of 95.2381. A smaller PV for the same payment needs a higher rate: 5.0252%, not 5%. On a downward-sloping curve it runs the other way.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="3.2380406501169245" data-tol="0.001" data-pct data-show="3.238%">
+          <p class="cq-stem"><b>3. Twist: a bond that is not at par.</b> The 1-year spot rate is 2%. A 2-year bond with a 4% annual coupon trades at 101.50. What is the 2-year spot rate? As a percent, to three decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same idea, but the price is 101.50, not 100, and the cash flows are 4 and 104: 101.50 = 4 &times; DF<sub>1</sub> + 104 &times; DF<sub>2</sub>. Solve for DF<sub>2</sub>, then turn it into a rate.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>4 &times; DF<sub>1</sub> = 4/1.02 = 3.921569. DF<sub>2</sub> = (101.50 &minus; 3.921569)/104 = 97.578431/104 = 0.938254. Z<sub>2</sub> = (1/0.938254)<sup>1/2</sup> &minus; 1 = 3.2380% = <b>3.238%</b>. (Putting 100 in place of the price, as for a par bond, gives 4.0408%. The bond&rsquo;s own YTM is 3.2137%: a blend of 2% and 3.238%.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>101.5</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>104</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.9383</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>1/x</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0324</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>3.2380</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>101.5</kbd> <kbd>&minus;</kbd> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>104</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9383</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0324</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.2380</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> Spot rates are 2% for 1 year, 3% for 2 years and 4% for 3 years. A 3-year bond pays a 5% annual coupon. Its price per 100 of par is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 102.96</span></label>
+              <p class="cq-why">Right: each cash flow at its own spot rate, 5/1.02 + 5/1.03<sup>2</sup> + 105/1.04<sup>3</sup> = 4.9020 + 4.7130 + 93.3446.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 102.78</span></label>
+              <p class="cq-why">Every cash flow discounted at the 3-year spot rate, 4%. The coupons at years 1 and 2 deserve the lower 2% and 3%.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 105.66</span></label>
+              <p class="cq-why">Every cash flow discounted at the average spot rate, 3%. The average of the spot rates is not the YTM, and the big final payment needs the 4% rate.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>+</kbd> <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>yˣ</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>105</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>102.9596</samp> (AOS: powers, then divisions, then additions). TI-84 Plus: <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>+</kbd> <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>^</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>105</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> &rarr; <samp>102.9596</samp>. At that price the bond&rsquo;s YTM is 3.9348%: close to 4%, because most of the money comes in year 3.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why should each cash flow of a bond be discounted at its own spot rate, and what is the YTM then?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Each payment is a separate zero-coupon claim with its own market price, so its own rate; because dealers can strip a bond into its payments or rebuild it from them, the bond must cost exactly the sum of those pieces, each discounted at its own spot rate. The YTM is then just the single rate that gives that same price: a blend of the spot rates, not the rate for any one date.</p>
+            <p>A complete answer says: (1) each payment is a separate zero-coupon claim with its own price and rate; (2) no-arbitrage: stripping and reconstitution force the bond&rsquo;s price to equal the sum of its strips&rsquo; values; (3) the YTM is the single rate that gives that same price, a blend of the spot rates, not a rate for any one date.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: The Term Structure of Interest Rates: Spot, Par, and Forward Curves (spot rates and discount factors; pricing a bond with spot rates; bootstrapping spot rates from par rates; the YTM as a blend of the spot rates; zero-coupon STRIPS prices), building on Fixed-Income Bond Valuation: Prices and Yields (Day 15) and Yield and Yield Spread Measures for Fixed-Rate Bonds (Day 16).</p>
+      <p><strong>Sources.</strong> <em>Christian Science Monitor</em>, &ldquo;Beware the Treasury&rsquo;s feline menagerie. CATS and TIGRS fine for IRAs -- but they&rsquo;re not for short-term investing&rdquo;, February 1985 (headline confirmed by search and dated 20 February 1985 by its web address; the article text was not read); SuperMoney encyclopedia, &ldquo;Treasury Investment Growth Receipts (TIGRs)&rdquo; (Merrill Lynch&rsquo;s 1982 receipts on Treasuries; Salomon Brothers&rsquo; CATS); Miles Livingston, &ldquo;Stripping of U.S. Treasury Securities&rdquo; (University of Florida working paper) (private stripping began in 1982; STRIPS introduced in January 1985); a SIFMA policy paper and Benzinga, &ldquo;This Day In Market History: US Treasury Begins Issuing STRIPS&rdquo; (the program&rsquo;s start in February 1985); TreasuryDirect, STRIPS timeline. The par yields and the 3-year 6% bond are illustrations computed for this lesson, not 1985 market rates.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-35.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

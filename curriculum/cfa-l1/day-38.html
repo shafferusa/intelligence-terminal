@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>On 12 March 2020 a corporate bond ETF closed 5% below the value of its own bonds. Which price was right? — CFA Math, Day 38 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "On 12 March 2020 a corporate bond ETF closed 5% below the value of its own bonds. Which price was right?",
+    "path": "reports/cfa/l1/day-38.html",
+    "summary": "Day 38 of CFA Math: Logan learns the yield spreads the curriculum names (G-spread, I-spread, Z-spread and option-adjusted spread), how matrix pricing values a bond that rarely trades from the yields of comparable bonds, and how a floating-rate note’s quoted and discount margins set its coupon and its price; he interpolates a yield, prices an illiquid bond and finds its G-spread on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 38 of 90 · Fixed Income: a yield spread is the extra yield over a benchmark, and matrix pricing borrows comparable bonds’ yields to price one that rarely trades",
+      "Calculator: an interpolated yield, the price of an illiquid bond and its G-spread, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>On 12 March 2020 a corporate bond ETF closed 5% below the value of its own bonds. Which price was right?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A yield spread is what a bond pays over a safe benchmark, and matrix pricing borrows the yields of bonds that did trade to price one that did not.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 38 of 90 &middot; Yield and Yield Spread Measures for Fixed-Rate Bonds &middot; Yield spreads and matrix pricing</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="38">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 37 and Day 31, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="4.806201550387601" data-tol="0.001" data-pct data-show="4.806%">
+          <p class="cq-stem"><b>From Day 37.</b> The 1-year spot rate is Z<sub>1</sub> = 3.2% and the 2-year spot rate is Z<sub>2</sub> = 4.0%. What is the 1y1y implied forward rate? As a percent, to three decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two years at Z<sub>2</sub> must equal one year at Z<sub>1</sub>, then one year at the forward: (1 + Z<sub>2</sub>)<sup>2</sup> = (1 + Z<sub>1</sub>)(1 + 1y1y).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1y1y = 1.04<sup>2</sup> / 1.032 &minus; 1 = 1.0816 / 1.032 &minus; 1 = <b>4.806%</b>.</p>
+            <p>BA II Plus: <kbd>1.04</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.032</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0481</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.8062</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>1.04</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.032</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.8062</samp>.</p>
+            <p>The shortcut 2 &times; 4.0 &minus; 3.2 = 4.80 is close but not exact, and averaging the spots (3.60) is the Day 37 trap. On an upward-sloping curve the forward sits above both spot rates.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 31.</b> A Monte Carlo model sets a stock&rsquo;s price at P<sub>T</sub> = 100 &times; e<sup>r</sup>, where r is a random draw from a normal distribution of log returns. Why can no simulated price ever fall below zero?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. The model throws out any draw below &minus;100%</span></label>
+              <p class="cq-why">Nothing is thrown out. Even a log return of &minus;1.5 (&minus;150%) gives 100 &times; e<sup>&minus;1.5</sup> = 22.31: still positive.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. A normal distribution cannot produce large negative draws</span></label>
+              <p class="cq-why">It can: a normal distribution has no lower limit. Large negative draws are rare, not impossible.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. e raised to any power is positive, so 100 &times; e<sup>r</sup> &gt; 0 whatever r is drawn</span></label>
+              <p class="cq-why">Right: that is why prices built this way are lognormal, bounded below by zero and skewed right.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>A <em>simple</em> return of &minus;150% would leave 100 &times; (1 &minus; 1.5) = &minus;50, an impossible price. A <em>log</em> return of &minus;1.5 leaves 22.31. BA II Plus: <kbd>1.5</kbd> <kbd>+|&minus;</kbd> <kbd>2ND</kbd> <kbd>eˣ</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>22.3130</samp>. TI-84 Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ; the screen shows <samp>e^(</samp>) <kbd>(&minus;)</kbd> <kbd>1.5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>22.3130</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>When the ETF said one thing and its bonds another</h3>
+      <p>Thursday, 12 March 2020. The pandemic was tearing through markets, and the bond market was caught in a liquidity crunch.</p>
+      <p>That day, shares of the iShares iBoxx $ Investment Grade Corporate Bond ETF, ticker LQD, closed 5.0% below the fund&rsquo;s net asset value (NAV): what the fund said the bonds inside it were worth. In 2018 and 2019 it had never closed more than 1% away.</p>
+      <p>So a seller got about 95 cents for each dollar the fund said its bonds were worth.</p>
+      <p>Where did the NAV come from? Many of the fund&rsquo;s bonds had not traded. Pricing services estimated &ldquo;evaluated&rdquo; prices for them, largely from the yields of comparable bonds that had.</p>
+      <p>The gap shrank to 0.19% the next day. By 19 March it was back near 5%. On 23 March the Federal Reserve said it would buy corporate bonds and bond ETFs, and by Bloomberg&rsquo;s account, on 25 March LQD stood at a <em>premium</em> of about 5%: above its NAV.</p>
+      <p>Two prices for the same bonds, 5% apart. If a bond hasn&rsquo;t traded for days, what is it worth? And how do you price it from bonds that did trade?</p>
+
+      <h3>The idea</h3>
+      <p>A <b>yield spread</b> is the extra yield a bond pays over a benchmark: a safe yield for the same length of time. It pays for what the benchmark doesn&rsquo;t carry: default risk, being hard to sell.</p>
+      <p>The spreads differ by benchmark:</p>
+      <ul>
+        <li><b>G-spread</b>: over a government bond of the same maturity (interpolated when none matches).</li>
+        <li><b>I-spread</b>: over the swap rate of the same maturity and currency (the fixed rate paid in an interest rate swap for a floating one).</li>
+        <li><b>Z-spread</b>: one constant added to <em>every</em> spot rate on the government curve (Day 36) so that the discounted cash flows equal the price.</li>
+        <li><b>Option-adjusted spread (OAS)</b>: the Z-spread minus the value of an embedded option, such as the issuer&rsquo;s right to call.</li>
+      </ul>
+      <p><b>Matrix pricing</b> values a bond that rarely trades. Think of a house appraiser: no one has bought your house this year, so she looks at recent sales of similar houses nearby. For a bond: take the yields of comparable bonds (same credit rating, nearby maturities, similar coupons), interpolate to your bond&rsquo;s maturity, and discount its cash flows at that yield.</p>
+      <p><b>Floating-rate notes</b> (FRNs) have spreads too. The coupon resets each period to a market reference rate (MRR, such as SOFR) plus a fixed <b>quoted margin</b>. The market&rsquo;s required return is MRR plus the <b>discount margin</b>.</p>
+
+      <h3>Why it works</h3>
+      <p>You know both directions already: Day 15 turns a yield into a price, Day 16 turns a price into a yield (the YTM).</p>
+      <ol>
+        <li><b>Split the yield.</b> Bond yield = benchmark yield + spread. The benchmark (a government bond of the same maturity) pays for waiting; the spread pays for the rest.</li>
+        <li><b>Match the maturity.</b> Yields differ by maturity (Days 36&ndash;37), so a 7-year bond is set against a 7-year government yield. None trades? Draw a straight line between the neighbours. From 5 years (3.90%) to 10 years (4.30%) the yield climbs 0.40 points in 5 years: 0.08 a year. Seven years is 2 years along: 3.90 + 2 &times; 0.08 = 4.06%. That is the formula below: start at the shorter yield, add the share of the gap you have walked.</li>
+        <li><b>Subtract.</b> Bond YTM &minus; that government yield = the G-spread. Subtract the swap rate instead: the I-spread.</li>
+        <li><b>One spread, every date.</b> A YTM is one rate for all dates; Day 36 discounts each cash flow at its own spot rate, z<sub>t</sub>. The Z-spread adds one constant, Z, to every spot rate: the Z that makes the PV equal the price. Spot rates 3% and 4%, Z = 1%: a 2-year 5% bond is worth 5/1.04 + 105/1.05<sup>2</sup> = 100.05 (at the spot rates alone, 101.93).</li>
+        <li><b>Take the option out.</b> A callable bond pays extra because the issuer can repay early when rates fall. That extra sits inside the Z-spread. OAS = Z-spread &minus; option value: what is left pays for credit and liquidity.</li>
+        <li><b>Matrix pricing runs step 1 backwards.</b> An untraded bond has no price, so no yield. Borrow one: interpolate comparable bonds&rsquo; yields to its maturity, then discount its cash flows at that yield (Day 15).</li>
+        <li><b>FRNs.</b> Same math, per period, assuming the MRR stays put: coupon = (MRR + QM)/m &times; 100, discount rate = (MRR + DM)/m. If DM = QM, coupon rate = discount rate, so the note is worth par (Day 15). If DM &gt; QM, it is worth less.</li>
+      </ol>
+      <p>In plain words: a spread is the extra a bond pays over a safe bond of the same length. Matrix pricing guesses a quiet bond&rsquo;s yield from its busier neighbours, then turns that yield into a price.</p>
+      <div class="formula">
+        <p class="expr">y = y<sub>short</sub> + (T &minus; T<sub>short</sub>)/(T<sub>long</sub> &minus; T<sub>short</sub>) &times; (y<sub>long</sub> &minus; y<sub>short</sub>)</p>
+        <p class="expr">G-spread = YTM<sub>bond</sub> &minus; YTM<sub>gov</sub> &nbsp; &middot; &nbsp; I-spread = YTM<sub>bond</sub> &minus; swap rate</p>
+        <p class="expr">PV = &Sigma; CF<sub>t</sub> / (1 + z<sub>t</sub> + Z)<sup>t</sup> &nbsp; &middot; &nbsp; OAS = Z-spread &minus; option value</p>
+        <p class="expr">FRN, per period: PMT = (MRR + QM)/m &times; 100, &nbsp; r = (MRR + DM)/m</p>
+        <dl>
+          <dt>y</dt><dd>the yield you need, for maturity T (in years)</dd>
+          <dt>y<sub>short</sub>, y<sub>long</sub></dt><dd>yields of the comparable (or government) bonds with the nearest shorter maturity T<sub>short</sub> and the nearest longer maturity T<sub>long</sub></dd>
+          <dt>YTM<sub>bond</sub>, YTM<sub>gov</sub></dt><dd>the bond&rsquo;s yield to maturity, and the government yield for the same maturity (interpolated if needed)</dd>
+          <dt>swap rate</dt><dd>the fixed rate of an interest rate swap with the same maturity, in the same currency</dd>
+          <dt>CF<sub>t</sub></dt><dd>the bond&rsquo;s cash flow at date t (coupon, plus par at the end)</dd>
+          <dt>z<sub>t</sub></dt><dd>the government spot rate for date t (Day 36&rsquo;s Z<sub>t</sub>)</dd>
+          <dt>Z</dt><dd>the Z-spread: one constant added to every spot rate</dd>
+          <dt>option value</dt><dd>the embedded option&rsquo;s value, as a spread in bp a year</dd>
+          <dt>MRR</dt><dd>market reference rate, the floating base rate (e.g. SOFR), annual</dd>
+          <dt>QM</dt><dd>quoted margin: the fixed spread over MRR written into the note; sets the coupon</dd>
+          <dt>DM</dt><dd>discount margin: the spread over MRR the market requires now; sets the discount rate</dd>
+          <dt>m</dt><dd>coupon periods a year (4 for quarterly)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>G-spread = YTM of the bond &minus; YTM of the (interpolated) government bond of the same maturity</li>
+          <li>Z-spread: the constant Z that makes PV = &Sigma; CF<sub>t</sub> / (1 + z<sub>t</sub> + Z)<sup>t</sup> equal the bond&rsquo;s price (z<sub>t</sub> = the benchmark spot rate for date t &mdash; Day 36&rsquo;s Z<sub>t</sub>)</li>
+          <li>Option-adjusted spread: OAS = Z-spread &minus; option value (in bps): callable OAS &lt; Z-spread</li>
+          <li>Linear interpolation of a yield: y = y<sub>short</sub> + (T &minus; T<sub>short</sub>)/(T<sub>long</sub> &minus; T<sub>short</sub>) &times; (y<sub>long</sub> &minus; y<sub>short</sub>)</li>
+          <li>FRN inputs per period (P/Y = 1): Coupon = (MRR + quoted margin)/m &times; 100; discount rate = (MRR + discount margin)/m</li>
+          <li>I-spread = YTM of the bond &minus; swap rate of the same maturity (in the same currency)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A 7-year corporate bond yields 5.35%. Government bonds yield 3.90% at 5 years and 4.30% at 10 years; the 7-year swap rate is 4.25%. Find the G-spread and the I-spread.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>No 7-year government bond, so interpolate. Seven years is (7 &minus; 5)/(10 &minus; 5) = 0.4 of the way from 5 to 10.</li>
+          <li>The gap: 4.30 &minus; 3.90 = 0.40 points. Walk 0.4 of it: 0.4 &times; 0.40 = 0.16.</li>
+          <li>7-year government yield = 3.90 + 0.16 = <b>4.06%</b>.</li>
+          <li>G-spread = 5.35 &minus; 4.06 = 1.29 points = <b>129 bp</b> (1 bp = 0.01%).</li>
+          <li>I-spread = 5.35 &minus; 4.25 = 1.10 points = <b>110 bp</b>.</li>
+          <li>The I-spread is smaller here because the swap rate sits 19 bp above the government yield. That is the usual pattern, not a law: long-dated US swap rates have sat below Treasury yields in recent years.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> An illiquid 4-year bond pays a 5% coupon once a year. Comparable bonds (same rating) yield 4.10% at 3 years and 4.70% at 5 years. Interpolate its yield, price it per 100 of par with TVM, and find its G-spread over an interpolated 4-year government yield of 3.20%.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Interpolate the 4-year yield: 4.10 + (4 &minus; 3) &divide; (5 &minus; 3) &times; (4.70 &minus; 4.10)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> (a clean display), then <kbd>4.1</kbd> <kbd>+</kbd> <kbd>(</kbd> <kbd>4</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.7</kbd> <kbd>&minus;</kbd> <kbd>4.1</kbd> <kbd>)</kbd> <kbd>=</kbd> (AOS mode from Day 1 does &divide; and &times; before +)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> on the home screen (<kbd>2nd</kbd> <kbd>MODE</kbd> for QUIT if you are in a menu): <kbd>4.1</kbd> <kbd>+</kbd> <kbd>(</kbd> <kbd>4</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>&minus;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.7</kbd> <kbd>&minus;</kbd> <kbd>4.1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>4.4000</samp> on both. Four years is halfway, so it is the midpoint. If the BA II Plus shows <samp>1.5300</samp>, it is in Chn mode (left to right): switch to AOS (Day 1 setup) and redo it.</p>
+          </li>
+          <li>
+            <p class="calc-what">END mode, then clear the old numbers</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> If <samp>BGN</samp> shows in the display, press <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>. Then <kbd>2ND</kbd> <kbd>CLR TVM</kbd>. P/Y is still 1 from Day 1.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; set <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, and on the <samp>PMT:</samp> row highlight <samp>END</samp> and press <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the bond: 4 years, 4.4% a year, a coupon of 5, and 100 at the end</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4</kbd> <kbd>N</kbd> <kbd>4.4</kbd> <kbd>I/Y</kbd> <kbd>5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> type each value and press <kbd>ENTER</kbd>: <samp>N=4</samp>, <samp>I%=4.4</samp>, <samp>PV=0</samp>, <samp>PMT=5</samp>, <samp>FV=100</samp></div>
+          </li>
+          <li>
+            <p class="calc-what">Solve for the price</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>PV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;102.1576</samp> (BA II Plus) / <samp>PV=&minus;102.1576</samp> (TI-84). Negative because you pay it. A premium: the 5% coupon beats the 4.40% yield.</p>
+          </li>
+          <li>
+            <p class="calc-what">The G-spread, in basis points: (4.40 &minus; 3.20) &times; 100</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>4.4</kbd> <kbd>&minus;</kbd> <kbd>3.2</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), then <kbd>(</kbd> <kbd>4.4</kbd> <kbd>&minus;</kbd> <kbd>3.2</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>120.0000</samp> on both. Keep the brackets: without them &times; goes first and you get <samp>&minus;315.6000</samp>.</p>
+          </li>
+          <li>
+            <p class="calc-what">The story&rsquo;s gap as a yield: a 10-year 4% bond valued at par, sold 5% lower, at 95</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> FV = 100 is still stored: <kbd>10</kbd> <kbd>N</kbd> <kbd>95</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>4</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; <samp>N=10</samp>, <samp>PV=&minus;95</samp> (the minus is <kbd>(&minus;)</kbd>), <samp>PMT=4</samp>, <samp>FV=100</samp>; cursor on <samp>I%=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 4.6361</samp> (BA II Plus) / <samp>I%=4.6361</samp> (TI-84). At par the yield was 4.00%: 0.6361 points, about 64 bp more.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: interpolated yield 4.40%; price 102.1576 per 100 (102.16); G-spread 120 bp. The story&rsquo;s 5% gap on a 10-year 4% bond: a yield of 4.6361%, about 64 bp higher.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>A pricing service valuing LQD&rsquo;s untraded bonds did, in essence, what you just did: borrow the yields of comparable bonds, line them up by maturity, and discount.</p>
+      <p>That works when the comparables are fresh. In March 2020 credit spreads were widening fast. LQD&rsquo;s shares traded live on the exchange, while evaluated prices lagged.</p>
+      <p>Size the gap with step 6. A 10-year 4% bond valued at par yields 4%. At 95 it yields 4.6361%. A 5% discount meant buyers wanted about 64 bp more spread than the evaluated price assumed.</p>
+      <p>Which price was right? Neither exactly: the NAV was an estimate, the ETF price a live trade. Matrix pricing is only as fresh as its comparables. When the Fed stepped in, the gap flipped to a premium.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>An unmatched benchmark.</b> A 7-year bond needs a 7-year government yield. In the worked example, subtracting the 5-year 3.90% gives 145 bp instead of 129 bp. Interpolate first.</li>
+          <li><b>Z-spread vs G-spread.</b> The G-spread is one subtraction of two YTMs. The Z-spread is the constant added to <em>every</em> spot rate that reproduces the price. Unless the curve is flat they differ, and the OAS starts from the Z-spread.</li>
+          <li><b>An FRN at the wrong margin.</b> The quoted margin sets the coupon; the discount margin sets the rate you discount at. If your FRN comes out at exactly 100.00 when the margins differ, you discounted at the quoted margin.</li>
+          <li><b>Points vs basis points.</b> 4.40% &minus; 3.20% = 1.20 percentage points = 120 bp, because 1 bp = 0.01%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="102.62106842837315" data-tol="0.01" data-signless data-show="102.62">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Comparable bonds yield 3.80% at 5 years and 4.40% at 8 years. Matrix-price a 6-year bond paying a 4.5% annual coupon: what is it worth per 100 of par? To the cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> New maturities in the interpolation: 3.80 + (6 &minus; 5) &divide; (8 &minus; 5) &times; (4.40 &minus; 3.80). Then TVM with N = 6, PMT = 4.5, FV = 100.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Yield: 6 years is 1/3 of the way from 5 to 8, and 1/3 &times; 0.60 = 0.20, so 3.80 + 0.20 = 4.00%.</p>
+            <p>BA II Plus: <kbd>3.8</kbd> <kbd>+</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>&minus;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>&minus;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.4</kbd> <kbd>&minus;</kbd> <kbd>3.8</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>4.0000</samp>; then <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>N</kbd> <kbd>4</kbd> <kbd>I/Y</kbd> <kbd>4.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;102.6211</samp>.</p>
+            <p>TI-84 Plus: on the home screen <kbd>3.8</kbd> <kbd>+</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>&minus;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>8</kbd> <kbd>&minus;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.4</kbd> <kbd>&minus;</kbd> <kbd>3.8</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.0000</samp>; then <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=6</samp>, <samp>I%=4</samp>, <samp>PV=0</samp>, <samp>PMT=4.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;102.6211</samp>.</p>
+            <p>So <b>102.62</b>. Skipping the interpolation and using the 5-year 3.80% gives 103.69; the 8-year 4.40% gives 100.52. The simple average of the two yields (4.10%) gives 102.09: 6 years is not halfway from 5 to 8.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> A callable corporate bond has a Z-spread of 180 bp and an option-adjusted spread of 130 bp. What is the 50 bp difference?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The value of the issuer&rsquo;s call option, expressed as a spread</span></label>
+              <p class="cq-why">Right: OAS = Z-spread &minus; option value, so 180 &minus; 130 = 50 bp is what the investor is paid for having sold the issuer the call.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The bond&rsquo;s credit risk premium</span></label>
+              <p class="cq-why">No: credit and liquidity risk stay <em>inside</em> the OAS. Removing the option is what leaves the credit spread behind.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The difference between the bond&rsquo;s YTM and the government yield</span></label>
+              <p class="cq-why">No: that is the G-spread, a different measure. It compares two YTMs and says nothing about the option.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>The Z-spread pays for everything over the government spot curve, including the call the investor has handed the issuer: the issuer will repay early when rates fall, just when the bond is worth most. The OAS strips that option out. For a callable bond OAS &lt; Z-spread; for a putable bond, where the option belongs to the investor, OAS &gt; Z-spread.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="99.16249802318782" data-tol="0.01" data-signless data-show="99.16">
+          <p class="cq-stem"><b>3. Twist: a floating-rate note.</b> A 3-year FRN pays quarterly. The MRR is 3.60%, the quoted margin is 60 bp, and the market now requires a discount margin of 90 bp. Assuming the MRR stays at 3.60%, what is the FRN worth per 100 of par on a reset date? To the cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Work in quarters. PMT = (MRR + quoted margin) &divide; 4, I/Y = (MRR + discount margin) &divide; 4, N = 12, FV = 100.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Per quarter: coupon (3.60 + 0.60)/4 = 1.05; discount rate (3.60 + 0.90)/4 = 1.125%; N = 3 &times; 4 = 12.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>3.6</kbd> <kbd>+</kbd> <kbd>.6</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>1.0500</samp>; <kbd>(</kbd> <kbd>3.6</kbd> <kbd>+</kbd> <kbd>.9</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>1.1250</samp>; then <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>12</kbd> <kbd>N</kbd> <kbd>1.125</kbd> <kbd>I/Y</kbd> <kbd>1.05</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;99.1625</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=12</samp>, <samp>I%=1.125</samp>, <samp>PV=0</samp>, <samp>PMT=1.05</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;99.1625</samp>.</p>
+            <p>So <b>99.16</b>, below par because DM &gt; QM: the note pays 30 bp a year less than the market now wants. Discounting at the quoted margin (I/Y = 1.05) gives exactly 100.00, the trap. Annual inputs (N = 3, I/Y = 4.5, PMT = 4.2) give 99.18: close, and wrong.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> A 6-year corporate bond yields 5.10%. Government bonds yield 3.60% at 5 years and 4.10% at 10 years. The bond&rsquo;s G-spread is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 150 bp</span></label>
+              <p class="cq-why">Used the 5-year 3.60% without interpolating: 5.10 &minus; 3.60. The benchmark&rsquo;s maturity does not match the bond&rsquo;s.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 125 bp</span></label>
+              <p class="cq-why">Used the simple average of the two yields, 3.85%. That is the 7.5-year point, not the 6-year one.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 140 bp</span></label>
+              <p class="cq-why">Right: the interpolated 6-year government yield is 3.70%, and 5.10 &minus; 3.70 = 1.40 points = 140 bp.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>6 years is (6 &minus; 5)/(10 &minus; 5) = 0.2 of the way from 5 to 10. The gap is 4.10 &minus; 3.60 = 0.50, and 0.2 &times; 0.50 = 0.10, so the 6-year government yield is 3.60 + 0.10 = 3.70%. G-spread = 5.10 &minus; 3.70 = <b>140 bp</b>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: explain matrix pricing to someone who has never heard of it.</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Matrix pricing values a bond that trades rarely or not at all: you take the yields of comparable bonds that do trade (same credit quality, similar maturity and coupon), interpolate them to your bond&rsquo;s maturity (or add a comparable spread to a benchmark yield), and discount your bond&rsquo;s cash flows at that yield to get its price.</p>
+            <p>A complete answer says: (1) it is for a bond that trades rarely or not at all; (2) the yield comes from comparable bonds (same credit quality, similar maturity and coupon), interpolated to the bond&rsquo;s maturity or built as benchmark plus spread; (3) the bond&rsquo;s cash flows are discounted at that yield to give its price.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Yield and Yield Spread Measures for Fixed-Rate Bonds (G-spread, I-spread, Z-spread and option-adjusted spread), with matrix pricing from Fixed-Income Bond Valuation: Prices and Yields and the quoted and discount margins of floating-rate notes from Yield and Yield Spread Measures for Floating-Rate Instruments; building on The Term Structure of Interest Rates: Spot, Par, and Forward Curves (spot rates).</p>
+      <p><strong>Sources.</strong> InvestmentNews, &ldquo;Fixed-income ETFs caught in bond market&rsquo;s liquidity trap&rdquo;, March 2020, and Bloomberg, &ldquo;Fixed-Income ETFs Are Trapped in Bond Market&rsquo;s Liquidity Crunch&rdquo;, 13 March 2020 (LQD closed at a 5.0% discount to NAV on 12 March 2020 and 0.19% the next day; in 2018 and 2019 it never closed more than 1% from NAV); CNBC, &ldquo;There&rsquo;s a discrepancy happening in bond ETFs. Here&rsquo;s what&rsquo;s behind it&rdquo;, 17 March 2020 (NAVs built from evaluated price estimates); Bloomberg via Bloomberg Law and InvestmentNews, &ldquo;Fed&rsquo;s Ability to Buy ETFs May Help Ensure It Never Needs To&rdquo;, April 2020 (about 5% below NAV on 19 March; a premium of about 5% on 25 March, after the Fed&rsquo;s 23 March announcement). The 10-year 4% bond and the 4-year bond are illustrations, not LQD holdings.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-37.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

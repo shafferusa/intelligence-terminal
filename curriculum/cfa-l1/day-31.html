@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In 1946 Stanisław Ulam couldn’t work out his odds at solitaire. Why not deal it 100 times and count? — CFA Math, Day 31 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "In 1946 Stanisław Ulam couldn’t work out his odds at solitaire. Why not deal it 100 times and count?",
+    "path": "reports/cfa/l1/day-31.html",
+    "summary": "Day 31 of CFA Math: continuously compounded returns r = ln(P1/P0) add across periods, so a price P_T = P_0 × e^(r_1 + … + r_T) is lognormal (never negative, skewed right); Logan adds three daily log returns with STO and RCL, simulates one day’s price as 100 × e^(μ + σz), and sees how Monte Carlo simulation, historical simulation and bootstrap resampling build a whole distribution of outcomes when no formula is handy.",
+    "headlines": [
+      "Day 31 of 90 · Quantitative Methods: log returns add, so prices are lognormal, and Monte Carlo simulates what no formula can",
+      "Calculator: daily log returns added with STO and RCL, and one simulated day P_1 = 100 × e^(μ + σz), on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>In 1946 Stanisław Ulam couldn’t work out his odds at solitaire. Why not deal it 100 times and count?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Log returns add, so a price is its starting value times e raised to a sum of random returns: never negative, skewed right, and, when no formula will do, simulated thousands of times.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 31 of 90 &middot; LM9 Simulation of Financial Asset Prices and Returns &middot; Lognormal prices and Monte Carlo simulation</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="31">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 30 and 24, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="-8.87" data-tol="0.01" data-pct data-show="&minus;8.87%">
+          <p class="cq-stem"><b>From Day 30.</b> A fund&rsquo;s monthly returns are normal with mean 1% and standard deviation 6%. What is the 5% left-tail cutoff: the monthly return with only a 5% chance of a worse month? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> X = &mu; + z&sigma;, with the one-tailed 5% z from memory (it is negative: the cutoff is below the mean).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>5% in one tail is z = &minus;1.645. X = 1 &minus; 1.645 &times; 6 = 1 &minus; 9.87 = <b>&minus;8.87%</b>. (1.96 gives &minus;10.76%: that is the 2.5% cutoff. Leave out the mean and you get &minus;9.87%.)</p>
+            <p>BA II Plus: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1.645</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>=</kbd> &rarr; <samp>&minus;8.8700</samp> (AOS multiplies first).</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">3:invNorm(</kbd> <kbd>.05</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>6</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;8.8691</samp> (the exact z, 1.6449): also &minus;8.87%. Today you use the same X = &mu; + z&sigma; the other way round: pick a z, get a return.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 24.</b> Fund 1 has a mean annual return of 8% and a standard deviation of 12%. Fund 2 has a mean of 5% and a standard deviation of 9%. Judged by the coefficient of variation, which fund takes less risk per unit of return?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. Fund 2, because its standard deviation is lower</span></label>
+              <p class="cq-why">The SD alone ignores how much return you get for the risk. The CV divides it by the mean.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. Fund 2: CV 0.56 against 0.67</span></label>
+              <p class="cq-why">Those are mean &divide; SD (5/9 and 8/12), the ratio upside down. CV = s / X&#772;, risk on top.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. Fund 1: CV 1.50 against 1.80</span></label>
+              <p class="cq-why">Right. CV = s / X&#772;: 12/8 = 1.50 for Fund 1, 9/5 = 1.80 for Fund 2. Lower CV, less risk per point of return.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>The coefficient of variation scales risk by return: Fund 1 carries 1.50 points of SD per point of mean return, Fund 2 carries 1.80. Fund 2 is less volatile in absolute terms, but it pays less for each unit of volatility.</p></details>
+        </div>
+      </section>
+
+      <h3>Ulam&rsquo;s solitaire problem</h3>
+      <p>In 1946 the Polish-American mathematician Stanisław Ulam was recovering from an illness and passing the time with Canfield solitaire. A question caught him: what is the chance that a game laid out with 52 cards comes out?</p>
+      <p>He went at it the classic way, with combinatorics: count the winning deals, divide by all the deals. But a deck can be ordered in 52! ways, about 8 &times; 10<sup>67</sup>. He spent a long time on it and got nowhere.</p>
+      <p>Then he wondered whether it would be more practical to lay the game out, say, one hundred times and simply count the successes.</p>
+      <p>He took the idea to John von Neumann. At Los Alamos it became a way to model neutron diffusion in nuclear weapons. Their colleague Nicholas Metropolis named it after the Monte Carlo casino, and in 1949 Metropolis and Ulam published &ldquo;The Monte Carlo Method&rdquo;.</p>
+      <p>A stock&rsquo;s price a year from now is the same kind of problem: about 252 trading days, each a random step, and the price built from all of them. When an outcome depends on so many random steps that no formula can handle it, how can you still find its probability?</p>
+
+      <h3>The idea</h3>
+      <p>Prices move by multiplying: a +2% day multiplies the price by 1.02. The <b>continuously compounded return</b> (the <b>log return</b>), r = ln(P<sub>1</sub>/P<sub>0</sub>), turns that multiplying into adding. A week&rsquo;s log return is simply the sum of its days&rsquo;.</p>
+      <p>If each day&rsquo;s log return is a draw from a normal curve, the price is <b>lognormal</b>: its log is normal. A lognormal price can never fall below zero, and it is skewed right: gains can multiply it without limit, losses only shrink it toward zero.</p>
+      <p>When a question is too tangled for a formula, <b>Monte Carlo simulation</b> does what Ulam proposed. Specify the model and how each input is random; draw random values; compute the outcome; repeat thousands of times; summarize the results (average, percentiles, the share below a line).</p>
+      <p>Two cousins use the past instead of an assumed curve. <b>Historical simulation</b> replays the returns that actually happened. <b>Bootstrap resampling</b> draws from those past returns at random, <em>with replacement</em>, to build as many new paths as you like. Neither assumes a distribution, but neither can produce a return the sample never saw. Monte Carlo can model anything, but only as well as the assumed distribution fits.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 4.</b> Continuous compounding at rate r turns P<sub>0</sub> into P<sub>1</sub> = P<sub>0</sub> &times; e<sup>r</sup>. LN undoes eˣ, so r = ln(P<sub>1</sub>/P<sub>0</sub>) = ln(1 + HPR).</p>
+      <p><b>Step 1: chain the days (Day 11).</b> Growth factors multiply, and the in-between prices cancel: P<sub>T</sub>/P<sub>0</sub> = (P<sub>1</sub>/P<sub>0</sub>) &times; (P<sub>2</sub>/P<sub>1</sub>) &times; &hellip; &times; (P<sub>T</sub>/P<sub>T&minus;1</sub>).</p>
+      <p><b>Step 2: take ln.</b> The log of a product is the sum of the logs, so ln(P<sub>T</sub>/P<sub>0</sub>) = r<sub>1</sub> + r<sub>2</sub> + &hellip; + r<sub>T</sub>. Log returns add, exactly.</p>
+      <p><b>Step 3: undo the ln.</b> P<sub>T</sub> = P<sub>0</sub> &times; e<sup>r<sub>1</sub> + &hellip; + r<sub>T</sub></sup>.</p>
+      <p><b>Step 4: make it random (Day 30).</b> Let each day&rsquo;s log return be r = &mu; + &sigma;z, z a standard normal draw (Day 30&rsquo;s X = &mu; + z&sigma;). A sum of independent normals is normal, so ln P<sub>T</sub> is normal: P<sub>T</sub> is <b>lognormal</b>.</p>
+      <p><b>Step 5: never below zero.</b> e to any power is positive: even a &minus;100% log return leaves 100 &times; e<sup>&minus;1</sup> = 36.79 of a $100 stock.</p>
+      <p><b>Step 6: skewed right.</b> From 100, a log move of +0.20 gives 122.14 (up 22.14); &minus;0.20 gives 81.87 (down 18.13). Gains stretch, losses squash, so the mean sits above the median: median P<sub>0</sub>e<sup>&mu;</sup>, mean P<sub>0</sub>e<sup>&mu; + &sigma;&sup2;/2</sup>. For &mu; = 5%, &sigma; = 20%: median 105.13, mean 107.25.</p>
+      <p><b>Step 7: where z comes from.</b> A computer draws u, uniform between 0 and 1: a random percentile. invNorm(u) returns the z at that percentile (the <b>inverse transform</b>): u = 0.90 gives 1.2816. Equally likely percentiles give normally distributed z&rsquo;s.</p>
+      <p><b>In plain words:</b> a price is its start times e to the sum of its log returns. Make the returns random, deal the year out thousands of times, and count.</p>
+      <div class="formula">
+        <p class="expr">r = ln(P<sub>1</sub> / P<sub>0</sub>) = ln(1 + HPR)</p>
+        <p class="expr">r<sub>0,T</sub> = r<sub>1</sub> + r<sub>2</sub> + &hellip; + r<sub>T</sub></p>
+        <p class="expr">P<sub>T</sub> = P<sub>0</sub> &times; e<sup>r<sub>0,T</sub></sup></p>
+        <p class="expr">simulated r = &mu; + &sigma; &times; z</p>
+        <dl>
+          <dt>r</dt><dd>the continuously compounded (log) return over one period, as a decimal</dd>
+          <dt>HPR</dt><dd>the holding-period (simple) return, P<sub>1</sub>/P<sub>0</sub> &minus; 1 (Day 11)</dd>
+          <dt>P<sub>0</sub>, P<sub>T</sub></dt><dd>the price at the start and after T periods</dd>
+          <dt>r<sub>0,T</sub></dt><dd>the log return over all T periods: the sum of the one-period log returns</dd>
+          <dt>e</dt><dd>2.71828&hellip; (the <kbd>eˣ</kbd> key); ln (the <kbd>LN</kbd> key) undoes it</dd>
+          <dt>&mu;, &sigma;</dt><dd>the mean and standard deviation of the one-period log return</dd>
+          <dt>z</dt><dd>a standard normal draw: invNorm of a uniform random number</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Continuously compounded return over a period: r<sub>cc</sub> = ln(P<sub>1</sub> / P<sub>0</sub>) = ln(1 + HPR)</li>
+          <li>Additivity of log returns: r<sub>0,T</sub> = r<sub>1</sub> + r<sub>2</sub> + &hellip; + r<sub>T</sub></li>
+          <li>Price from a continuously compounded return: P<sub>T</sub> = P<sub>0</sub> &times; e<sup>r<sub>0,T</sub></sup></li>
+          <li>Lognormal distribution: If ln(P<sub>T</sub>) is normal, P<sub>T</sub> is lognormal: bounded below by 0 and skewed right</li>
+          <li>Bootstrap resampling: Draw random samples WITH replacement from the observed data to simulate the sampling distribution</li>
+          <li>Monte Carlo simulation, step by step: Specify the model and the distribution of each random input &rarr; draw random values &rarr; compute the outcome &rarr; repeat many times &rarr; summarize the distribution of outcomes</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A stock closes at 50.00, then 55.00, then 49.50. Find each day&rsquo;s simple and log return and the 2-day log return, and show which kind of return adds up correctly.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Simple returns: 55/50 &minus; 1 = +10.00%; 49.50/55 &minus; 1 = &minus;10.00%. Added: 0%. But the price fell: 49.50/50 &minus; 1 = &minus;1.00%.</li>
+          <li>Log returns: r<sub>1</sub> = ln(55/50) = ln 1.1 = 0.0953; r<sub>2</sub> = ln(49.50/55) = ln 0.9 = &minus;0.1054.</li>
+          <li>Add them: 0.0953 + (&minus;0.1054) = &minus;0.0101.</li>
+          <li>Check in one step: ln(49.50/50) = ln 0.99 = &minus;0.0101. The same, because ln(1.1 &times; 0.9) = ln 1.1 + ln 0.9.</li>
+          <li>Back to a price: 50 &times; e<sup>&minus;0.010050</sup> = 49.50.</li>
+        </ol>
+        <p>2-day continuously compounded return: <b>&minus;0.0101</b>, or &minus;1.01%. Log returns add; simple returns do not.</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Part 1: a stock closes at 80.00, 82.40, 79.93 and 81.50 on four days. Find each day&rsquo;s log return, store and add them, and confirm the sum equals ln(81.50/80.00). Part 2: a stock at 100 has a daily log return of &mu; + &sigma;z, with &mu; = 0.05%, &sigma; = 2% and the draw z = 1.2816 (a 90th-percentile day). Simulate tomorrow&rsquo;s price, P<sub>1</sub> = 100 &times; e<sup>0.0005 + 0.02 &times; 1.2816</sup>. Rates go into eˣ as decimals.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">The first day&rsquo;s log return: divide, take ln, store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>82.4</kbd> <kbd>&divide;</kbd> <kbd>80</kbd> <kbd>=</kbd> (shows <samp>1.0300</samp>, the growth factor) <kbd>LN</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>LN</kbd> <kbd>82.4</kbd> <kbd>&divide;</kbd> <kbd>80</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (the screen shows <samp>ln(82.4/80)&rarr;A</samp>; A is the green letter above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.0296</samp> (BA II Plus) / <samp>.0296</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">The second and third days, the same way, into memories 2 and 3</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>79.93</kbd> <kbd>&divide;</kbd> <kbd>82.4</kbd> <kbd>=</kbd> <kbd>LN</kbd> <kbd>STO</kbd> <kbd>2</kbd>, then <kbd>81.5</kbd> <kbd>&divide;</kbd> <kbd>79.93</kbd> <kbd>=</kbd> <kbd>LN</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>LN</kbd> <kbd>79.93</kbd> <kbd>&divide;</kbd> <kbd>82.4</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd>, then <kbd>LN</kbd> <kbd>81.5</kbd> <kbd>&divide;</kbd> <kbd>79.93</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>, C above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>&minus;0.0304</samp>, then <samp>0.0195</samp> (BA II Plus) / <samp>&minus;.0304</samp>, then <samp>.0195</samp> (TI-84). The second day lost money, so its log return is negative.</p>
+          </li>
+          <li>
+            <p class="calc-what">Add the three, then check against the whole period in one go</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd>; then <kbd>81.5</kbd> <kbd>&divide;</kbd> <kbd>80</kbd> <kbd>=</kbd> <kbd>LN</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd>; then <kbd>LN</kbd> <kbd>81.5</kbd> <kbd>&divide;</kbd> <kbd>80</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0186</samp> both times (BA II Plus) / <samp>.0186</samp> both times (TI-84). Log returns add. Retyping the rounded displays (0.0296 &minus; 0.0304 + 0.0195) gives 0.0187: that is why we store.</p>
+          </li>
+          <li>
+            <p class="calc-what">Part 2: the day&rsquo;s log return, &mu; + &sigma;z, in decimals</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.0005</kbd> <kbd>+</kbd> <kbd>.02</kbd> <kbd>&times;</kbd> <kbd>1.2816</kbd> <kbd>=</kbd> (AOS multiplies first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.0005</kbd> <kbd>+</kbd> <kbd>.02</kbd> <kbd>&times;</kbd> <kbd>1.2816</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.0261</samp> (BA II Plus) / <samp>.0261</samp> (TI-84): a log return of about 2.61%, a good day.</p>
+          </li>
+          <li>
+            <p class="calc-what">Turn it into a price: P<sub>1</sub> = 100 &times; e<sup>that</sup></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>eˣ</kbd> (shows <samp>1.0265</samp>, the growth factor) <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ) <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>ENTER</kbd>, which reads 100 &times; e<sup>Ans</sup> (no closing bracket needed at the end of a line).</div>
+            <p class="calc-see">Display: <samp>102.6476</samp> (BA II Plus) / <samp>102.6476</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Monte Carlo by hand: let the calculator pick z</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> No random-number key and no inverse-normal function. On the exam the z (or a table to find it) comes with the question, as in step 5.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> Where 1.2816 comes from: <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">3:invNorm(</kbd> <kbd>.9</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>. Now a random percentile in place of .9: <kbd>100</kbd> <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ) <kbd>.0005</kbd> <kbd>+</kbd> <kbd>.02</kbd> <kbd>&times;</kbd> <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">3:invNorm(</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (to PRB; PROB on a CE) <kbd class="menu">1:rand</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>ENTER</kbd> again and again: one simulated day per press.</div>
+            <p class="calc-see">Display: <samp>1.2816</samp> (TI-84), the 90th percentile; then a new price at every press, 95 in 100 of them between 96.20 and 104.05. Yours will differ: that is the point.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: Part 1: the three log returns sum to 0.0186 (1.86%), exactly ln(81.50/80.00); as a simple return, e<sup>0.018576</sup> &minus; 1 = 1.875%. Part 2: P<sub>1</sub> = 102.6476, about $102.65 (102.6475 with the TI-84&rsquo;s unrounded invNorm(.9) = 1.28155&hellip;).</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Ulam&rsquo;s way out was to stop solving and start dealing. Try it on a stock at 100 whose one-year log return is normal with mean 5% and SD 20%. What is the chance it ends the year below 80?</p>
+      <p>Here a formula does exist, so we can grade the simulation. Below 80 means a log return below ln 0.8 = &minus;0.22314, so z = (&minus;0.22314 &minus; 0.05) / 0.20 = &minus;1.3657, and the chance is <b>8.60%</b>.</p>
+      <p>A seeded computer run of 100 simulated years, Ulam&rsquo;s hundred deals, gave 15%: rough. 10,000 runs gave 8.92%: close. The typical error shrinks with the square root of the runs, about 2.8 points at 100 runs and 0.28 at 10,000: a hundred times the work for ten times the precision. Monte Carlo buys precision with repetitions, which is why it waited for computers.</p>
+      <p>And not one of the 10,100 simulated prices fell below zero. The lowest was 46.83. Lognormal, as promised.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Adding simple returns across periods. +10% then &minus;10% adds to 0%, but the price fell 1%. Add <em>log</em> returns (they sum exactly), or multiply growth factors (Day 11).</li>
+          <li>Believing a lognormal price can go negative. e<sup>r</sup> is positive for every r, so the price is bounded below by 0: even a &minus;100% log return leaves 36.79% of it. It is the log return that is normal and can be any size.</li>
+          <li>Mixing up the simulations. Monte Carlo draws from an <em>assumed</em> distribution (e.g. normal log returns). Historical simulation and bootstrap resampling both use the <em>actual</em> past returns; the bootstrap draws from them at random, with replacement.</li>
+          <li>Typing a rate in percent into eˣ. TVM wants 5 for 5%; eˣ and LN want 0.05. In the walkthrough, e<sup>2.6132</sup> instead of e<sup>0.026132</sup> turns 102.65 into 1,364.26.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="58.56112392762874" data-tol="0.01" data-show="58.56">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A stock trades at 60. Its daily log return has mean 0.04% and standard deviation 1.5%. A simulation draws z = &minus;1.6449 (a 5th-percentile day). What is the simulated price at the end of the day, P<sub>1</sub> = 60 &times; e<sup>&mu; + &sigma;z</sup>? In dollars, to the cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 5 and 6, with a new start price (60), &mu; (0.0004), &sigma; (0.015) and z (&minus;1.6449). All rates as decimals.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Exponent: 0.0004 + 0.015 &times; (&minus;1.6449) = 0.0004 &minus; 0.0246735 = &minus;0.0243. P<sub>1</sub> = 60 &times; e<sup>&minus;0.0242735</sup> = 60 &times; 0.9760 = <b>58.56</b>. (Put the exponent in percent, e<sup>&minus;2.42735</sup>, and you get 5.30; forget the minus on z and you get 61.52.)</p>
+            <p>BA II Plus: <kbd>.0004</kbd> <kbd>&minus;</kbd> <kbd>.015</kbd> <kbd>&times;</kbd> <kbd>1.6449</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0243</samp>; <kbd>2ND</kbd> <kbd>eˣ</kbd> &rarr; <samp>0.9760</samp>; <kbd>&times;</kbd> <kbd>60</kbd> <kbd>=</kbd> &rarr; <samp>58.5611</samp>.</p>
+            <p>TI-84 Plus: <kbd>60</kbd> <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ) <kbd>.0004</kbd> <kbd>&minus;</kbd> <kbd>.015</kbd> <kbd>&times;</kbd> <kbd>1.6449</kbd> <kbd>ENTER</kbd> &rarr; <samp>58.5611</samp>. (With <samp>invNorm(.05)</samp> in place of &minus;1.6449 you get 58.5612: also 58.56.)</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> Why can you add daily log returns to get the week&rsquo;s log return?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Because ln(P<sub>2</sub>/P<sub>0</sub>) = ln[(P<sub>2</sub>/P<sub>1</sub>) &times; (P<sub>1</sub>/P<sub>0</sub>)] = ln(P<sub>2</sub>/P<sub>1</sub>) + ln(P<sub>1</sub>/P<sub>0</sub>): the log of a product is the sum of the logs</span></label>
+              <p class="cq-why">Right. Growth factors multiply (Day 11), and ln turns multiplying into adding.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because log returns are small, so the error from adding them is negligible</span></label>
+              <p class="cq-why">The identity is exact, not an approximation. It holds even for huge moves: a doubling then a halving gives ln 2 + ln 0.5 = 0.693147 &minus; 0.693147 = 0 = ln 1.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because log returns assume prices are normally distributed</span></label>
+              <p class="cq-why">Additivity holds for any prices, whatever their distribution. Normality is a modelling choice made afterwards, and it is the log returns, not the prices, that the model makes normal.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The in-between prices cancel in the product of growth factors, and the log of a product is the sum of the logs. In the worked example, ln 1.1 + ln 0.9 is exactly ln 0.99 = &minus;0.0101, while the simple returns +10% and &minus;10% wrongly add to 0%.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="40.20050083437604" data-tol="0.01" data-show="40.20">
+          <p class="cq-stem"><b>3. Twist: five days chained.</b> A stock starts the week at 40. Its daily log returns are 0.012, &minus;0.008, 0.015, &minus;0.020 and 0.006. What is its price at the end of the week? In dollars, to the cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Log returns add: sum the five, then P<sub>T</sub> = P<sub>0</sub> &times; e<sup>sum</sup>.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Sum: 0.012 &minus; 0.008 + 0.015 &minus; 0.020 + 0.006 = 0.005. P<sub>T</sub> = 40 &times; e<sup>0.005</sup> = 40 &times; 1.0050 = <b>40.20</b>. The week&rsquo;s holding-period return is e<sup>0.005</sup> &minus; 1 = 0.5013%. (Chain-linking the five numbers as if they were simple returns, 40 &times; 1.012 &times; 0.992 &times; &hellip;, gives 40.18.)</p>
+            <p>BA II Plus: <kbd>.012</kbd> <kbd>&minus;</kbd> <kbd>.008</kbd> <kbd>+</kbd> <kbd>.015</kbd> <kbd>&minus;</kbd> <kbd>.02</kbd> <kbd>+</kbd> <kbd>.006</kbd> <kbd>=</kbd> &rarr; <samp>0.0050</samp>; <kbd>2ND</kbd> <kbd>eˣ</kbd> &rarr; <samp>1.0050</samp>; <kbd>&times;</kbd> <kbd>40</kbd> <kbd>=</kbd> &rarr; <samp>40.2005</samp>.</p>
+            <p>TI-84 Plus: <kbd>40</kbd> <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ) <kbd>.012</kbd> <kbd>&minus;</kbd> <kbd>.008</kbd> <kbd>+</kbd> <kbd>.015</kbd> <kbd>&minus;</kbd> <kbd>.02</kbd> <kbd>+</kbd> <kbd>.006</kbd> <kbd>ENTER</kbd> &rarr; <samp>40.2005</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A stock&rsquo;s price rises from 50 to 60 in period 1 and falls from 60 to 45 in period 2. Its continuously compounded return over the two periods is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;5.00%</span></label>
+              <p class="cq-why">That adds the simple returns, +20% and &minus;25%. Simple returns do not add.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;10.54%</span></label>
+              <p class="cq-why">Right: ln(45/50) = ln 0.9 = &minus;0.1054, the same as ln(60/50) + ln(45/60) = 0.1823 &minus; 0.2877.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. &minus;10.00%</span></label>
+              <p class="cq-why">That is the holding-period return, 45/50 &minus; 1, not the continuously compounded one.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The continuously compounded return over any span is the ln of the ending price over the starting price: ln(45/50) = &minus;10.54%. It is more negative than the &minus;10.00% simple return because ln(1 + R) is always below R. Exponentiating it gets you back: 50 &times; e<sup>ln 0.9</sup> = 50 &times; 0.9 = 45.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In two or three sentences: how would you use Monte Carlo simulation to estimate the chance a stock ends the year below 80, and how does bootstrap resampling differ?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Assume a model for the random input, say a normal annual log return with a chosen mean and SD, draw a random return from it, compute the year-end price P<sub>0</sub> &times; e<sup>r</sup>, and repeat thousands of times; the share of runs ending below 80 estimates the probability, more precisely the more runs you do. Bootstrap resampling skips the assumed distribution: it draws returns at random, with replacement, from the actual past returns, so it keeps their real shape but can only produce returns that appear in the sample.</p>
+            <p>A complete answer says: (1) assume a distribution for the random input (e.g. normal log returns) and draw from it; (2) compute the ending price for each draw, repeat thousands of times and count the share below 80; (3) bootstrap resampling instead draws at random, with replacement, from the actual past returns: no distribution is assumed, but only returns seen in the sample can appear (historical simulation also relies on the actual past record).</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 9: Simulation of Financial Asset Prices and Returns (continuously compounded returns and their additivity, lognormal prices, Monte Carlo simulation and generating normal draws from uniform random numbers, historical simulation and bootstrap resampling), building on continuous compounding (Learning Module 4) and the normal distribution (Learning Module 6).</p>
+      <p><strong>Sources.</strong> Roger Eckhardt, &ldquo;Stan Ulam, John von Neumann, and the Monte Carlo Method&rdquo;, <em>Los Alamos Science</em> no. 15 (1987), quoting Ulam&rsquo;s own account of the 1946 Canfield solitaire question and of laying the game out &ldquo;one hundred times&rdquo;; Nicholas Metropolis and S. Ulam, &ldquo;The Monte Carlo Method&rdquo;, <em>Journal of the American Statistical Association</em> 44 (1949); Los Alamos National Laboratory history, &ldquo;Safety in numbers&rdquo;. The 8.60% probability is computed for this lesson; the simulated 15% and 8.92% come from a seeded computer run made for it (Python&rsquo;s random.gauss, seed 1946), not from a source.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-30.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

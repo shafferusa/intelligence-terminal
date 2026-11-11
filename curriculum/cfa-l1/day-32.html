@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In 1952 a 24-year-old showed why adding a risky asset can make a portfolio safer — CFA Math, Day 32 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "In 1952 a 24-year-old showed why adding a risky asset can make a portfolio safer",
+    "path": "reports/cfa/l1/day-32.html",
+    "summary": "Day 32 of CFA Math: a portfolio’s expected return is the weighted average of its assets’ returns, but its risk falls below the average whenever the assets are not perfectly correlated; Logan builds σp² = w1²σ1² + w2²σ2² + 2w1w2ρσ1σ2 from (a + b)², finds a covariance and correlation from a joint probability table, and computes a 60/40 stock–bond portfolio’s 7.00% expected return and 13.02% standard deviation.",
+    "headlines": [
+      "Day 32 of 90 · Quantitative Methods: portfolio returns average, but portfolio risk falls below the average whenever ρ < +1",
+      "Calculator: a 60/40 portfolio’s expected return and standard deviation, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>In 1952 a 24-year-old showed why adding a risky asset can make a portfolio safer</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A portfolio&rsquo;s expected return is the weighted average of its assets&rsquo; returns, but its risk is lower than the average risk whenever the assets don&rsquo;t move in lockstep.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 32 of 90 &middot; LM8 The Return and Risk of a Financial Portfolio &middot; Two-asset portfolio return and risk</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="32">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 31 and 25, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="5.448818528406978" data-tol="0.01" data-pct data-show="5.45%">
+          <p class="cq-stem"><b>From Day 31.</b> A share closes at 25.00, then 27.50 the next day, then 26.40 the day after. What is its 2-day continuously compounded return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> A continuously compounded return is ln(P<sub>end</sub> / P<sub>start</sub>). Add the two daily log returns, or take one log of the whole move: you get the same number.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>ln(27.50 / 25.00) = ln 1.10 = 0.0953; ln(26.40 / 27.50) = ln 0.96 = &minus;0.0408. Sum: 0.0545. In one step: ln(26.40 / 25.00) = ln 1.056 = 0.0545 = <b>5.45%</b>. (Adding the simple returns, +10% and &minus;4%, gives 6%; the holding-period return is 5.60%. Neither is the continuously compounded return.)</p>
+            <p>BA II Plus: <kbd>26.4</kbd> <kbd>&divide;</kbd> <kbd>25</kbd> <kbd>=</kbd> <kbd>LN</kbd> &rarr; <samp>0.0545</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>5.4488</samp>.</p>
+            <p>TI-84 Plus: <kbd>LN</kbd> <kbd>26.4</kbd> <kbd>&divide;</kbd> <kbd>25</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0545</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.4488</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 25.</b> Two-variable statistics on five years of returns give r = 0.60, Sx = 15.00 and Sy = 6.00 (and the population figures &sigma;x = 13.42, &sigma;y = 5.37). The sample covariance, in %<sup>2</sup>, is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 54.00</span></label>
+              <p class="cq-why">Right. The BA II Plus route: s<sub>XY</sub> = r &times; Sx &times; Sy = 0.60 &times; 15 &times; 6 = 54.00.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 43.20</span></label>
+              <p class="cq-why">That uses the population SDs, &sigma;x and &sigma;y: 0.60 &times; 13.42 &times; 5.37 &asymp; 43.2. A sample covariance needs the sample Sx and Sy.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 13.50</span></label>
+              <p class="cq-why">That divides 54 by n &minus; 1 = 4 a second time. r, Sx and Sy already contain the n &minus; 1; the product is the covariance.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>r = s<sub>XY</sub> / (Sx &times; Sy), turned round, gives s<sub>XY</sub> = r &times; Sx &times; Sy. Keep that turn-round in mind: today it becomes Cov = &rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub>, inside the formula for a portfolio&rsquo;s risk.</p></details>
+        </div>
+      </section>
+
+      <h3>Markowitz in the library</h3>
+      <p>As a graduate student at the University of Chicago, Harry Markowitz spent an afternoon in the library reading John Burr Williams&rsquo;s 1938 book, <em>The Theory of Investment Value</em>.</p>
+      <p>Williams said a stock is worth the present value of its expected dividends. Markowitz saw a hole in that. If investors cared only about expected value, each would put every dollar into the single stock with the best expected return.</p>
+      <p>Nobody does that. People spread their money around, so they must care about risk too.</p>
+      <p>In March 1952, aged 24, he published &ldquo;Portfolio Selection&rdquo; in the <em>Journal of Finance</em> (pages 77&ndash;91). Its argument: judge a portfolio as a whole, by its expected return and its variance, not one stock at a time.</p>
+      <p>He later recalled that at his dissertation defence Milton Friedman objected that this was not economics; Markowitz took him to be only half serious. In 1990 the work won Markowitz a share of the Nobel prize in economics, with Merton Miller and William Sharpe.</p>
+      <p>Here is the puzzle. Say you hold only bonds, whose returns have a standard deviation of 8%. You move some money into stocks, whose SD is 20%. Surely the mix gets riskier? Markowitz says it can get safer. How can adding a risky asset make a portfolio <em>less</em> risky?</p>
+
+      <h3>The idea</h3>
+      <p>Put 60% of your money in stocks and 40% in bonds. Two questions: what return do you expect, and how much will the result wobble?</p>
+      <p><b>Return is an average.</b> Each dollar earns what its own asset earns. Stocks expected to make 9% and bonds 4% give the mix 0.6 &times; 9% + 0.4 &times; 4% = 7%. No surprises.</p>
+      <p><b>Risk is not.</b> Think of a home&rsquo;s heating bill and its cooling bill. Each swings a lot with the weather, but a freezing month is rarely a scorching one, so the total swings much less than either bill. The ups and downs partly cancel.</p>
+      <p>Assets do the same, unless they move in perfect lockstep. How much cancels is set by Day 25&rsquo;s correlation, &rho;. For the 60/40 mix (SDs 20% and 8%), the portfolio&rsquo;s SD, &sigma;<sub>p</sub>, is: at &rho; = +1, 15.20%, the plain average of the SDs; at &rho; = 0.2, 13.02%; at &rho; = 0, 12.42%; at &rho; = &minus;1, 8.80%.</p>
+      <p>The expected return stays 7% every time. Only the risk moves. That is Markowitz&rsquo;s point: judge assets by what they do together.</p>
+
+      <h3>Why it works</h3>
+      <p>You already have the three parts: a probability-weighted average (Day 26), variance as the average squared surprise (Days 24 and 26), and covariance as the average product of two surprises (Day 25).</p>
+      <p><b>Step 1: the return.</b> In any one outcome, 60 cents of each dollar earns the stock return and 40 cents the bond return: R<sub>p</sub> = w<sub>1</sub>R<sub>1</sub> + w<sub>2</sub>R<sub>2</sub>. Average over all outcomes and the weights come along: E(R<sub>p</sub>) = w<sub>1</sub>E(R<sub>1</sub>) + w<sub>2</sub>E(R<sub>2</sub>).</p>
+      <p><b>Step 2: the surprise.</b> Subtract the second line from the first. Call each asset&rsquo;s surprise d (its return minus its expected return). The portfolio&rsquo;s surprise is w<sub>1</sub>d<sub>1</sub> + w<sub>2</sub>d<sub>2</sub>.</p>
+      <p><b>Step 3: square it.</b> Variance averages the squared surprise, and (a + b)<sup>2</sup> = a<sup>2</sup> + b<sup>2</sup> + 2ab:</p>
+      <p>(w<sub>1</sub>d<sub>1</sub> + w<sub>2</sub>d<sub>2</sub>)<sup>2</sup> = w<sub>1</sub><sup>2</sup>d<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>d<sub>2</sub><sup>2</sup> + 2w<sub>1</sub>w<sub>2</sub>d<sub>1</sub>d<sub>2</sub></p>
+      <p>Picture a square with side a + b. It splits into an a-by-a square, a b-by-b square and <em>two</em> a-by-b rectangles. That is the 2.</p>
+      <p><b>Step 4: average each piece.</b> The average d<sub>1</sub><sup>2</sup> is &sigma;<sub>1</sub><sup>2</sup>; the average d<sub>2</sub><sup>2</sup> is &sigma;<sub>2</sub><sup>2</sup>; the average d<sub>1</sub>d<sub>2</sub> is the covariance, Day 25&rsquo;s &ldquo;votes&rdquo;. So &sigma;<sub>p</sub><sup>2</sup> = w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> + 2w<sub>1</sub>w<sub>2</sub>Cov<sub>12</sub>.</p>
+      <p><b>Step 5: bring in &rho;.</b> Day 25 defined &rho; = Cov / (&sigma;<sub>1</sub>&sigma;<sub>2</sub>). Turned round: Cov<sub>12</sub> = &rho;<sub>12</sub>&sigma;<sub>1</sub>&sigma;<sub>2</sub>.</p>
+      <p><b>Step 6: why risk falls below the average.</b> At &rho; = +1 the three pieces are exactly (w<sub>1</sub>&sigma;<sub>1</sub> + w<sub>2</sub>&sigma;<sub>2</sub>)<sup>2</sup>, so &sigma;<sub>p</sub> is the weighted average of the SDs. Any &rho; below +1 shrinks the cross term, so &sigma;<sub>p</sub> drops below that average. At &rho; = &minus;1 the pieces become (w<sub>1</sub>&sigma;<sub>1</sub> &minus; w<sub>2</sub>&sigma;<sub>2</sub>)<sup>2</sup>, which can even be zero.</p>
+      <p><b>From a probability table.</b> When states and probabilities replace past data, &ldquo;average&rdquo; means Day 26&rsquo;s probability-weighted sum: Cov = &Sigma; P &times; d<sub>A</sub> &times; d<sub>B</sub>. No n &minus; 1: the probabilities describe the whole distribution, so nothing is estimated from a sample.</p>
+      <p><b>In plain words:</b> returns simply average. Risks average only when the assets move in lockstep; otherwise their wobbles partly cancel, and the cross term measures how much.</p>
+      <div class="formula">
+        <p class="expr">E(R<sub>p</sub>) = w<sub>1</sub>E(R<sub>1</sub>) + w<sub>2</sub>E(R<sub>2</sub>)</p>
+        <p class="expr">&sigma;<sub>p</sub><sup>2</sup> = w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> + 2w<sub>1</sub>w<sub>2</sub>&rho;<sub>12</sub>&sigma;<sub>1</sub>&sigma;<sub>2</sub></p>
+        <p class="expr">Cov(R<sub>A</sub>, R<sub>B</sub>) = &Sigma; P(s) &times; [R<sub>A,s</sub> &minus; E(R<sub>A</sub>)] &times; [R<sub>B,s</sub> &minus; E(R<sub>B</sub>)]</p>
+        <dl>
+          <dt>w<sub>1</sub>, w<sub>2</sub></dt><dd>the weights: the share of the money in each asset (they add to 1)</dd>
+          <dt>E(R<sub>i</sub>)</dt><dd>expected return of asset i</dd>
+          <dt>&sigma;<sub>i</sub></dt><dd>standard deviation of asset i&rsquo;s return</dd>
+          <dt>&sigma;<sub>p</sub><sup>2</sup>, &sigma;<sub>p</sub></dt><dd>the portfolio&rsquo;s variance (%<sup>2</sup> when returns are in %) and standard deviation (%)</dd>
+          <dt>&rho;<sub>12</sub></dt><dd>correlation of the two returns, from &minus;1 to +1</dd>
+          <dt>Cov<sub>12</sub></dt><dd>their covariance, &rho;<sub>12</sub>&sigma;<sub>1</sub>&sigma;<sub>2</sub>: the 2w<sub>1</sub>w<sub>2</sub> &times; Cov piece is the cross term</dd>
+          <dt>P(s)</dt><dd>probability of state s (boom, recession&hellip;) in a joint probability table</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Expected return of a portfolio: E(R<sub>p</sub>) = &Sigma; w<sub>i</sub> &times; E(R<sub>i</sub>)</li>
+          <li>Variance of a two-asset portfolio: &sigma;<sub>p</sub><sup>2</sup> = w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> + w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> + 2 w<sub>1</sub> w<sub>2</sub> &rho;<sub>12</sub> &sigma;<sub>1</sub> &sigma;<sub>2</sub></li>
+          <li>Covariance from correlation: Cov<sub>12</sub> = &rho;<sub>12</sub> &times; &sigma;<sub>1</sub> &times; &sigma;<sub>2</sub></li>
+          <li>Covariance from a joint probability table: Cov(R<sub>A</sub>, R<sub>B</sub>) = &Sigma; P(R<sub>A,i</sub>, R<sub>B,j</sub>) &times; [R<sub>A,i</sub> &minus; E(R<sub>A</sub>)] &times; [R<sub>B,j</sub> &minus; E(R<sub>B</sub>)]</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Stocks (A) and bonds (B) in three states of the economy. Boom, probability 0.3: A = 25%, B = 4%. Normal, 0.5: A = 10%, B = 8%. Recession, 0.2: A = &minus;15%, B = 5%. Find the covariance and the correlation of their returns, working in percent.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Expected returns: E(R<sub>A</sub>) = 0.3 &times; 25 + 0.5 &times; 10 + 0.2 &times; (&minus;15) = 7.5 + 5 &minus; 3 = 9.5%. E(R<sub>B</sub>) = 0.3 &times; 4 + 0.5 &times; 8 + 0.2 &times; 5 = 1.2 + 4 + 1 = 6.2%.</li>
+          <li>Boom: 0.3 &times; (25 &minus; 9.5) &times; (4 &minus; 6.2) = 0.3 &times; 15.5 &times; (&minus;2.2) = &minus;10.23. Stocks above average, bonds below: a vote for &ldquo;opposite&rdquo;.</li>
+          <li>Normal: 0.5 &times; (10 &minus; 9.5) &times; (8 &minus; 6.2) = 0.5 &times; 0.5 &times; 1.8 = 0.45.</li>
+          <li>Recession: 0.2 &times; (&minus;15 &minus; 9.5) &times; (5 &minus; 6.2) = 0.2 &times; (&minus;24.5) &times; (&minus;1.2) = 5.88. Both below average: a vote for &ldquo;together&rdquo;.</li>
+          <li>Add the votes: Cov = &minus;10.23 + 0.45 + 5.88 = <b>&minus;3.90</b> (%<sup>2</sup>). In decimals, divide by 100<sup>2</sup>: &minus;0.00039.</li>
+          <li>SDs the same way (Day 26): &sigma;<sub>A</sub> = &radic;(0.3 &times; 15.5<sup>2</sup> + 0.5 &times; 0.5<sup>2</sup> + 0.2 &times; 24.5<sup>2</sup>) = &radic;192.25 = 13.8654%. &sigma;<sub>B</sub> = &radic;(0.3 &times; 2.2<sup>2</sup> + 0.5 &times; 1.8<sup>2</sup> + 0.2 &times; 1.2<sup>2</sup>) = &radic;3.36 = 1.8330%.</li>
+          <li>&rho; = Cov / (&sigma;<sub>A</sub>&sigma;<sub>B</sub>) = &minus;3.90 / (13.8654 &times; 1.8330) = <b>&minus;0.1534</b>: the two lean, a little, toward moving in opposite directions.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A portfolio holds 60% stocks (expected return 9%, &sigma; = 20%) and 40% bonds (expected return 4%, &sigma; = 8%). The correlation between them is 0.2. Find E(R<sub>p</sub>) and &sigma;<sub>p</sub>. Work in percent: type 20, not 0.20, so the variance comes out in %<sup>2</sup>.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear, then the expected return: the weighted average</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd>, then <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>=</kbd> (AOS, set on Day 1, multiplies first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd>, then <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>7.0000</samp> on both. E(R<sub>p</sub>) = 7%.</p>
+          </li>
+          <li>
+            <p class="calc-what">The stocks&rsquo; own term, w<sub>1</sub><sup>2</sup>&sigma;<sub>1</sub><sup>2</sup> = 0.6<sup>2</sup> &times; 20<sup>2</sup>, and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.6</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (<kbd>x&sup2;</kbd> squares the number on the display at once)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.6</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>x&sup2;</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>144.0000</samp> on both.</p>
+          </li>
+          <li>
+            <p class="calc-what">The bonds&rsquo; own term, w<sub>2</sub><sup>2</sup>&sigma;<sub>2</sub><sup>2</sup> = 0.4<sup>2</sup> &times; 8<sup>2</sup></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.4</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.4</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>)</div>
+            <p class="calc-see">Display: <samp>10.2400</samp> on both.</p>
+          </li>
+          <li>
+            <p class="calc-what">The cross term, 2w<sub>1</sub>w<sub>2</sub>&rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub>: start with the 2</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (C is above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>15.3600</samp> on both. Inside it sits the covariance, 0.2 &times; 20 &times; 8 = 32 (%<sup>2</sup>).</p>
+          </li>
+          <li>
+            <p class="calc-what">Add the three pieces: the portfolio variance, in %<sup>2</sup></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>169.6000</samp> on both. A variance, not yet the risk.</p>
+          </li>
+          <li>
+            <p class="calc-what">Take the square root: the portfolio&rsquo;s standard deviation</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&radic;x</kbd> (it acts on the <samp>169.6000</samp> already on the display)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>13.0231</samp> on both. On the TI-84 the whole thing also fits on one line: <samp>&radic;(.6&sup2;*20&sup2;+.4&sup2;*8&sup2;+2*.6*.4*.2*20*8)</samp> &rarr; <samp>13.0231</samp>.</p>
+          </li>
+          <li>
+            <p class="calc-what">Compare: the weighted average of the two SDs</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>15.2000</samp> on both. That would be the portfolio&rsquo;s risk only if &rho; were +1.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: E(R<sub>p</sub>) = 7.00%; &sigma;<sub>p</sub> = 13.02% (variance 169.6 %<sup>2</sup>), about 2.18 points below the 15.2% weighted average of the SDs.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Markowitz&rsquo;s whole insight lives in the cross term. The 60/40 portfolio expects the plain average, 7.0%, but its &sigma;<sub>p</sub> is 13.02%, not 15.2%.</p>
+      <p>Now the puzzle. Start with all bonds: 4% expected, &sigma; = 8%. Move 10% of the money into stocks.</p>
+      <p>E(R<sub>p</sub>) = 0.1 &times; 9 + 0.9 &times; 4 = 4.5%. &sigma;<sub>p</sub><sup>2</sup> = 0.01 &times; 400 + 0.81 &times; 64 + 2 &times; 0.1 &times; 0.9 &times; 0.2 &times; 20 &times; 8 = 4 + 51.84 + 5.76 = 61.6, so &sigma;<sub>p</sub> = 7.85%.</p>
+      <p>More return <em>and</em> less risk, by adding the riskier asset. The weights are squared: a 10% slice of stocks adds only 0.1<sup>2</sup> &times; 400 = 4 of its own variance, while the bonds&rsquo; term falls by 12.16. With &rho; = 0.2, the cross term (5.76) cannot make up the gap.</p>
+      <p>That is what diversifying buys, and why nobody owns just one stock. Day 33 finds the mix with the least risk of all.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Averaging the SDs. 0.6 &times; 20 + 0.4 &times; 8 = 15.2% is &sigma;<sub>p</sub> only when &rho; = +1; at &rho; = 0.2 it is 13.02%. The weighted-average SD is a ceiling, not the answer.</li>
+          <li>Forgetting the 2 in the cross term: 144 + 10.24 + 7.68 = 161.92 gives 12.72% instead of 13.02%. Remember the two rectangles in the (a + b)<sup>2</sup> square.</li>
+          <li>Mixing percent and decimals. Stay in one unit: 20 and 8 give a variance of 169.6 (%<sup>2</sup>), 0.20 and 0.08 give 0.01696; both roots are 13.02%. A covariance quoted as 0.0032 is 32 in %<sup>2</sup>: typed unchanged into a percent sum, it gives 12.42%.</li>
+          <li>Dividing a probability-table covariance by n &minus; 1. Weight each state by its probability and add; n &minus; 1 is for a sample of past returns (Day 25). Treating the worked example&rsquo;s three states as a sample gives &minus;1.90, not &minus;3.90.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="12.54846604171203" data-tol="0.01" data-pct data-show="12.55%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A portfolio holds 70% equities (expected return 8%, &sigma; = 18%) and 30% bonds (expected return 3.5%, &sigma; = 6%). The correlation between them is &minus;0.1. What is the portfolio&rsquo;s standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough with new weights, SDs and &rho;. This &rho; is negative, so the cross term is negative: on the BA II Plus press <kbd>+|&minus;</kbd> after typing .1. (Side check: E(R<sub>p</sub>) = 6.65%.)</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>0.7<sup>2</sup> &times; 18<sup>2</sup> = 158.76; 0.3<sup>2</sup> &times; 6<sup>2</sup> = 3.24; 2 &times; 0.7 &times; 0.3 &times; (&minus;0.1) &times; 18 &times; 6 = &minus;4.536. Variance = 157.464 (%<sup>2</sup>); &sigma;<sub>p</sub> = &radic;157.464 = 12.5485 = <b>12.55%</b>, well below the weighted-average SD, 0.7 &times; 18 + 0.3 &times; 6 = 14.40%. (Drop the minus sign on &rho; and you get 12.90%.)</p>
+            <p>BA II Plus: <kbd>.7</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>158.7600</samp>; <kbd>.3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>3.2400</samp>; <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.1</kbd> <kbd>+|&minus;</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>&minus;4.5360</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>157.4640</samp>; <kbd>&radic;x</kbd> &rarr; <samp>12.5485</samp>.</p>
+            <p>TI-84 Plus, in one line: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>.7</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>.1</kbd> <kbd>&times;</kbd> <kbd>18</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>12.5485</samp>. (Or store the three terms in A, B and C as in the walkthrough.)</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Two assets each have a standard deviation of 15%, and you hold them 50/50. When is the portfolio&rsquo;s standard deviation exactly 15%?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. When their correlation is 0</span></label>
+              <p class="cq-why">At &rho; = 0 the cross term vanishes: &sigma;<sub>p</sub><sup>2</sup> = 0.25 &times; 225 + 0.25 &times; 225 = 112.5, so &sigma;<sub>p</sub> = 10.61%. Zero correlation already cancels a lot of risk.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Only when their correlation is +1</span></label>
+              <p class="cq-why">Right. Then the variance is exactly (0.5 &times; 15 + 0.5 &times; 15)<sup>2</sup> = 15<sup>2</sup>: the weighted average of the SDs. Any &rho; below +1 shrinks the cross term, and &sigma;<sub>p</sub> falls below 15%.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. When their correlation is &minus;1</span></label>
+              <p class="cq-why">At &rho; = &minus;1 the variance is (0.5 &times; 15 &minus; 0.5 &times; 15)<sup>2</sup> = 0: the two cancel completely and &sigma;<sub>p</sub> = 0%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The weighted average of the SDs is a ceiling, reached only when the assets move in lockstep. Step 6 of &ldquo;Why it works&rdquo;: at &rho; = +1 the three pieces form the perfect square (w<sub>1</sub>&sigma;<sub>1</sub> + w<sub>2</sub>&sigma;<sub>2</sub>)<sup>2</sup>. Lower &rho;, smaller cross term, lower risk, with the expected return unchanged.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="0.19" data-tol="0.005" data-show="0.19">
+          <p class="cq-stem"><b>3. Twist: solve for the correlation.</b> A 50/50 portfolio of two assets with standard deviations of 20% and 10% has a standard deviation of 12%. What correlation between the two assets does that imply? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">&rho;</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Write the variance formula with &rho; as the only unknown. Square the 12% on the left; every other piece is a number. Subtract the two own terms, then divide by what multiplies &rho;.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>In %<sup>2</sup>: 12<sup>2</sup> = 0.5<sup>2</sup> &times; 20<sup>2</sup> + 0.5<sup>2</sup> &times; 10<sup>2</sup> + 2 &times; 0.5 &times; 0.5 &times; &rho; &times; 20 &times; 10, so 144 = 100 + 25 + 100&rho;. Then 100&rho; = 19 and &rho; = <b>0.19</b>. (In decimals: 0.0144 = 0.01 + 0.0025 + 0.01&rho;, the same answer. Forget the 2 and you get 0.38.)</p>
+            <p>BA II Plus: <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>19.0000</samp>; <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.1900</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>x&sup2;</kbd> <kbd>&minus;</kbd> <kbd>.5</kbd> <kbd>x&sup2;</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>10</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1900</samp> (the subtraction key here, not <kbd>(&minus;)</kbd>).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor puts 40% of a portfolio in an asset with a standard deviation of 25% and 60% in an asset with a standard deviation of 10%. The correlation between the two assets&rsquo; returns is 0.3. The portfolio&rsquo;s standard deviation is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 16.00%</span></label>
+              <p class="cq-why">That is the weighted average of the SDs, 0.4 &times; 25 + 0.6 &times; 10: true only if &rho; = +1.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 12.41%</span></label>
+              <p class="cq-why">That leaves out the 2 in the cross term: &radic;(100 + 36 + 18) = &radic;154.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 13.11%</span></label>
+              <p class="cq-why">Right: 0.4<sup>2</sup> &times; 25<sup>2</sup> + 0.6<sup>2</sup> &times; 10<sup>2</sup> + 2 &times; 0.4 &times; 0.6 &times; 0.3 &times; 25 &times; 10 = 100 + 36 + 36 = 172, and &radic;172 = 13.11%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Three pieces, then the root: each asset&rsquo;s own term (weight squared times variance), plus the cross term with its 2. The answer sits below the 16% weighted average because &rho; = 0.3 is below +1.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why can adding a risky asset lower a portfolio&rsquo;s risk?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A portfolio&rsquo;s variance is not just each asset&rsquo;s own variance weighted in: it also has a cross term, 2w<sub>1</sub>w<sub>2</sub>&rho;&sigma;<sub>1</sub>&sigma;<sub>2</sub>, set by how the assets move together. When &rho; is below +1 their ups and downs partly cancel, so &sigma;<sub>p</sub> is below the weighted average of the SDs (13.02% instead of 15.2% for the 60/40 mix), while the expected return is still the plain weighted average.</p>
+            <p>A complete answer says: (1) portfolio variance includes a covariance (cross) term, not only each asset&rsquo;s own variance; (2) when &rho; &lt; +1 that term is smaller than for perfectly correlated assets, so &sigma;<sub>p</sub> is below the weighted-average &sigma;; (3) the assets&rsquo; ups and downs partly offset, while the expected return is still the weighted average.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 8: The Return and Risk of a Financial Portfolio (a portfolio&rsquo;s expected return as the weighted average of its assets&rsquo; expected returns; two-asset portfolio variance and standard deviation; covariance from correlation and from a joint probability table; why the portfolio&rsquo;s standard deviation is below the weighted average whenever &rho; &lt; +1).</p>
+      <p><strong>Sources.</strong> Harry Markowitz, &ldquo;Portfolio Selection&rdquo;, <em>Journal of Finance</em> 7(1), March 1952, pp. 77&ndash;91; Harry M. Markowitz, autobiography, <em>Les Prix Nobel 1990</em> (Nobel Foundation) (the afternoon in the library with John Burr Williams&rsquo;s <em>The Theory of Investment Value</em>; an investor who cared only about expected value would hold a single security), and his Nobel lecture, &ldquo;Foundations of Portfolio Theory&rdquo;, 7 December 1990 (Milton Friedman&rsquo;s objection at his dissertation defence); Timothy Taylor, &ldquo;Harry Markowitz (1927&ndash;2023): Bringing Finance into Economics&rdquo;, <em>Conversable Economist</em>, 26 June 2023; Wikipedia, &ldquo;Harry Markowitz&rdquo; (born 24 August 1927; 1990 prize shared with Merton Miller and William Sharpe). The portfolio figures are illustrations computed for this lesson, not quoted.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-31.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

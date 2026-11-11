@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Austria’s 100-year bond moved 0.4% for every basis point, then lost more than two-thirds of its value — CFA Math, Day 39 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Austria’s 100-year bond moved 0.4% for every basis point, then lost more than two-thirds of its value",
+    "path": "reports/cfa/l1/day-39.html",
+    "summary": "Day 39 of CFA Math: Logan learns that Macaulay duration is the PV-weighted average time until a bond’s cash flows arrive and that modified duration, MacDur/(1 + r), estimates the percentage price change for a change in yield; he finds a 3-year bond’s price, Macaulay and modified durations and its move for +50 bp with two NPVs on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 39 of 90 · Fixed Income: Macaulay duration is the PV-weighted average wait for a bond’s cash, and ModDur = MacDur/(1 + r) estimates its % price change",
+      "Calculator: a 3-year 5% bond’s price, Macaulay and modified duration, and its move for +50 bp, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Austria&rsquo;s 100-year bond moved 0.4% for every basis point, then lost more than two-thirds of its value</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Macaulay duration is the average wait for a bond&rsquo;s money, each payment weighted by what it is worth today; divide it by 1 + r and it tells you how far the price falls when yields rise.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 39 of 90 &middot; Yield-Based Bond Duration Measures and Properties &middot; Macaulay and modified duration</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="39">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 38 and Day 32, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="145" data-tol="0.5" data-show="145">
+          <p class="cq-stem"><b>From Day 38.</b> An 8-year corporate bond yields 5.45%. Government bonds yield 3.70% at 5 years and 4.20% at 10 years. What is the corporate bond&rsquo;s G-spread? In basis points, to the nearest basis point.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">bp</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> There is no 8-year government bond: interpolate one first. 8 years is 3/5 of the way from 5 to 10.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Interpolated 8-year government yield: 3.70 + (8 &minus; 5)/(10 &minus; 5) &times; (4.20 &minus; 3.70) = 3.70 + 0.6 &times; 0.50 = 4.00%. G-spread = 5.45 &minus; 4.00 = 1.45 percentage points = <b>145 bp</b>.</p>
+            <p>BA II Plus: <kbd>5.45</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>3.7</kbd> <kbd>+</kbd> <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.4500</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>145.0000</samp>.</p>
+            <p>TI-84 Plus: <kbd>5.45</kbd> <kbd>&minus;</kbd> <kbd>(</kbd> <kbd>3.7</kbd> <kbd>+</kbd> <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.4500</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>145.0000</samp>.</p>
+            <p>The traps: against the unmatched 10-year you get 125 bp, against the 5-year 175 bp.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 32.</b> A portfolio holds 70% stocks (&sigma; = 15%) and 30% bonds (&sigma; = 5%). Their correlation is &minus;0.2. The portfolio&rsquo;s standard deviation is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 12.00%</span></label>
+              <p class="cq-why">That is the weighted average of the SDs, 0.7 &times; 15 + 0.3 &times; 5. It is only right when &rho; = +1; here the assets partly offset.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 10.90%</span></label>
+              <p class="cq-why">The sign of &rho; was dropped: the cross term was added (+6.3) instead of subtracted.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 10.31%</span></label>
+              <p class="cq-why">Right: &sigma;<sub>p</sub><sup>2</sup> = 110.25 + 2.25 &minus; 6.3 = 106.2 (%&sup2;), and &radic;106.2 = 10.31%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>&sigma;<sub>p</sub><sup>2</sup> = 0.7<sup>2</sup> &times; 15<sup>2</sup> + 0.3<sup>2</sup> &times; 5<sup>2</sup> + 2 &times; 0.7 &times; 0.3 &times; (&minus;0.2) &times; 15 &times; 5 = 110.25 + 2.25 &minus; 6.30 = 106.20.</p>
+            <p>BA II Plus: <kbd>.7</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>x²</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>x²</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>=</kbd> &rarr; <samp>106.2000</samp>; <kbd>&radic;x</kbd> &rarr; <samp>10.3053</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>x²</kbd> (&radic;) <kbd>.7</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>x²</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>x²</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>x²</kbd> <kbd>&minus;</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>10.3053</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Austria&rsquo;s century bond</h3>
+      <p>September 2017. Austria sold &euro;3.5 billion of bonds that it will not repay until 20 September 2117, a hundred years later.</p>
+      <p>No euro-zone government had sold a century bond publicly by syndication before. (Belgium and Ireland had placed small ones privately.) The coupon was 2.1% a year, priced to yield about 2.11%, and investors put in more than &euro;11 billion of orders.</p>
+      <p>Bloomberg&rsquo;s Gadfly columnists pointed out what that meant: a one-basis-point move in the yield, 0.01 percentage point, would shift the price by about 43 cents per 100 of face value.</p>
+      <p>Then euro yields sank. By 2020 the bond traded at more than twice its face value. From 2022 yields climbed, and it slid. In 2026 it has traded between about 54 and 61 in Milan: 58.75 on 24 April, about 57 in October.</p>
+      <p>Austria&rsquo;s credit hardly changed. Yet from the peak, the bond lost more than two-thirds of its value.</p>
+      <p>What makes a 100-year, low-coupon bond so sensitive to interest rates? And how do you measure that sensitivity with one number?</p>
+
+      <h3>The idea</h3>
+      <p>A bond pays you in pieces: small coupons along the way, the principal at the end. <b>Macaulay duration</b> asks: on average, how long do you wait for your money?</p>
+      <p>Each payment counts by its present value, its share of today&rsquo;s price. Picture a plank along a timeline, each payment&rsquo;s PV stacked as a weight at its date. MacDur is where the plank balances.</p>
+      <p>A zero has one weight, at maturity, so its MacDur equals its maturity. Coupons are small weights placed earlier; they pull the balance point toward today.</p>
+      <p>Why care? The further away a payment is, the harder a change in yield hits its PV. So the average wait is also the bond&rsquo;s sensitivity to rates. Divide it by (1 + r) for <b>modified duration</b>: about how many percent the price falls per 1-percentage-point rise in yield.</p>
+      <p>A second meaning. If rates rise just after you buy, the price falls, but your coupons are reinvested at the higher rate. At a horizon equal to MacDur the two roughly cancel. Buy the walkthrough&rsquo;s bond below at 102.78 and hold it 2.86 years, reinvesting coupons: you end up with 114.98 whether the yield stays at 4%, jumps to 5% or drops to 3%.</p>
+      <p>So <b>duration gap</b> = MacDur &minus; your horizon. Positive: price risk dominates, and rising rates hurt. Negative: reinvestment risk dominates, and falling rates hurt.</p>
+
+      <h3>Why it works</h3>
+      <p>Start with one payment, then build the bond.</p>
+      <ol>
+        <li><b>One year of waiting.</b> A payment due in a year is worth CF/(1 + r). Raise the yield by &Delta; and the divisor becomes (1 + r + &Delta;) = (1 + r) &times; [1 + &Delta;/(1 + r)]: one extra factor. So the PV shrinks by about &Delta;/(1 + r). At r = 4%, a 1-point rise costs about 0.01/1.04 = 0.96%.</li>
+        <li><b>t years of waiting.</b> A payment t years away is divided by (1 + r) t times, so it takes that hit t times: it loses about t &times; &Delta;/(1 + r). Check: 105 due in 3 years is 93.3446 at 4% and 90.7029 at 5%, down 2.83%; the rule says 3 &times; 0.96 = 2.88%. Time is sensitivity.</li>
+        <li><b>A bond is a bundle of payments</b> (Day 10). Its % change is the average of theirs, each weighted by its share of the price, w<sub>t</sub> = PV(CF<sub>t</sub>)/PV, just as a portfolio&rsquo;s return averages its assets&rsquo; returns (Day 32).</li>
+        <li><b>Add them up.</b> %&Delta;PV &asymp; &Sigma; w<sub>t</sub> &times; [&minus;t &times; &Delta;/(1 + r)] = &minus;[&Sigma; w<sub>t</sub> &times; t] &times; &Delta;/(1 + r).</li>
+        <li><b>Name the bracket.</b> &Sigma; w<sub>t</sub> &times; t, the PV-weighted average time, is the Macaulay duration; divided by (1 + r) it is the modified duration. So %&Delta;PV &asymp; &minus;ModDur &times; &Delta;Yield.</li>
+        <li><b>Semiannual.</b> Count t in half-years with r = yield/2, so MacDur comes out in half-years. AnnModDur = MacDur(periods)/(1 + r/2)/2.</li>
+      </ol>
+      <p>Anything that moves PV weight later raises duration: a longer maturity, a lower coupon, a lower yield (far payments are discounted less, so they keep more weight).</p>
+      <p>In plain words: the longer you wait for your money, the more a change in interest rates changes what it is worth today, and duration is the average wait.</p>
+      <div class="formula">
+        <p class="expr">MacDur = &Sigma; t &times; [CF<sub>t</sub>/(1 + r)<sup>t</sup>] / PV = &Sigma; t &times; w<sub>t</sub></p>
+        <p class="expr">ModDur = MacDur / (1 + r)</p>
+        <p class="expr">%&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield</p>
+        <dl>
+          <dt>t</dt><dd>the period a cash flow arrives in: 1, 2, &hellip;, N</dd>
+          <dt>CF<sub>t</sub></dt><dd>the cash flow at t: a coupon, or coupon + principal at N</dd>
+          <dt>r</dt><dd>the yield per period, as a decimal</dd>
+          <dt>PV</dt><dd>the bond&rsquo;s price: &Sigma; CF<sub>t</sub>/(1 + r)<sup>t</sup></dd>
+          <dt>w<sub>t</sub></dt><dd>that payment&rsquo;s share of the price, PV(CF<sub>t</sub>)/PV; the weights add to 1</dd>
+          <dt>MacDur</dt><dd>Macaulay duration: the PV-weighted average time to the cash flows, in periods</dd>
+          <dt>ModDur</dt><dd>modified duration; AnnModDur is it in years (divide by periods per year)</dd>
+          <dt>&Delta;Yield</dt><dd>the change in the annual yield, as a decimal (50 bp = 0.0050)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Macaulay duration: MacDur = &Sigma; t &times; [CF<sub>t</sub>/(1 + r)<sup>t</sup>] / PV</li>
+          <li>Modified duration: ModDur = MacDur / (1 + r)</li>
+          <li>Percentage price change from duration: %&Delta;PV &asymp; &minus;AnnModDur &times; &Delta;Yield</li>
+          <li>Duration gap: Duration gap = Macaulay duration &minus; investment horizon</li>
+          <li>Macaulay duration of a zero-coupon bond: Equal to its time to maturity</li>
+          <li>Duration of a semiannual-pay bond: Compute in periods with r/2, then divide by 2 for years; AnnModDur = MacDur(periods) / (1 + r/2) / 2</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A 2-year bond pays a 6% annual coupon and yields 5%. Find its price, Macaulay duration and modified duration.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>PV<sub>1</sub> = 6/1.05 = 5.7143.</li>
+          <li>PV<sub>2</sub> = 106/1.05<sup>2</sup> = 106/1.1025 = 96.1451.</li>
+          <li>Price = 5.7143 + 96.1451 = <b>101.8594</b>.</li>
+          <li>Weights: 5.7143/101.8594 = 0.0561 and 96.1451/101.8594 = 0.9439. They add to 1.</li>
+          <li>MacDur = 1 &times; 0.0561 + 2 &times; 0.9439 = <b>1.9439 years</b>.</li>
+          <li>ModDur = 1.9439/1.05 = <b>1.8513</b>: a 1-point rise in yield cuts the price by about 1.85%.</li>
+          <li>A 2-year zero would have MacDur = 2 exactly. The year-1 coupon pulls the average slightly earlier.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A 3-year bond pays a 5% annual coupon and yields 4%. Find the PV of each cash flow, the price, the Macaulay and modified durations, and the estimated % price change if the yield rises 50 bp. The trick: &Sigma; t &times; PV is just the NPV of the cash flows multiplied by their times. Two NPVs and one division give MacDur.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">The PV of each payment: these are the weights on the plank</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>=</kbd>, then <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>yˣ</kbd> <kbd>2</kbd> <kbd>=</kbd>, then <kbd>105</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>=</kbd> (AOS, set on Day 1, does the power first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd>, then <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>ENTER</kbd>, <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>^</kbd> <kbd>2</kbd> <kbd>ENTER</kbd>, <kbd>105</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>4.8077</samp>, <samp>4.6228</samp>, <samp>93.3446</samp> (both calculators). Almost all the value sits at year 3.</p>
+          </li>
+          <li>
+            <p class="calc-what">Load the cash flows 5, 5, 105. CF0 is 0: we want what the bond is worth, not a deal</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>105</kbd> <kbd>ENTER</kbd> (CFo stays 0 after clearing; each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past a frequency left at 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>4</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> ({) <kbd>5</kbd> <kbd>,</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>105</kbd> <kbd>2nd</kbd> <kbd>)</kbd> (}) (the rate goes first, in percent, then CF0)</div>
+            <p class="calc-see">Display: <samp>C01 = 5.0000</samp>, <samp>C02 = 5.0000</samp>, <samp>C03 = 105.0000</samp> (BA II Plus) / <samp>npv(4,0,{5,5,105}</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Discount at 4%: that is the price. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>NPV</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd>, then <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (the screen shows <samp>Ans&rarr;A</samp>; A is the green letter above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>NPV = 102.7751</samp> (BA II Plus) / <samp>102.7751</samp> (TI-84). The three PVs of step 1, added.</p>
+          </li>
+          <li>
+            <p class="calc-what">Multiply each cash flow by its time (1 &times; 5, 2 &times; 5, 3 &times; 105 = 5, 10, 315) and take the NPV again: that is &Sigma; t &times; PV</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CF</kbd> <kbd>&darr;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>315</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> (I = 4 is kept), then <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>4</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>315</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>)</div>
+            <p class="calc-see">Display: <samp>NPV = 294.0871</samp> (BA II Plus) / <samp>294.0871</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">MacDur = &Sigma; t &times; PV &divide; price</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.8615</samp> (both calculators). 2.86 years: a little short of 3, because the coupons pull the balance point in.</p>
+          </li>
+          <li>
+            <p class="calc-what">ModDur = MacDur &divide; 1.04; then the estimate for +50 bp, &minus;ModDur &times; 0.50 (in percent)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>ENTER</kbd> (the line starts <samp>Ans/</samp> by itself), then <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>.5</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.7514</samp>, then <samp>&minus;1.3757</samp> (both calculators). Price down about 1.38%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check: reprice the bond at 4.5% and find the true % change</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>3</kbd> <kbd>N</kbd> <kbd>4.5</kbd> <kbd>I/Y</kbd> <kbd>5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd>, then <kbd>+|&minus;</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> (shows <samp>&minus;0.0136</samp>), then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>4.5</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>105</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>), then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;101.3745</samp>, then <samp>&minus;1.3628</samp> (BA II Plus) / <samp>101.3745</samp>, <samp>&minus;.0136</samp>, <samp>&minus;1.3628</samp> (TI-84). The estimate missed by about 0.01 of a point.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: PVs 4.81, 4.62 and 93.34; price 102.78; MacDur 2.86 years; ModDur 2.75. For +50 bp the price falls about 1.38% (exactly 1.36%).</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The century bond&rsquo;s value sits mostly in small 2.1 coupons spread over decades. Weighted by PV, its payments balanced at 42.4 years at issue: its MacDur. ModDur = 42.4/1.02112 = 41.5. So each basis point moved the price about 0.415%, roughly 41 cents per 100, close to Bloomberg&rsquo;s 43 cents. The walkthrough&rsquo;s bond has ModDur 2.75. (Day 15&rsquo;s Disney century bond, with a 7.55% coupon, had a MacDur of only about 13.7 years: big coupons pull the balance point in.)</p>
+      <p>Then lower yields raised the duration further. At a price of 200, with about 97 years left, the yield was about 0.69% and ModDur about 57.</p>
+      <p>Duration alone predicts a 171% fall for the rise to 3.67%, the yield at the April 2026 price of 58.75. Impossible: a price cannot go below zero. The real fall, from 200 to 58.75, was 71%. Duration is a straight line laid on a curve, good for small moves only. The gap is convexity, Day 41.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Semiannual bonds: periodic yield, then annualize.</b> MacDur of 9 half-years at a 5% annual yield: AnnModDur = 9/1.025/2 = 4.3902. Dividing the years by the annual rate, 4.5/1.05 = 4.2857, is wrong; so is stopping at 9/1.025 = 8.7805, which is still in half-years.</li>
+          <li><b>The minus sign.</b> Yield up, price down. In the walkthrough, +50 bp gives &minus;1.38%, not +1.38%.</li>
+          <li><b>Macaulay is not the sensitivity.</b> Divide by (1 + r) first. 2.8615 &times; 0.5 = 1.43% overstates the walkthrough&rsquo;s move; 2.7514 &times; 0.5 = 1.38% is the estimate.</li>
+          <li><b>Units.</b> 50 bp is 0.0050 as a decimal or 0.50 in percentage points. 2.7514 &times; 0.0050 = 0.0138, a decimal (1.38%); 2.7514 &times; 50 = 137.57 is nonsense.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="3.679270543040622" data-tol="0.0005" data-show="3.6793">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A 4-year bond pays a 6% annual coupon and yields 5%. What is its Macaulay duration? In years, to four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same two NPVs as the walkthrough, at 5%. Cash flows 6, 6, 6, 106; times t: 6, 12, 18, 424. The first NPV, the price, should be 103.5460.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>106</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 103.5460</samp>, <kbd>STO</kbd> <kbd>1</kbd>. Then <kbd>CF</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>18</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>424</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 380.9736</samp>, <kbd>STO</kbd> <kbd>2</kbd>. Then <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>3.6793</samp>.</p>
+            <p>TI-84 Plus, in one line: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>,</kbd> <kbd>12</kbd> <kbd>,</kbd> <kbd>18</kbd> <kbd>,</kbd> <kbd>424</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>,</kbd> <kbd>6</kbd> <kbd>,</kbd> <kbd>6</kbd> <kbd>,</kbd> <kbd>106</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.6793</samp>.</p>
+            <p>So <b>3.6793 years</b>, a little under the 4-year maturity. Bonus: ModDur = 3.6793/1.05 = 3.5041.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Three bonds all mature in 10 years and all yield 5%. Which has the highest Macaulay duration?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The bond with an 8% annual coupon</span></label>
+              <p class="cq-why">The lowest of the three (MacDur 7.54): its big early coupons carry a lot of the PV weight and pull the balance point toward today.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The zero-coupon bond</span></label>
+              <p class="cq-why">Right: all its value is paid at year 10, so its plank balances exactly there. MacDur = 10.00, the most any 10-year bond can have.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The bond with a 2% annual coupon</span></label>
+              <p class="cq-why">Longer than the 8% bond (MacDur 9.01), because its coupons are smaller. But any coupon puts some weight before year 10, so it stays below the zero.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>MacDur is the PV-weighted average time to the cash. Same maturity, same yield: the only difference is how much weight sits early. 8% coupon: 7.54 years. 2% coupon: 9.01. Zero: 10.00. Lower coupon, higher duration; a zero&rsquo;s MacDur equals its maturity.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="1.8841406872521145" data-tol="0.0005" data-show="1.8841">
+          <p class="cq-stem"><b>3. Twist: twice a year.</b> A 2-year bond pays a 4% coupon semiannually and yields 6% a year (3% per half-year). What is its annual modified duration? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Work in half-years: four cash flows, 2, 2, 2, 102, at 3%. MacDur comes out in half-years. Then use the semiannual memorize card.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Cash flows per half-year: 2, 2, 2, 102; times t: 2, 4, 6, 408. Price = 96.2829, &Sigma; t &times; PV = 373.7057, so MacDur = 3.8813 half-years (1.9407 years). AnnModDur = 3.8813/1.03/2 = <b>1.8841</b>.</p>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>102</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 96.2829</samp>, <kbd>STO</kbd> <kbd>1</kbd>. Then <kbd>CF</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>408</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 373.7057</samp>, <kbd>STO</kbd> <kbd>2</kbd>. Then <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>3.8813</samp>; <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>=</kbd> &rarr; <samp>3.7683</samp>; <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>1.8841</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>,</kbd> <kbd>6</kbd> <kbd>,</kbd> <kbd>408</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>3</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>102</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.8813</samp>; <kbd>&divide;</kbd> <kbd>1.03</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.8841</samp>.</p>
+            <p>The trap: dividing the years by the annual yield, 1.9407/1.06 = 1.8308. The (1 + r) must be the periodic yield, 1.03.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A bond has a Macaulay duration of 7.80 and an annual-pay yield to maturity of 4%. If its yield rises by 40 basis points, its price will change by <em>approximately</em>:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;3.00%</span></label>
+              <p class="cq-why">Right: ModDur = 7.80/1.04 = 7.50, and &minus;7.50 &times; 0.40 = &minus;3.00%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;3.12%</span></label>
+              <p class="cq-why">Macaulay duration used as the sensitivity: &minus;7.80 &times; 0.40. Divide by 1.04 first.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. +3.00%</span></label>
+              <p class="cq-why">The right size with the minus sign dropped. A rise in yield lowers the price.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>%&Delta;PV &asymp; &minus;ModDur &times; &Delta;Yield = &minus;(7.80/1.04) &times; 0.40 = &minus;7.50 &times; 0.40 = <b>&minus;3.00%</b>.</p>
+            <p>BA II Plus: <kbd>7.8</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>+|&minus;</kbd> <kbd>=</kbd> &rarr; <samp>&minus;3.0000</samp>. TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>7.8</kbd> <kbd>&divide;</kbd> <kbd>1.04</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;3.0000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> You will need your money in 5 years, and you hold a bond with a Macaulay duration of 7. In one or two sentences: what is your duration gap, and what does it tell you?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The duration gap is 7 &minus; 5 = +2 years. Macaulay duration is the horizon at which price risk and reinvestment risk cancel; my horizon is shorter, so price risk dominates: if rates rise, the lower price I sell at in year 5 outweighs the extra income from reinvesting coupons, and my money at year 5 is lower. (A negative gap would mean reinvestment risk dominates, and falling rates would hurt.)</p>
+            <p>A complete answer says: (1) gap = MacDur &minus; horizon = +2 years; (2) Macaulay duration is the horizon at which price risk and reinvestment risk offset; (3) a positive gap means price risk dominates, so a rise in rates lowers the horizon value.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Yield-Based Bond Duration Measures and Properties (Macaulay duration, modified duration and annualizing it, the duration of a zero-coupon bond, the percentage price change estimate, how maturity, coupon and yield affect duration), with the investment horizon and duration gap that the curriculum treats alongside interest rate risk and return; building on Fixed-Income Bond Valuation: Prices and Yields and on Quantitative Methods, Learning Module 4: The Time Value of Money in Finance.</p>
+      <p><strong>Sources.</strong> Bloomberg, &ldquo;Austria Offers Europe&rsquo;s First Benchmark-Sized Century Bonds&rdquo;, 12 September 2017 (orders above &euro;11 billion); GlobalCapital, &ldquo;Austria smashes expectations with century bond&rdquo;, September 2017 (pricing); Business Recorder (Reuters), 2017 (&euro;3.5 billion, the first euro-zone country to sell 100-year bonds publicly via syndication; Belgium&rsquo;s and Ireland&rsquo;s were private placements); Marcus Ashworth and Mark Gilbert, Bloomberg Gadfly, &ldquo;Austria Boldly Goes Into the 22nd Century With New Bond&rdquo;, 12 September 2017 (43 cents per basis point); MoneyWeek, &ldquo;Why would anyone ever buy a 100-year bond?&rdquo;, 2020 (more than twice face value); Borsa Italiana, MOT listing for AT0000A1XML2, 2.1% 20/09/2117 (2026 prices and range). The duration figures assume one coupon a year and a 2.112% yield at issue (reported as about 2.11%); the 2020 figures a price of 200 with 97 years left; the 3.67% yield a price of 58.75 with 91 years left. The Disney figure uses Day 15&rsquo;s semiannual coupons.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-38.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

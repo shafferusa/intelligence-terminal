@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Volmageddon: the day the fear gauge more than doubled, and how to test whether a variance really rose — CFA Math, Day 46 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Volmageddon: the day the fear gauge more than doubled, and how to test whether a variance really rose",
+    "path": "reports/cfa/l1/day-46.html",
+    "summary": "Day 46 of CFA Math: the chi-square test of one variance, χ² = (n − 1)s²/σ0², and the F-test of two variances, F = s1²/s2² with the larger on top, both built from the sample variance as a ratio that should sit near 1; Logan tests whether a short-volatility fund’s variance rose after a shock and whether it broke its risk model’s (1.5%)², and meets non-parametric tests and the chi-square test of independence.",
+    "headlines": [
+      "Day 46 of 90 · Quantitative Methods: test one variance with χ² = (n − 1)s²/σ0² and two variances with F = s1²/s2², larger on top",
+      "Calculator: the F-statistic and χ² for a short-volatility fund after a shock, with p-values, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Volmageddon: the day the fear gauge more than doubled, and how to test whether a variance really rose</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Risk is a variance, and you test a variance with a ratio: F = s<sub>1</sub><sup>2</sup> / s<sub>2</sub><sup>2</sup> compares two of them, &chi;<sup>2</sup> = (n &minus; 1)s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup> checks one against a claimed value.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 46 of 90 &middot; LM7 Estimation and Hypothesis Testing &middot; Chi-square and F tests</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="46">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 45 and 39, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="6.142857142857143" data-tol="0.01" data-show="6.14">
+          <p class="cq-stem"><b>From Day 45.</b> Fund X has 16 monthly returns with s = 3.0%. Fund Y has 21 other months with s = 2.0%. For a pooled t-test of their means, what is the pooled variance s<sub>p</sub><sup>2</sup>? In %<sup>2</sup>, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%&sup2;</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Weight each variance (the SD squared) by its degrees of freedom, n &minus; 1, add, then divide by n<sub>1</sub> + n<sub>2</sub> &minus; 2.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>s<sub>p</sub><sup>2</sup> = [(16 &minus; 1) &times; 3.0<sup>2</sup> + (21 &minus; 1) &times; 2.0<sup>2</sup>] / (16 + 21 &minus; 2) = (135 + 80) / 35 = 215 / 35 = <b>6.14</b>. Not the plain average (9 + 4) / 2 = 6.50: the bigger sample gets more weight.</p>
+            <p>BA II Plus (AOS): <kbd>15</kbd> <kbd>&times;</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>215.0000</samp>; <kbd>&divide;</kbd> <kbd>35</kbd> <kbd>=</kbd> &rarr; <samp>6.1429</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>35</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.1429</samp>.</p>
+            <p>Pooling assumes the two population variances are equal. Today&rsquo;s F-test is how you check that.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 39.</b> A 6-year zero-coupon bond yields 5% (annual compounding). Its modified duration is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 6.00</span></label>
+              <p class="cq-why">That is its Macaulay duration: a zero&rsquo;s MacDur equals its maturity. Modified duration still divides by 1 + r.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 6.30</span></label>
+              <p class="cq-why">That multiplies by 1.05 instead of dividing: 6 &times; 1.05.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 5.71</span></label>
+              <p class="cq-why">Right: MacDur = 6 (all the cash arrives in year 6), so ModDur = 6 / 1.05 = 5.71.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>ModDur = MacDur / (1 + r) = 6 / 1.05 = 5.7143: a 1-point rise in the yield cuts the price by about 5.71%.</p></details>
+        </div>
+      </section>
+
+      <h3>Volmageddon: the day the fear gauge doubled</h3>
+      <p>Friday, 2 February 2018. The Cboe Volatility Index, the VIX, closed at 17.31. The VIX is Wall Street&rsquo;s &ldquo;fear gauge&rdquo;: a measure of how much the S&amp;P 500 is expected to swing, computed from S&amp;P 500 option prices.</p>
+      <p>Monday, 5 February. It closed at 37.32, up 115.6% in one day: its largest one-day percentage rise on record. The next biggest on Cboe&rsquo;s list, on 27 February 2007, was 64.2%.</p>
+      <p>Some investors had bet on calm. XIV, an exchange-traded note built to profit when volatility stayed low, lost more than 90% of its value.</p>
+      <p>On 5 February its intraday indicative value fell to 20% or less of the prior day&rsquo;s close. Under the note&rsquo;s terms that was an &ldquo;acceleration event&rdquo;, and on 6 February Credit Suisse said it would redeem the note early.</p>
+      <p>It expected trading to end on 20 February. Nasdaq halted the note sooner, after the close on Thursday 15 February.</p>
+      <p>Everyone could see that volatility had jumped. But a few wild days happen even in calm markets. How do you test, with numbers, whether one period&rsquo;s variance is really bigger than another&rsquo;s, or bigger than the value a risk model assumed, and not just noise?</p>
+
+      <h3>The idea</h3>
+      <p>Days 44 and 45 tested <b>means</b>: is the average return different from a value, or from another fund&rsquo;s? Today tests <b>risk</b>: the variance.</p>
+      <p><b>One variance against a claimed value.</b> A risk model assumes a daily SD of 1.5%. Do the data agree? That is the <b>chi-square (&chi;<sup>2</sup>) test</b>.</p>
+      <p><b>Two variances against each other.</b> Was the fund riskier after the shock than before? Were Day 45&rsquo;s two funds really equally volatile, as the pooled t-test assumed? That is the <b>F-test</b>.</p>
+      <p>Both use a <b>ratio</b>, not a difference. With variances, proportion is what matters: 4 against 1 is four times the risk; 104 against 101 is the same gap of 3 but a ratio of only 1.03. Equal variances give a ratio of 1. The test asks how far from 1 is too far to be luck.</p>
+      <p><b>When the assumptions fail.</b> t, &chi;<sup>2</sup> and F are <b>parametric</b> tests: they are about a parameter (&mu;, &sigma;<sup>2</sup>) and assume a distribution, usually normal. A <b>non-parametric</b> test assumes less, often working on ranks. Use one when the data are ranks, when the sample is small or has outliers, when normality fails, or when the question is not about a parameter at all. Day 25&rsquo;s Spearman rank correlation is one. The price: less power when the parametric assumptions do hold.</p>
+      <p><b>Counts in categories</b> (value or growth; beat or missed) get a &chi;<sup>2</sup> test of independence: observed counts against those expected if the categories were unrelated. Its 2027 coverage is uncertain: insurance.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 24.</b> The sample variance is s<sup>2</sup> = &Sigma;(X &minus; X&#772;)<sup>2</sup> / (n &minus; 1). Multiply both sides by n &minus; 1: (n &minus; 1)s<sup>2</sup> = &Sigma;(X &minus; X&#772;)<sup>2</sup>, the sum of squared deviations.</p>
+      <p><b>Measure each deviation in claimed SDs.</b> Divide by the claimed variance &sigma;<sub>0</sub><sup>2</sup>: (n &minus; 1)s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup> = &Sigma;[(X &minus; X&#772;) / &sigma;<sub>0</sub>]<sup>2</sup>. Each term is a squared z-score (Day 30): how many claimed SDs an observation sits from the mean, squared.</p>
+      <p><b>Name the sum.</b> If returns are normal and &sigma;<sub>0</sub> is the truth, a sum of squared z-scores follows the <b>chi-square distribution</b>. It has n &minus; 1 degrees of freedom, not n: the deviations from X&#772; must add to zero, so the last one is forced (Day 24&rsquo;s reason for n &minus; 1).</p>
+      <p><b>See what it measures.</b> A squared z-score averages 1, so &chi;<sup>2</sup> averages n &minus; 1. Rearranged, &chi;<sup>2</sup> / (n &minus; 1) = s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup>: the statistic is the variance ratio, scaled up by n &minus; 1. If s<sup>2</sup> equals the claim, &chi;<sup>2</sup> = n &minus; 1 exactly (20 for 21 days). Far above: more variance than claimed. Far below: less.</p>
+      <p><b>Two samples: divide one ratio by the other.</b> Take s<sub>1</sub><sup>2</sup> / &sigma;<sup>2</sup> and s<sub>2</sub><sup>2</sup> / &sigma;<sup>2</sup> and divide. If both populations share one &sigma;<sup>2</sup>, it cancels: F = s<sub>1</sub><sup>2</sup> / s<sub>2</sub><sup>2</sup>. No claimed value is needed, but there are two samples, so F has two df: n<sub>1</sub> &minus; 1 on top, n<sub>2</sub> &minus; 1 below.</p>
+      <p><b>Why the larger goes on top.</b> Squares are never negative, so both distributions are skewed right and their two tails are not mirror images. With the larger variance on top, F &ge; 1 and only the upper tail matters, which is the tail F tables print. Two-tailed at 5%? Compare with the 2.5% upper value.</p>
+      <p><b>Counts.</b> If style and beating the benchmark are independent, P(value and beat) = P(value) &times; P(beat) (Day 26). Times the N funds: E = N &times; (row/N) &times; (column/N) = row &times; column / N. &chi;<sup>2</sup> = &Sigma;(O &minus; E)<sup>2</sup> / E adds each cell&rsquo;s squared surprise, scaled by what was expected. Once the totals are fixed, only (r &minus; 1)(c &minus; 1) cells are free to vary (one, in a 2 &times; 2 table): those are its df.</p>
+      <p><b>In plain words:</b> divide one variance by another and ask whether the answer is too far from 1 to be luck.</p>
+      <div class="formula">
+        <p class="expr">&chi;<sup>2</sup> = (n &minus; 1) s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup>, df = n &minus; 1</p>
+        <p class="expr">F = s<sub>1</sub><sup>2</sup> / s<sub>2</sub><sup>2</sup> (s<sub>1</sub><sup>2</sup> &ge; s<sub>2</sub><sup>2</sup>), df = n<sub>1</sub> &minus; 1 and n<sub>2</sub> &minus; 1</p>
+        <dl>
+          <dt>s<sup>2</sup></dt><dd>the sample variance: the sample SD squared, in %<sup>2</sup></dd>
+          <dt>&sigma;<sub>0</sub><sup>2</sup></dt><dd>the variance claimed in H<sub>0</sub> (a claimed SD of 1.5% means &sigma;<sub>0</sub><sup>2</sup> = 2.25)</dd>
+          <dt>n</dt><dd>the number of observations; n &minus; 1 is the degrees of freedom</dd>
+          <dt>s<sub>1</sub><sup>2</sup>, n<sub>1</sub></dt><dd>the larger sample variance and its sample size (numerator)</dd>
+          <dt>s<sub>2</sub><sup>2</sup>, n<sub>2</sub></dt><dd>the smaller sample variance and its sample size (denominator)</dd>
+          <dt>&chi;<sup>2</sup>, F</dt><dd>test statistics, never negative; compare each with a critical value from its own table</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Chi-square test of a single variance: &chi;<sup>2</sup> = (n &minus; 1) s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup>, df = n &minus; 1</li>
+          <li>F-test of two variances: F = s<sub>1</sub><sup>2</sup> / s<sub>2</sub><sup>2</sup> (larger sample variance on top), df = n<sub>1</sub> &minus; 1 and n<sub>2</sub> &minus; 1</li>
+          <li>When to use a non-parametric test: data are ranks, or parametric assumptions (e.g. normality) fail: small samples, outliers; or the hypothesis is not about a parameter</li>
+          <li>Expected count in a contingency table: E<sub>ij</sub> = (row i total &times; column j total) / overall total</li>
+          <li>Chi-square test of independence (2027 coverage uncertain): &chi;<sup>2</sup> = &Sigma; (O<sub>ij</sub> &minus; E<sub>ij</sub>)<sup>2</sup> / E<sub>ij</sub>, df = (r &minus; 1)(c &minus; 1)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> (a) Manager A&rsquo;s monthly returns have s = 5.2% and manager B&rsquo;s s = 3.9%, each over 25 months. Test at 5% whether their variances differ. (b) Insurance: of 50 value funds, 30 beat their benchmark and 20 did not; of 70 growth funds, 28 beat it and 42 did not. Test at 5% whether beating the benchmark is independent of style.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) H<sub>0</sub>: &sigma;<sub>A</sub><sup>2</sup> = &sigma;<sub>B</sub><sup>2</sup>; H<sub>a</sub>: &sigma;<sub>A</sub><sup>2</sup> &ne; &sigma;<sub>B</sub><sup>2</sup> (two-tailed).</li>
+          <li>F = larger variance / smaller = 5.2<sup>2</sup> / 3.9<sup>2</sup> = 27.04 / 15.21 = <b>1.7778</b>; df = (24, 24).</li>
+          <li>Two-tailed at 5%, larger on top: compare with the 2.5% upper value, F(24, 24) = 2.27. 1.78 &lt; 2.27: <b>fail to reject</b> equal variances.</li>
+          <li>(b) Totals: rows 50 (value) and 70 (growth); columns 58 beat and 62 missed; overall 120.</li>
+          <li>Expected = row &times; column / overall: value-beat 50 &times; 58 / 120 = 24.1667; value-missed 50 &times; 62 / 120 = 25.8333; growth-beat 70 &times; 58 / 120 = 33.8333; growth-missed 70 &times; 62 / 120 = 36.1667.</li>
+          <li>Every cell is 5.8333 from its expected count, so each (O &minus; E)<sup>2</sup> = 34.0278. &chi;<sup>2</sup> = 34.0278/24.1667 + 34.0278/25.8333 + 34.0278/33.8333 + 34.0278/36.1667 = 1.4080 + 1.3172 + 1.0057 + 0.9409 = <b>4.6719</b> (the rounded terms add to 4.6718).</li>
+          <li>df = (2 &minus; 1)(2 &minus; 1) = 1; critical value 3.841. 4.67 &gt; 3.841: <b>reject</b> independence. Value funds beat 60% of the time, growth funds 40%.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A short-volatility fund&rsquo;s daily returns had s = 1.1% over 31 trading days before a volatility shock and s = 2.0% over 21 trading days after. (a) Test at 5% whether the variance after is larger. (b) Test at 5% whether the after-shock variance exceeds the (1.5%)<sup>2</sup> its risk model assumed. The BA II Plus has no F or &chi;<sup>2</sup> function: on the exam the critical value comes from a table in the question, so the BA line reads it from the table. The TI-84 also gives p-values.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">(a) H<sub>0</sub>: &sigma;<sup>2</sup><sub>after</sub> &le; &sigma;<sup>2</sup><sub>before</sub>; H<sub>a</sub>: &sigma;<sup>2</sup><sub>after</sub> &gt; &sigma;<sup>2</sup><sub>before</sub>. F = larger variance / smaller: square each SD as you go</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.1</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.1</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>4.0000</samp> and <samp>1.2100</samp> on the way, then <samp>3.3058</samp> (BA II Plus) / <samp>3.3058</samp> (TI-84). df = (21 &minus; 1, 31 &minus; 1) = (20, 30): the top sample&rsquo;s first.</p>
+          </li>
+          <li>
+            <p class="calc-what">Decide: one tail, 5%, df (20, 30)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no keys: the F-table gives F(20, 30) at 5% = 1.93</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">0:Fcdf(</kbd> (<samp>9:Fcdf(</samp> before OS 2.30), then <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>20</kbd> <kbd>,</kbd> <kbd>30</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the line reads <samp>Fcdf(Ans,1E99,20,30)</samp>: the area above F)</div>
+            <p class="calc-see">Display: <samp>.0015</samp> (TI-84). 3.3058 &gt; 1.93, and p = 0.0015 &lt; 0.05: reject H<sub>0</sub>. The variance rose.</p>
+          </li>
+          <li>
+            <p class="calc-what">Cross-check with the built-in test</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no test menu: the ratio and the table are the exam method</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (TESTS), <kbd>&#9660;</kbd> down to <kbd class="menu">E:2-SampFTest&hellip;</kbd> (<samp>D:</samp> before OS 2.30), <kbd>ENTER</kbd>. <samp>Inpt:</samp> highlight <samp>Stats</samp>, <kbd>ENTER</kbd>. Then <samp>Sx1=2</samp>, <samp>n1=21</samp>, <samp>Sx2=1.1</samp>, <samp>n2=31</samp>; on <samp>&sigma;1:</samp> highlight <samp>&gt;&sigma;2</samp>, <kbd>ENTER</kbd>; <samp>Calculate</samp>, <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>F=3.3058</samp>, <samp>p=.0015</samp> (TI-84). Sample 1 is the one you test as larger.</p>
+          </li>
+          <li>
+            <p class="calc-what">(b) H<sub>0</sub>: &sigma;<sup>2</sup> &le; 2.25 (that is, 1.5<sup>2</sup>); H<sub>a</sub>: &sigma;<sup>2</sup> &gt; 2.25. &chi;<sup>2</sup> = (n &minus; 1)s<sup>2</sup> / &sigma;<sub>0</sub><sup>2</sup> with n &minus; 1 = 20</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.5</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>20</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.5</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>35.5556</samp> (BA II Plus) / <samp>35.5556</samp> (TI-84). That is 20 &times; (4 / 2.25) = 20 &times; 1.7778: the variance ratio, scaled by the df. Had s<sup>2</sup> matched the model, it would read 20.</p>
+          </li>
+          <li>
+            <p class="calc-what">Decide: upper tail, 5%, 20 df</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no keys: the &chi;<sup>2</sup> table gives 31.410 (20 df, 0.05 in the upper tail)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">8:&chi;&sup2;cdf(</kbd> (<samp>7:&chi;&sup2;cdf(</samp> before OS 2.30), then <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>20</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the line reads <samp>&chi;&sup2;cdf(Ans,1E99,20)</samp>)</div>
+            <p class="calc-see">Display: <samp>.0173</samp> (TI-84). 35.5556 &gt; 31.410, and p = 0.0173 &lt; 0.05: reject H<sub>0</sub>.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: (a) F = 3.3058 &gt; 1.93 (p = 0.0015): the variance after the shock is larger. (b) &chi;<sup>2</sup> = 35.5556 &gt; 31.410 (p = 0.0173): it is above the model&rsquo;s (1.5%)<sup>2</sup>. Reject H<sub>0</sub> in both.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The VIX is an annualized implied standard deviation, in percent. For a daily figure divide by &radic;252 = 15.8745 (about 252 trading days in a year): 17.31 / 15.8745 = 1.09% before and 37.32 / 15.8745 = 2.35% after.</p>
+      <p>The F-test compares variances, not SDs: F = (37.32 / 17.31)<sup>2</sup> = 2.1560<sup>2</sup> = 4.6482.</p>
+      <p>Suppose a month of 21 trading days before and 21 after had shown those daily SDs. With (20, 20) df the 5% one-tailed critical value is 2.12. 4.65 is more than twice that (TI-84 p = 0.0006): the rise is not noise.</p>
+      <p>The &chi;<sup>2</sup> test asks the companion question: does one period fit a single assumed value, such as the calm volatility a note like XIV was in effect betting on? Twenty-one days at 2.35% against an assumed 1.09%: &chi;<sup>2</sup> = 20 &times; 4.6482 = 92.96, far above 31.41.</p>
+      <p>One caution: shock days are fat-tailed (Day 30), exactly where the normality behind &chi;<sup>2</sup> and F is weakest. A non-parametric check is a sensible second opinion.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Smaller variance on top.</b> 1.21 / 4 = 0.3025 looks like nothing next to an upper critical value of 1.93. Put the larger on top so F &ge; 1, and compare with the upper tail (the &alpha;/2 value for a two-tailed test).</li>
+          <li><b>SDs instead of variances.</b> 2.0 / 1.1 = 1.8182 is below 1.93, so you would wrongly fail to reject; 4 / 1.21 = 3.3058 rejects. Same in &chi;<sup>2</sup>: 20 &times; 2 / 1.5 = 26.6667 misses 31.410, while the right 35.5556 clears it. Square first.</li>
+          <li><b>Treating &chi;<sup>2</sup> and F as symmetric.</b> With 20 df, &chi;<sup>2</sup> averages 20, but its 5% cut-offs are 10.851 (9.149 below) and 31.410 (11.410 above). Look each tail up on its own; never mirror one.</li>
+          <li><b>n instead of n &minus; 1.</b> 21 &times; 4 / 2.25 = 37.3333 is wrong; the multiplier and the df are both n &minus; 1 = 20.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.56" data-tol="0.005" data-show="2.56">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Another fund: s = 2.4% over 16 trading days after a shock, s = 1.5% over 21 trading days before. What is the F-statistic for H<sub>0</sub>: &sigma;<sup>2</sup><sub>after</sub> &le; &sigma;<sup>2</sup><sub>before</sub>? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as step 2: only the two SDs change. The df become (15, 20); you need them for the decision, not for F.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>F = 2.4<sup>2</sup> / 1.5<sup>2</sup> = 5.76 / 2.25 = <b>2.56</b>, df = (16 &minus; 1, 21 &minus; 1) = (15, 20). The table&rsquo;s F(15, 20) at 5% is 2.20, so 2.56 &gt; 2.20: reject, the variance rose (TI-84 p = 0.0256). The SD ratio 2.4 / 1.5 = 1.60 would be the trap.</p>
+            <p>BA II Plus: <kbd>2.4</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.5</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>2.5600</samp>; then the table value 2.20.</p>
+            <p>TI-84 Plus: <kbd>2.4</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.5</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.5600</samp>; <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">0:Fcdf(</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> <kbd>99</kbd> <kbd>,</kbd> <kbd>15</kbd> <kbd>,</kbd> <kbd>20</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0256</samp>. Or <kbd class="menu">E:2-SampFTest&hellip;</kbd> with <samp>Sx1=2.4</samp>, <samp>n1=16</samp>, <samp>Sx2=1.5</samp>, <samp>n2=21</samp>, <samp>&gt;&sigma;2</samp> &rarr; <samp>F=2.5600</samp>, <samp>p=.0256</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Why does the F-test put the larger sample variance on top?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It turns a two-tailed test into a one-tailed test, so &alpha; no longer has to be split between two tails</span></label>
+              <p class="cq-why">A test of equal variances (H<sub>a</sub>: &ne;) stays two-tailed: with the larger on top you compare with the &alpha;/2 upper value, 2.5% at a 5% level. The convention picks which tail to look in; it does not remove the other one.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Then F &ge; 1, so only the upper-tail critical value is needed, and that is the tail F tables print</span></label>
+              <p class="cq-why">Right. A ratio below 1 is just the same comparison upside down, so ordering the variances lets one tail of the table cover both cases.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The F distribution is symmetric around 1, so either order gives the same decision; it is only tidiness</span></label>
+              <p class="cq-why">F is skewed right. With df (20, 30) its 2.5% cut-offs are 0.43 and 2.20: 0.57 below 1 but 1.20 above it.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>F is a ratio of two variances, so it can never be negative and its distribution leans right. The lower-tail critical value is the reciprocal of an upper-tail value with the df swapped: for df (20, 30) at 2.5%, 0.4258. Putting the larger variance on top makes F &ge; 1, and then the upper tail, the one the tables give, is all you need.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="14.719999999999999" data-tol="0.01" data-show="14.72">
+          <p class="cq-stem"><b>3. Twist: the lower tail.</b> A fund&rsquo;s prospectus claims a monthly standard deviation of 1.5%. Over 24 months the sample SD is 1.2%. You test H<sub>0</sub>: &sigma;<sup>2</sup> &ge; (1.5%)<sup>2</sup> against H<sub>a</sub>: &sigma;<sup>2</sup> &lt; (1.5%)<sup>2</sup> at 5%. What is the &chi;<sup>2</sup> statistic? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same formula as step 5, with n &minus; 1 = 23. H<sub>a</sub> points down, so the rejection region is the lower tail: the table&rsquo;s lower 5% value for 23 df is 13.091.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&chi;<sup>2</sup> = 23 &times; 1.2<sup>2</sup> / 1.5<sup>2</sup> = 33.12 / 2.25 = <b>14.72</b>, df = 23.</p>
+            <p>Reject only if &chi;<sup>2</sup> &lt; 13.091. 14.72 is not: <b>fail to reject</b>. The sample variance is 64% of the claim (14.72 / 23 = 0.64), but 24 months cannot rule out the 1.5%. The upper 5% value is 35.172, not a mirror image of 13.091 around 23.</p>
+            <p>BA II Plus: <kbd>23</kbd> <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.5</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>14.7200</samp>; then the table value 13.091.</p>
+            <p>TI-84 Plus: <kbd>23</kbd> <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>1.5</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>14.7200</samp>; <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">8:&chi;&sup2;cdf(</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> <kbd>,</kbd> <kbd>23</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0956</samp>: the area from 0 up to the statistic, the lower tail. 0.0956 &gt; 0.05.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> Fund A&rsquo;s monthly returns have a standard deviation of 4.2% over 25 months; fund B&rsquo;s is 3.0% over 31 months. An analyst tests whether the two population variances are equal. The F-statistic is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 1.96</span></label>
+              <p class="cq-why">Right: 4.2<sup>2</sup> / 3.0<sup>2</sup> = 17.64 / 9.00 = 1.96, df (24, 30).</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 1.40</span></label>
+              <p class="cq-why">That is 4.2 / 3.0, the ratio of standard deviations. F compares variances: square first.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 0.51</span></label>
+              <p class="cq-why">That is 9.00 / 17.64, the smaller variance on top. Put the larger on top so F &ge; 1.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>F = 17.64 / 9.00 = 1.96 with df (24, 30). &ldquo;Equal&rdquo; means H<sub>a</sub>: &ne;, a two-tailed test, so at 5% compare with the 2.5% upper value F(24, 30) = 2.14. 1.96 &lt; 2.14: fail to reject (two-tailed p = 0.08).</p>
+            <p>BA II Plus: <kbd>4.2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>1.9600</samp>. TI-84 Plus: <kbd>4.2</kbd> <kbd>x&sup2;</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.9600</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: when would you choose a non-parametric test (for example, a rank correlation) over a parametric one?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>When the data are ranks, or the parametric test&rsquo;s assumptions fail (a small sample, outliers, returns that are clearly not normal), or when the question is not about a parameter at all; a non-parametric test works on ranks or signs and assumes little about the distribution, at the cost of less power when the parametric assumptions do hold.</p>
+            <p>A complete answer says: (1) the data are ranks, or the assumptions such as normality fail: small samples, outliers; (2) the hypothesis may not concern a parameter; (3) the trade-off: less power than the parametric test when its assumptions hold.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 7: Estimation and Hypothesis Testing (the chi-square test of a single variance; the F-test of two variances; parametric and non-parametric tests). The chi-square test of independence on a contingency table is included as insurance: its 2027 coverage is uncertain.</p>
+      <p><strong>Sources.</strong> PRWeb / Invest In Vol, &ldquo;VIX Spike and XIV Termination&rdquo;, February 2018 (VIX 17.31 on 2 February to 37.32 on 5 February 2018, +115.6%, the largest one-day percentage rise on record); ETF Trends / Swan Global Investments, &ldquo;Volmageddon: a tale of two volatilities&rdquo; (Cboe ranking: 5 February 2018 +115.6%, ahead of 27 February 2007 +64.2%); Credit Suisse, &ldquo;Credit Suisse AG Announces Event Acceleration of its XIV ETNs&rdquo;, 6 February 2018 (intraday indicative value at or below 20% of the prior day&rsquo;s closing indicative value); etf.com, &ldquo;Inverse VIX ETN Shuts Down&rdquo;, February 2018; Schaeffer&rsquo;s Research, &ldquo;Credit Suisse sets XIV redemption date after VIX spike&rdquo;, 6 February 2018 (last trading day then expected on 20 February); BNN Bloomberg / AP, &ldquo;Credit Suisse winding down inverse VIX ETF after it loses 91% of value&rdquo;, 6 February 2018; Credit Suisse press release and Form 6-K, 14 February 2018, and Nasdaq Equity Trader Alert ETA2018-13, 14 February 2018 (suspension after the close on 15 February 2018). The daily-SD conversion and the F and &chi;<sup>2</sup> figures in &ldquo;Back to the story&rdquo; are this lesson&rsquo;s own arithmetic on a hypothetical month.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-45.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>
