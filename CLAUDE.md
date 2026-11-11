@@ -105,8 +105,11 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
    never skip the push (an unpushed report was never published).
 5. **Data honesty labels are mandatory.** Every number carries source + timestamp + delay label
    (vocabulary in `prompts/shared-rules.md`). Missing data is declared "unavailable," never invented.
-6. **All .gov fetches** use header `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)`;
-   SEC at ≤10 requests/second; never spoof a browser UA on .gov.
+6. **All .gov fetches** use header `User-Agent: LoganTerminal/1.0` — no personal contact details
+   (owner decision 2026-11-11); never spoof a browser UA on .gov. **SEC hosts are paused:** the SEC
+   requires a contact address, and until a dedicated project address is set in `PROJECT_CONTACT_EMAIL`
+   the fetch helper refuses them and no SEC request is made by any other route — declare SEC data
+   "unavailable". Once it is set: SEC at ≤10 requests/second.
 7. **Never circumvent anti-bot walls** (Stooq is off-limits). Fetch only domains listed in
    `docs/RUNBOOK.md`. A browser-style UA is acceptable for Yahoo Finance only.
 8. **Idempotency:** if `state/last-run.json` already records today's date + slot as success,

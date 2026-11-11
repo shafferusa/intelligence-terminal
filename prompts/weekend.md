@@ -62,6 +62,11 @@ For every entity in `registry/entities.json` marked for the weekly sweep (the pr
 OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink — note
 OpenAI/Anthropic/Discord have reported confidential S-1s):
 
+**SEC hosts are paused since 2026-11-11** (SR, "SEC hosts are paused"). While `PROJECT_CONTACT_EMAIL` is
+not set, the helper refuses steps 1–2: skip steps 1–3 for this sweep, leave every entry's `status`,
+`last_verified` and `source` unchanged, add `SEC EDGAR` to `sources_failed`, and say in the report that
+the EDGAR sweep was not run. The steps apply again once the contact is configured.
+
 1. EDGAR full-text search (.gov UA, ≤10 req/s):
    `https://efts.sec.gov/LATEST/search-index?q=%22<official name>%22&forms=S-1,S-1%2FA,8-A12B,425`
 2. If a CIK is known: `https://data.sec.gov/submissions/CIK##########.json` — `tickers`/`exchanges`

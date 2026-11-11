@@ -65,9 +65,15 @@ www.nyse.com
 api.weather.gov
 ```
 
+**SEC hosts are paused since 2026-11-11.** `efts.sec.gov`, `www.sec.gov` and `data.sec.gov` stay on the
+allowlist, but the fetch helper (`.github/scripts/api_get.py`) refuses them, and sends nothing, until the
+environment variable `PROJECT_CONTACT_EMAIL` holds a dedicated project contact address. The SEC requires a
+contact from automated clients, and a personal address is never used (owner decision 2026-11-11). To resume
+EDGAR fetches, set that variable in the routine environment; nothing else changes.
+
 **`api.weather.gov` was added 2026-08-16** for the morning edition's Pittsburgh-area weather strip
 (gridpoint for Bridgeville, PA). It is free and needs no key, but like every `.gov` host it
-requires the `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)` header. **Add it to the
+requires the `User-Agent: LoganTerminal/1.0` header (the fetch helper sets it; no contact details). **Add it to the
 environment allowlist before the first morning run**, or the strip will silently be omitted.
 
 `cdn.cboe.com` stays on the list for VIX quotes and history. **Since at least 2026-11-04 it answers
@@ -257,7 +263,8 @@ anything else Logan sends the bot is ignored and never written.
 
 **Egress for SIE fact-checking (recommended):** add `www.finra.org`, `www.irs.gov`, `www.msrb.org`
 and `www.investor.gov` to the environment allowlist (section A3). They were blocked when the program
-was built, so runs verify through WebSearch and `www.sec.gov`, which is slower and less direct.
+was built, so runs verify through WebSearch (and `www.sec.gov` once the SEC pause of 2026-11-11 is lifted), which is
+slower and less direct.
 
 ## F. Usage notes (Max plan)
 

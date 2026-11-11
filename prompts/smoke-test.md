@@ -41,7 +41,7 @@ means the domain is missing from the environment allowlist — record it as BLOC
 3. `https://cdn.cboe.com/api/global/delayed_quotes/quotes/_VIX.json`
 4. `https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR`
 5. `https://ll.thespacedevs.com/2.3.0/api-throttle/`
-6. `https://data.sec.gov/submissions/CIK0001181412.json` — with header `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)`
+6. `https://data.sec.gov/submissions/CIK0001181412.json` — SEC hosts are paused (SR, "SEC hosts are paused"): expect the helper's `SEC-PAUSED` line and record PAUSED, not BLOCKED; once `PROJECT_CONTACT_EMAIL` is set the helper adds the contact itself
 7. `https://query1.finance.yahoo.com/v8/finance/chart/ES=F?interval=1d&range=1d` — with a browser User-Agent (Yahoo only)
 8. `https://api.coingecko.com/api/v3/ping`
 9. `https://api.telegram.org` (bare GET; any HTTP response ≠ blocked is a pass for egress)

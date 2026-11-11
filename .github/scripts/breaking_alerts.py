@@ -38,7 +38,7 @@ from zoneinfo import ZoneInfo
 
 ET_TZ = ZoneInfo("America/New_York")
 STATE_PATH = "state/alerts.json"
-UA = "LoganTerminal/1.0 (loganshaffer87@gmail.com)"
+UA = "LoganTerminal/1.0"
 
 # Independent major outlets. Diversity matters more than count: three feeds
 # that all republish the same wire are ONE source, not three, so no two

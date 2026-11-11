@@ -58,7 +58,7 @@ Apply SR §2 to every source: 30s timeout, 3 retries with 2s/4s/8s backoff, then
 `state/market-history/last-good.json` (label `Cached (as of <ts>)`) and add the source to
 `SOURCES_FAILED`. After the gather, write the fresh per-source snapshot (values + fetch timestamp)
 back to `state/market-history/last-good.json`. `.gov` hosts always get
-`User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)`.
+`User-Agent: LoganTerminal/1.0` (set by the helper; no contact details).
 
 ### 2.1 Treasury daily par yield curve (.gov UA)
 
@@ -214,6 +214,10 @@ Normalize into `events`: `{"ts_et","type","name","importance":"Critical|High|Med
 set `fetched` to now. Importance is classified by you, with the reason stated (SPEC §17).
 
 ### 2.11 SEC EDGAR (.gov UA, ≤10 req/s — throttle to ~5/s)
+
+**Paused since 2026-11-11** (SR, "SEC hosts are paused"). While `PROJECT_CONTACT_EMAIL` is not set the
+helper refuses these URLs: skip the EDGAR scan, add `SEC EDGAR` to `SOURCES_FAILED`, and take filing news
+from the §2.12 research instead. The procedure below applies again once the contact is configured.
 
 - Latest 8-Ks, market-wide:
   `https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&count=100&output=atom`

@@ -61,8 +61,9 @@ Teach him **like an intelligent junior trader, not a high-school student**:
     two numbers the question bank uses.
   - If a fact cannot be verified this run, teach the concept and say the number is under review.
     Never guess a number.
-- Egress: `www.sec.gov` is reachable directly; `finra.org`, `irs.gov` and `msrb.org` are currently
-  NOT on the environment allowlist (see `docs/RUNBOOK.md` §A3). Use WebSearch, which reaches them,
+- Egress: `www.sec.gov` is paused (shared-rules, "SEC hosts are paused": no direct fetch until a project
+  contact is configured); `finra.org`, `irs.gov` and `msrb.org` are currently
+  NOT on the environment allowlist (see `docs/RUNBOOK.md` §A3). Use WebSearch, which reaches all of them,
   and cite the primary page by name. Note blocked hosts in the run log, not in the edition.
 - The Study Guide is held to the same standard. If you find an error in it, fix the sentence in
   `site/reports/sie/study-guide.html` in the same commit, log it in `ledgers/corrections.json`, and

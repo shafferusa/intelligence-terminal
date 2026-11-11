@@ -18,7 +18,10 @@ Usage
   LIST (for --batch, written with the Write tool): one fetch per line, fields separated by TABs:
       outfile<TAB>URL[<TAB>Header: value]...
   (with no headers, spaces work too). Blank lines and lines starting with # are skipped.
-  .gov hosts get the owner's declared User-Agent automatically.
+  .gov hosts get the plain project User-Agent (LoganTerminal/1.0, no contact details) automatically.
+  SEC hosts (sec.gov and its sub-hosts) require a contact address from automated clients. They are refused,
+  and nothing is sent, unless the environment variable PROJECT_CONTACT_EMAIL holds a dedicated project
+  address (never a personal one). A refused SEC fetch prints a SEC-PAUSED line and counts as a failed fetch.
 
 Exit status: 0 when every fetch returned 2xx (or --wait-200 reached 200), 1 otherwise, 2 on usage errors,
 3 when a placeholder names an unset variable.
@@ -37,13 +40,18 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
-GOV_UA = "LoganTerminal/1.0 (loganshaffer87@gmail.com)"
+GOV_UA = "LoganTerminal/1.0"
+SEC_CONTACT_ENV = "PROJECT_CONTACT_EMAIL"  # a dedicated project address; never a personal one
 DEFAULT_UA = "curl/8.5.0"
 PLACEHOLDER = re.compile(r"@([A-Z][A-Z0-9_]*(?:\|[A-Z][A-Z0-9_]*)*)@")
 
 
 class MissingVar(Exception):
     pass
+
+
+class ContactRequired(Exception):
+    """An SEC host was asked for while no project contact address is configured."""
 
 
 def secret_values():
@@ -89,10 +97,35 @@ def expand(text):
     return PLACEHOLDER.sub(sub, text)
 
 
+SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*://")
+
+
+def url_host(url):
+    """The host curl would contact: a URL without a scheme defaults to http://, %-escapes are decoded,
+    case and trailing dots are ignored."""
+    text = url.strip()
+    if not SCHEME.match(text):
+        text = "http://" + text.lstrip("/")
+    host = urllib.parse.urlsplit(text).hostname or ""
+    return urllib.parse.unquote(host).strip().lower().rstrip(".")
+
+
+def is_sec_host(host):
+    return host == "sec.gov" or host.endswith(".sec.gov")
+
+
 def user_agent(url, override):
+    host = url_host(url)
+    if is_sec_host(host):
+        # The SEC asks automated clients for a contact address. Owner decision 2026-11-11: never a personal
+        # one, so SEC requests stay paused until a project address is configured. Fail closed: the caller
+        # sends nothing. An -A override cannot lift this.
+        contact = os.environ.get(SEC_CONTACT_ENV, "").strip()
+        if "@" not in contact or any(ch.isspace() for ch in contact):
+            raise ContactRequired(host)
+        return "%s (%s)" % (GOV_UA, contact)
     if override:
         return override
-    host = (urllib.parse.urlsplit(url).hostname or "").lower()
     return GOV_UA if host.endswith(".gov") else DEFAULT_UA
 
 
@@ -146,7 +179,15 @@ def one(url_t, out, header_t, ua_override, timeout, label=None):
     else:
         parent = os.path.dirname(os.path.abspath(target))
         os.makedirs(parent, exist_ok=True)
-    status, size = fetch(url, target, headers, user_agent(url, ua_override), timeout)
+    try:
+        ua = user_agent(url, ua_override)
+    except ContactRequired as exc:
+        if temp:
+            os.unlink(temp)
+        sys.stderr.write("SEC-PAUSED 0B %s (no project contact in %s; nothing was sent to %s)\n"
+                         % (out or label or redact(url), SEC_CONTACT_ENV, exc))
+        return 1
+    status, size = fetch(url, target, headers, ua, timeout)
     shown = label or redact(url)
     sys.stderr.write("%s %dB %s\n" % (status or "ERR", size, out or shown))
     if temp:
@@ -179,11 +220,17 @@ def batch(list_path, out_dir, ua_override, timeout):
 
 def wait_200(url_t, tries, sleep_s, timeout):
     url = expand(url_t)
+    try:
+        ua = user_agent(url, None)
+    except ContactRequired as exc:
+        sys.stderr.write("SEC-PAUSED (no project contact in %s; nothing was sent to %s)\n" % (SEC_CONTACT_ENV, exc))
+        print("ERR")
+        return 1
     for attempt in range(1, tries + 1):
         handle, temp = tempfile.mkstemp(prefix="api_get_")
         os.close(handle)
         try:
-            status, _ = fetch(url, temp, [], user_agent(url, None), timeout)
+            status, _ = fetch(url, temp, [], ua, timeout)
         finally:
             os.unlink(temp)
         sys.stderr.write("attempt %d: %s\n" % (attempt, status or "ERR"))

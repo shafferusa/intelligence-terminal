@@ -116,7 +116,7 @@ def wait_for_page(url):
         attempt += 1
         try:
             req = urllib.request.Request(
-                url, headers={"User-Agent": "LoganTerminal/1.0 (loganshaffer87@gmail.com)"}
+                url, headers={"User-Agent": "LoganTerminal/1.0"}
             )
             with urllib.request.urlopen(req, timeout=20) as resp:
                 if resp.status == 200:
