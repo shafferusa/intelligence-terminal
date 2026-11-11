@@ -1,111 +1,47 @@
 {
-  "fetched": "2026-11-05T14:29:59-05:00",
+  "fetched": "2026-11-11T06:49:03-05:00",
   "earnings_fetched": "2026-11-01",
   "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
   "events": [
     {
-      "ts_et": "2026-11-05T07:00",
-      "type": "central_bank",
-      "name": "Bank of England decision + MPR",
+      "ts_et": "2026-11-11T09:30",
+      "type": "market",
+      "name": "Veterans Day: stocks open, bond market closed (SIFMA), federal offices closed",
       "importance": "Medium",
-      "reason": "Held 3.75% 6-3 in Sept; hike risk",
-      "source": "bankofengland"
+      "reason": "No Treasury curve/EDGAR today",
+      "source": "research"
     },
     {
-      "ts_et": "2026-11-05T08:30",
-      "type": "data",
-      "name": "Productivity and Costs Q3; jobless claims",
-      "importance": "Medium",
-      "reason": "Unit labor costs",
-      "source": "bls.ics"
-    },
-    {
-      "ts_et": "2026-11-05T16:00",
+      "ts_et": "2026-11-11T16:00",
       "type": "earnings",
-      "name": "Arm (Finnhub Nov 5; AV Nov 4), Airbnb, Cloudflare, Atlassian",
-      "importance": "Medium",
-      "reason": "Chip IP / growth",
-      "source": "finnhub+alphavantage"
-    },
-    {
-      "ts_et": "2026-11-05T16:00",
-      "type": "earnings",
-      "name": "Airbnb, Cloudflare, Monster, EOG, Devon, Live Nation (amc)",
-      "importance": "Medium",
-      "reason": "Travel/AI infra read after selloff",
-      "source": "finnhub"
-    },
-    {
-      "ts_et": "2026-11-06T07:00",
-      "type": "earnings",
-      "name": "Humana, Moderna, Vistra (bmo)",
+      "name": "Corteva (amc), NIO",
       "importance": "Low",
-      "reason": "Health/power",
+      "reason": "Ag/EV",
       "source": "finnhub"
     },
     {
-      "ts_et": "2026-11-06T07:00",
-      "type": "earnings",
-      "name": "Vistra, Humana, Charter (bmo)",
-      "importance": "Medium",
-      "reason": "AI-power bellwether after two-day rout",
-      "source": "finnhub"
-    },
-    {
-      "ts_et": "2026-11-06T08:30",
-      "type": "data",
-      "name": "Employment Situation (Oct)",
-      "importance": "Critical",
-      "reason": "Jobs report before Dec FOMC; ~50-55K forecast, UR 4.2%",
-      "source": "bls.ics"
-    },
-    {
-      "ts_et": "2026-11-06T19:46",
+      "ts_et": "2026-11-11T21:35",
       "type": "launch",
-      "name": "Falcon 9 USSF-432 (Vandenberg), NET",
+      "name": "Falcon 9 USSF-627 (Vandenberg)",
       "importance": "Low",
-      "reason": "Classified NSSL",
+      "reason": "NSSL",
       "source": "thespacedevs"
     },
     {
-      "ts_et": "2026-11-09T13:00",
-      "type": "treasury",
-      "name": "3-year note auction $58B",
-      "importance": "Medium",
-      "reason": "First post-election coupon test",
-      "source": "treasury.gov refunding statement"
-    },
-    {
-      "ts_et": "2026-11-10T00:00",
-      "type": "geopolitics",
-      "name": "US-mediated Ukraine-Russia working-level talks, Abu Dhabi (Nov 10-11)",
-      "importance": "Medium",
-      "reason": "Per Witkoff; Kremlin confirmation unclear",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-10T00:00",
-      "type": "politics",
-      "name": "US-Russia-Ukraine talks, Abu Dhabi (Nov 10-11)",
-      "importance": "Medium",
-      "reason": "First round since February",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-10T08:30",
+      "ts_et": "2026-11-12T08:30",
       "type": "data",
-      "name": "CPI (Oct)",
-      "importance": "Critical",
-      "reason": "Inflation before Dec FOMC",
-      "source": "bls.ics"
+      "name": "Initial jobless claims",
+      "importance": "Medium",
+      "reason": "Prior 189K; no consensus found",
+      "source": "research"
     },
     {
-      "ts_et": "2026-11-10T13:00",
-      "type": "treasury",
-      "name": "10-year note auction $42B",
-      "importance": "High",
-      "reason": "Long-end demand post-election",
-      "source": "treasury.gov refunding statement"
+      "ts_et": "2026-11-12T09:00",
+      "type": "fed",
+      "name": "Cleveland Fed Hammack speaks",
+      "importance": "Medium",
+      "reason": "Post-CPI Fed tone",
+      "source": "research"
     },
     {
       "ts_et": "2026-11-12T11:30",
@@ -124,6 +60,14 @@
       "source": "treasury.gov refunding statement"
     },
     {
+      "ts_et": "2026-11-12T16:00",
+      "type": "earnings",
+      "name": "Cisco, Applied Materials (amc)",
+      "importance": "High",
+      "reason": "AI networking/chip equipment",
+      "source": "finnhub"
+    },
+    {
       "ts_et": "2026-11-13T00:00",
       "type": "launch",
       "name": "ULA Vulcan return to flight (Amazon Leo), NET",
@@ -138,6 +82,30 @@
       "importance": "Medium",
       "reason": "Producer prices",
       "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-13T12:54",
+      "type": "launch",
+      "name": "Vulcan VC6L Amazon Leo LV-01 return to flight",
+      "importance": "Low",
+      "reason": "ULA return to flight",
+      "source": "thespacedevs"
+    },
+    {
+      "ts_et": "2026-11-13T17:45",
+      "type": "launch",
+      "name": "Starship Flight 15 (FAA license pending)",
+      "importance": "Medium",
+      "reason": "First Ship tower catch; SPCX",
+      "source": "thespacedevs"
+    },
+    {
+      "ts_et": "2026-11-18T00:00",
+      "type": "ipo",
+      "name": "Anthropic IPO pricing (ANT), trading Nov 19",
+      "importance": "High",
+      "reason": "Largest AI listing",
+      "source": "research"
     },
     {
       "ts_et": "2026-11-29T00:00",
