@@ -6991,6 +6991,46 @@
       "probability": "85-95%",
       "basis": "CME FedWatch ~99% after hot Oct CPI (Reuters); Waller leaning to a hike; discounted for six weeks of data still to come.",
       "status": "open"
+    },
+    {
+      "id": "2026-11-11-am-1",
+      "date": "2026-11-11",
+      "slot": "am",
+      "forecast": "The S&P 500 closes above 7,520.93 on Wed Nov 11, 2026.",
+      "horizon": "2026-11-11",
+      "probability": "65-80%",
+      "basis": "ES futures +0.89% at 06:28 ET on CoreWeave beat; tech-led; VIX in contango.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-11-am-2",
+      "date": "2026-11-11",
+      "slot": "am",
+      "forecast": "CoreWeave (CRWV) closes at least 8% above its Nov 10 close of $48.73 (i.e. >= $52.63) on Wed Nov 11, 2026.",
+      "horizon": "2026-11-11",
+      "probability": "60-75%",
+      "basis": "Premarket +13-15% (CNBC, Benzinga, Investing.com) after Q3 beat and raised 2026 guide; high-volatility names often give back part of a premarket gap.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-11-am-3",
+      "date": "2026-11-11",
+      "slot": "am",
+      "forecast": "Nvidia (NVDA) closes above $168.89 on Wed Nov 11, 2026.",
+      "horizon": "2026-11-11",
+      "probability": "70-85%",
+      "basis": "Premarket ~+5% (~$177, CNBC/TipRanks); no new negative disclosure overnight; Nasdaq futures +1.9%.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-11-am-4",
+      "date": "2026-11-11",
+      "slot": "am",
+      "forecast": "October PPI final demand (released Fri Nov 13, 2026) rises at least 0.3% month over month.",
+      "horizon": "2026-11-13",
+      "probability": "55-70%",
+      "basis": "Reported consensus +0.4% (ZeroHedge, Kiplinger); range of estimates 0.2-0.4% (Goldman 0.3, Deutsche 0.2).",
+      "status": "open"
     }
   ]
 }

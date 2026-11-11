@@ -1,20 +1,99 @@
 {
  "stories": [
   {
+   "id": "coreweave-q3-nov10",
+   "headline": "CRWV Q3 rev $3.66B vs ~$3.54B; 2026 guide $13.0-13.3B; backlog ~$132.5B; premarket +13-15% Nov 11; NQ futures +1.91%, ES +0.89% at 06:28 ET; Taiex +3.6%, Kospi +2.6%",
+   "status": "Materially changed",
+   "rationale": "Lead am Nov 11: AI financing question; drives tech futures",
+   "first_seen": "2026-11-10",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "fed-hawks-nov11",
+   "first_seen": "2026-11-11",
+   "headline": "Logan: at least two more 25bp hikes, may move faster this winter; Goolsbee: CPI 'borderline disturbing'; FedWatch Dec 25bp ~88-91%, 50bp ~9-11%; Goldman adds Mar 2027 hike (secondary)",
+   "status": "New",
+   "rationale": "Fed path repricing after hot CPI",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "nvda-huang-probe-nov10",
+   "headline": "NVDA premarket ~+5% (~$177) after -9.5% two sessions; no new board statement; House chairs seek Huang briefing Nov 18; The Information: export controls on litho tools/remote access considered (single origin); MS removes from top picks (single)",
+   "status": "Continuing",
+   "rationale": "Market's largest name; governance + export-control risk",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "anthropic-ipo-range-nov10",
+   "headline": "FT (5 sources): bankers weigh pricing above $78 top (>~$1.5T); book covered day one (TipRanks/CNBC via FT); 825M sh, up to $64.4B; price Nov 18, trade Nov 19 'ANT'; no company comment",
+   "status": "Materially changed",
+   "rationale": "Largest AI capital-markets event; private until listed",
+   "first_seen": "2026-11-10",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "bessent-china-nov10",
+   "first_seen": "2026-11-11",
+   "headline": "Bessent NY speech: 'de-risk, not decouple'; planned US-China AI incident channel; Xie Feng 'red lines'; Trump-Xi expected at APEC Shenzhen next week",
+   "status": "New",
+   "rationale": "Trade/China tail risk for chips and exporters",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "oil-strike-pause-nov10",
+   "headline": "Brent 92.81 (+1.44%) WTI 86.67 06:28 ET Nov 11; Iran denies talks, Hormuz shut until 7 conditions (Al Jazeera); Qatar says both sides reviewing; 37 shipping attacks Oct, 10 Nov (Washington Institute); API +9.0M bbl (single)",
+   "status": "Continuing",
+   "rationale": "Oil/inflation channel; geopolitics",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "hegseth-impeachment-nov10",
+   "first_seen": "2026-11-11",
+   "headline": "House refers Massie's 8 Hegseth impeachment articles to Judiciary 211-204 (Nov 10); Massie only R against; Jeffries: 'just the beginning'",
+   "status": "Resolved",
+   "rationale": "Major US political vote",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "ukraine-abu-dhabi-nov11",
+   "first_seen": "2026-11-11",
+   "headline": "Abu Dhabi talks end; Medinsky: fundamental agreement on another large prisoner exchange (1,000-for-1,000+ per Interfax-Ukraine sources); no Donbas breakthrough; Russia hits 6 substations",
+   "status": "Materially changed",
+   "rationale": "War/diplomacy",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
+   "id": "pgh-budget-2027-nov9",
+   "first_seen": "2026-11-11",
+   "headline": "Mayor O'Connor 2027 budget $872.6M (~$727M op + $145M capital), no tax hike, ~$28M reserve draw, pension $112M->$105M, trust-fund transfers ended; hearing Dec 10",
+   "status": "New",
+   "rationale": "Local: city finances",
+   "last_seen": "2026-11-11",
+   "last_report": "reports/2026/11/2026-11-11-am.html",
+   "updated": "2026-11-11-am"
+  },
+  {
    "id": "cpi-hot-oct-nov10",
    "headline": "Oct CPI +0.4% m/m (core +0.3%) vs 0.3/0.2 consensus; no y/y (2025 shutdown gap); Waller: lean 25bp Dec 8-9, 50bp should be considered if core >=0.3; FedWatch ~99% hike, 50bp ~10-15%; par 2Y 4.73 (+17), 10Y 4.98 (+10), 30Y 5.35; 10Y auction $42B 5.020% btc 2.46 ~1bp tail",
    "status": "New",
    "rationale": "Lead: largest rates move of the cycle; Fed path repricing",
    "first_seen": "2026-11-10",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "nvda-huang-probe-nov10",
-   "headline": "NVDA -5.47% to 168.89 on 421M sh (3.4x avg), -9.5% two sessions; board independent probe (Nov 8) of Huang relationship with Megaspeed exec Alice Huang; DOJ NSD probing Megaspeed chip diversion (CBS); The Information $7.5B chips-to-China (single); earnings next week",
-   "status": "Materially changed",
-   "rationale": "Market's largest name; governance + export-control risk",
    "last_seen": "2026-11-10",
    "last_report": "reports/2026/11/2026-11-10-pm.html",
    "updated": "2026-11-10-pm"
@@ -33,35 +112,6 @@
    "headline": "Oct NFP +165K vs ~59-65K; Aug rev +186K, Sep +60K; UR 4.1%; AHE +0.4% m/m, 3.1% y/y; U-6 7.9%; forecast 2026-11-04-pm-3 (25-100K) wrong",
    "status": "Resolved",
    "rationale": "Set up the rates repricing",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "oil-strike-pause-nov10",
-   "headline": "Trump holds off new Iran strikes 'for now' (Nov 9) after Gulf appeals; blockade continues; Brent settle $91.49 (-1.17%, intraday 89.16 first sub-90 since Aug), WTI $86.04 (CNBC); Mon Brent $92.57 (-5.85%)",
-   "status": "Materially changed",
-   "rationale": "Oil/inflation channel; geopolitics",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "anthropic-ipo-range-nov10",
-   "headline": "Anthropic amended S-1: $70-78 range, 825M Class A (801.4M new), up to ~$1.40T; Nasdaq 'ANT'; pricing Nov 18/trade Nov 19 per CNBC; ~$26B concurrent private placement; H1 rev $16.3B",
-   "status": "New",
-   "rationale": "Largest AI capital-markets event; private until listed",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "coreweave-q3-nov10",
-   "headline": "CoreWeave Q3 rev $3.661B vs ~$3.54B; net loss $709M; backlog ~$132.5B; 2026 rev guide $13.0-13.3B, capex $37-39B; debt ~$47B; AH slightly up",
-   "status": "New",
-   "rationale": "AI capex demand signal",
-   "first_seen": "2026-11-10",
    "last_seen": "2026-11-10",
    "last_report": "reports/2026/11/2026-11-10-pm.html",
    "updated": "2026-11-10-pm"
@@ -500,52 +550,7 @@
    "last_seen": "2026-11-03",
    "last_report": "reports/2026/11/2026-11-03-pm.html",
    "scoring": "Largest AI IPO; primary filing"
-  },
-  {
-   "id": "eaton-mpc-earnings-nov3",
-   "headline": "Eaton +7% record orders/COL Group deal; MPC sells 2 refineries to CVR ~$4.2B; Sysco -9.3%, Shopify -8.7%, ADM -6.8%",
-   "status": "New",
-   "first_seen": "2026-11-03",
-   "last_seen": "2026-11-03",
-   "last_report": "reports/2026/11/2026-11-03-pm.html",
-   "scoring": "Earnings read for AI capex and consumer"
-  },
-  {
-   "id": "aapl-pltr-guide-nov3",
-   "headline": "Apple Dec-qtr guide rev +7-10%, GM 45-46% (below ~46.3-46.9% est.), memory costs; AAPL -3.8 to -4.5% premarket; PLTR -6-8% premarket on US commercial TCV +11% (secondary) | pm: AAPL closed -1.9% at $331.90 (off -4% lows); PLTR -1.65% at $175.40",
-   "status": "Continuing",
-   "first_seen": "2026-11-03",
-   "last_seen": "2026-11-03",
-   "last_report": "reports/2026/11/2026-11-03-pm.html",
-   "scoring": "Lead: largest market-moving overnight development; mega-cap weight"
-  },
-  {
-   "id": "midterms-day-nov3",
-   "headline": "Election Day: Kalshi Mon House D ~94%, Senate D ~74%; 57M+ early ballots; SCOTUS denied DOJ bid to set aside ~20K CA ballots (Nov 2); first polls close 6 PM ET",
-   "status": "Developing",
-   "first_seen": "2026-11-03",
-   "last_seen": "2026-11-03",
-   "last_report": "reports/2026/11/2026-11-03-pm.html",
-   "scoring": "Control of Congress; fiscal/tariff path; high-risk elections claims attributed"
-  },
-  {
-   "id": "oil-qeshm-nov3",
-   "headline": "WTI ~$98.40 (+2.0%), Brent ~$106.40 (+1.6%) ~6:30 ET after US 'defensive' strikes on Iranian targets near Hormuz/Qeshm (AP via WashTimes, Anadolu); Iran 2-day reopening offer",
-   "status": "Materially changed",
-   "first_seen": "2026-11-03",
-   "last_seen": "2026-11-03",
-   "last_report": "reports/2026/11/2026-11-03-pm.html",
-   "scoring": "Inflation/Fed channel; war risk"
-  },
-  {
-   "id": "kospi-chips-nov3",
-   "headline": "Kospi -3.59% to 5,648.79; Shanghai -0.82%; Stoxx 600 -0.4%; Nasdaq 100 >10% below record (Reuters)",
-   "status": "New",
-   "first_seen": "2026-11-03",
-   "last_seen": "2026-11-03",
-   "last_report": "reports/2026/11/2026-11-03-am.html",
-   "scoring": "Chip sell-off spreading to Asia"
   }
  ],
- "updated": "2026-11-10-pm"
+ "updated": "2026-11-11-am"
 }
