@@ -13,10 +13,16 @@
  *   sit under their group: its words, its check or its red flag, and the order to send them in; an option strategy the order ticket's
  *   Strategies tab has a template for offers "Strategies tab" (one all-or-none order is built there, by the owner).
  * - In-place edits change that card only (no new reading): side among its kind's sides, quantity, type, prices, trail, time in force,
- *   GTD date, the covered tick (unticked: a plain call).  A new reading keeps a card's edits only when the card reads exactly as before
- *   (the same words, book copy and every field read); otherwise each edit is dropped and said on that card.  A field that differs from
- *   the card as the owner last saw it shows "was X".
- * - Open in ticket (one card, one click) hands the card's order to FinSim's order ticket docked on its account page (fresh: true, so
+ *   GTD date, the covered tick (unticked: a plain call).  A new reading matches each card with the card the owner last saw: first one
+ *   that reads exactly as before (every field read the same, even when the words around it changed or an order before it is gone):
+ *   its edits and its opened mark stay; else one with the same words, book named and instrument: each edit on it is dropped and said
+ *   on that card.  An edit on a card the new reading has no match for is said above the cards: an edit is never dropped unsaid.  A
+ *   field that differs from the matched card as the owner last saw it shows "was X" (an account as "book . account").
+ * - The reading's book: the text is read for the book of the last reading (an order that names no book stays in it) until New ticket,
+ *   even when another book is selected since (opening an order of another book selects that book): the page says so, and "Read for
+ *   the <selected book>" reads it for the selected book (its cards then say what changed).
+ * - Open in ticket (one card, one click; a click right after typing in a card is kept: the cards are painted again only once the
+ *   pointer is up) hands the card's order to FinSim's order ticket docked on its account page (fresh: true, so
  *   nothing of an order typed there before rides along), and only when the reading is not in flight, the box holds the text last read,
  *   the draft was read again since it was restored, the instruction has no red flag and no unread word, the card and its group have no
  *   red flag, its order is complete and the order ticket takes its kind.  The owner previews and sends it there, exactly as an order
@@ -24,7 +30,7 @@
  *   in the ticket at HH:MM": the page never reads orders, so it never says that an order was sent.
  * - Alternatives replace the flag's words in the text as read, then the text is read again; they apply only while the box holds
  *   exactly the text last read (else: press Enter to read the text again, then pick).
- * - The draft (the text, its reading, the edits and the opened marks) is kept in this browser only (T.store 'smart.draft.v2');
+ * - The draft (the text, its reading and its book, the edits, the dropped-edit note and the opened marks) is kept in this browser only (T.store 'smart.draft.v2');
  *   restored, it says when it was read and opens nothing until the text is read again.  New ticket clears it; nothing else does.
  * Never here: a send, submit or send-all button, a confirm of its own, a request id, a request to an order, preview, cancel, replace
  * or strategies route, a PATCH, PUT or DELETE.  The page's only POST is the parse, and T.ticket.open is called only by one card's or
@@ -58,6 +64,18 @@
                   'in the Fund book: buy 100 ACME; buy 100 WIDG gtc'];
   var st = null;                                               /* the mounted page's state (null while another page shows) */
   var ui = null;
+  /* simplify round 1: an edit's repaint waits while a pointer is down, so the click that took the focus out of the box (Open in ticket
+     right after typing) lands on the button it was pressed on, never on a repainted one */
+  var pointerDown = false, repaintDue = null;
+  function pointerDone() {
+    pointerDown = false;
+    var S = repaintDue; repaintDue = null;
+    if (S) { setTimeout(function () { paintKeepFocus(S); }, 0); }      /* after the click */
+  }
+  document.addEventListener('pointerdown', function () { pointerDown = true; }, true);
+  document.addEventListener('pointerup', pointerDone, true);
+  document.addEventListener('pointercancel', pointerDone, true);
+  window.addEventListener('blur', pointerDone);
 
   /* ---------------------------------------------------------------- small helpers -------------------------------- */
   function esc(s) { return T.esc(s == null ? '' : s); }
@@ -116,27 +134,43 @@
   }
   /* the order a card would hand over now: what was read, with the owner's edits on top */
   function effOf(S, c) { return effWith(c, S.edits[c.key]); }
-  /* one card per order of the reading, in the order written.  Its key: the words, the book copy and the n-th time those words appear
-     in that book - "the same card" on the next reading; readSig: every field read */
+  /* the book the words name for an order ('' when they name none and the reading's book was taken: BOOK_SELECTED) */
+  function typedBook(leg) {
+    return (leg.flags || []).some(function (f) { return f && f.code === 'BOOK_SELECTED'; }) ? '' : String(leg.book || '');
+  }
+  /* one card per order of the reading, in the order written.  Its key: the words, the book they name and the n-th time those words
+     appear with that book (unique in a reading: the draft keys the edits and the opened marks by it); readSig: every field read */
   function cardsOf(p) {
     var groups = {}; var seen = {};
     (p.combos || []).forEach(function (g) { if (g && g.id != null) { groups[String(g.id)] = g; } });
     return (p.legs || []).map(function (leg, i) {
-      var place = String(leg.clause || '') + '|' + String(leg.book || '');
+      var place = String(leg.clause || '') + '|' + typedBook(leg);
       seen[place] = (seen[place] || 0) + 1;
       var read = readOf(leg);
-      return { i: i, n: Number(leg.n), leg: leg, key: place + '|' + seen[place], read: read, readSig: sigOf(read),
+      return { i: i, n: Number(leg.n), leg: leg, place: place, key: place + '|' + seen[place], read: read, readSig: sigOf(read),
                group: leg.combo != null ? (groups[String(leg.combo)] || null) : null, was: {}, dropped: [] };
     });
   }
-  /* a new reading: a card that reads exactly as before keeps the owner's edits and its opened mark; an edit on a card that reads
-     otherwise is dropped and said on that card; every field that differs from the card as the owner last saw it shows "was X" */
+  /* a new reading (simplify round 1): each card is matched with the card the owner last saw.  First a card that reads exactly as
+     before - every field read the same: the same card, else the first other one (the words around it may have changed, an order
+     before it may be gone) - and it keeps the owner's edits and its opened mark.  Then a card with the same words, the same book
+     named and the same instrument, read otherwise: each edit on it is dropped and said on that card.  "was X": a field that differs
+     from the matched card as the owner last saw it (a card matched with none has none).  An edit on a card the new reading has no
+     match for is said above the cards (S.lost): an edit is never dropped unsaid */
   function adopt(S, p) {
-    var prev = {}; (S.cards || []).forEach(function (c) { prev[c.key] = c; });
-    var oldEdits = S.edits || {}, oldOpened = S.opened || {};
-    var cards = cardsOf(p); var edits = {}, opened = {};
-    cards.forEach(function (c) {
-      var o = prev[c.key]; if (!o) { return; }
+    var old = S.cards || [], oldEdits = S.edits || {}, oldOpened = S.opened || {};
+    var cards = cardsOf(p), used = [], match = [], edits = {}, opened = {}, lost = [];
+    function pass(test) {
+      cards.forEach(function (c, i) {
+        if (match[i]) { return; }
+        for (var k = 0; k < old.length; k++) { if (!used[k] && test(old[k], c)) { used[k] = true; match[i] = old[k]; return; } }
+      });
+    }
+    pass(function (o, c) { return o.key === c.key && o.readSig === c.readSig; });
+    pass(function (o, c) { return o.readSig === c.readSig; });
+    pass(function (o, c) { return o.place === c.place && same(o.read.instrument_id, c.read.instrument_id); });
+    cards.forEach(function (c, i) {
+      var o = match[i]; if (!o) { return; }
       var e = oldEdits[o.key]; var seen = effWith(o, e);
       if (o.readSig === c.readSig) {
         if (e) { edits[c.key] = e; }
@@ -144,10 +178,14 @@
         Object.keys(e).forEach(function (k) { c.dropped.push({ field: k, edit: e[k], now: c.read[k] }); });
       }
       var now = effWith(c, edits[c.key]);
-      var op = oldOpened[c.key]; if (op && op.sig === sigOf(now)) { opened[c.key] = op; }
+      var op = oldOpened[o.key]; if (op && op.sig === sigOf(now)) { opened[c.key] = op; }
       FIELDS.forEach(function (k) { if (!same(seen[k], now[k])) { c.was[k] = seen[k] == null ? '' : seen[k]; } });
     });
-    S.cards = cards; S.edits = edits; S.opened = opened;
+    old.forEach(function (o, k) {
+      var e = oldEdits[o.key]; if (used[k] || !e) { return; }
+      Object.keys(e).forEach(function (f) { lost.push({ n: o.n, clause: String(o.leg.clause || ''), field: f, edit: e[f] }); });
+    });
+    S.cards = cards; S.edits = edits; S.opened = opened; S.lost = lost;
   }
   function sidesOf(c) { return SIDES[kindGroup(instOf(c.leg).kind)] || SIDES.CASH; }
   function orderValidity(c, r) {
@@ -188,7 +226,7 @@
   /* ---------------------------------------------------------------- the draft (this browser only) ----------------- */
   function saveState(S) {
     if (!S) { return; }
-    T.store.set(STORE, { v: 2, text: S.text, parsedFrom: S.parsedFrom, parsed: S.parsed, edits: S.edits, opened: S.opened, saved: Date.now() });
+    T.store.set(STORE, { v: 2, text: S.text, parsedFrom: S.parsedFrom, parsed: S.parsed, edits: S.edits, opened: S.opened, lost: S.lost, saved: Date.now() });
   }
   function restore(S) {
     var d = T.store.get(STORE, null);
@@ -201,18 +239,21 @@
       var ed = d.edits && typeof d.edits === 'object' ? d.edits : {}, op = d.opened && typeof d.opened === 'object' ? d.opened : {};
       Object.keys(ed).forEach(function (k) { if (keys[k] && ed[k] && typeof ed[k] === 'object') { S.edits[k] = ed[k]; } });
       Object.keys(op).forEach(function (k) { if (keys[k] && op[k] && op[k].sig === sigOf(effOf(S, keys[k]))) { S.opened[k] = op[k]; } });
+      S.lost = Array.isArray(d.lost) ? d.lost.filter(function (x) { return x && typeof x === 'object' && typeof x.field === 'string'; }) : [];
     }
     return true;
   }
 
   /* ---------------------------------------------------------------- reading the text ------------------------------ */
-  function parse(textOverride) {
+  /* the text is read for the book of the last reading (an order that names no book stays there) until New ticket; forBook: the
+     owner's "Read for the <selected book>" */
+  function parse(textOverride, forBook) {
     var S = st; if (!S || S.dead || !ui) { return; }
     var text = textOverride != null ? String(textOverride) : ui.bar.value;
     if (!text.trim()) { say(S, 'type what you want to trade first (a fictional example: buy 100 ACME limit 50)', 'err'); return; }
     if (T.modulesKnown() && !T.hasModule('smart_ticket')) { say(S, 'the Smart Ticket\'s reader is not in this build: nothing can be read', 'err'); return; }
     var seq = ++S.pseq;
-    var book = T.book.code || null;
+    var book = forBook || (S.parsed && S.parsed.selected_book) || T.book.code || null;
     S.parsing = true; say(S, 'reading ...'); paint(S);
     var body = { text: text }; if (book) { body.book = book; }
     T.api.post(PARSE + bookQ(book), body, { retries: 0 }).then(function (ans) {
@@ -339,7 +380,8 @@
     c.dropped = c.dropped.filter(function (d) { return d.field !== f && !(f === 'trail' && /^trail_/.test(d.field)); });
     delete S.opened[c.key];                                   /* the terms opened in the ticket are not these any more */
     saveState(S);
-    setTimeout(function () { paintKeepFocus(S); }, 0);       /* after the focus has moved on (a Tab out of the box) */
+    if (pointerDown) { repaintDue = S; }                      /* a press took the focus out of the box: painted once the pointer is up */
+    else { setTimeout(function () { paintKeepFocus(S); }, 0); }   /* after the focus has moved on (a Tab out of the box) */
     say(S, '#' + c.n + ' edited (no new reading): open it in the ticket when it is ready');
   }
 
@@ -413,7 +455,7 @@
     if (k === 'side') { return SIDE_WORDS[v] || String(v); }
     if (k === 'covered') { return v ? 'sold as covered' : 'a plain call'; }
     if (k === 'order_type') { var t = TYPES.filter(function (x) { return x[0] === v; })[0]; return t ? t[1] : String(v); }
-    if (k === 'account_id') { return T.accountName(v); }
+    if (k === 'account_id') { var ob = typeof T.accountOwner === 'function' ? T.accountOwner(v) : null; return (ob ? (ob.name || ob.book_code) + ' . ' : '') + T.accountName(v); }
     return String(v);
   }
   function wasHtml(c, keys) {
@@ -514,6 +556,11 @@
       done[id] = true;
       h += groupHtml(S, c.group, S.cards.filter(function (x) { return x.group && String(x.group.id) === id; }));
     });
+    var lost = S.lost || [];
+    ui.lost.hidden = !lost.length;
+    ui.lost.textContent = lost.length ? 'dropped with the new reading: ' + lost.map(function (d) {
+      return 'your edit on #' + d.n + ' ("' + short(d.clause, 60) + '"): ' + (FIELD_WORDS[d.field] || d.field) + ' ' + valWords(d.field, d.edit);
+    }).join('; ') + ' - no order of the new reading reads as that one did, nor has its words' : '';
     ui.cards.innerHTML = h || '<div class="empty">' + esc(S.parsed ? 'nothing to fill: the text named no order' : 'nothing read yet: type what you want to trade above and press Enter') + '</div>';
     S.gate = readBlock(S);
   }
@@ -544,6 +591,15 @@
       ui.restored.textContent = 'read at ' + (S.parsed.as_of ? T.fmt.hm(S.parsed.as_of) : '--:--') + ': orders may have been sent since; each ticket\'s own preview says what holds now - press Enter to read again';
     }
     ui.parseBtn.disabled = !!S.parsing;
+    var rb = S.parsed ? S.parsed.selected_book : null, sb = T.book.code || null;
+    ui.book.hidden = !(rb && sb && rb !== sb);
+    T.clear(ui.book);
+    if (!ui.book.hidden) {
+      ui.book.appendChild(document.createTextNode('the last reading was for the ' + bookName(rb) + '; the ' + bookName(sb) + ' is selected now (opening an order of ' +
+        'another book selects that book). Enter reads the text again for the ' + bookName(rb) + ': an order that names no book stays there. '));
+      ui.book.appendChild(T.h('button', { type: 'button', class: 'btn small', id: 'smart-rebook', 'data-act': 'rebook', disabled: S.parsing ? true : null,
+        title: 'read the text for the ' + bookName(sb) + ' instead: an order that names no book goes there (its card says what changed)' }, 'Read for the ' + bookName(sb)));
+    }
   }
   /* the gates follow the box: what the text in it allows is painted again only when it changes (typing never rebuilds the cards) */
   function paintActions(S) {
@@ -572,6 +628,7 @@
     var act = b.dataset.act, w = b.dataset.w || '';
     var c = w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null;
     var g = w.charAt(0) === 'g' ? groupOf(S, w.slice(1)) : (c ? c.group : null);
+    if (act === 'rebook') { parse(null, T.book.code || null); return; }
     if (act === 'open') { if (c) { openCard(S, c); } return; }
     if (act === 'strategies') { if (g) { openStrategies(S, strategiesActionOf(g), g); } return; }
     if (act === 'flag') {
@@ -592,7 +649,7 @@
   /* ---------------------------------------------------------------- the page -------------------------------------- */
   function newTicketNow() {
     var S = st; if (!S || S.dead) { return; }
-    S.pseq++; S.parsing = false; S.parsed = null; S.parsedFrom = null; S.cards = []; S.edits = {}; S.opened = {}; S.restored = false; S.expand = null;
+    S.pseq++; S.parsing = false; S.parsed = null; S.parsedFrom = null; S.cards = []; S.edits = {}; S.opened = {}; S.lost = []; S.restored = false; S.expand = null;
     S.text = ''; ui.bar.value = '';
     T.store.set(STORE, null);
     paint(S); say(S, 'a new ticket: the text, its reading and your edits are cleared');
@@ -601,7 +658,7 @@
   function render(el, route) {
     unmount();
     void route;
-    var S = st = { dead: false, text: '', parsed: null, parsedFrom: null, cards: [], edits: {}, opened: {}, pseq: 0, parsing: false, restored: false,
+    var S = st = { dead: false, text: '', parsed: null, parsedFrom: null, cards: [], edits: {}, opened: {}, lost: [], pseq: 0, parsing: false, restored: false,
                    expand: null, gate: null, savedAt: null };
     var page = T.h('div', { class: 'smart-page' }); el.appendChild(page);
     ui = { page: page };
@@ -619,12 +676,15 @@
     page.appendChild(ui.dirty);
     ui.restored = T.h('div', { class: 'smart-warn', id: 'smart-restored', hidden: true });
     page.appendChild(ui.restored);
+    ui.book = T.h('div', { class: 'smart-warn', id: 'smart-book', hidden: true });
+    page.appendChild(ui.book);
     page.appendChild(T.h('div', { class: 'smart-examples' }, T.h('span', null, 'examples (fictional names):'), EXAMPLES.map(function (x) {
       return T.h('a', { href: '#/smart', title: 'put this example in the box; nothing is read until you press Enter', onclick: function (e) { e.preventDefault(); ui.bar.value = x; S.text = x; paintActions(S); try { ui.bar.focus(); } catch (er) { /* ignore */ } } }, x);
     })));
     ui.readback = T.h('div', { class: 'smart-readback', id: 'smart-readback', hidden: true }); page.appendChild(ui.readback);
     ui.iflags = T.h('div', { class: 'smart-iflags', id: 'smart-iflags', hidden: true }); page.appendChild(ui.iflags);
     ui.status = T.h('div', { class: 'smart-status', id: 'smart-status', role: 'status' }); page.appendChild(ui.status);
+    ui.lost = T.h('div', { class: 'smart-warn', id: 'smart-lost', hidden: true }); page.appendChild(ui.lost);
     ui.cards = T.h('div', { class: 'smart-grid', id: 'smart-cards' }); page.appendChild(ui.cards);
     page.appendChild(T.h('div', { class: 'smart-actions muted' }, '!! blocks the order . ! look at it first . i how it was read . each order is sent from the order ticket, after its own preview'));
     page.appendChild(T.convNote(['SMART_TICKET']));

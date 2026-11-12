@@ -1594,11 +1594,12 @@ def seventh_world(kind: str) -> dict:
 
 # ===== 1.0.7.2 simplified: groups of separate tickets, the cover reading on the account as it is, the parse contract ==================
 #: 7b634e2's combinations of the corpus (its own parser run on these texts in the corpus world, recorded 2026-11-12 from ``git archive
-#: 7b634e2``): (the legs of each combination, the cases) - the simplification groups exactly the same legs
+#: 7b634e2``): (the legs of each combination, the cases) - the simplification groups exactly the same legs, but for one case: simplify
+#: round 1 made words asking for one order hold every order of the run they end, whatever its names ("ref-combo-one-leg": 7b634e2 grouped
+#: only its second order, [[2]], and left "buy 100 WIDG" a ticket that could be sent on its own)
 GROUPS_7B634E2 = (
     ([[1]], ("ref-nested-paren",)),
-    ([[2]], ("ref-combo-one-leg",)),
-    ([[1, 2]], ("clean-buy-write", "clean-calendar", "clean-calendar-month-only", "clean-calendar-month-only-reversed",
+    ([[1, 2]], ("ref-combo-one-leg", "clean-buy-write", "clean-calendar", "clean-calendar-month-only", "clean-calendar-month-only-reversed",
         "clean-calendar-month-only-sold", "clean-calendar-month-then-day", "clean-calendar-reversed", "clean-calendar-year-once",
         "clean-call-spread", "clean-call-vertical", "clean-collar-held", "clean-covered-call", "clean-group-aon-word", "clean-package-buy-write",
         "clean-paren-package-fund", "clean-put-spread", "clean-put-spread-reversed", "clean-roll-long-held", "clean-roll-short",

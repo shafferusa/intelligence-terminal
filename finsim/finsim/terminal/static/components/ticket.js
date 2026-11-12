@@ -74,6 +74,11 @@
  *   the preview and the submit then carry covered: true (never an amend / replace body); hedge_tab: 'strategies' (with hedge: true)
  *   opens the hedge panel on its Strategies tab.  The ticket's own preview, Submit and dialogs are unchanged: the Smart Ticket sends
  *   nothing itself.
+ * FinSim 1.0.7.2 simplify round 1: each order the ticket shows has its own number (st.gen: a new order - fresh, a new instrument, a
+ *   Close, Clear, another account, an amend / replace or hedge-this-position mode - takes a new one, and ends the Submit in flight
+ *   for the ticket).  A Submit's answer that comes after the ticket moved on to another order is never painted on it and never opens a
+ *   dialog over it: a toast names the order it was for and says what happened (placed, refused, NOT placed: a large order to confirm
+ *   or a moved price - open it again).  The large-order question and the moved-price line name their order.
  * Keys inside the ticket (focus inside the dock; typing fields take only the box actions preview / submit / clear) are the
  * registry's ticket actions (keys.js, Settings > Keyboard; defaults = the 1.0.3 keys): b s x c sides, m l k j r types,
  * = + - _ qty by lot (the numpad + / - one lot, Shift ten), h hedge panel, 1..5 pick a candidate / 0 none, Enter preview,
@@ -239,13 +244,15 @@
   }
 
   /* ---------------------------------------------------------------- state ----------------------------------------- */
+  var orderGen = 0;                                  /* the number of the order the ticket shows (st.gen); see the header */
   function fresh(account_id) {
     return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
              hedge_pos: null, hedge_for: null, fx_convert: false,
              qty: 0, order_type: 'MARKET', limit_px: '', stop_px: '',
              trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', gtd_date: '', mode: null, mode_order: null, mode_tif0: null, hedge: null, hedge_cand: null, hedgeOpen: false, covered: false, covered_offer: false,
              preview: null, preview_body: null, previewing: false, pseq: 0, dirty: false, preview_err: null, submit_err: null, stale: null,
-             submitting: false, result: null, result_kind: null, last_rid: null, timer: null, reprev: null, taTimer: null, tick: null, resolving: false };
+             submitting: false, result: null, result_kind: null, last_rid: null, timer: null, reprev: null, taTimer: null, tick: null, resolving: false,
+             gen: ++orderGen };
   }
   function clearTimers() { if (!st) { return; } clearTimeout(st.timer); clearTimeout(st.reprev); clearTimeout(st.taTimer); clearInterval(st.tick); st.timer = st.reprev = st.taTimer = st.tick = null; }
 
@@ -429,6 +436,7 @@
     st.side_req = null; st.close_req = null; st.side_err = null; st.fx_convert = false;
     st.preview = null; st.preview_body = null; st.preview_err = null; st.submit_err = null; st.stale = null; st.previewing = false; st.pseq++;
     st.hedge = null; st.hedge_cand = null; st.package_spec = null; st.covered = false; st.covered_offer = false;
+    st.gen = ++orderGen; st.submitting = false;      /* another order: a Submit in flight answers in a toast naming its own order */
     if (hedge && hedge.picked && hedge.picked()) { hedge.none(); }
   }
   /* ---- hedge this position (USX-12 / ORC-4): the panel in position mode; the order fields are not used ---- */
@@ -887,7 +895,23 @@
     if (l.length) { w += ' . released hedge leg' + (l.length > 1 ? 's ' : ' ') + l.join(', ') + ' now work' + (l.length > 1 ? '' : 's') + ' as long as it (never shortened)'; }
     return w;
   }
+  /* the order a Submit is for, in words (said by a late answer and by the large-order question) */
+  function orderWords(kind) {
+    var w = String(st.side || '') + ' ' + (st.qty || '') + ' ' + String(st.instrument_id || '');
+    if (st.order_type === 'LIMIT' || st.order_type === 'STOP_LIMIT') { w += ' limit ' + st.limit_px; }
+    if (st.order_type === 'STOP' || st.order_type === 'STOP_LIMIT') { w += ' stop ' + st.stop_px; }
+    if (kind === 'amend' || kind === 'replace') { w = 'the ' + kind + ' of ' + ((st.mode_order && st.mode_order.order_id) || 'an order') + ' (' + w.trim() + ')'; }
+    if (kind === 'package') { w = 'the hedge package on ' + String(st.instrument_id || ''); }
+    var ob = st.account_id && typeof T.accountOwner === 'function' ? T.accountOwner(st.account_id) : null;
+    return w.replace(/\s+/g, ' ').trim() + (st.account_id ? ' in ' + (ob ? (ob.name || ob.book_code) + ' . ' : '') + T.accountName(st.account_id) : '');
+  }
+  /* an answer for an order the ticket no longer shows: a toast naming that order, nothing painted on the order shown now */
+  function lateAnswer(words, msg, cls) {
+    T.ui.toast('the answer for ' + words + ' came after the ticket moved on to another order: ' + msg, cls, 15000);
+    ['orders', 'positions', 'account_detail', 'accounts', 'attention'].forEach(function (p) { T.poll.kick(p); });
+  }
   function send(body, rid, kind) {
+    var gen = st.gen, words = orderWords(kind);
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
     clearTimeout(st.reprev);
     paintSubmit(); paintStatus('submitting (request ' + rid.slice(0, 8) + ') ...');
@@ -896,6 +920,11 @@
       : (kind === 'replace' ? T.api.post('/api/orders/' + encodeURIComponent(oidm) + '/replace', body, { request_id: rid })
         : T.api.post('/api/orders', body, { request_id: rid, reconcile: st.account_id }));
     call.then(function (res) {
+      if (gen !== st.gen) {
+        lateAnswer(words, (res && res.replayed ? 'already submitted . ' : '') + 'order ' + ((res && res.order && res.order.order_id) || (res && res.package && res.package.package_id) || '') + ' ' +
+          ((res && res.order && res.order.status) || (res && res.package && res.package.status) || '') + ' (see Pending Trades)', 'ok');
+        return;
+      }
       /* an amend / replace is done: the fields go back to an empty order of this instrument (a second Submit never repeats it) */
       if (kind === 'amend' || kind === 'replace') { resetOrder(); paintFields(); }
       st.submitting = false; st.result = res; st.result_kind = kind; st.preview = null; st.stale = null;
@@ -908,6 +937,14 @@
       ['orders', 'positions', 'account_detail', 'accounts', 'attention'].forEach(function (p) { T.poll.kick(p); });
       scheduleReprev();
     }, function (e) {
+      if (gen !== st.gen) {
+        var c0 = e && e.code;
+        lateAnswer(words, e && e.name === 'LostResponse' ? 'its answer was lost (' + e.message + '): see Pending Trades'
+          : (c0 === 'CONFIRM_REQUIRED' ? 'NOT placed: a large order needs your confirmation - open it again and submit it from its own ticket'
+            : (c0 === 'PREVIEW_STALE' ? 'NOT placed: its price moved since its preview - open it again and preview it'
+              : 'refused: ' + T.api.describe(e))), 'err');
+        return;
+      }
       st.submitting = false;
       if (e && e.name === 'LostResponse') {
         st.result = { lost: true, message: e.message, request_id: rid }; st.result_kind = kind;
@@ -917,19 +954,20 @@
       if (e.code === 'PREVIEW_STALE') {
         if (d.preview && typeof d.preview === 'object' && d.preview.execution) { st.preview = d.preview; st.preview_body = JSON.stringify(previewBody()); st.dirty = false; }
         st.stale = { diff: d.diff || {}, rid: rid, kind: kind, body: body, fresh: d.preview || null };
-        paintPreview(); paintSubmit(); paintStatus('PREVIEW_STALE: ' + (e.message || ''), 'err'); return;
+        paintPreview(); paintSubmit(); paintStatus('PREVIEW_STALE (' + words + '): ' + (e.message || ''), 'err'); return;
       }
       if (e.code === 'CONFIRM_REQUIRED') {
         if (d.preview && typeof d.preview === 'object' && d.preview.execution) { st.preview = d.preview; st.preview_body = JSON.stringify(previewBody()); st.dirty = false; paintPreview(); }
         var sweep = d.sweep_in != null ? T.fmt.money(d.sweep_in) : (typeof d.sweep_in_c === 'number' && d.sweep_in_c > 0 ? T.fmt.cents(d.sweep_in_c) : null);
         var rules = Array.isArray(d.rules) ? d.rules.filter(function (x) { return x && x.text; }) : [];
         var txt = T.h('div', null,
-          T.h('div', null, 'A large order: ' + (rules.length ? rules.map(function (x) { return x.text; }).join('; ') : (d.reason || e.message || 'confirmation required')) + '.'),
+          T.h('div', null, 'A large order, ' + words + ': ' + (rules.length ? rules.map(function (x) { return x.text; }).join('; ') : (d.reason || e.message || 'confirmation required')) + '.'),
           sweep ? T.h('div', { class: 'hint' }, 'It sweeps ' + sweep + ' from Treasury' + (d.threshold ? ' (the confirm threshold is ' + T.fmt.money(d.threshold) + ')' : '') + '.') : null,
           d.notional ? T.h('div', { class: 'hint' }, 'notional ' + T.fmt.money(d.notional) + (d.nav ? ' . lifetime NAV ' + T.fmt.money(d.nav) : '')) : null,
           T.h('div', { class: 'hint' }, 'Confirm sends the same order again with your confirmation; nothing was written yet.'));
         paintStatus('needs your confirmation: ' + (d.reason || 'a large order'), 'err'); paintSubmit();
         T.ui.confirm(txt, { title: 'Confirm large order', ok: 'Confirm' }).then(function (yes) {
+          if (gen !== st.gen) { if (yes) { T.ui.toast(words + ' was NOT sent: the ticket moved on to another order before your confirmation - open it again', 'err', 15000); } return; }
           if (!yes) { paintStatus('not confirmed; nothing was submitted'); scheduleReprev(); return; }
           var again = Object.assign({}, body, { confirm_large: true });
           if (d.preview && d.preview.preview_id) { again.preview_id = d.preview.preview_id; }

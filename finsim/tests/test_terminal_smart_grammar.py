@@ -412,7 +412,9 @@ class SpansLimitsAndGroups(unittest.TestCase):
 
     def test_groups(self):
         out = st.parse("buy 100 WIDG; buy 200 ACME limit 225 and sell 2 ACME Dec 18 2026 240 calls as a package")
-        self.assertEqual([{"id": "G1", "kind": "word", "clauses": [1, 2], "span": [14, 87], "word_span": [75, 87]}], out["groups"])   # the run on ACME only
+        # simplify round 1: the run of orders the words end, whatever their names (7b634e2 took the ACME orders only, clauses [1, 2], and
+        # left "buy 100 WIDG" a ticket of its own): every order the words may mean is held until "as separate tickets" is chosen
+        self.assertEqual([{"id": "G1", "kind": "word", "clauses": [0, 1, 2], "span": [0, 87], "word_span": [75, 87]}], out["groups"])
         out = st.parse("(buy 1 ACME Dec 18 2026 240 call and sell 1 ACME Dec 18 2026 250 call)")
         self.assertEqual(("paren", [0, 1]), (out["groups"][0]["kind"], out["groups"][0]["clauses"]))
         out = st.parse("buy 1 ACME Dec 18 2026 240 call; buy 1 ACME Dec 18 2026 250 call aon; buy 1 ACME Dec 18 2026 260 call together")

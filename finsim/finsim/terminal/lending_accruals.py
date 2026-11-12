@@ -415,7 +415,7 @@ def _reserved(services, conn, account_id: str, instrument_id: str) -> int:
     orders now, in whole contracts as the margin assigns them (``orders_preview.cover_state``: one reading with the order route)."""
     from .orders_preview import cover_state
     st = cover_state(services, conn, account_id, instrument_id)
-    return int(st["reserved_sold"]) + int(st["reserved_working"])
+    return int(st["reserved"])          # simplify round 1: the calls a working sequential package will still sell included
 
 
 def free_to_lend(services, conn, account_id: str, instrument_id: str) -> dict:

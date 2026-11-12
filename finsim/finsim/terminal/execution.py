@@ -936,6 +936,64 @@ def _may_lengthen(conn, r, head, now: int) -> bool:
     return not _own_tif(conn, r["order_id"])
 
 
+def chain_head(conn, order_id: Optional[str]):
+    """The row of the order that works now in ``order_id``'s replace chain (``replaced_by_order_id`` followed), or None (read only)."""
+    r = conn.execute("SELECT * FROM orders WHERE order_id=?", (order_id,)).fetchone() if order_id else None
+    seen = set()
+    while r is not None and r["order_id"] not in seen:
+        seen.add(r["order_id"])
+        nxt = r["replaced_by_order_id"] if "replaced_by_order_id" in r.keys() else None
+        r2 = conn.execute("SELECT * FROM orders WHERE order_id=?", (nxt,)).fetchone() if nxt else None
+        if r2 is None:
+            break
+        r = r2
+    return r
+
+
+def _as_submitted(conn, oid: str, cache: Dict[str, Any]):
+    """(quantity, parent) of an order as it was submitted: its ORDER_SUBMITTED record (read only), else None."""
+    if oid not in cache:
+        got = None
+        ev = conn.execute("SELECT payload_json FROM events WHERE type='ORDER_SUBMITTED' AND ref_type='order' AND ref_id=? ORDER BY id DESC LIMIT 1",
+                          (oid,)).fetchone()
+        try:
+            p = json.loads(ev["payload_json"]) if ev is not None else None
+            if isinstance(p, dict) and int(p.get("qty") or 0) > 0:
+                got = (int(p["qty"]), p.get("parent_order_id"))
+        except (TypeError, ValueError):
+            got = None
+        cache[oid] = got
+    return cache[oid]
+
+
+def _confirmed_base(conn, r, cache: Dict[str, Any]) -> Optional[Tuple[int, int]]:
+    """(L0, P0): a hedge leg's quantity and its primary's as confirmed, when they give the leg's stored ratio (L0 / P0 at 8 decimals)."""
+    leg = _as_submitted(conn, r["order_id"], cache)
+    prim = _as_submitted(conn, str(leg[1]), cache) if leg is not None and leg[1] else None
+    if leg is None or prim is None:
+        return None
+    if (Decimal(leg[0]) / Decimal(prim[0])).quantize(Decimal("0.00000001"), rounding="ROUND_HALF_EVEN") != Decimal(r["ratio"] or "0"):
+        return None
+    return leg[0], prim[0]
+
+
+def leg_target(conn, r, shares_filled: int, pqty: int, cache: Optional[Dict[str, Any]] = None) -> Tuple[int, str]:
+    """The size of hedge leg ``r`` once its shares order's chain has filled ``shares_filled`` of ``pqty`` shares (the release rule of
+    ``resize_hedge_children``, whole numbers, read only) and how it was worked out.  With ``shares_filled = pqty``: what the leg will
+    have been released in all once its shares order has filled (1.0.7.2 simplify round 1: the cover its calls still need, INV-2)."""
+    cache = {} if cache is None else cache
+    ratio = Decimal(r["ratio"] or "0")
+    base = _confirmed_base(conn, r, cache)
+    if base is not None:                                                         # whole numbers: the leg's and the shares' quantities as confirmed
+        return (shares_filled * base[0]) // base[1], f"floor({shares_filled:,} × {base[0]:,} / {base[1]:,})"
+    if pqty > 0:                                                                 # no record of them (never for a 1.0.7.x leg): the stored ratio
+        prod = Decimal(pqty) * ratio
+        full = prod.to_integral_value(rounding="ROUND_HALF_UP")
+        if abs(prod - full) <= Decimal(pqty) * Decimal("0.000000005"):            # the ratio fits these shares: the leg's quantity
+            return (shares_filled * int(full)) // pqty, f"floor({shares_filled:,} × {int(full):,} / {pqty:,})"
+    return int((Decimal(shares_filled) * ratio).to_integral_value(rounding="ROUND_FLOOR")), f"floor({shares_filled:,} × {ratio})"   # else 1.0.7.1's rule
+
+
 def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_qty: int, primary_ended: bool = False) -> List[dict]:
     """Size the WAITING_PARENT / working children of a primary to ``floor(shares filled × leg qty / shares qty)``; a child whose target
     is still 0 keeps waiting; when the primary ends, a child still waiting is CANCELLED (nothing can release it any more), and a child
@@ -969,31 +1027,6 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
     rows = conn.execute(f"SELECT * FROM orders WHERE parent_order_id IN ({','.join('?' for _ in ids)})"
                         " AND status IN ('WAITING_PARENT','WORKING','PARTIAL','FILLED') ORDER BY order_id", ids).fetchall()
     submitted: Dict[str, Any] = {}
-
-    def as_submitted(oid: str):
-        """(quantity, parent) of an order as it was submitted: its ORDER_SUBMITTED record (read only), else None."""
-        if oid not in submitted:
-            got = None
-            ev = conn.execute("SELECT payload_json FROM events WHERE type='ORDER_SUBMITTED' AND ref_type='order' AND ref_id=? ORDER BY id DESC LIMIT 1",
-                              (oid,)).fetchone()
-            try:
-                p = json.loads(ev["payload_json"]) if ev is not None else None
-                if isinstance(p, dict) and int(p.get("qty") or 0) > 0:
-                    got = (int(p["qty"]), p.get("parent_order_id"))
-            except (TypeError, ValueError):
-                got = None
-            submitted[oid] = got
-        return submitted[oid]
-
-    def confirmed(r) -> Optional[Tuple[int, int]]:
-        """(L0, P0): the leg's quantity and its primary's as confirmed, when they give the leg's stored ratio (L0 / P0 at 8 decimals)."""
-        leg = as_submitted(r["order_id"])
-        prim = as_submitted(str(leg[1])) if leg is not None and leg[1] else None
-        if leg is None or prim is None:
-            return None
-        if (Decimal(leg[0]) / Decimal(prim[0])).quantize(Decimal("0.00000001"), rounding="ROUND_HALF_EVEN") != Decimal(r["ratio"] or "0"):
-            return None
-        return leg[0], prim[0]
     for r in rows:
         if primary_ended and shares_filled == 0:
             if r["status"] in ("WAITING_PARENT", "WORKING", "PARTIAL"):
@@ -1004,20 +1037,7 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
                 out.append({"order_id": r["order_id"], "status": "CANCELLED"})
             continue
         ratio = Decimal(r["ratio"] or "0")
-        target, how = None, None
-        base = confirmed(r)
-        if base is not None:                                                         # whole numbers: the leg's and the shares' quantities as confirmed
-            target = (shares_filled * base[0]) // base[1]
-            how = f"floor({shares_filled:,} × {base[0]:,} / {base[1]:,})"
-        elif pqty > 0:                                                               # no record of them (never for a 1.0.7.x leg): the stored ratio
-            prod = Decimal(pqty) * ratio
-            full = prod.to_integral_value(rounding="ROUND_HALF_UP")
-            if abs(prod - full) <= Decimal(pqty) * Decimal("0.000000005"):            # the ratio fits these shares: the leg's quantity
-                target = (shares_filled * int(full)) // pqty
-                how = f"floor({shares_filled:,} × {int(full):,} / {pqty:,})"
-        if target is None:                                                           # else 1.0.7.1's rule
-            target = int((Decimal(shares_filled) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
-            how = f"floor({shares_filled:,} × {ratio})"
+        target, how = leg_target(conn, r, shares_filled, pqty, submitted)
         filled = int(r["filled_qty"])
         if target > 0 and target > filled and not (target == int(r["qty"]) and r["status"] != "WAITING_PARENT"):
             status = "WORKING" if filled == 0 else "PARTIAL"

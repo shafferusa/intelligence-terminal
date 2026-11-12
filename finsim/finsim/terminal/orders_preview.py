@@ -813,8 +813,11 @@ def funding_fit(acct: dict, need_c: int, own_c: int, treasury_c: int, pb_c: int)
 
 
 # ---- 1.0.7.2: the cover of calls - one reading for every order, every client (TERMINAL_EXECUTION.md "The cover of calls") ------------
-#: a working sell-to-open call whose cover is reserved (INV-2): a hedge leg still WAITING for its shares order reserves none
+#: a working sell-to-open call whose cover is reserved (INV-2) as a call being sold; a hedge leg still WAITING for its shares order is
+#: counted apart, net of the shares that order still buys (``_calls_to_come``, simplify round 1)
 COVER_CALL_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED")
+#: the shares orders whose hedge legs can still be released (a working sequential package)
+LIVE_PRIMARY_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
 #: working sales and short sales that will take the shares
 COVER_SALE_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
 NOT_COVERED = "NOT_COVERED"
@@ -887,6 +890,44 @@ def order_claimed(conn, row, cache: Optional[dict] = None) -> bool:
     return out
 
 
+def _calls_to_come(conn, account_id: str, underlying_id: str, net: int, icols: str, exclude_order_id: Optional[str]) -> List[dict]:
+    """1.0.7.2 simplify round 1 (INV-2 for a sequential package): the calls on ``underlying_id`` a working sequential package of
+    ``account_id`` will still sell - the Hedges tab's or the Strategies tab's shares order with sell-to-open call legs.  Its legs are
+    released as its shares fill (``execution.resize_hedge_children``), so per shares order: the contracts each call leg will still add
+    (``execution.leg_target`` once the whole chain has filled, less what is released already: a released leg is a call being sold or
+    sold, counted as such) and the shares that order still buys of this name (they arrive before the calls they cover).  Read only."""
+    rows = conn.execute(f"SELECT o.*, {icols} FROM orders o JOIN instruments i ON i.instrument_id = o.instrument_id"
+                        " WHERE o.account_id=? AND o.side='STO' AND o.parent_order_id IS NOT NULL AND COALESCE(o.fill_mode, '') != 'AON'"
+                        " AND o.status IN ('WAITING_PARENT','WORKING','PARTIAL','SUSPENDED','FILLED')"
+                        " AND i.kind='OPTION' AND i.right='C' AND i.underlying_id=? ORDER BY o.order_id", (account_id, underlying_id)).fetchall()
+    out: Dict[str, dict] = {}
+    cache: Dict[str, Any] = {}
+    for r in rows:
+        if exclude_order_id is not None and r["order_id"] == exclude_order_id:
+            continue
+        head = execution.chain_head(conn, r["parent_order_id"])
+        if head is None or str(head["status"]) not in LIVE_PRIMARY_STATUSES:
+            continue                                               # its shares order has ended: nothing releases it any more
+        per = 0 if _index_row(r) else _per_contract(r["i_multiplier"])
+        if per <= 0:
+            continue
+        hid = str(head["order_id"])
+        pk = out.get(hid)
+        if pk is None:
+            chain = execution._primary_chain(conn, hid)
+            before = sum(int(x["filled_qty"] or 0) for x in chain[1:])
+            rem = max(0, int(head["qty"] or 0) - int(head["filled_qty"] or 0))
+            buys = rem if (str(head["side"]) == "BUY" and str(head["instrument_id"]) == underlying_id) else 0
+            pk = out[hid] = {"order_id": hid, "created_ts": int(head["created_ts"] or 0), "pqty": int(head["qty"] or 0) + before,
+                             "buys": max(0, net + buys) - max(0, net), "legs": []}
+        eventual, _how = execution.leg_target(conn, r, pk["pqty"], pk["pqty"], cache)
+        released = 0 if str(r["status"]) == "WAITING_PARENT" else int(r["qty"] or 0)
+        more = max(0, int(eventual) - released)
+        if more > 0:
+            pk["legs"].append({"instrument_id": str(r["instrument_id"]), "order_id": str(r["order_id"]), "contracts": more, "per": per})
+    return sorted((pk for pk in out.values() if pk["legs"]), key=lambda pk: (pk["created_ts"], pk["order_id"]))
+
+
 def cover_state(services, conn, account_id: str, underlying_id: str, exclude_order_id: Optional[str] = None, claims: bool = False) -> dict:
     """1.0.7.2 (INV-2 / INV-3): the ONE reading of the shares of ``underlying_id`` held in ``account_id`` and of the calls that take them as
     their cover.  The order route, the order preview, the owner's early exercise, lending and the Smart Ticket's reading all read it, so
@@ -899,9 +940,15 @@ def cover_state(services, conn, account_id: str, underlying_id: str, exclude_ord
       (``options.margin_requirement_c`` step 1: per short call, in its order - expiry, then strike - cover = min(its contracts, shares
       left // its multiplier); index options never): first the calls already sold, read from the positions now (never from the last
       ``margin_state`` snapshot, which only an option fill, an expiry or the 17:10 run writes: INV-3), then the working sell-to-open call
-      orders' unfilled contracts (WORKING, PARTIAL, SUSPENDED; a hedge leg still waiting for its shares order reserves none) on the
-      shares left (INV-2).  With 150 held and 2 calls sold, 100 are reserved and 50 can be sold, exactly as the margin covers one call
-      and charges the other.  ``exclude_order_id``: an order left out of the working counts (the order an amend or a replace changes).
+      orders' unfilled contracts (WORKING, PARTIAL, SUSPENDED) on the shares left (INV-2).  With 150 held and 2 calls sold, 100 are
+      reserved and 50 can be sold, exactly as the margin covers one call and charges the other.  ``exclude_order_id``: an order left out
+      of the working counts (the order an amend or a replace changes).
+    - ``reserved_waiting`` (simplify round 1): the calls a working sequential package will still sell as its shares fill
+      (``_calls_to_come``) take, on the shares left, the cover they will need beyond the shares their own shares order still buys - in
+      whole contracts as the margin will assign them once those shares have arrived.  So a buy write (one call per 100 shares it buys)
+      reserves nothing of the shares held, while the shares it has bought ahead of its next call are kept for that call, and a package
+      whose calls need more than it buys keeps the rest of their cover from the shares held: nothing sold, lent, exercised away or
+      claimed for another call meanwhile can leave a call sold as covered naked when the legs are released.  ``reserved`` counts it.
     - ``free`` = held - working sells - reserved - lent (never below 0): what a SALE, a loan or an early exercise may take;
       ``free_for_calls`` = free - working short sales (never below 0): what NEW calls may take as their cover.
     - ``calls``: the calls behind the reservations (``{instrument_id, order_id?, contracts, covered, shares}``), named in the refusals.
@@ -911,7 +958,8 @@ def cover_state(services, conn, account_id: str, underlying_id: str, exclude_ord
       contracts its claimed orders filled)."""
     acct, uid = str(account_id or ""), str(underlying_id or "")
     ex = str(exclude_order_id) if exclude_order_id else None
-    held = max(0, int(_position(conn, acct, uid)[0]))
+    net = int(_position(conn, acct, uid)[0])
+    held = max(0, net)
     sells = shorts = 0
     q = ",".join("?" for _ in COVER_SALE_STATUSES)
     for r in conn.execute(f"SELECT order_id, side, qty, filled_qty FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC','SELL_SHORT')"
@@ -955,10 +1003,34 @@ def cover_state(services, conn, account_id: str, underlying_id: str, exclude_ord
         left -= cover * per
         reserved_working += cover * per
         calls.append({"instrument_id": str(r["instrument_id"]), "order_id": str(r["order_id"]), "contracts": n, "covered": cover, "shares": cover * per})
-    free = max(0, held - sells - reserved_sold - reserved_working - lent)
+    reserved_waiting = 0
+    waiting: List[dict] = []
+    for pk in _calls_to_come(conn, acct, uid, net, icols, ex):
+        need = sum(l["contracts"] * l["per"] for l in pk["legs"])
+        pers = {l["per"] for l in pk["legs"]}
+        buys = int(pk["buys"])
+        if len(pers) == 1:
+            per = next(iter(pers))
+            top = ((left + buys) // per) * per                   # whole contracts, as the margin assigns them once the shares have arrived
+        else:
+            top = left + buys
+        take = min(left, max(0, min(need, top) - buys))
+        left -= take
+        reserved_waiting += take
+        give = take + buys                                       # the shares these legs will have: the ones kept here, then those it buys
+        for l in pk["legs"]:
+            mine = min(give, l["contracts"] * l["per"])
+            give -= mine
+            row = {"instrument_id": l["instrument_id"], "order_id": l["order_id"], "contracts": l["contracts"], "covered": mine // l["per"],
+                   "shares": min(mine, max(0, take)), "waiting_for": pk["order_id"]}
+            take -= row["shares"]
+            calls.append(row)
+            waiting.append(row)
+    free = max(0, held - sells - reserved_sold - reserved_working - reserved_waiting - lent)
     out = {"account_id": acct, "underlying_id": uid, "held": held, "working_sells": sells, "working_shorts": shorts, "lent": lent,
-           "reserved_sold": reserved_sold, "reserved_working": reserved_working, "reserved": reserved_sold + reserved_working, "free": free,
-           "free_for_calls": max(0, free - shorts), "calls": calls}
+           "reserved_sold": reserved_sold, "reserved_working": reserved_working, "reserved_waiting": reserved_waiting,
+           "reserved": reserved_sold + reserved_working + reserved_waiting, "free": free, "free_for_calls": max(0, free - shorts), "calls": calls,
+           "waiting": waiting}
     if claims:
         cache: Dict[str, bool] = {}
         claimed = [{"instrument_id": str(r["instrument_id"]), "order_id": str(r["order_id"]), "contracts": max(0, int(r["qty"]) - int(r["filled_qty"] or 0))}
@@ -1017,10 +1089,13 @@ def cover_check(services, conn, account_id: str, legs: List[tuple], covered: boo
         u = services.instruments.get(uid, conn) if getattr(services, "instruments", None) is not None else None
         sym = u.symbol if u is not None else uid
         details = {"need": need, "free": st["free_for_calls"], "held": st["held"], "working_sells": st["working_sells"], "working_shorts": st["working_shorts"],
-                   "reserved_shares": st["reserved"], "reserved_sold": st["reserved_sold"], "calls_working": st["reserved_working"], "lent": st["lent"],
-                   "underlying_id": uid, "claimed": st.get("claimed") or []}
+                   "reserved_shares": st["reserved"], "reserved_sold": st["reserved_sold"], "calls_working": st["reserved_working"],
+                   "calls_waiting": st.get("reserved_waiting", 0), "lent": st["lent"], "underlying_id": uid, "claimed": st.get("claimed") or []}
+        waits = sorted({c["waiting_for"] for c in st.get("waiting") or [] if c.get("shares")})
         why = [f"{x:,} {w}" for x, w in ((st["working_sells"], "in working sells"), (st["working_shorts"], "in working short sales"),
                                           (st["reserved_sold"], "covering calls already sold"), (st["reserved_working"], "covering calls being sold"),
+                                          (st.get("reserved_waiting", 0), "kept for the calls the shares order"
+                                                                         f" {_calls_words([{'order_id': w} for w in waits])} releases as it fills"),
                                           (st["lent"], "lent")) if x]
         state = f"held {st['held']:,}" + ("; " + ", ".join(why) if why else "")
         if covered:
@@ -1059,6 +1134,57 @@ def sequential_cover_check(services, conn, account_id: str, primary: tuple, legs
         raise ConflictError(SHARES_RESERVED, f"not placed: {sym} in {account_id} covers calls sold as covered ({_calls_words(claimed)}) - a package whose calls on"
                                              f" {sym} are not covered by the {sym} shares it buys would take their cover in FinSim's margin",
                             {"underlying_id": uid, "need": need, "claimed": claimed})
+
+
+def _leg_instrument(services, conn, iid: str):
+    """A hedge leg's instrument for the cover checks: the master's row, else - an option the order route would first materialise from
+    its chain (``options.ensure_option``) - what its OCC symbol says (underlying, right, multiplier 100).  Read only."""
+    inst = services.instruments.get(iid, conn) if iid and getattr(services, "instruments", None) is not None else None
+    if inst is not None or not parse_occ_like(iid):
+        return inst
+    from types import SimpleNamespace
+    from .instruments import parse_occ
+    from .products.options import underlying_id_of_root
+    got = parse_occ(iid)
+    if got is None:
+        return None
+    root, expiry, right, strike = got
+    return SimpleNamespace(instrument_id=iid, symbol=iid, kind="OPTION", right=right, underlying_id=underlying_id_of_root(root), multiplier=Decimal(100),
+                           expiry=expiry.isoformat(), strike=strike, exercise="PHYSICAL", session_group="US_OPTIONS", spec={})
+
+
+def hedge_cover_legs(services, conn, block, hedge, primary_qty: int) -> List[tuple]:
+    """1.0.7.2 simplify round 1 (R-4): the legs a shares order's ``hedge`` will attach - (instrument, side, quantity), sized as
+    ``hedges.package`` sizes them (explicit ``legs`` as given; a candidate's legs, a ``ratio`` making each floor(primary qty x ratio)) -
+    so the order preview runs INV-9's sequential check on them, as the order route does at Submit.  ``block``: the preview's own hedge
+    candidates.  [] when there is nothing to check (no hedge, or a candidate not offered: ``_hedge_need`` says so)."""
+    if not isinstance(hedge, dict):
+        return []
+    ratio = None
+    if isinstance(hedge.get("legs"), list) and hedge.get("legs"):
+        raw = [l for l in hedge["legs"] if isinstance(l, dict)]
+    else:
+        cid = str(hedge.get("candidate_id") or "")
+        cand = next((c for c in ((block or {}).get("candidates") or []) if isinstance(c, dict) and c.get("id") == cid), None) if cid else None
+        if cand is None:
+            return []
+        raw = [l for l in (cand.get("legs") or []) if isinstance(l, dict)]
+        if hedge.get("ratio") not in (None, ""):
+            try:
+                ratio = Decimal(str(hedge.get("ratio")))
+            except (ArithmeticError, ValueError):
+                ratio = None
+    out = []
+    for l in raw:
+        iid = str(l.get("instrument_id") or "").strip().upper()
+        try:
+            q = int(l.get("qty") or 0)
+        except (TypeError, ValueError):
+            q = 0
+        if ratio is not None:
+            q = int((Decimal(int(primary_qty)) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
+        out.append((_leg_instrument(services, conn, iid), str(l.get("side") or "").upper(), q))
+    return out
 
 
 def change_cover_check(services, conn, order_id: str, inst, new_remaining: int, old_remaining: int) -> None:
@@ -1352,7 +1478,7 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
         if qty > free:
             raw = st["held"] - st["working_sells"] - reserved - lent
             details = {"position": pos_qty, "working_sells": st["working_sells"], "reserved_shares": reserved, "reserved_sold": st["reserved_sold"],
-                       "calls_working": st["reserved_working"], "lent": lent, "qty": qty,
+                       "calls_working": st["reserved_working"], "calls_waiting": st.get("reserved_waiting", 0), "lent": lent, "qty": qty,
                        "calls": [c for c in st["calls"] if c["shares"]]}
             if lent and qty <= raw + lent:     # C27: the shares are there but out on loan
                 raise RejectError("SHARES_ON_LOAN", f"SELL {qty:,} {inst.symbol}: {lent:,} of the position are lent out: recall {min(lent, qty - free):,} lent"
@@ -1368,9 +1494,13 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
                 sold = [c for c in st["calls"] if c["shares"] and not c["order_id"]]
                 hint += (f"; {st['reserved_sold']:,} {inst.symbol} cover calls already sold ({_calls_words(sold)}): buy them back first (SHARES_RESERVED)")
             if st["reserved_working"]:
-                working = [c for c in st["calls"] if c["shares"] and c["order_id"]]
+                working = [c for c in st["calls"] if c["shares"] and c["order_id"] and not c.get("waiting_for")]
                 hint += (f"; {st['reserved_working']:,} {inst.symbol} cover calls being sold ({_calls_words(working)}): cancel or close them first"
                          " (SHARES_RESERVED)")
+            if st.get("reserved_waiting"):
+                waits = sorted({c["waiting_for"] for c in st.get("waiting") or [] if c.get("shares")})
+                hint += (f"; {st['reserved_waiting']:,} {inst.symbol} are kept for the calls the shares order {_calls_words([{'order_id': w} for w in waits])}"
+                         " releases as it fills (its hedge legs): cancel it first (SHARES_RESERVED)")
             if lent:
                 hint += f"; {lent:,} shares are lent out (recall them first)"
             raise RejectError("OVERSELL", f"SELL {qty:,} {inst.symbol} but the long position net of working sells{' and shares covering calls' if reserved else ''}"
@@ -1708,6 +1838,11 @@ def preview(services, req: dict, *, snapshot=None, now: Optional[int] = None) ->
                 change_cover_check(services, c, ctx["order_id"], vo.inst, int(vo.qty), int(ctx["remaining"]))
             else:
                 cover_check(services, c, vo.account_id, [(vo.inst, vo.side, int(vo.qty))], bool(req.get("covered")))
+                # simplify round 1 (R-4): a shares order with hedge legs (the Hedges tab) - INV-9's sequential check on its legs, as the
+                # order route runs it when it attaches them, so Submit stays disabled with the reason
+                legs = hedge_cover_legs(services, c, pv.get("hedges"), req.get("hedge"), int(vo.qty))
+                if legs:
+                    sequential_cover_check(services, c, vo.account_id, (vo.inst, vo.side, int(vo.qty)), legs)
     except RejectError as e:
         if e.code in ("NO_QUOTE", "QUOTE_STALE", "NO_BORROW"):
             _ask_for_quote(services, str(req.get("instrument_id") or ""))

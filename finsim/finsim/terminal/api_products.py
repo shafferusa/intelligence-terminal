@@ -395,6 +395,34 @@ def _materialise_option(rt, iid) -> None:
 RESEND_KEYS = ("preview_id", "confirm_large", "smart")
 
 
+def _package_cover_blockers(rt, spec: dict) -> None:
+    """1.0.7.2 simplify round 1 (R-4): the Strategies tab's preview shows INV-9's refusal of a package's calls before Submit, as the order
+    route refuses them at Submit (``orders._submit_package``): an all-or-none package's calls sold to open (``cover_check``; the hedge
+    panel sends no claim), or a sequential package's legs with its stock primary (``sequential_cover_check``).  A refusal is added to the
+    spec as a blocker (``blockers``), so the panel keeps Submit disabled with the reason.  Read only; the spec is otherwise unchanged."""
+    from .commands import RejectError
+    from .marks import shared_reader
+    from .orders_preview import _leg_instrument, cover_check, sequential_cover_check
+    legs = [l for l in (spec.get("legs") or []) if isinstance(l, dict) and l.get("instrument_id")]
+    acct = str(spec.get("account_id") or "")
+    if not legs or not acct:
+        return
+    try:
+        with shared_reader(rt.db) as conn:
+            rows = [(_leg_instrument(rt, conn, str(l["instrument_id"])), str(l.get("side") or "").upper(), int(l.get("qty") or 0)) for l in legs]
+            if str(spec.get("fill_mode") or "").upper() == "AON":
+                cover_check(rt, conn, acct, rows, False)
+            else:
+                pi = spec.get("primary_index")
+                k = next((i for i, l in enumerate(legs) if pi is not None and l.get("index") == pi), None)
+                if k is None:
+                    k = next((i for i, (inst, _s, _q) in enumerate(rows) if inst is not None and inst.kind != "OPTION"), None)
+                if k is not None:
+                    sequential_cover_check(rt, conn, acct, rows[k], [r for i, r in enumerate(rows) if i != k])
+    except RejectError as e:
+        spec["blockers"] = list(spec.get("blockers") or []) + [{"code": e.code, "message": e.message, "details": e.details, "http": e.http}]
+
+
 def _resend_payload(rt, request_id: Optional[str], payload: dict) -> dict:
     """1.0.7.2 review (R1): a resend of an order under its OWN request id whose body differs from the stored command only in
     ``RESEND_KEYS`` is the same order - every send of the Smart Ticket (and the ticket's PREVIEW_STALE / CONFIRM_REQUIRED resends) takes a
@@ -1237,6 +1265,8 @@ def register_routes(r) -> None:
     def strategies_preview(req: Request):
         mod = need(req.rt, "strategies")
         status, body = mod.preview_view(req.rt, dict(req.body or {}))
+        if int(status) == 200 and isinstance(body, dict):
+            _package_cover_blockers(req.rt, body)
         return int(status), body
 
     def risk(req: Request):

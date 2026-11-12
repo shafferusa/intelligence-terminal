@@ -2041,7 +2041,8 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
         if c["kind"] == "scope":
             c["kind"] = "empty"
             flags.append(_flag("UNPARSED_TEXT", f"'{c['text']}' names a book but no order", c["span"]))
-    # groups: parentheses, then group words (the run of consecutive clauses on the same underlying that ends at the word)
+    # groups: parentheses, then group words (the run of consecutive orders that ends at the word: simplify round 1, whatever their names
+    # - words asking for one order hold every order they may mean, never only the last name's: "as separate tickets" releases them)
     out_groups: List[dict] = []
     for g in groups:
         members = [i for i, c in enumerate(clauses) if c.get("group") == g["index"]]
@@ -2054,11 +2055,9 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
         gw = c["mods"].get("group")
         if gw is None or i in in_group:
             continue
-        key = c.get("underlying_key")
         run = [i]
         j = i - 1
-        while j >= 0 and j not in in_group and clauses[j]["kind"] in ("order", "strategy") and clauses[j].get("underlying_key") == key and key \
-                and clauses[j]["mods"].get("group") is None:
+        while j >= 0 and j not in in_group and clauses[j]["kind"] in ("order", "strategy", "covered", "collar", "roll") and clauses[j]["mods"].get("group") is None:
             run.insert(0, j)
             j -= 1
         out_groups.append({"id": None, "kind": "word", "clauses": run, "span": [clauses[run[0]]["span"][0], c["span"][1]], "word_span": gw["span"]})
@@ -2355,7 +2354,7 @@ class Resolver:
             out = {"qty": qty, "working_sells": ws, "working_covers": wc, "reserved": 0, "calls_working": 0, "lent": 0}
             if equity_like and qty > 0:
                 st = self._cover_of(aid, iid)
-                out.update({"working_sells": int(st["working_sells"]), "reserved": int(st["reserved_sold"]), "calls_working": int(st["reserved_working"]),
+                out.update({"working_sells": int(st["working_sells"]), "reserved": int(st["reserved_sold"]), "calls_working": int(st["reserved_working"]) + int(st.get("reserved_waiting") or 0),
                             "lent": int(st["lent"]), "working_shorts": int(st["working_shorts"]), "free": int(st["free"]),
                             "free_for_calls": int(st["free_for_calls"])})
             else:

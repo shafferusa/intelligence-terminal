@@ -168,9 +168,14 @@ NAV falls by exactly the 1.00 commission.
   contracts as the margin assigns them (`options.margin_requirement_c` step 1: per short call, in expiry then strike order,
   cover = min(its contracts, shares left // its multiplier); index options never) - first the calls already sold
   (`reserved_sold`, read from the positions at the check, never from the last `margin_state` snapshot), then the
-  unfilled contracts of working STO call orders (`reserved_working`). With 150 held and 2 calls sold, 100 are reserved and
-  50 can be sold. `free = held - working_sells - reserved_sold - reserved_working - lent` (what a sale, a loan or an
-  exercise may take) and `free_for_calls = free - working_shorts` (what new calls may take as cover), never below 0. With
+  unfilled contracts of working STO call orders (`reserved_working`), then (simplify round 1) the cover the call legs of a
+  live shares order (WORKING, PARTIAL, SUSPENDED, WAITING_PARENT; read over its replace chain) will still need beyond the
+  shares that order still buys, in whole contracts (`reserved_waiting`, listed in `waiting`): for each shares order, its legs'
+  contracts still to release at its full quantity (`execution.leg_target`) x their multiplier, less the shares it still buys,
+  taken from the shares left - so a buy write's own shares cover its later calls (INV-9's allowance) and nothing else may
+  take them. With 150 held and 2 calls sold, 100 are reserved and 50 can be sold.
+  `free = held - working_sells - reserved_sold - reserved_working - reserved_waiting - lent` (what a sale, a loan or an
+  exercise may take; `reserved` is the three reservations together) and `free_for_calls = free - working_shorts` (what new calls may take as cover), never below 0. With
   `claims=True` (the order route and the order preview; never the Smart Ticket's parse) it also lists `claimed`: the
   account's calls on the name sold as covered and still open (a working STO call order whose `order.submit` command carries
   `covered: true` - its own, its replace chain's first order's or its package's - and, per contract, the short contracts
@@ -183,8 +188,15 @@ NAV falls by exactly the 1.00 commission.
     not WAITING_PARENT), claimed or not, is reserved from acceptance until it ends; INV-3: the cover of calls already sold
     is read from the positions at each check. A sale (new, amend, replace), the owner's early put exercise and a share loan
     never take reserved shares: 400 `OVERSELL` whose hint names the calls ("300 ACME cover calls being sold (O-...): cancel
-    or close them first (SHARES_RESERVED)"; "cover calls already sold (<OCC>): buy them back first"), 409 `SHARES_RESERVED`
-    on an exercise, and `lending_accruals.free_to_lend` lends only free shares.
+    or close them first (SHARES_RESERVED)"; "cover calls already sold (<OCC>): buy them back first"; "N ACME are kept for
+    the calls the shares order O-... releases as it fills (its hedge legs): cancel it first"), and `lending_accruals.free_to_lend`
+    lends only free shares. Simplify round 1: while any shares of the name are reserved, an early put exercise delivers only
+    `free` shares (net of working sales and lent shares too), else 409 `SHARES_RESERVED` naming the calls, the sales and the
+    contracts that may be exercised; and every exercise or assignment that delivers shares (`products/options._physical`, the
+    expiry exercise included) cuts the working SELL orders to the shares left free (held - reserved - lent), newest first,
+    each said - a sale resting on the rest never sells the cover afterwards. The order preview of a Hedges-tab package runs
+    the order route's check of its call legs, and the strategies preview adds its SHARES_RESERVED blocker, so Submit stays
+    disabled with the reason.
   - INV-4: a SELL_SHORT (new, amend, replace) while the account holds the name long is refused 400 `SHORT_WHILE_LONG`
     ("sell them first"); the OVERSELL hint reads "sell N; once they have sold, SELL_SHORT M with a borrow".
   - INV-5: an amend or replace that raises the contracts of an STO call placed with `covered: true` (the claim read from its

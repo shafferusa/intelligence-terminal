@@ -452,7 +452,7 @@ def _trim_working_sells(ctx: TxContext, account_id: str, instrument_id: str, sid
         if cut >= rem:                 # nothing of it can sell any more: the remainder is cancelled (a partial fill keeps its fills)
             conn.execute("UPDATE orders SET status='CANCELLED', reason=?, updated_ts=? WHERE order_id=?", (why, ctx.ts, oid))
             conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
-                         (oid, ctx.ts, r["status"], "CANCELLED", f"{why}: the {rem:,} still to sell are no longer held"))
+                         (oid, ctx.ts, r["status"], "CANCELLED", f"{why}: the {rem:,} still to sell are no longer held free to sell"))
             ctx.event("ORDER_CANCELLED", account_id=account_id, instrument_id=instrument_id, ref_type="order", ref_id=oid, reason=why)
             out.append({"order_id": oid, "status": "CANCELLED", "cut": cut})
         else:
@@ -564,9 +564,18 @@ def _physical(ctx: TxContext, services, account_id: str, opt: Instrument, under:
         settle_id = _settlement(ctx, stock_fill, account_id, ccy, KQ, "1200", settle)
         out = {"stock_side": "SELL", "stock_fill_id": stock_fill, "lot_id": lot_id, "proceeds_c": proceeds, "cost_relieved_c": cost_rel, "realised_c": realised,
                "short_qty": short_qty, "borrow_id": borrow_id, "funding": None}
-        # TX-3: the delivered shares can no longer be sold by a working SELL; trim / cancel what exceeds the long left
+        # TX-3: the delivered shares can no longer be sold by a working SELL; trim / cancel what exceeds the long left.  Simplify round 1
+        # (R-2, INV-2): what exceeds the long left FREE - net of the cover of the calls still open (cover_state, read after the delivery)
+        # and of the lent shares - so a sale still working never sells the cover of a call once a delivery took the rest (an early
+        # exercise is refused before that; the expiry exercise and an assignment deliver all the same: the delivery wins, the sales are cut)
+        from ..orders_preview import cover_state
         held_after, _ = position(conn, account_id, under.instrument_id)
-        trimmed = _trim_working_sells(ctx, account_id, under.instrument_id, ("SELL",), max(0, held_after), "shares delivered by exercise" if long else "shares delivered by assignment")
+        cs = cover_state(services, conn, account_id, under.instrument_id)
+        keep = max(0, int(held_after) - int(cs["reserved"]) - int(cs["lent"]))
+        why = "shares delivered by exercise" if long else "shares delivered by assignment"
+        if keep < max(0, int(held_after)):
+            why += f" (of the {max(0, int(held_after)):,} {under.symbol} left, {int(cs['reserved']):,} cover calls" + (f" and {int(cs['lent']):,} are lent" if cs["lent"] else "") + ")"
+        trimmed = _trim_working_sells(ctx, account_id, under.instrument_id, ("SELL",), keep, why)
         if trimmed:
             out["orders_trimmed"] = trimmed
     # TX-3: closing option contracts by exercise leaves fewer to sell: working STC orders beyond the long contracts left are trimmed
@@ -812,19 +821,29 @@ def h_exercise(ctx: TxContext, payload: dict) -> dict:
         raise RejectError("INSTRUMENT_UNKNOWN", f"{inst.symbol}: underlying {inst.underlying_id!r} is not in the master")
     if (inst.right or "C") == "P":
         # 1.0.7.2 INV-2 / INV-3: an early put exercise never delivers the shares covering calls sold or being sold (whole contracts, as the
-        # margin assigns them, read from the positions now)
+        # margin assigns them, read from the positions now).  Simplify round 1: while calls take the name's shares, it delivers only the
+        # shares FREE - net of the working sales and the lent shares too (cover_state's ``free``, what a sale may take): a sale still
+        # working would otherwise sell the cover once the exercise has delivered the rest
         from ..orders_preview import SHARES_RESERVED, _calls_words, _per_contract, cover_state
         st = cover_state(services, conn, account_id, under.instrument_id)
         Q = int((Decimal(qty) * inst.multiplier).to_integral_value())
-        if st["reserved"] and Q > st["held"] - st["reserved"]:
+        if st["reserved"] and Q > st["free"]:
             per = _per_contract(inst.multiplier)
-            can = max(0, st["held"] - st["reserved"]) // per if per > 0 else 0
+            can = st["free"] // per if per > 0 else 0
             calls = [c for c in st["calls"] if c["shares"]]
-            raise ConflictError(SHARES_RESERVED, f"exercising {qty:,} {inst.symbol} would deliver {Q:,} {under.symbol}, and {st['reserved']:,} of the {st['held']:,} held"
-                                                 f" cover calls sold or being sold ({_calls_words(calls)}): buy back or cancel those calls first"
+            sales = [r["order_id"] for r in conn.execute("SELECT order_id FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC')"
+                                                          " AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT') ORDER BY order_id",
+                                                          (account_id, under.instrument_id)).fetchall()]
+            also = [w for n, w in ((st["working_sells"], f"{st['working_sells']:,} are in working sales ({_calls_words([{'order_id': s} for s in sales])})"),
+                                   (st["lent"], f"{st['lent']:,} are lent")) if n]
+            raise ConflictError(SHARES_RESERVED, f"exercising {qty:,} {inst.symbol} would deliver {Q:,} {under.symbol}, and of the {st['held']:,} held {st['reserved']:,}"
+                                                 f" cover calls sold or being sold ({_calls_words(calls)})" + ("; " + "; ".join(also) if also else "")
+                                                 + f": {st['free']:,} are free - buy back or cancel those calls"
+                                                 + (" or cancel the sales" if st["working_sells"] else "") + " first"
                                                  + (f", or exercise {can:,} contract{'s' if can != 1 else ''}" if can else ""),
                                 {"held": st["held"], "reserved_shares": st["reserved"], "reserved_sold": st["reserved_sold"], "calls_working": st["reserved_working"],
-                                 "deliver": Q, "calls": calls})
+                                 "calls_waiting": st.get("reserved_waiting", 0), "working_sells": st["working_sells"], "lent": st["lent"], "free": st["free"],
+                                 "deliver": Q, "calls": calls, "sales": sales})
     S, quality, qt = _mark(ctx.marks, under.instrument_id)
     warnings: List[str] = []
     if S is None:

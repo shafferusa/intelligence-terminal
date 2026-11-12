@@ -678,7 +678,11 @@ class SmartTicketShellTests(unittest.TestCase):
         # the card's "opened in the ticket" mark: set by the hand-off, dropped by an edit, kept on a new reading only for identical terms
         self.assertIn("S.opened[c.key] = { at: Math.floor(T.clock.now()), sig: sigOf(o) };", src)
         self.assertIn("delete S.opened[c.key];", src)
-        self.assertIn("var op = oldOpened[c.key]; if (op && op.sig === sigOf(now)) { opened[c.key] = op; }", src)
+        # simplify round 1: the mark of the card it was matched with (a card that reads exactly as before keeps it whatever its words)
+        self.assertIn("var op = oldOpened[o.key]; if (op && op.sig === sigOf(now)) { opened[c.key] = op; }", src)
+        self.assertIn("pass(function (o, c) { return o.readSig === c.readSig; });", src)
+        # an edit's repaint waits while a pointer is down: the click that took the focus out of the box lands on its button
+        self.assertIn("if (pointerDown) { repaintDue = S; }", src)
 
     def test_the_ticket_takes_trail_and_covered_from_a_prefill(self):
         """components/ticket.js (SIMPLIFY_PLAN s3.2): a prefill's trail_pct / trail_amt fill the trail (a percent sets the % mode); covered:
@@ -720,8 +724,14 @@ class SmartTicketShellTests(unittest.TestCase):
         for s in ("st.qty = 0; st.order_type = 'MARKET'; st.limit_px = ''; st.stop_px = ''; st.trail_mode = 'amt'; st.trail_amt = ''; st.trail_pct = ''; st.tif = 'DAY'; st.gtd_date = '';",
                   "st.side_req = null; st.close_req = null; st.side_err = null; st.fx_convert = false;",
                   "st.hedge = null; st.hedge_cand = null; st.package_spec = null; st.covered = false; st.covered_offer = false;",
-                  "if (hedge && hedge.picked && hedge.picked()) { hedge.none(); }"):
+                  "if (hedge && hedge.picked && hedge.picked()) { hedge.none(); }",
+                  "st.gen = ++orderGen; st.submitting = false;"):
             self.assertIn(s, reset, s)
+        # simplify round 1: a Submit's answer for an order the ticket no longer shows is said in a toast, never painted on it or asked over it
+        send_ = src[src.index("  function send(body, rid, kind) {"):src.index("  function acceptStale() {")]
+        self.assertIn("var gen = st.gen, words = orderWords(kind);", send_)
+        self.assertEqual(3, send_.count("if (gen !== st.gen) {"), send_)
+        self.assertIn("if (gen !== st.gen) { if (yes) {", send_)
         # the hedge panel takes the tab it is asked for (the Smart Ticket's "Strategies tab" of a group)
         self.assertIn("tab: function (k) { if (k) { st.tab = k; paint(); if (k === 'strategies') { loadCatalogue(); } } return st.tab; },",
                       read(os.path.join(STATIC, "components", "hedge.js")))

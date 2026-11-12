@@ -35,6 +35,7 @@ import re
 import shutil
 import tempfile
 import threading
+import time
 import unittest
 from datetime import date
 from decimal import Decimal
@@ -743,6 +744,82 @@ class BrowserSmokeTests(unittest.TestCase):
         b.pump(0.8)
         self.assertEqual([], b.errors(sid, start))
         self.assertEqual([], b.http_errors(sid, start))
+
+    def _slow_order_answers(self, ms: int) -> None:
+        """A test fake on the page's fetch: the answer of every POST /api/orders (an order submit) reaches the page ``ms`` later (the
+        server has already done its work); restored when the test ends."""
+        b, sid = self.browser, self.sid
+        b.js(sid, """(function () {
+          if (!window.__f0) { window.__f0 = window.fetch; }
+          var f0 = window.__f0;
+          window.fetch = function (url, init) {
+            var p = f0.apply(this, arguments);
+            var path = String(url).replace(/^https?:\\/\\/[^\\/]+/, '');
+            if (init && init.method === 'POST' && /^\\/api\\/orders(\\?|$)/.test(path)) {
+              return p.then(function (res) { return new Promise(function (ok) { setTimeout(function () { ok(res); }, %d); }); });
+            }
+            return p;
+          };
+          return true; })()""" % ms)
+        self.addCleanup(lambda: b.js(sid, "(function () { if (window.__f0) { window.fetch = window.__f0; } return true; })()"))
+
+    def _late_answer(self, text: str, words: str) -> dict:
+        """#1 of ``text`` opened and submitted from its ticket with a slow answer; before the answer the owner goes back (Ctrl+F9), reads
+        again and opens #2 (WIDG) in the ticket.  Returns, once the toast for #1's answer shows, what the ticket and the page show."""
+        b, sid = self.browser, self.sid
+        self.visit("#/smart", "text")
+        self._smart_read(text, 2)
+        self._open_card(0, "ACME")
+        self.assertTrue(b.js(sid, "!document.querySelector('#ticket-submit-btn').disabled"), b.js(sid, TICKET_FIELDS))
+        self._slow_order_answers(9000)
+        b.js(sid, "document.querySelector('#ticket-submit-btn').click(); true")
+        t0 = time.time()
+        b.js(sid, "location.hash = '#/smart'; true")
+        b.wait(sid, "document.querySelectorAll('#smart-cards [data-i]').length === 2 && !document.querySelector('#smart-restored').hidden", timeout=20)
+        self._smart_enter()
+        t = self._open_card(1, "WIDG")
+        self.assertLess(time.time() - t0, 8.5, "the steps took longer than the answer's delay")
+        toast = ("Array.prototype.filter.call(document.querySelectorAll('#toast-root .toast'), function (x) { return x.title.indexOf(%s) >= 0; })"
+                 % json.dumps("the answer for " + words + " "))
+        b.wait(sid, toast + ".length === 1", timeout=20)
+        b.pump(0.8)
+        out = b.js(sid, "({ toast: " + toast + "[0].title, modal: !!document.querySelector('#modal-root .modal'), status: document.querySelector('#ticket-status').innerText,"
+                        " result: document.querySelector('#ticket-result').innerText, inst: document.querySelector('#ticket-instrument').value,"
+                        " qty: document.querySelector('#ticket-qty').value, submitting: !!(T.components.ticket.state() || {}).submitting })")
+        out["ticket"] = t
+        self.assertIn("the answer for " + words + " in Fund Book . US Exchange came after the ticket moved on to another order", out["toast"])
+        self.assertEqual(("WIDG", "5", False, "", False), (out["inst"], out["qty"], out["modal"], out["result"], out["submitting"]), out)
+        self.assertNotRegex(out["status"], r"order O-\d+|confirm", out)
+        return out
+
+    def test_xe_a_submit_answer_after_the_ticket_moved_on_is_said_in_a_toast_naming_its_order(self):
+        """Simplify round 1 (the order ticket, ``fresh: true``): a Submit's answer that comes after the ticket was filled with another
+        card is never painted on that ticket and never asks a question over it.  #1 "buy 10 ACME limit 50" is placed (its slow 200
+        answer): a toast names it and its order, the WIDG ticket shows no result and no "order O-... WORKING" (7bc2832 painted them on
+        WIDG's fields).  #1 "buy 140000 ACME limit 50" needs the large-order confirmation (its slow 409 CONFIRM_REQUIRED): no dialog
+        opens over the WIDG ticket and nothing is placed - the toast says it was NOT placed and to open it again (7bc2832 asked the
+        question over WIDG's fields and its Confirm placed the 140,000 ACME)."""
+        b, sid = self.browser, self.sid
+        rt = self.server.rt
+        self._tidy_after()
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); true")
+        start = b.mark()
+        with rt.db.reader() as conn:
+            first = int(conn.execute("SELECT COALESCE(MAX(rowid), 0) FROM orders").fetchone()[0])
+
+        def placed():
+            with rt.db.reader() as conn:
+                return [tuple(r) for r in conn.execute("SELECT instrument_id, side, qty, status FROM orders WHERE rowid > ? ORDER BY rowid", (first,))]
+        out = self._late_answer("buy 10 ACME limit 50; buy 5 WIDG limit 249", "BUY 10 ACME limit 50")
+        self.assertRegex(out["toast"], r"order O-\d+ WORKING \(see Pending Trades\)")
+        self.assertEqual([("ACME", "BUY", 10, "WORKING")], placed())
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); true")
+        out = self._late_answer("buy 140000 ACME limit 50; buy 5 WIDG limit 249", "BUY 140000 ACME limit 50")
+        self.assertIn("NOT placed: a large order needs your confirmation - open it again", out["toast"])
+        b.pump(1.0)
+        self.assertFalse(b.js(sid, "!!document.querySelector('#modal-root .modal')"))
+        self.assertEqual([("ACME", "BUY", 10, "WORKING")], placed())
+        self.assertEqual([], [e for e in b.errors(sid, start) if "status of 409 (Conflict)" not in e])     # the 409 CONFIRM_REQUIRED's own line
 
     def test_zy_pending_reads_a_hedge_legs_primary_over_its_replace(self):
         """1.0.7.2 seventh review: Pending's "Cancel selected" after a shares order was re-priced by a replace.  BUY 300 ACME limit 59 with

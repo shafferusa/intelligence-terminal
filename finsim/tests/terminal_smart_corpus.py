@@ -381,8 +381,10 @@ CASES = [
                                                                                                 "legs": [{"request": False}, {"request": False}]}),
     _case("ref-combo-two-names", "(buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put) together", {"ok": False, "combos": [{"codes": ["ONE_ORDER_ASKED"]}],
                                                                                                                     "legs": [{"request": False}, {"request": False}]}),
+    # simplify round 1: words asking for one order hold every order of the run they end, whatever its names (never only the last name's)
     _case("ref-combo-one-leg", "buy 100 WIDG and sell 1 ACME Dec 18 2026 260 call as a package", {"ok": False, "legs": [
-        {"combo": None, "request": True}, {"combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False}], "combos": [{"legs": [2], "codes": ["ONE_ORDER_ASKED"]}]}),
+        {"combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False}, {"combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False}],
+        "combos": [{"legs": [1, 2], "codes": ["ONE_ORDER_ASKED"]}]}),
     _case("ref-combo-two-equities", "(buy 100 ACME and buy 100 WIDG)", {"ok": True, "legs": [{"combo": "C1", "request": True}, {"combo": "C1", "request": True}],
                                                                        "combos": [{"kind": "SEPARATE", "codes": ["SEPARATE_TICKETS"], "request": False}]}),
     _case("ref-combo-future", "(buy 1 ESZ26 and buy 1 ACME Dec 18 2026 240 call)", {"ok": True, "legs": [{"id": "ESZ26", "request": True}, {"request": True}],
