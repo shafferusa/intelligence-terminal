@@ -7091,6 +7091,36 @@
       "probability": "70-85%",
       "basis": "At 6:28 AM NQ futures -0.83% vs YM +0.05%, with Nvidia's weight concentrated in the Nasdaq.",
       "status": "open"
+    },
+    {
+      "id": "2026-11-12-pm-1",
+      "date": "2026-11-12",
+      "slot": "pm",
+      "forecast": "The 10-year Treasury par yield closes at or above 5.00% on Fri Nov 13, 2026 (Nov 12: 5.10%).",
+      "horizon": "2026-11-13",
+      "probability": "75-88%",
+      "basis": "Nov 12 par close 5.10%; hawkish Fed chorus; Oct PPI consensus +0.4%/+0.3% core not soft; would need a 10bp+ rally in one session",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-12-pm-2",
+      "date": "2026-11-12",
+      "slot": "pm",
+      "forecast": "VIX closes below 22.00 on Fri Nov 13, 2026 (Nov 12 close 18.70).",
+      "horizon": "2026-11-13",
+      "probability": "70-85%",
+      "basis": "Nov 12 close 18.70 with upward-sloping term structure (VIX9D 17.51 < VIX3M 20.06); credit calm",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-12-pm-3",
+      "date": "2026-11-12",
+      "slot": "pm",
+      "forecast": "SpaceX Starship Flight 15 lifts off on Fri Nov 13, 2026 (window opens 5:45 PM ET).",
+      "horizon": "2026-11-13",
+      "probability": "40-60%",
+      "basis": "Regulatory approval still pending per NASASpaceflight/SpacePolicyOnline; first-day Starship attempts frequently slip",
+      "status": "open"
     }
   ]
 }
