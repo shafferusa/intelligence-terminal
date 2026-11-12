@@ -7,6 +7,7 @@
  *   h.load();                     GET /api/hedges (202 -> spinner, polled; one in-flight promise per key, shared)
  *   h.pick(n) / h.none();         keys 1..5 / 0 from the ticket; h.picked() -> {candidate_id, ratio, edits} | null
  *   h.tab('hedges' | 'strategies'); h.legIds(); h.destroy();
+ *   h.reset();                    a fresh order: nothing picked on either tab (candidate, template, its parameters and package) stays
  *
  * Hedges tab: the s10.9 candidates for the primary (PUT_7PCT, COLLAR_7, PUT_SPREAD, INDEX_OVERLAY, CALL_* for shorts,
  * DELTA_HEDGE for options, CALENDAR for futures); every leg price is the chain's ask (buys) / bid (sells) with the
@@ -602,10 +603,20 @@
       paint();
       autoLoad();
     }
+    /* simplify round 2: a fresh order (the Smart Ticket's hand-off) - nothing picked before on either tab rides along: the hedge
+       candidate and its edits, the position hedge, the template, its group filter, units, tenor, strikes and its priced package (a
+       preview in flight is ignored).  The ticket has dropped its own copy already: no onPick */
+    function reset() {
+      st.picked = null; st.edits = {}; st.pos = { spec: null, cand: null, status: 'idle', note: '', gen: st.pos.gen + 1 };
+      var s = st.strat; clearTimeout(s.timer); s.timer = null; s.gen++;
+      s.group = ''; s.key = null; s.params = {}; s.spec = null;
+      if (s.status !== 'loading') { s.status = 'idle'; s.note = ''; }
+      paint();
+    }
     paint();
     if (st.tab === 'strategies') { loadCatalogue(); }
     autoLoad();
-    return { el: root, update: update, seed: seed, load: load, autoLoad: autoLoad,
+    return { el: root, update: update, seed: seed, load: load, autoLoad: autoLoad, reset: reset,
              pick: function (n) { var c = (st.cands || []).filter(function (x) { return !x.zero_size; })[n - 1]; if (c) { st.edits = {}; mainAction(c); } }, none: none,
              picked: function () { return st.picked; }, tab: function (k) { if (k) { st.tab = k; paint(); if (k === 'strategies') { loadCatalogue(); } } return st.tab; },
              legIds: legIds, state: function () { return st; }, destroy: function () { st.gen++; st.strat.gen++; clearTimeout(st.strat.timer); T.clear(el); } };

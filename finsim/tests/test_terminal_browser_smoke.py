@@ -821,6 +821,107 @@ class BrowserSmokeTests(unittest.TestCase):
         self.assertEqual([("ACME", "BUY", 10, "WORKING")], placed())
         self.assertEqual([], [e for e in b.errors(sid, start) if "status of 409 (Conflict)" not in e])     # the 409 CONFIRM_REQUIRED's own line
 
+    def test_xf_the_tickets_covered_line_names_the_shares_of_the_quantity_typed(self):
+        """Simplify round 2 (R-4, the labels true at Send): the covered call card "covered call 200 ACME Jan 15 2027 60" (300 ACME held
+        free) opens in the ticket saying 200 ACME; the owner types 3 in the ticket's quantity box: once its preview answers for 3 covered
+        calls, the line names 300 ACME - the shares the order its Submit sends claims (f153cca kept saying 200).  Nothing is sent."""
+        b, sid = self.browser, self.sid
+        self._tidy_after()
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); true")
+        self._served_chain()
+        held0 = self._acme_held()
+        self.addCleanup(self._set_acme, held0)
+        self._set_acme(300)
+        start = b.mark()
+        self.visit("#/smart", "text")
+        self._smart_read("covered call 200 ACME Jan 15 2027 60", 1)
+        t = self._open_card(0, CALL_JAN60)
+        self.assertEqual(("STO", "2", True, True), (t["side"], t["qty"], t["covered"], t["submit"]), t)
+        self.assertIn("200 ACME", t["covered_words"])
+        b.js(sid, "(function () { var x = document.querySelector('#ticket-qty'); x.focus(); x.select(); return true; })()")
+        b.call("Input.insertText", {"text": "3"}, session=sid)
+        b.wait(sid, "(function () { var s = T.components.ticket.state(); return s.qty === 3 && !s.dirty && !s.previewing && !!s.preview_body"
+                    " && JSON.parse(s.preview_body).qty === 3 && JSON.parse(s.preview_body).covered === true; })()", timeout=30)
+        b.pump(0.4)
+        t3 = b.js(sid, TICKET_FIELDS)
+        self.assertEqual(("3", True), (t3["qty"], t3["covered"]), t3)
+        self.assertIn("300 ACME", t3["covered_words"])
+        self.assertNotIn("200 ACME", t3["covered_words"])
+        self.assertEqual([], self._order_posts(start))
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); location.hash = '#/dashboard'; true")
+        b.pump(0.8)
+        self.assertEqual([], b.errors(sid, start))
+        self.assertEqual([], b.http_errors(sid, start))
+
+    def test_xg_the_smart_tickets_strategies_tab_opens_with_nothing_picked_there_before(self):
+        """Simplify round 2 (plan 3.1 item 5, fresh): earlier, in F1's ticket on ACME, a template was picked on the Strategies tab and
+        priced (not submitted).  The Smart Ticket's "Strategies tab" of "buy 1 ACME Dec 18 2026 60/65 call spread" opens that tab with no template
+        picked and no package to submit (f153cca kept the earlier template, priced, its Submit package enabled)."""
+        b, sid = self.browser, self.sid
+        self._tidy_after()
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); true")
+        self._served_chain()
+        start = b.mark()
+        strat = "#smart-cards [data-act=" + json.dumps("strategies") + "]"
+        self.visit("#/a/F1%3AUS_EXCHANGE/markets")
+        b.js(sid, "T.ticket.open({ account_id: %s, instrument_id: 'ACME', hedge: true, hedge_tab: 'strategies' }); true" % json.dumps(USX))
+        b.wait(sid, "!!document.querySelector('#hg-strategy') && document.querySelector('#hg-strategy').options.length > 1", timeout=40)
+        keys = b.js(sid, "Array.prototype.map.call(document.querySelector('#hg-strategy').options, function (o) { return [o.value, o.textContent]; })")
+        pick = next((k for k, title in keys if k and not title.startswith("[n/a]") and "PUT" in k.upper()), None) or next(
+            k for k, title in keys if k and not title.startswith("[n/a]"))
+        # picked with a tenor of 1 month (the invented chain's 2026-12-18 expiry) in one go, so its one preview prices it
+        b.js(sid, "(function () { var s = document.querySelector('#hg-strategy'); s.value = %s; s.dispatchEvent(new Event('change', { bubbles: true }));"
+                  " var x = document.querySelector('#ticket-hedge input[aria-label=\"tenor months\"]'); x.value = '1';"
+                  " x.dispatchEvent(new Event('input', { bubbles: true })); return true; })()" % json.dumps(pick))
+        b.wait(sid, "!!document.querySelector('#hg-submit') && !document.querySelector('#hg-submit').disabled", timeout=30)
+        self.visit("#/smart", "text")
+        self._smart_read("buy 1 ACME Dec 18 2026 60/65 call spread", 2)
+        b.wait(sid, "!!document.querySelector(%s) && !document.querySelector(%s).disabled" % (json.dumps(strat), json.dumps(strat)), timeout=10)
+        b.js(sid, "document.querySelector(%s).click(); true" % json.dumps(strat))
+        b.wait(sid, "location.hash.indexOf('#/a/F1%3AUS_EXCHANGE') === 0 && !!document.querySelector('#hg-strategy') && !document.querySelector('#ticket-hedge').hidden",
+               timeout=40)
+        b.pump(1.0)
+        shown = b.js(sid, "({ pick: document.querySelector('#hg-strategy').value, inst: document.querySelector('#ticket-instrument').value,"
+                          " titled: !!document.querySelector('#ticket-hedge .hg-strat b'), submit: !!document.querySelector('#hg-submit') })")
+        self.assertEqual({"pick": "", "inst": "ACME", "titled": False, "submit": False}, shown, f"picked earlier: {pick}")
+        self.assertEqual([], self._order_posts(start))
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); location.hash = '#/dashboard'; true")
+        b.pump(0.8)
+        self.assertEqual([], b.errors(sid, start))
+        self.assertEqual([], b.http_errors(sid, start))
+
+    def test_xh_the_card_grid_fits_narrow_widths_where_the_dashboard_fits(self):
+        """Simplify round 2 (plan rule 5, below round 1's 640 px): at 600, 560, 520 and 480 px the cards (a trailing stop, a GTC limit
+        and a call spread's group) fit #main - no sideways scroll of the page, #main or the grid, no card or group wider than the grid or
+        its own box - wherever the Dashboard fits at the same width (f153cca's minmax(330px, 1fr) overflowed below about 590 px)."""
+        b, sid = self.browser, self.sid
+        self._tidy_after()
+        self.addCleanup(b.viewport, sid, 1440, 900)
+        text = "buy 10 ACME trailing stop 2%; buy 5 WIDG limit 249 gtc; buy 1 ACME Dec 18 2026 60/65 call spread"
+        layout = ("(function () { var m = document.querySelector('#main'), d = document.documentElement, g = document.querySelector('#smart-cards');"
+                  " var mr = m.getBoundingClientRect(), gr = g ? g.getBoundingClientRect() : null;"
+                  " var out = g ? Array.prototype.filter.call(document.querySelectorAll('#smart-cards .smart-card, #smart-cards .smart-group'), function (c) {"
+                  " var r = c.getBoundingClientRect(); return r.right > mr.right + 0.5 || r.right > gr.right + 0.5 || c.scrollWidth > c.clientWidth + 1; }).length : 0;"
+                  " return { view: d.clientWidth, page: d.scrollWidth, main: m.clientWidth, main_scroll: m.scrollWidth, grid: g ? g.clientWidth : null,"
+                  " grid_scroll: g ? g.scrollWidth : null, cards: document.querySelectorAll('#smart-cards .smart-card').length, out: out }; })()")
+        bad, seen = {}, {}
+        for width in (600, 560, 520, 480):
+            b.viewport(sid, width, 900)
+            b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); true")
+            self.visit("#/dashboard", "tiles")
+            dash = b.js(sid, layout)
+            self.visit("#/smart", "text")
+            self._smart_read(text, 4)
+            b.pump(0.4)
+            m = seen[width] = b.js(sid, layout)
+            if (m["page"] > m["view"] or m["main_scroll"] > m["main"] or m["grid_scroll"] > m["grid"] or m["out"]) and not (
+                    dash["page"] > dash["view"] or dash["main_scroll"] > dash["main"]):
+                bad[width] = m
+        self.assertEqual({}, bad, f"#/smart at narrow widths: {seen}")
+        self.assertEqual([4] * 4, [seen[w]["cards"] for w in (600, 560, 520, 480)])
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft.v2'); location.hash = '#/dashboard'; true")
+        b.pump(0.6)
+
     def test_zy_pending_reads_a_hedge_legs_primary_over_its_replace(self):
         """1.0.7.2 seventh review: Pending's "Cancel selected" after a shares order was re-priced by a replace.  BUY 300 ACME limit 59 with
         its hedge's own legs, BTO 3 Dec 18 2026 55 puts limit 1.00 (as the order ticket sends a shares order and its hedge; 1.0.7.2

@@ -534,6 +534,13 @@ CASES = [
     for w in ("as a package", "as one order", "as one", "as a combo", "all or none", "aon", "together")
     for where, text in (("strategy", "buy 1 ACME Dec 18 2026 240/250 call spread"), ("group", "(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call)"))
 ] + [
+    # simplify round 2: words asking for one order hold a close written before them too (the run they end never stops at a close)
+    _case(f"ref-one-order-after-close-{i}", text, {"ok": False, "combos": [{"kind": "SEPARATE", "codes": ["ONE_ORDER_ASKED"], "request": False}],
+                                                   "legs": [{"combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False}] * n})
+    for i, (text, n) in enumerate((("close WIDG and buy 100 ACME as a package", 2), ("close ACME calls and buy 100 WIDG together", 3),
+                                   ("close GIZM and buy 100 ACME aon", 2), ("close WIDG and sell 1 ACME Dec 18 2026 260 call as one order", 2),
+                                   ("sell 100 WIDG, close ACME calls, buy 100 ACME all or none", 4)), 1)
+] + [
     # ---- the route's 400s -------------------------------------------------------------------------------------------------------------
     _case("ref-400-too-long", LONG_TEXT, {"status": 400, "error": "TEXT_TOO_LONG"}),
     _case("ref-400-too-many-legs", "; ".join(["sell 1 ACME Dec 18 2026 210/220/250/260 iron condor"] * 5) + "; buy 1 ACME", {"status": 400, "error": "TOO_MANY_LEGS"}),

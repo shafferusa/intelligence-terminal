@@ -164,7 +164,9 @@ NAV falls by exactly the 1.00 commission.
 - **The cover of calls (1.0.7.2, every ticket and client; SIMPLIFY_PLAN s5)**: one read-only function,
   `orders_preview.cover_state(services, conn, account_id, underlying_id, exclude_order_id=None, claims=False)`, says per
   account and name: `held` (long shares), `working_sells` (the remaining of working SELL / STC orders, WAITING_PARENT
-  included), `working_shorts` (working SELL_SHORT orders), `lent`, and the shares reserved for short calls in WHOLE
+  included; simplify round 2: a sale leg of a sequential package counts what it will still sell in all - its share of its
+  primary's whole replace chain at `execution.leg_target`, less what it sold, also once released and filled in part -
+  `orders_preview.left_in_all`, read the same way by the share loans and the Smart Ticket's parse), `working_shorts` (working SELL_SHORT orders), `lent`, and the shares reserved for short calls in WHOLE
   contracts as the margin assigns them (`options.margin_requirement_c` step 1: per short call, in expiry then strike order,
   cover = min(its contracts, shares left // its multiplier); index options never) - first the calls already sold
   (`reserved_sold`, read from the positions at the check, never from the last `margin_state` snapshot), then the
@@ -179,7 +181,11 @@ NAV falls by exactly the 1.00 commission.
   `claims=True` (the order route and the order preview; never the Smart Ticket's parse) it also lists `claimed`: the
   account's calls on the name sold as covered and still open (a working STO call order whose `order.submit` command carries
   `covered: true` - its own, its replace chain's first order's or its package's - and, per contract, the short contracts
-  its claimed orders filled). The rules, each a refusal only:
+  still open that such orders opened, never more than the short now: simplify round 2 rebuilds them from the account's fills
+  of the contract in the order they were written - a sale closes long calls first and opens the rest short (claimed when its
+  order was sold as covered), a purchase closes a plain short before a claimed one and opens the rest long - so a call bought
+  back ends its claim and a covered sale that only closed a long call claims nothing; a later plain call never inherits a
+  claim). The rules, each a refusal only:
   - INV-1: an order or all-or-none package sent with `covered: true` (a call sold to open marked "sold as covered" in the
     ticket) is placed only while `free_for_calls` >= the multiplier x the contracts it sells to open; otherwise 409
     `NOT_COVERED` and nothing is written (also shown by the order preview as a blocker). 400 `COVERED_INVALID` on an order
@@ -202,6 +208,14 @@ NAV falls by exactly the 1.00 commission.
   - INV-5: an amend or replace that raises the contracts of an STO call placed with `covered: true` (the claim read from its
     replace chain's first order) re-runs INV-1 for the added contracts, the order itself excluded: 409 `NOT_COVERED`,
     nothing changed.
+  - INV-5b (simplify round 2, `orders_preview.hedge_growth_check`): an amend or replace that raises a shares order, and the
+    ticket's preview of it, grows the hedge legs that follow its ratio; it is refused, nothing changed, unless the growth fits:
+    400 `OVERSELL` when its sale legs would sell more than `free` (the order itself left out when it sells the name), 409
+    `SHARES_RESERVED` when its call legs (a buy write's own shares aside) would take more than `free_for_calls` while calls on
+    the name are sold as covered - raise it less, or cancel it and place it again with its hedge.
+  - Simplify round 2: an early exercise of a long call while the account is short its underlying is refused 409
+    `UNDERLYING_SHORT` ("cover the short first"): the shares delivered would back no open borrow (before: 500 INTEGRITY,
+    rolled back). A long put exercised while short or flat delivers its shares short with their own borrow, as before.
   - INV-9: while calls on a name are sold as covered (`claimed`), every NEW call sold to open on that name - claimed or not,
     a single order, an all-or-none package's STO call legs, an amend or replace raising a plain call - is placed only while
     `free_for_calls` >= its contracts x multiplier (409 `SHARES_RESERVED`, the claimed calls named): the margin would

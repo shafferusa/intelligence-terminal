@@ -1619,6 +1619,10 @@ GROUPS_7B634E2 = (
         "ref-collar-one-strike", "ref-collar-price", "ref-collar-short", "ref-fly-order", "ref-grouped-spread-price-and-call",)),
     ([[1, 2, 3, 4]], ("amb-bare-condor", "clean-call-condor", "clean-iron-butterfly", "clean-iron-condor-buy", "clean-iron-condor-sell",
         "ref-condor-order",)),
+    # simplify round 2 (not in 7b634e2's corpus): words asking for one order after a close hold the close too
+    ([[1, 2]], ("ref-one-order-after-close-1", "ref-one-order-after-close-3", "ref-one-order-after-close-4")),
+    ([[1, 2, 3]], ("ref-one-order-after-close-2",)),
+    ([[1, 2, 3, 4]], ("ref-one-order-after-close-5",)),
 )
 #: the words that ask for one order (SIMPLIFY_PLAN s4)
 ONE_ORDER_WORDS = ("as a package", "as one order", "as one", "as a combo", "all or none", "aon", "together")

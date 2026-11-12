@@ -2041,8 +2041,9 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
         if c["kind"] == "scope":
             c["kind"] = "empty"
             flags.append(_flag("UNPARSED_TEXT", f"'{c['text']}' names a book but no order", c["span"]))
-    # groups: parentheses, then group words (the run of consecutive orders that ends at the word: simplify round 1, whatever their names
-    # - words asking for one order hold every order they may mean, never only the last name's: "as separate tickets" releases them)
+    # groups: parentheses, then group words (the run of consecutive orders that ends at the word: simplify round 1, whatever their names,
+    # and simplify round 2, whatever their verbs - a close too - back to the previous group or group word: words asking for one order hold
+    # every order they may mean, never only the last name's: "as separate tickets" releases them)
     out_groups: List[dict] = []
     for g in groups:
         members = [i for i, c in enumerate(clauses) if c.get("group") == g["index"]]
@@ -2057,7 +2058,8 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
             continue
         run = [i]
         j = i - 1
-        while j >= 0 and j not in in_group and clauses[j]["kind"] in ("order", "strategy", "covered", "collar", "roll") and clauses[j]["mods"].get("group") is None:
+        # simplify round 2: a close is an order of the run too ("close WIDG and buy 100 ACME as a package" holds the close)
+        while j >= 0 and j not in in_group and clauses[j]["kind"] in ("order", "close", "strategy", "covered", "collar", "roll") and clauses[j]["mods"].get("group") is None:
             run.insert(0, j)
             j -= 1
         out_groups.append({"id": None, "kind": "word", "clauses": run, "span": [clauses[run[0]]["span"][0], c["span"][1]], "word_span": gw["span"]})
@@ -2119,7 +2121,6 @@ OPTION_SIDES = ("BTO", "STO", "BTC", "STC")
 OPENING_WORDS = ("bto", "sto", "short")
 CASH_SIDES = ("BUY", "SELL", "SELL_SHORT", "BUY_TO_COVER")
 FUTURES_SIDES = ("BUY", "SELL")
-LIVE_ORDER_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
 #: the keys of a leg's ``position`` in the answer (unchanged since 1.0.7.2's first build: the unified app relays the answer)
 POSITION_KEYS = ("qty", "working_sells", "working_covers", "reserved", "lent", "free")
 KIND_WORDS = {"EQUITY": "equity", "ETF": "ETF", "ADR": "ADR", "REIT": "REIT", "PREFERRED": "preferred", "FUTURE": "future", "OPTION": "option", "FX": "FX pair",
@@ -2341,11 +2342,14 @@ class Resolver:
         key = (aid, iid)
         if key not in self._pos:
             from .ledger import position as _ledger_position
+            from .orders_preview import LEFT_IN_ALL_WHERE, left_in_all
             qty, _cost = _ledger_position(self.conn, aid, iid)
             ws = wc = 0
-            for r in self.conn.execute("SELECT side, qty, filled_qty FROM orders WHERE account_id=? AND instrument_id=? AND status IN (?,?,?,?) ORDER BY order_id",
-                                       (aid, iid) + LIVE_ORDER_STATUSES).fetchall():
-                rem = int(r["qty"]) - int(r["filled_qty"])
+            heads: Dict[str, Any] = {}
+            lcache: Dict[str, Any] = {}
+            for r in self.conn.execute("SELECT * FROM orders WHERE account_id=? AND instrument_id=? AND " + LEFT_IN_ALL_WHERE + " ORDER BY order_id",
+                                       (aid, iid)).fetchall():
+                rem = left_in_all(self.conn, r, heads, lcache)     # simplify round 2: a hedge leg counts what it still trades in all
                 if r["side"] in ("SELL", "STC"):
                     ws += rem
                 elif r["side"] in ("BUY_TO_COVER", "BTC"):
@@ -3233,6 +3237,11 @@ class Resolver:
         # (``_position`` reads ``cover_state``, as the order route does)
         if held > 0 and free >= q:
             return "SELL"
+        if held < 0 and (c.get("qty") or {}).get("kind") in ("all", "half"):
+            # simplify round 2: 'all' / 'half' take the SHORT to close it - a sale would add to it: ADDS_TO_POSITION with 'close them'
+            # (as _adds_check says of a side that adds), never WOULD_OVERSELL offering a short sale
+            self._adds_flag(c, leg, "SELL", held, q)
+            return None
         free_long = free if held > 0 else 0
         choices = []
         if free_long > 0:
@@ -3452,13 +3461,18 @@ class Resolver:
         adds = (held > 0 and side in ("BUY", "BTO")) or (held < 0 and side in ("SELL", "SELL_SHORT", "STO"))
         if not adds:
             return
+        self._adds_flag(c, leg, side, held, leg["qty"])
+
+    def _adds_flag(self, c: dict, leg: dict, side: str, held: int, q: Optional[int]) -> None:
+        """ADDS_TO_POSITION on ``leg``: its 'all' / 'half' took the ``held`` position, and ``side`` would add to it; the choice 'close them'."""
+        qa = c.get("qty") or {}
         v = c.get("verb") or {}
         if v.get("span") and not v.get("carried"):
             choice = self._clause_edit(c, [(v["span"][0], v["span"][1], "close")])
         else:
             choice = self._clause_edit(c, [(c["span"][0], c["span"][0], "close ")])
-        leg["flags"].append(_flag("ADDS_TO_POSITION", f"'{qa['text']}' takes the {abs(held):,} {'held' if held > 0 else 'short'} in {leg['account_id']}: "
-                                  f"{SIDE_TEXT.get(side, side)} {leg['qty'] or 0:,} would add to the position, not close it", leg["span"],
+        leg["flags"].append(_flag("ADDS_TO_POSITION", f"'{qa.get('text')}' takes the {abs(held):,} {'held' if held > 0 else 'short'} in {leg['account_id']}: "
+                                  f"{SIDE_TEXT.get(side, side)} {q or 0:,} would add to the position, not close it", leg["span"],
                                   [{"label": "close them", "clause": choice}]))
 
     def _resolve_date(self, exp: Optional[dict], snap=None) -> Optional[str]:

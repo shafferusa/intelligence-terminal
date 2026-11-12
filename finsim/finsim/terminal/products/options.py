@@ -787,7 +787,8 @@ def h_margin_mark(ctx: TxContext, payload: dict) -> dict:
 
 def h_exercise(ctx: TxContext, payload: dict) -> dict:
     """Early exercise by the owner: a long AMERICAN option, during its session, at the strike; idem
-    ``exercise:{account}:{inst}:{request_id}``; 409 NOT_LONG / SESSION_CLOSED, 400 NOT_EXERCISABLE for index options."""
+    ``exercise:{account}:{inst}:{request_id}``; 409 NOT_LONG / SESSION_CLOSED, 400 NOT_EXERCISABLE for index options; 409
+    UNDERLYING_SHORT for a call while the account is short its shares (simplify round 2: cover the short first)."""
     services = _services_of(ctx)
     conn = ctx.conn
     account_id = str(payload.get("account_id") or "")
@@ -819,6 +820,16 @@ def h_exercise(ctx: TxContext, payload: dict) -> dict:
     under = services.instruments.get(inst.underlying_id, conn)
     if under is None:
         raise RejectError("INSTRUMENT_UNKNOWN", f"{inst.symbol}: underlying {inst.underlying_id!r} is not in the master")
+    if (inst.right or "C") == "C":
+        # 1.0.7.2 simplify round 2: an early call exercise delivers shares IN; into a short of them it would leave the short's borrow
+        # open with nothing to back (the ledger check L12 rolled the command back: 500 INTEGRITY).  Refused with the way out instead:
+        # buy to cover returns the borrow, then the exercise delivers the shares into a flat or long position
+        held_u, _ = position(conn, account_id, under.instrument_id)
+        if held_u < 0:
+            Q = int((Decimal(qty) * inst.multiplier).to_integral_value())
+            raise ConflictError("UNDERLYING_SHORT", f"exercising {qty:,} {inst.symbol} would deliver {Q:,} {under.symbol} into the {-held_u:,} {under.symbol} short in"
+                                                    f" {account_id}: cover the short first (BUY_TO_COVER {-held_u:,} {under.symbol} returns its borrow), then exercise",
+                                {"account_id": account_id, "instrument_id": iid, "underlying_id": under.instrument_id, "underlying_qty": held_u, "deliver": Q})
     if (inst.right or "C") == "P":
         # 1.0.7.2 INV-2 / INV-3: an early put exercise never delivers the shares covering calls sold or being sold (whole contracts, as the
         # margin assigns them, read from the positions now).  Simplify round 1: while calls take the name's shares, it delivers only the

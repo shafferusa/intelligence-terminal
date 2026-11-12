@@ -15,9 +15,12 @@
  * - In-place edits change that card only (no new reading): side among its kind's sides, quantity, type, prices, trail, time in force,
  *   GTD date, the covered tick (unticked: a plain call).  A new reading matches each card with the card the owner last saw: first one
  *   that reads exactly as before (every field read the same, even when the words around it changed or an order before it is gone):
- *   its edits and its opened mark stay; else one with the same words, book named and instrument: each edit on it is dropped and said
- *   on that card.  An edit on a card the new reading has no match for is said above the cards: an edit is never dropped unsaid.  A
- *   field that differs from the matched card as the owner last saw it shows "was X" (an account as "book . account").
+ *   its edits, its opened mark and its notes stay; else one with the same words, book named and instrument: each edit on it is
+ *   dropped and said on that card.  An edit on a card the new reading has no match for is said above the cards: an edit is never
+ *   dropped unsaid.  A field that differs from the matched card as the owner last saw it shows "was X" (an account as "book .
+ *   account").  Simplify round 2: a card's notes (the edits dropped on it, its "was" marks) stay - in the draft, across a navigation
+ *   and through the next readings that read the card as before - until the owner edits that field or opens the card; the note above
+ *   the cards stays through the next readings of the same text (a navigation's restore, Enter, a look-up, "Read for the <book>").
  * - The reading's book: the text is read for the book of the last reading (an order that names no book stays in it) until New ticket,
  *   even when another book is selected since (opening an order of another book selects that book): the page says so, and "Read for
  *   the <selected book>" reads it for the selected book (its cards then say what changed).
@@ -30,7 +33,8 @@
  *   in the ticket at HH:MM": the page never reads orders, so it never says that an order was sent.
  * - Alternatives replace the flag's words in the text as read, then the text is read again; they apply only while the box holds
  *   exactly the text last read (else: press Enter to read the text again, then pick).
- * - The draft (the text, its reading and its book, the edits, the dropped-edit note and the opened marks) is kept in this browser only (T.store 'smart.draft.v2');
+ * - The draft (the text, its reading and its book, the edits, the notes of dropped edits, the "was" marks and the opened marks) is kept in
+ *   this browser only (T.store 'smart.draft.v2');
  *   restored, it says when it was read and opens nothing until the text is read again.  New ticket clears it; nothing else does.
  * Never here: a send, submit or send-all button, a confirm of its own, a request id, a request to an order, preview, cancel, replace
  * or strategies route, a PATCH, PUT or DELETE.  The page's only POST is the parse, and T.ticket.open is called only by one card's or
@@ -156,8 +160,10 @@
      before it may be gone) - and it keeps the owner's edits and its opened mark.  Then a card with the same words, the same book
      named and the same instrument, read otherwise: each edit on it is dropped and said on that card.  "was X": a field that differs
      from the matched card as the owner last saw it (a card matched with none has none).  An edit on a card the new reading has no
-     match for is said above the cards (S.lost): an edit is never dropped unsaid */
-  function adopt(S, p) {
+     match for is said above the cards (S.lost): an edit is never dropped unsaid.  Simplify round 2: a card that reads as before keeps
+     the notes it showed (dropped edits, "was" marks) until the owner edits that field or opens it; again: the same text read again,
+     so the note above the cards keeps what it said */
+  function adopt(S, p, again) {
     var old = S.cards || [], oldEdits = S.edits || {}, oldOpened = S.opened || {};
     var cards = cardsOf(p), used = [], match = [], edits = {}, opened = {}, lost = [];
     function pass(test) {
@@ -174,6 +180,7 @@
       var e = oldEdits[o.key]; var seen = effWith(o, e);
       if (o.readSig === c.readSig) {
         if (e) { edits[c.key] = e; }
+        c.dropped = clone(o.dropped || []); c.was = clone(o.was || {});
       } else if (e) {
         Object.keys(e).forEach(function (k) { c.dropped.push({ field: k, edit: e[k], now: c.read[k] }); });
       }
@@ -185,7 +192,7 @@
       var e = oldEdits[o.key]; if (used[k] || !e) { return; }
       Object.keys(e).forEach(function (f) { lost.push({ n: o.n, clause: String(o.leg.clause || ''), field: f, edit: e[f] }); });
     });
-    S.cards = cards; S.edits = edits; S.opened = opened; S.lost = lost;
+    S.cards = cards; S.edits = edits; S.opened = opened; S.lost = (again ? S.lost || [] : []).concat(lost);
   }
   function sidesOf(c) { return SIDES[kindGroup(instOf(c.leg).kind)] || SIDES.CASH; }
   function orderValidity(c, r) {
@@ -224,9 +231,16 @@
   function canEdit(S, c) { return !!(c && c.leg.request && !S.parsing); }
 
   /* ---------------------------------------------------------------- the draft (this browser only) ----------------- */
+  /* the notes each card shows (the edits a reading dropped on it, its "was" marks), by card key: kept in the draft (simplify round 2) */
+  function notesOf(S) {
+    var out = {};
+    (S.cards || []).forEach(function (c) { if (c.dropped.length || Object.keys(c.was).length) { out[c.key] = { dropped: c.dropped, was: c.was }; } });
+    return out;
+  }
   function saveState(S) {
     if (!S) { return; }
-    T.store.set(STORE, { v: 2, text: S.text, parsedFrom: S.parsedFrom, parsed: S.parsed, edits: S.edits, opened: S.opened, lost: S.lost, saved: Date.now() });
+    T.store.set(STORE, { v: 2, text: S.text, parsedFrom: S.parsedFrom, parsed: S.parsed, edits: S.edits, opened: S.opened, lost: S.lost, notes: notesOf(S),
+                         saved: Date.now() });
   }
   function restore(S) {
     var d = T.store.get(STORE, null);
@@ -240,6 +254,12 @@
       Object.keys(ed).forEach(function (k) { if (keys[k] && ed[k] && typeof ed[k] === 'object') { S.edits[k] = ed[k]; } });
       Object.keys(op).forEach(function (k) { if (keys[k] && op[k] && op[k].sig === sigOf(effOf(S, keys[k]))) { S.opened[k] = op[k]; } });
       S.lost = Array.isArray(d.lost) ? d.lost.filter(function (x) { return x && typeof x === 'object' && typeof x.field === 'string'; }) : [];
+      var nt = d.notes && typeof d.notes === 'object' ? d.notes : {};
+      S.cards.forEach(function (c) {
+        var x = nt[c.key]; if (!x || typeof x !== 'object') { return; }
+        if (Array.isArray(x.dropped)) { c.dropped = x.dropped.filter(function (y) { return y && typeof y === 'object' && typeof y.field === 'string'; }); }
+        if (x.was && typeof x.was === 'object') { FIELDS.forEach(function (k) { if (Object.prototype.hasOwnProperty.call(x.was, k)) { c.was[k] = x.was[k]; } }); }
+      });
     }
     return true;
   }
@@ -260,7 +280,7 @@
       if (S.dead || seq !== S.pseq) { return; }
       S.parsing = false;
       if (!ans || typeof ans !== 'object' || !Array.isArray(ans.legs)) { say(S, 'the reader gave an answer this page cannot show', 'err'); paint(S); return; }
-      adopt(S, ans);
+      adopt(S, ans, text === S.parsedFrom);
       S.parsed = ans; S.parsedFrom = text; S.text = ui.bar.value; S.restored = false; S.expand = null;
       saveState(S); paint(S);
       var c = ans.counts || {}; var n = Number(c.legs != null ? c.legs : ans.legs.length);
@@ -330,6 +350,7 @@
     ['limit_px', 'stop_px', 'trail_amt', 'trail_pct', 'gtd_date'].forEach(function (k) { if (o[k] != null) { f[k] = o[k]; } });
     if (o.covered) { f.covered = true; }
     S.opened[c.key] = { at: Math.floor(T.clock.now()), sig: sigOf(o) };
+    c.dropped = []; c.was = {};                               /* simplify round 2: opened with these terms - the owner has seen its notes */
     S.text = ui.bar.value; saveState(S);
     handTicket(S, o.account_id, f);
   }

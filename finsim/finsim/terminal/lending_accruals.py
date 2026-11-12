@@ -405,9 +405,13 @@ def lent_qty(conn, account_id: str, instrument_id: str) -> int:
 
 
 def _working_sells(conn, account_id: str, instrument_id: str) -> int:
-    row = conn.execute("SELECT COALESCE(SUM(qty - filled_qty), 0) FROM orders WHERE account_id=? AND instrument_id=? AND side='SELL'"
-                       " AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')", (account_id, instrument_id)).fetchone()
-    return int(row[0] or 0)
+    """The shares the working SELL orders still sell - a hedge leg of a shares order still working counted at what it will still sell in
+    all (simplify round 2: ``orders_preview.left_in_all``, as the order route and ``cover_state`` count it)."""
+    from .orders_preview import LEFT_IN_ALL_WHERE, left_in_all
+    heads: dict = {}
+    cache: dict = {}
+    return sum(left_in_all(conn, r, heads, cache) for r in conn.execute("SELECT * FROM orders WHERE account_id=? AND instrument_id=? AND side='SELL' AND "
+                                                                        + LEFT_IN_ALL_WHERE, (account_id, instrument_id)).fetchall())
 
 
 def _reserved(services, conn, account_id: str, instrument_id: str) -> int:

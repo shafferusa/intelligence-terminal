@@ -715,8 +715,17 @@ class SmartTicketShellTests(unittest.TestCase):
         src = read(os.path.join(STATIC, "components", "ticket.js"))
         apply_ = src[src.index("  function apply(fields) {"):src.index("  function resetOrder() {")]
         fresh = ("    if (f.fresh) {\n      if (st.mode) { leaveOrderMode(); }\n      if (st.hedge_pos) { leavePositionMode(); }\n"
-                 "      resetOrder(); st.result = null; T.clear(ui.result); paintPreview();\n      st.hedgeOpen = false; st.hedge_for = null;\n    }\n")
+                 "      resetOrder(); st.result = null; T.clear(ui.result); paintPreview();\n"
+                 "      if (hedge && hedge.reset) { hedge.reset(); }        /* simplify round 2: nor a template picked on the Strategies tab, its parameters or package */\n"
+                 "      st.hedgeOpen = false; st.hedge_for = null;\n    }\n")
         self.assertIn(fresh, apply_)
+        # simplify round 2: the hedge panel's reset drops what was picked on either tab (the template, its parameters and package too)
+        hsrc = read(os.path.join(STATIC, "components", "hedge.js"))
+        hreset = hsrc[hsrc.index("    function reset() {"):hsrc.index("    paint();\n    if (st.tab === 'strategies') { loadCatalogue(); }")]
+        for s_ in ("st.picked = null; st.edits = {};", "s.group = ''; s.key = null; s.params = {}; s.spec = null;", "s.gen++"):
+            self.assertIn(s_, hreset, s_)
+        self.assertNotIn("onPick", hreset)
+        self.assertIn("reset: reset,", hsrc)
         self.assertLess(apply_.index(fresh), apply_.index("/* 2. the caller's fields */"))
         self.assertIn("st.hedge_for = f.hedge_for || (newInst || f.close || f.fresh ? null : st.hedge_for);", apply_)
         self.assertIn("if (f.hedge && f.hedge_tab && hedge) { hedge.tab(String(f.hedge_tab)); }", apply_)

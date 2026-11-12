@@ -383,6 +383,7 @@
       if (st.mode) { leaveOrderMode(); }
       if (st.hedge_pos) { leavePositionMode(); }
       resetOrder(); st.result = null; T.clear(ui.result); paintPreview();
+      if (hedge && hedge.reset) { hedge.reset(); }        /* simplify round 2: nor a template picked on the Strategies tab, its parameters or package */
       st.hedgeOpen = false; st.hedge_for = null;
     }
     if (st.mode && (id || f.side || f.close || f.qty != null)) { leaveOrderMode(); }
@@ -772,6 +773,7 @@
     st.pseq++; st.previewing = false;              /* an answer to a request sent before this change is for other fields: ignored */
     clearTimeout(st.timer); clearTimeout(st.reprev);
     if (hedge) { hedge.update({ side: st.side, qty: st.qty }); }
+    ui.coveredLabel.textContent = coveredWords();  /* simplify round 2: the shares a covered call claims follow the quantity typed (true at Send) */
     stateTicket();
     paintSubmit();
     var why = validity();

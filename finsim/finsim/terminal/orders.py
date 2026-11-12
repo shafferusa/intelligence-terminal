@@ -100,7 +100,8 @@ from .clock import ny_of
 from .instruments import Instrument
 from .matcher import Matcher                                                                        # noqa: F401 (re-export)
 from .orders_preview import (AMENDABLE_STATUSES, PreviewStore, ValidatedOrder, _as_dict, _jsonable, _s, bar_usage, change_cover_check, cover_check,   # noqa: F401
-                             funding_fit, order_claimed, order_context, preview, preview_store, quote_of, resting_need, sequential_cover_check, session_for, tif_choice,
+                             funding_fit, hedge_growth_check, order_claimed, order_context, preview, preview_store, quote_of, resting_need, sequential_cover_check,
+                             session_for, tif_choice,
                              tif_label, validate, with_nbbo)
 from .orders_rules import (AUTO_RESUME_NOTE, BUY_SIDES, CASH_SIDES, FUNDS_CODES, FUNDS_WAIT, FUNDS_WAIT_ITEM, FUTURES_SIDES, LIVE_STATUSES,   # noqa: F401
                            NEEDS_QUOTE_TYPES, OPEN_STATUSES, OPENING_SIDES, OPTION_SIDES, ORDER_TYPES, SELL_SIDES, STOP_TYPES, TIFS, Decision, LegDecision,
@@ -1343,6 +1344,7 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
     vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, rest_ok=True, queue_unfunded=context["status"] == "SUSPENDED", context=context)
     _check_preview_and_confirm(ctx, services, vo, payload)
     change_cover_check(services, conn, oid, vo.inst, int(vo.qty), int(context["remaining"]))      # 1.0.7.2 INV-5 / INV-9: a call raised
+    hedge_growth_check(services, conn, oid, int(vo.qty), int(context["remaining"]))      # simplify round 2: the hedge legs it grows
     new_qty = int(vo.total_qty if vo.total_qty is not None else int(raw["qty"]))
     new = {"qty": new_qty, "limit_px": _s(vo.limit_px), "stop_px": _s(vo.stop_px), "trail_amt": _s(vo.trail_amt), "trail_pct": _s(vo.trail_pct)}
     changes = []
@@ -1445,6 +1447,7 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
     vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, queue_unfunded=context["status"] == "SUSPENDED", context=context)
     _check_preview_and_confirm(ctx, services, vo, payload)
     change_cover_check(services, conn, oid, vo.inst, int(vo.qty), int(context["remaining"]))      # 1.0.7.2 INV-5 / INV-9: a call raised
+    hedge_growth_check(services, conn, oid, int(vo.qty), int(context["remaining"]))      # simplify round 2: the hedge legs it grows
     wait = vo.funds_wait
     status = "SUSPENDED" if wait else "WORKING"
     new_id = _insert_order(ctx, vo, ctx.request_id, status=status, fill_mode=old["fill_mode"], package_id=old["package_id"],
