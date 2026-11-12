@@ -15,10 +15,6 @@ Conventions
 - Routes of a desk whose module is not merged (prime WP-07, swaps WP-17 / WP-26, private WP-19, private credit WP-21,
   lifetimes WP-23) answer 501 NOT_BUILT with the package id; the handlers below are written against the documented
   module names so they come alive when those packages land (``getattr`` guarded, never a fake number meanwhile).
-- 1.0.7.2 ``POST /api/orders`` with a CUSTOM package (the Smart Ticket's combinations, ``strategies._custom_spec``): before the command
-  each OCC leg is listed in the master and its chain quote recorded, exactly as a single option order's contract
-  (``_materialise_option``: only what the cached chain lists), so an all-or-none package whose legs are executable fills at the submit
-  from that one chain observation; a leg that cannot be listed is left to the command, which refuses it (NOT_LISTED ...) and records it.
 - 1.0.7.2 ``POST /api/orders/cancel[?book=P]`` (mass cancel; a request id is the batch id, 8-60 characters): body ``{order_ids: [1..500
   distinct ids], reason?: <= 120 characters, default "cancelled by the owner"}``.  Everything is checked BEFORE the first cancel: 400
   BAD_REQUEST (the shape), 400 BAD_REQUEST_ID (the batch id), 404 NOT_FOUND ``{unknown}``, 409 BOOK_MISMATCH ``{orders, selected}`` when
@@ -37,8 +33,7 @@ Conventions
   [{order_id, code, message, http}], kept: [{order_id, status, code, message, parent_order_id}] (RELEASED / PRIMARY_ENDED /
   PRIMARY_NOT_CANCELLED / PRIMARY_REPLACED / PRIMARY_WORKING: a leg that keeps working), replayed}``; ``replayed`` (and ``X-Replayed:
   1``) when every accepted cancel was a replay of this batch - nothing is cancelled twice.  ``DELETE /api/orders/{id}`` names the waiting
-  legs that ended with the primary in ``ended_with_it``.  ``POST /api/strategies/preview`` answers ``previewed_at`` (the server's clock)
-  and ``stale_rule`` {moved_pct, ttl_s} with a package preview (fourth review: the Smart Ticket holds an all-or-none combination to it).
+  legs that ended with the primary in ``ended_with_it``.
 """
 from __future__ import annotations
 
@@ -54,7 +49,7 @@ from .accounting import ScopeError
 from .api import (ApiError, MAX_QUOTE_IDS, NOT_REJECTIONS, NotBuilt, NotFound, PACKAGES, RETRY_MS, Request, mark_dict, need, ok_or_raise, quote_dict,
                   run_command, OPEN_ORDER_STATUSES)
 from .api_views import _account_or_404, account_row, order_full
-from .commands import Command, ConflictError, RejectError, Result
+from .commands import Command, ConflictError, Result
 from .instruments import EQUITY_KINDS, parse_futures_id
 from .quotes.cache import PRIORITY_RANK
 
@@ -394,12 +389,10 @@ def _materialise_option(rt, iid) -> None:
         cache.put(record_from_chain_row(inst, snap, row))
 
 
-#: keys of an order body that never change the order itself: the preview it was checked against, the large-order confirmation and the
-#: Smart Ticket's note of the words typed
-#: sixth review: ``aon_confirmed`` (the confirmed figures an all-or-none combination is held to at its placement) is a check, as the
-#: preview id is, never a term of the order: a resend that differs only in it is the same order; seventh review: so is ``seq_confirmed``
-#: (a sequential combination's confirmed option cash)
-RESEND_KEYS = ("preview_id", "confirm_large", "smart", "aon_confirmed", "seq_confirmed")
+#: keys of an order body that never change the order itself: the preview it was checked against, the large-order confirmation and a
+#: note of the words typed (``smart``: no page sends it in 1.0.7.2 - the Smart Ticket fills the order ticket - and a resend that
+#: differs only in it is still the same order)
+RESEND_KEYS = ("preview_id", "confirm_large", "smart")
 
 
 def _resend_payload(rt, request_id: Optional[str], payload: dict) -> dict:
@@ -428,29 +421,6 @@ def _resend_payload(rt, request_id: Optional[str], payload: dict) -> dict:
         return payload
     same = {k: v for k, v in stored.items() if k not in RESEND_KEYS} == {k: v for k, v in now.items() if k not in RESEND_KEYS}
     return stored if same else payload
-
-
-def _materialise_custom_legs(rt, payload: dict) -> None:
-    """1.0.7.2: the option legs of a CUSTOM package (a Smart Ticket combination) are listed and their chain quotes recorded BEFORE the
-    command, as a single option order's contract is (``_materialise_option``: only a contract the cached chain lists), so an
-    all-or-none package whose legs are executable fills at the submit from that one observation instead of resting until the next
-    chain refresh.  Template packages carry no legs (unchanged).  A leg that cannot be listed (not on the cached chain, an unknown
-    underlying) is left to the command, whose refusal names it (NOT_LISTED / INSTRUMENT_UNKNOWN) and is recorded as a rejection."""
-    pk = payload.get("package")
-    mod = getattr(rt, "strategies", None)
-    if not isinstance(pk, dict) or mod is None or not hasattr(mod, "CUSTOM") or str(pk.get("strategy_key") or "").strip().upper() != mod.CUSTOM:
-        return
-    legs = pk.get("legs")
-    if not isinstance(legs, list) or not mod.CUSTOM_MIN_LEGS <= len(legs) <= mod.CUSTOM_MAX_LEGS:
-        return                                               # the command refuses the leg count (LEGS): nothing to prepare
-    for leg in legs:
-        iid = leg.get("instrument_id") if isinstance(leg, dict) else None
-        if not isinstance(iid, str) or not iid.strip():
-            continue
-        try:
-            _materialise_option(rt, iid)
-        except RejectError:
-            continue
 
 
 def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
@@ -886,7 +856,6 @@ def register_routes(r) -> None:
         payload.pop("request_id", None)
         book_guard(req, payload.get("account_id"))
         _materialise_option(rt, payload.get("instrument_id"))
-        _materialise_custom_legs(rt, payload)
         payload = _resend_payload(rt, req.request_id, payload)      # R1: the same order resent with a fresh preview is a replay
         res = run_command(req, "order.submit", payload)
         if res.ok:
@@ -1268,11 +1237,6 @@ def register_routes(r) -> None:
     def strategies_preview(req: Request):
         mod = need(req.rt, "strategies")
         status, body = mod.preview_view(req.rt, dict(req.body or {}))
-        if int(status) == 200 and isinstance(body, dict):
-            # 1.0.7.2 fourth review: when it was taken (the server's clock) and the moved-price rule of an order's preview, so the Smart
-            # Ticket sends an all-or-none combination only at the net cash its confirm listed (within 0.5 %) and within 2 minutes of it
-            body["previewed_at"] = int(req.rt.clock.epoch())
-            body["stale_rule"] = {"moved_pct": str(config.PRICE_MOVED_PCT), "ttl_s": int(config.PREVIEW_TTL_S)}
         return int(status), body
 
     def risk(req: Request):

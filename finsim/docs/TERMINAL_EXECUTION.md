@@ -161,43 +161,47 @@ NAV falls by exactly the 1.00 commission.
   keeps working. The fill is one command for all legs with one option-margin recomputation; cancelling any leg cancels
   the package. Example (§19.22, iron condor ×10): premiums −2,100 + 4,000 + 3,500 − 1,200 = +4,200.00 credit, fees
   4 × 10 × 0.65 = 26.00, margin = max(put spread 30,000 − 1,900, call spread 30,000 − 2,300) = 28,100.00.
-- **Your own legs (key CUSTOM, 1.0.7.2: the Smart Ticket's combinations, `strategies._custom_spec`)**: 2 to 8 exact
-  legs `{instrument_id, side, qty, order_type?, limit_px?}` in a US Exchange or prime-broker account, as one package.
-  Options on one name are all-or-none as above: every leg is MARKET at its executable bid / ask. A leg with a limit or
-  another order type is refused `LIMIT_IN_AON`: there is no net limit on a combination in this version, so send that
-  leg as an order of its own. One share leg plus options on that same name is sequential as above. The shares are the
-  primary (MARKET or LIMIT) and are listed first whatever order they were named in; the option legs wait for its fills
-  and keep their own MARKET / LIMIT terms (`PackageLeg.limit_px` carries a limit to `order.submit`). A waiting leg is
-  released in whole numbers: floor(shares filled x its own quantity / the primary's quantity, as confirmed), so every leg
-  is released in full once the shares have filled, whatever the ratio (1 call for 300 shares is released at the 300th
-  share), also over a replace or an amend of the shares, as for every sequential package above. Anything else is
-  refused (`COMBO_INVALID` / `LEGS`): two names, a futures leg, two share legs, or one contract named twice. A package
-  holds one name: its shares and its options. Option sides are BTO / STO / BTC / STC and share sides BUY / SELL /
-  SELL_SHORT / BUY_TO_COVER (`SIDE_INVALID` otherwise). An option leg must be in the master or on the cached chain
-  (`CHAIN_PENDING` while it loads); neither is `NOT_LISTED` and nothing is invented, and a leg the cached chain does
-  not quote is `NOT_AVAILABLE`. Prices are as the templates: the chain's ask to buy (BTO / BTC), its bid to sell (STO
-  / STC), the shares at your limit or the quote. A sold call counts as covered by the shares the account holds after
-  the package's share leg. `POST /api/orders` lists the package's contracts and records their chain quotes before the
-  command, as for a single option order. So an all-or-none combination whose legs are executable fills at the submit
-  from that one observation; otherwise it works until one observation can fill every leg. Request ids: the
-  combination's own id, `<id>:L1..` for its all-or-none legs, `<id>:H1..` for a sequential package's waiting legs.
-  Pending and the order drawer name it 'your own legs (Smart Ticket)'. It is never listed among the 60 templates.
-  1.0.7.2 sixth review: a combination sent with `aon_confirmed {net_cash, previewed_at}` (the Smart Ticket sends the package
-  preview its confirm listed) is placed only when it fills at once, all-or-none, at most 0.5 % worse than that net cash and within
-  2 minutes of that preview; otherwise 409 `AON_NOT_PLACED` (moved, older, not fillable now, not fundable now) and nothing is
-  written. A resend of the same body (after a 503 or a dropped connection) is held to it too, and such a combination never rests.
-  A resend whose body differs only in `aon_confirmed` is the same order (a replay). 1.0.7.2 seventh review: a sequential
-  combination sent with `seq_confirmed {options_cash, previewed_at}` (the cash its option legs at market had in the package
-  preview the Smart Ticket's confirm listed) whose shares fill at the submit - its options released now - is placed only when
-  those legs' cash now is at most 0.5 % worse than that and within 2 minutes of that preview; otherwise 409 `SEQ_NOT_PLACED`
-  (moved, older) and nothing is written. Shares that rest release their options later at the prices then; a leg with its own
-  limit holds its price; a resend differing only in `seq_confirmed` is the same order. A package whose share leg SELLS (SELL or
-  SELL_SHORT) and whose option legs sell calls to open is refused `COMBO_INVALID`: its calls would be released, and written,
-  exactly as their cover is sold (a sale fits closing legs or protective buys). An order, or an all-or-none package, sent with
-  `covered: true` (the Smart Ticket's covered call or collar on shares held) is placed only while the shares of its calls' name
-  held in the account, net of working sells, of the shares reserved by calls already sold, of lent shares and of the cover of
-  the account's other working sell-to-open calls, are at least 100 a contract it sells; otherwise 409 `NOT_COVERED` and
-  nothing is written (400 `COVERED_INVALID` on an order that sells no call to open, or on a sequential package).
+- **The cover of calls (1.0.7.2, every ticket and client; SIMPLIFY_PLAN s5)**: one read-only function,
+  `orders_preview.cover_state(services, conn, account_id, underlying_id, exclude_order_id=None, claims=False)`, says per
+  account and name: `held` (long shares), `working_sells` (the remaining of working SELL / STC orders, WAITING_PARENT
+  included), `working_shorts` (working SELL_SHORT orders), `lent`, and the shares reserved for short calls in WHOLE
+  contracts as the margin assigns them (`options.margin_requirement_c` step 1: per short call, in expiry then strike order,
+  cover = min(its contracts, shares left // its multiplier); index options never) - first the calls already sold
+  (`reserved_sold`, read from the positions at the check, never from the last `margin_state` snapshot), then the
+  unfilled contracts of working STO call orders (`reserved_working`). With 150 held and 2 calls sold, 100 are reserved and
+  50 can be sold. `free = held - working_sells - reserved_sold - reserved_working - lent` (what a sale, a loan or an
+  exercise may take) and `free_for_calls = free - working_shorts` (what new calls may take as cover), never below 0. With
+  `claims=True` (the order route and the order preview; never the Smart Ticket's parse) it also lists `claimed`: the
+  account's calls on the name sold as covered and still open (a working STO call order whose `order.submit` command carries
+  `covered: true` - its own, its replace chain's first order's or its package's - and, per contract, the short contracts
+  its claimed orders filled). The rules, each a refusal only:
+  - INV-1: an order or all-or-none package sent with `covered: true` (a call sold to open marked "sold as covered" in the
+    ticket) is placed only while `free_for_calls` >= the multiplier x the contracts it sells to open; otherwise 409
+    `NOT_COVERED` and nothing is written (also shown by the order preview as a blocker). 400 `COVERED_INVALID` on an order
+    that sells no call to open, or on a sequential package.
+  - INV-2: the cover of every working STO call order (WORKING, PARTIAL, SUSPENDED; next session, GTC, a released hedge leg;
+    not WAITING_PARENT), claimed or not, is reserved from acceptance until it ends; INV-3: the cover of calls already sold
+    is read from the positions at each check. A sale (new, amend, replace), the owner's early put exercise and a share loan
+    never take reserved shares: 400 `OVERSELL` whose hint names the calls ("300 ACME cover calls being sold (O-...): cancel
+    or close them first (SHARES_RESERVED)"; "cover calls already sold (<OCC>): buy them back first"), 409 `SHARES_RESERVED`
+    on an exercise, and `lending_accruals.free_to_lend` lends only free shares.
+  - INV-4: a SELL_SHORT (new, amend, replace) while the account holds the name long is refused 400 `SHORT_WHILE_LONG`
+    ("sell them first"); the OVERSELL hint reads "sell N; once they have sold, SELL_SHORT M with a borrow".
+  - INV-5: an amend or replace that raises the contracts of an STO call placed with `covered: true` (the claim read from its
+    replace chain's first order) re-runs INV-1 for the added contracts, the order itself excluded: 409 `NOT_COVERED`,
+    nothing changed.
+  - INV-9: while calls on a name are sold as covered (`claimed`), every NEW call sold to open on that name - claimed or not,
+    a single order, an all-or-none package's STO call legs, an amend or replace raising a plain call - is placed only while
+    `free_for_calls` >= its contracts x multiplier (409 `SHARES_RESERVED`, the claimed calls named): the margin would
+    otherwise give an earlier-expiring or lower-strike call their cover. A sequential package whose shares order buys that
+    name covers its call legs with those shares (released only as they fill): allowed.
+  Known limits, each said: the automatic exercise at expiry of a long put whose short call expires later still delivers the
+  shares - when that takes the cover of calls sold as covered, one WARN attention item `COVER_DELIVERED` names the put and
+  the calls (now naked); an as-of booking (the record of an execution done elsewhere) is never refused for cover; a short
+  sale placed while flat and still resting when the account buys the name keeps 1.0.7.1's fill rules, and `working_shorts`
+  keeps new calls off those shares. The Smart Ticket's earlier "your own legs" package (key CUSTOM, never deployed) is gone:
+  `CUSTOM` is 400 `UNKNOWN_STRATEGY` again, as in 1.0.7.1; a CUSTOM package row written by the never-deployed candidate
+  still loads, reads "your own legs (Smart Ticket)" and can be cancelled.
 - **Cancel many at once (`POST /api/orders/cancel[?book=]`, 1.0.7.2)**: explicit order ids only (1 to 500, each named
   once) and one reason (at most 120 characters; 'cancelled by the owner' when none is given). The request id is the
   batch id (8 to 60 characters). The whole list is checked before anything is cancelled, and nothing is cancelled if
@@ -226,11 +230,11 @@ NAV falls by exactly the 1.00 commission.
   primary with its legs in one batch of 500. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is reported with
   its code. The answer lists what was cancelled, skipped, failed and kept working. Resending the same batch after a
   lost answer replays every cancel already made (`X-Replayed: 1`), cancels nothing twice and gives the same answer -
-  fifth review: the legs that ended with a listed primary are named again (`with: primary`), listed or not. The Smart
-  Ticket's confirm says, for a leg whose primary is not listed, whether that primary (or the order that replaced it)
-  still works (kept) or has ended (the leg is cancelled now).
+  fifth review: the legs that ended with a listed primary are named again (`with: primary`), listed or not. Pending's
+  confirm says, for a leg whose primary is not listed, whether that primary (or the order that replaced it) still works
+  (kept) or has ended (the leg is cancelled now).
 - **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in
-  `preview_id`, `confirm_large`, the Smart Ticket's `smart` note, `aon_confirmed` or `seq_confirmed` is the same order and is answered as its replay
+  `preview_id`, `confirm_large` or a `smart` note (a body of the never-deployed candidate) is the same order and is answered as its replay
   (`X-Replayed: 1`, the order that was placed): every send takes a fresh preview first. Any other difference is still
   409 `REQUEST_ID_REUSED`.
 

@@ -6,8 +6,8 @@
  *   T.keys.ACTIONS    every action: {id, group, scope, key (its DEFAULT key or null), label, typing, files, legacy, family,
  *                     page}.  The scope comes from the id: 'ticket.*' acts in the dock ticket, 'grid.*' in a table (its selected
  *                     row), 'dialog.*' while a dialog or the keyboard help is open, everything else is 'global' (anywhere).
- *                     api.py (keybind_scope) uses the same rule.  76 actions (FINSIM1_PLAN C1; 1.0.7.2 adds the Smart Ticket's
- *                     two: Ctrl+F9 opens it, Ctrl+Shift+Enter submits its selected legs - always through its confirm).
+ *                     api.py (keybind_scope) uses the same rule.  75 actions (FINSIM1_PLAN C1; 1.0.7.2 adds the Smart Ticket's
+ *                     Ctrl+F9, which opens it: it fills the order tickets and sends nothing itself).
  *   only what works   an action that opens a page names it (`page`: T.pages.<page>); while that page is not in the build
  *                     (T.pages.<page> undefined) the action is hidden from the '?' help and Settings > Keyboard
  *                     (T.keys.available(id); T.keys.groups() lists the available ones only).
@@ -236,7 +236,7 @@
   act('page.portfolio', 'Pages', 'F7', 'Portfolio');
   act('page.trading', 'Pages', null, 'Trading: the last venue you used (else US Exchange)');
   act('page.watchlists', 'Pages', 'Shift+F9', 'Watchlists');
-  act('page.smart', 'Pages', 'Ctrl+F9', 'Smart Ticket: type what you want to trade (nothing is sent until you confirm)', { page: 'smart' });
+  act('page.smart', 'Pages', 'Ctrl+F9', 'Smart Ticket: type what you want to trade; it fills the order tickets', { page: 'smart' });
   act('page.pending', 'Pages', 'F8', 'Pending Trades (on an account page: that account\'s)', { page: 'pending' });
   act('page.completed', 'Pages', 'Shift+F8', 'Completed Trades (on an account page: that account\'s)', { page: 'completed' });
   act('page.accounts', 'Pages', 'Shift+F4', 'Accounts', { page: 'accounts' });
@@ -252,7 +252,6 @@
   act('dock.toggle', 'Order ticket', 'F9', 'Show / hide the order ticket (on an account page)');
   act('ticket.preview', 'Order ticket', 'Enter', 'Preview the order (in the symbol box: look the symbol up)', { typing: true, files: DESKS });
   act('ticket.submit', 'Order ticket', 'Ctrl+Enter', 'Submit the order or book the deal (also from outside the ticket while it is open)', { typing: true, files: DESKS });
-  act('smart.submit', 'Order ticket', 'Ctrl+Shift+Enter', 'Smart Ticket: submit the selected legs, after the confirm', { typing: true, page: 'smart' });
   act('ticket.clear', 'Order ticket', 'Escape', 'Close the symbol list, else clear the ticket', { typing: true, files: CLEARS });
   act('ticket.buy', 'Order ticket', 'B', 'Side: buy (options: buy to open)', { files: TICKETS2, legacy: 'b', family: 'ticket.sides' });
   act('ticket.sell', 'Order ticket', 'S', 'Side: sell (options: sell to open)', { files: TICKETS2, legacy: 's', family: 'ticket.sides' });

@@ -639,6 +639,39 @@ def _expire_instrument(ctx: TxContext, services, inst: Instrument) -> None:
         pass
 
 
+def _claimed_cover(services, conn, account_id: str, underlying_id: str) -> Optional[dict]:
+    """1.0.7.2: the calls on ``underlying_id`` sold as covered (``orders_preview.cover_state`` with claims) and the shares covering each
+    call now, keyed (contract, working order or None) - read before an expiry exercise of a long put delivers shares; None when no call
+    on the name was sold as covered."""
+    from ..orders_preview import cover_state
+    st = cover_state(services, conn, account_id, underlying_id, claims=True)
+    if not st.get("claimed"):
+        return None
+    return {"claimed": st["claimed"], "shares": {(c["instrument_id"], c["order_id"]): int(c["shares"]) for c in st["calls"]}}
+
+
+def _say_cover_delivered(ctx: TxContext, services, account_id: str, put: Instrument, under: Instrument, key: str, before: dict) -> Optional[int]:
+    """1.0.7.2 (known limit, said): the automatic exercise at expiry of a long put still delivers its shares; when they covered calls sold
+    as covered, ONE WARN attention item COVER_DELIVERED says so - those calls are now naked (the margin charges them) - so the claim
+    never turns false silently.  Returns the item's id, or None when no claimed call lost its cover."""
+    from ..orders_preview import _calls_words, cover_state
+    st = cover_state(services, ctx.conn, account_id, under.instrument_id)
+    after = {(c["instrument_id"], c["order_id"]): int(c["shares"]) for c in st["calls"]}
+    lost, hit = 0, []
+    for c in before["claimed"]:
+        k = (c["instrument_id"], c["order_id"])
+        n = max(0, int(before["shares"].get(k, 0)) - int(after.get(k, 0)))
+        if n > 0:
+            lost += n
+            hit.append(c)
+    if not lost:
+        return None
+    msg = (f"the expiry exercise of {put.symbol} delivered {lost:,} {under.symbol} that covered the calls sold as covered ({_calls_words(hit)}) in"
+           f" {account_id}: they are now naked")
+    return ctx.attention("WARN", "options", "COVER_DELIVERED", msg, {"account_id": account_id, "ref_type": "option", "ref_id": key, "underlying_id": under.instrument_id,
+                                                                     "shares": lost, "calls": hit})
+
+
 # ---- handlers ---------------------------------------------------------------------------------------------------------------------
 def h_expire(ctx: TxContext, payload: dict) -> dict:
     """OPTION_EXPIRY for one (account, option) — see the module docstring (OCC).  Idempotent: a DONE key, a flat position
@@ -699,10 +732,13 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
         outcome = _cash_settle(ctx, services, account_id, inst, pos_qty, intr, obs, idem, kind, note, trade_date=expiry)
     else:
         kind = "EXERCISE" if pos_qty > 0 else "ASSIGNMENT"
+        before = _claimed_cover(services, conn, account_id, under.instrument_id) if (pos_qty > 0 and (inst.right or "C") == "P") else None
         outcome = _physical(ctx, services, account_id, inst, under, pos_qty, obs, idem, kind, note, trade_date=expiry)
         if "skip" in outcome:
             code, message = outcome["skip"]
             return _skip(ctx, JOB_EXPIRY, key, code, message, account_id, iid, {"expiry": inst.expiry, "underlying_id": under.instrument_id})
+        if before is not None:
+            _say_cover_delivered(ctx, services, account_id, inst, under, key, before)
     _expire_instrument(ctx, services, inst)
     margin = execution.recompute_option_margin(ctx, services, account_id, f"expiry:{key}", overdraft=True)
     _job_done(ctx, JOB_EXPIRY, key, "DONE", f"{kind} {n} at close {S}, intrinsic {intr}")
@@ -774,6 +810,21 @@ def h_exercise(ctx: TxContext, payload: dict) -> dict:
     under = services.instruments.get(inst.underlying_id, conn)
     if under is None:
         raise RejectError("INSTRUMENT_UNKNOWN", f"{inst.symbol}: underlying {inst.underlying_id!r} is not in the master")
+    if (inst.right or "C") == "P":
+        # 1.0.7.2 INV-2 / INV-3: an early put exercise never delivers the shares covering calls sold or being sold (whole contracts, as the
+        # margin assigns them, read from the positions now)
+        from ..orders_preview import SHARES_RESERVED, _calls_words, _per_contract, cover_state
+        st = cover_state(services, conn, account_id, under.instrument_id)
+        Q = int((Decimal(qty) * inst.multiplier).to_integral_value())
+        if st["reserved"] and Q > st["held"] - st["reserved"]:
+            per = _per_contract(inst.multiplier)
+            can = max(0, st["held"] - st["reserved"]) // per if per > 0 else 0
+            calls = [c for c in st["calls"] if c["shares"]]
+            raise ConflictError(SHARES_RESERVED, f"exercising {qty:,} {inst.symbol} would deliver {Q:,} {under.symbol}, and {st['reserved']:,} of the {st['held']:,} held"
+                                                 f" cover calls sold or being sold ({_calls_words(calls)}): buy back or cancel those calls first"
+                                                 + (f", or exercise {can:,} contract{'s' if can != 1 else ''}" if can else ""),
+                                {"held": st["held"], "reserved_shares": st["reserved"], "reserved_sold": st["reserved_sold"], "calls_working": st["reserved_working"],
+                                 "deliver": Q, "calls": calls})
     S, quality, qt = _mark(ctx.marks, under.instrument_id)
     warnings: List[str] = []
     if S is None:

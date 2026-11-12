@@ -2,9 +2,10 @@
 CHANGE_PLAN r1072 section 2; design FINSIM_TERMINAL_GAPS 3.4-3.6).
 
 The owner types what to trade in words ("buy 200 ACME limit 225, sell 2 ACME Dec 18 2026 240 calls and buy 50 WIDG at market in the
-Fund book").  A FIXED grammar - a closed keyword table, no language model, no guessing - reads it into staged legs and combinations.
-Every leg carries the exact body ``POST /api/orders/preview`` and ``POST /api/orders`` take, every field FinSim filled in is flagged, and
-nothing is sent from here: the page previews and submits each item through the existing routes after the owner's confirm.
+Fund book").  A FIXED grammar - a closed keyword table, no language model, no guessing - reads it into orders (legs) and the groups the
+owner wrote together.  Every leg carries the exact body ``POST /api/orders/preview`` and ``POST /api/orders`` take, every field FinSim
+filled in is flagged, and nothing is sent from here: the page fills one standard order ticket per order, and the owner previews and
+sends each from that ticket (1.0.7.2 simplification, 2026-11-11: the Smart Ticket has no send of its own).
 
 Conventions (sentence SMART_TICKET)
 - PURITY.  The parse route writes nothing, fetches nothing, subscribes nothing, stores no preview and takes no mark.  It reads ONE pooled
@@ -59,60 +60,57 @@ Conventions (sentence SMART_TICKET)
   listed is NEVER snapped: it is a blocker with the nearest listed values as choices.  Futures by id, root + month (+ year) on the listing
   rule, or front / active through ``api_products.active_months``.  FX, bonds, private names and swaps open their own ticket
   (KIND_OWN_TICKET with an action).
-- POSITION-AWARE SIDES.  "buy" / "sell" read the leg account's position and working orders: an option bought while short is BTC, sold
-  while long STC, sold while not held STO (SD-3, SIDE_INFERRED); shares bought while short are covered; a sale beyond the free quantity
-  (net of working sells, covered-call reservations and lent shares) is WOULD_OVERSELL with the choices; a quantity between is SIDE_SPLIT.
-  The explicit sides (short, cover, bto, sto, btc, stc and their long forms) are never changed.  A position wholly in working closing
-  orders is ALREADY_CLOSING (blocker; the explicit opening side offered), never silently an order that opens a new position.  The same
-  words already sent from a Smart Ticket on that contract in that book (live, or filled today) read as THAT order again (ALREADY_SENT
-  check: its account and side; a carried "buy" / "sell" too), never as a new one once the position it closed has moved.  "all" is the
-  held quantity, "half" floor(held / 2) on the lot (QTY_FROM_HELD / QTY_ROUNDED check), and never on a side that would ADD to the
-  position (ADDS_TO_POSITION blocker, "close" offered); "k" / "m" multiply by 1,000 / 1,000,000.
-- COMBINATIONS.  A strategy word, a roll, a covered call / buy-write, a collar or a group is ONE combination with package key CUSTOM:
-  all-or-none (AON) when all legs are options on one underlying - legs at each leg's executable bid / ask, no net limit in this version, so
-  an option leg with its own limit is LIMIT_IN_AON with the two choices; SEQUENTIAL when it holds exactly one share leg plus options on the
-  same name (the shares first); anything else COMBO_INVALID ("a package holds one name: its shares and its options"), and so is a
-  combination that names one contract twice (the CUSTOM package refuses it: name each contract once, with its whole quantity).  A
-  vertical's debit or credit follows the side, never the typed strike order (bought = a debit); a bare "condor" is TOKEN_AMBIGUOUS (iron,
-  call or put condor); a strategy takes only buy or sell, typed or carried (MISSING_SIDE otherwise; its legs then have no side); a
-  butterfly without call / put is calls (RIGHT_DEFAULT check); a calendar's near expiry is told from the far one as a date (the year
-  inferred, a month alone through the cached chain), never by its spelling, and refused when a date cannot be read; a price typed on a
-  strategy, a roll or a collar reaches the combination - its group's when it is grouped - and is refused there (LIMIT_IN_AON /
-  COMBO_INVALID), never dropped; a covered call or collar reads the signed holding: on shares held free the options only, on shares held
-  but not free SIDE_SPLIT, on a short NOTHING_HELD, none held the shares bought (a check; a "buy write" always buys them) - sixth review:
-  "free" to cover new calls is also net of the shares the account's working sell-to-open calls will take and of those a covered call or
-  collar earlier in the same instruction took, so the same shares are never the cover of two orders - seventh review: one
-  instruction counts the shares an account holds once, in the order typed (``Resolver._take_legs``): a sale or short sale takes the
-  shares it sells, every call sold to open on the name 100 a contract (a covered call's, a collar's, a strategy's calls sold beyond
-  those it buys); a covered call or collar reads only what is still free at its turn, a sale too (net of the working sell-to-open
-  calls' cover as well: WOULD_OVERSELL, never offering a short sale of shares that cover calls), and a call sold to open or a short
-  sale on shares an earlier covered call or collar covers is COVER_TAKEN; a combination whose share leg sells and whose options sell
-  calls to open is COMBO_INVALID (the CUSTOM package refuses it); an instruction where such orders on one name fall in different
-  sections is read whole by the choice guard; one price typed for a close of several contracts is PRICE_AMBIGUOUS.
+- POSITION-AWARE SIDES.  "buy" / "sell" read the leg account's position and working orders, each order on the account as it is (no
+  count across the orders of one instruction): an option bought while short is BTC, sold while long STC, sold while not held STO (SD-3,
+  SIDE_INFERRED); shares bought while short are covered; a sale beyond the free quantity (``orders_preview.cover_state``: net of working
+  sells, of the shares covering calls sold or being sold - whole contracts, as the margin assigns them - and of lent shares) is
+  WOULD_OVERSELL with "sell the free N" only (the order route refuses a short sale while shares are held); a quantity between is
+  SIDE_SPLIT.  The explicit sides (short, cover, bto, sto, btc, stc and their long forms) are never changed; "short" or "sto" on shares
+  held long is the blocker SHORT_WHILE_LONG (sell them first).  A position wholly in working closing orders is ALREADY_CLOSING (blocker;
+  the explicit opening side offered), never silently an order that opens a new position.  "all" is the held quantity, "half"
+  floor(held / 2) on the lot (QTY_FROM_HELD / QTY_ROUNDED check), and never on a side that would ADD to the position (ADDS_TO_POSITION
+  blocker, "close" offered); "k" / "m" multiply by 1,000 / 1,000,000.
+- GROUPS.  A strategy word, a roll, a covered call or collar that buys its shares, a collar on shares held, a group word or parentheses
+  make a GROUP of the orders written together (``combos``: the same clauses 1.0.7.2 made combinations of; ``kind`` "SEPARATE",
+  ``fill_mode`` and ``request`` null, ``order`` the sending order - purchases first, shares then options, then sales to close, sales to
+  open, share sales and short sales).  Every order of a group is its own ticket that goes and fills on its own (SEPARATE_TICKETS check);
+  one all-or-none order of options is built in the order ticket's Strategies tab (the action "Strategies tab" on an option strategy it
+  has a template for).  Words asking for one order ("as a package", "as one order", "as one", "as a combo", "all or none", "aon",
+  "together") are ONE_ORDER_ASKED (blocker, "as separate tickets" offered), never split silently; a price typed on a strategy, a roll, a
+  collar or a covered call that buys its shares is a net price the tickets cannot carry (NET_PRICE, "without the price"), never dropped;
+  a leg's own limit is that ticket's.  A group blocker is repeated, without its choices, on every order of the group, so none of them has
+  a ``request``.  A vertical's debit or credit follows the side, never the typed strike order (bought = a debit); a bare "condor" is
+  TOKEN_AMBIGUOUS (iron, call or put condor); a strategy takes only buy or sell, typed or carried (MISSING_SIDE otherwise; its legs then
+  have no side); a butterfly without call / put is calls (RIGHT_DEFAULT check); a calendar's near expiry is told from the far one as a
+  date (the year inferred, a month alone through the cached chain), never by its spelling, and refused when a date cannot be read.  A
+  covered call or collar reads the signed holding and the shares free for NEW calls (``cover_state``'s ``free_for_calls``: also net of
+  working short sales): on shares held free the options only, the calls sold as covered (``covered: true``: the order route places them
+  only while those shares are free and keeps them for the calls until they are closed); on shares held but not free SIDE_SPLIT; on a
+  short NOTHING_HELD (a buy write and a collar that buys its shares too); none held, or "buy write", the shares bought and the calls sold
+  as covered, sent after the shares have filled; a collar's put strike below its call strike (STRIKE_ORDER otherwise).  One price typed
+  for a close of several contracts is PRICE_AMBIGUOUS.
 - CHOICES are clause texts (``{label, clause}``): the page puts the choice's text in place of the flag's span and parses again, so the
-  grammar stays the one source of truth.  Every flag that offers choices carries the span it replaces: the leg's clause, the
-  combination's text, both clauses for COVER_HINT, or for an instruction-level flag the word it names (an unknown or shared book word
-  of the opening phrase).  Nothing is applied automatically; alternatives are listing facts only.  Third review: a choice changes only
-  the order it is on - read again with the whole instruction (the pure parse), every other order keeps its side, book, account and
-  grouping, and the order it is on its book and account (unless the choice is that book or account); where that needs it the choice
-  also writes out what those orders inherited (a carried side word, "in the X book", "at <account>") and its span covers them, and a
-  choice that cannot is not offered (``Resolver._keep_others``).  The opening part of a split names the account the order was read in.
-  Fourth review: every choice kept (one order too) is then RESOLVED as the page would re-read it (``Resolver._reads_alike``: positions,
-  accounts, orders already sent, packages) and offered only when every other order reads as before - book, account, side, quantity,
-  contract, its R2 reading, its package, never newly sendable - and the order it is on stays in its book and account and joins no other
-  order's package; R2 compares the words with or without a leading "buy" / "sell"; "as separate orders" writes the next group with
-  parentheses when its word's run would take the freed orders, and COVER_HINT groups the pair with parentheses; a buy write and a side
-  alternative that reads the account another way name the account the order was read in ("sto" on shares offers "short"); a covered
-  call's or a collar's quantity in contracts or lots is UNIT_KIND_MISMATCH, never read as shares.  Sixth review: a book word that names no
-  book leaves unread every order that takes its book (carried, closing or opening phrase), and a choice that settles it may give them
-  the book it names; a choice on a package reads every copy outside that package as before (another book's copy of a clause too); a
-  choice whose re-read reads a field twice (DUPLICATE_FIELD) is not offered, and the account of a book phrase is written once; "as
-  separate orders" drops a group word typed inside its parentheses.
+  grammar stays the one source of truth.  Every flag that offers choices carries the span it replaces: the leg's clause, the group's
+  text, or for an instruction-level flag the word it names (an unknown or shared book word of the opening phrase).  Nothing is applied
+  automatically; alternatives are listing facts only.  Third review: a choice changes only the order it is on - read again with the
+  whole instruction (the pure parse), every other order keeps its side, book, account and grouping, and the order it is on its book and
+  account (unless the choice is that book or account); where that needs it the choice also writes out what those orders inherited (a
+  carried side word, "in the X book", "at <account>") and its span covers them, and a choice that cannot is not offered
+  (``Resolver._keep_others``).  The opening part of a split names the account the order was read in.  Fourth review: every choice kept
+  (one order too) is then RESOLVED as the page would re-read it (``Resolver._reads_alike``: positions, accounts, groups) and offered only
+  when every other order reads as before - book, account, side, quantity, contract, its group, never newly sendable - and the order it
+  is on stays in its book and account and joins no other order's group; a buy write and a side alternative that reads the account
+  another way name the account the order was read in ("sto" on shares offers "short"); a covered call's or a collar's quantity in
+  contracts or lots is UNIT_KIND_MISMATCH, never read as shares.  Sixth review: a book word that names no book leaves unread every order
+  that takes its book (carried, closing or opening phrase), and a choice that settles it may give them the book it names; a choice on a
+  group reads every copy outside that group as before (another book's copy of a clause too); a choice whose re-read reads a field twice
+  (DUPLICATE_FIELD) is not offered, and the account of a book phrase is written once.  "as separate tickets" (ONE_ORDER_ASKED) removes
+  the words asking for one order - a group word typed inside the group's parentheses too; the parentheses stay and only group the cards.
 - A leg's ``request`` is exactly the order body (account_id, instrument_id, side, qty, order_type, tif, limit_px / stop_px / trail_amt /
-  trail_pct / gtd_date when they apply, ``borrow: true`` for SELL_SHORT, ``covered: true`` for calls said to be covered by shares held:
-  the order route places them only while those shares are free), null while the leg has a blocker.  A combination's ``request`` is
-  ``{account_id, tif, package: {strategy_key: "CUSTOM", legs: [{instrument_id, side, qty, order_type?, limit_px?}]}}`` (``covered: true``
-  for a collar on shares held), null while it or a leg has a blocker.  Prices are copied as typed (a leading ``$`` and commas removed), never rounded: the preview judges the tick.
+  trail_pct / gtd_date when they apply, ``borrow: true`` for SELL_SHORT, ``covered: true`` for calls sold as covered: the order route
+  places them only while their shares are free and keeps those shares for them until they are closed), null while the leg has a blocker
+  (its group's included).  A group's ``request`` is always null: the Smart Ticket fills separate tickets.  Prices are copied as typed (a
+  leading ``$`` and commas removed), never rounded: the preview judges the tick.
 """
 from __future__ import annotations
 
@@ -130,33 +128,35 @@ from .instruments import FUTURES_SPECS, MONTH_NAMES, futures_id, listed_months, 
 GRAMMAR = "smart-ticket/1"
 MAX_CHARS = 2000
 MAX_LEGS = 20
-MAX_COMBO_LEGS = 8
 SEVERITY_RANK = {"blocker": 0, "check": 1, "info": 2}
 ROUTE = r"/api/smart-ticket/parse"
 
-tables.add_conventions({"SMART_TICKET": "Read from your words by a fixed grammar; every field FinSim filled in is flagged; nothing is sent until you confirm."})
+tables.add_conventions({"SMART_TICKET": "Read from your words by a fixed grammar; every field FinSim filled in is flagged; each order goes from the order"
+                                        " ticket after its own preview."})
 
-#: every flag code and its severity (G 3.5.4, plus COMBO_INVALID; BOOK_FROM_SCOPE is information for a prefix scope, a check otherwise)
+#: every flag code and its severity (G 3.5.4; BOOK_FROM_SCOPE is information for a prefix scope, a check otherwise)
 FLAG_SEVERITY = {
     "UNPARSED_TEXT": "blocker", "MISSING_SIDE": "blocker", "MISSING_QTY": "blocker", "MISSING_INSTRUMENT": "blocker", "MISSING_PRICE": "blocker",
     "DUPLICATE_FIELD": "blocker", "TOKEN_AMBIGUOUS": "blocker", "QTY_NOT_WHOLE": "blocker", "QTY_LOT": "blocker", "UNIT_KIND_MISMATCH": "blocker",
     "SYMBOL_UNKNOWN": "blocker", "SYMBOL_AMBIGUOUS": "blocker", "KIND_OWN_TICKET": "blocker", "NOT_TRADEABLE_HERE": "blocker",
     "EXPIRY_NOT_LISTED": "blocker", "EXPIRY_MONTH_ONLY": "blocker", "STRIKE_NOT_LISTED": "blocker", "ROOT_CHOICE": "blocker", "STRIKE_ORDER": "blocker",
-    "SIDE_SPLIT": "blocker", "WOULD_OVERSELL": "blocker", "NOTHING_HELD": "blocker", "NOTHING_TO_ROLL": "blocker", "LIMIT_IN_AON": "blocker",
-    "COMBO_INVALID": "blocker", "ACCOUNT_NOT_IN_BOOK": "blocker", "TOO_MANY_LEGS": "blocker",
+    "SIDE_SPLIT": "blocker", "WOULD_OVERSELL": "blocker", "NOTHING_HELD": "blocker", "NOTHING_TO_ROLL": "blocker",
+    "ACCOUNT_NOT_IN_BOOK": "blocker", "TOO_MANY_LEGS": "blocker",
     # 1.0.7.2 review: a closing side whose position is already in working closing orders; 'all' / 'half' read as an order that adds to
     # the position; one typed price for several contracts
     "ALREADY_CLOSING": "blocker", "ADDS_TO_POSITION": "blocker", "PRICE_AMBIGUOUS": "blocker",
-    # 1.0.7.2 seventh review: a call sold to open or a short sale on the shares an earlier covered call or collar of the instruction covers
-    "COVER_TAKEN": "blocker",
+    # 1.0.7.2 simplification: a price on a group as a whole (separate tickets cannot carry a net price); words asking for one order of a
+    # group; a short sale of shares the account holds long (the order route refuses it)
+    "NET_PRICE": "blocker", "ONE_ORDER_ASKED": "blocker", "SHORT_WHILE_LONG": "blocker",
     "SIDE_INFERRED": "check", "SIDE_CARRIED": "check", "YEAR_INFERRED": "check", "EXPIRY_FROM_MONTH": "check", "TYPE_DEFAULT": "check",
     "PRICE_FROM_QUOTE": "check", "QTY_ROUNDED": "check", "BOOK_FROM_SCOPE": "check", "OTHER_BOOK": "check", "MULTI_BOOK": "check",
     "ACCOUNT_CHOICE": "check", "OPTION_UNVERIFIED": "check", "CHAIN_STALE": "check", "COVER_HINT": "check", "DUPLICATE_LEG": "check",
-    # 1.0.7.2 review: the same words already sent from a Smart Ticket; the held quantity 'all' / 'half' took; a butterfly's call / put
-    # filled in; an order whose own book overrides the opening phrase's
-    "ALREADY_SENT": "check", "QTY_FROM_HELD": "check", "RIGHT_DEFAULT": "check", "BOOK_CONFLICT": "check",
+    # 1.0.7.2 review: the held quantity 'all' / 'half' took; a butterfly's call / put filled in; an order whose own book overrides the
+    # opening phrase's
+    "QTY_FROM_HELD": "check", "RIGHT_DEFAULT": "check", "BOOK_CONFLICT": "check",
+    # 1.0.7.2 simplification: the orders of a group are separate tickets
+    "SEPARATE_TICKETS": "check",
     "TIF_DEFAULT": "info", "BOOK_SELECTED": "info", "TYPE_FROM_AT": "info", "STRATEGY_EXPANDED": "info", "STRATEGY_SIDE_CONVENTION": "info",
-    "COMBO_FILL_MODE": "info",
 }
 
 # ---- the vocabulary (G 3.4.1 item 4, 3.4.3) ------------------------------------------------------------------------------------------
@@ -2105,7 +2105,7 @@ def _expansion_words(c: dict, legs: Optional[List[dict]] = None) -> str:
         k = l.get("strike")
         words.append(f"{l['side'] or 'buy or sell?'} {'2 x ' if l.get('ratio') == 2 else ''}{k} {'call' if l.get('right') == 'C' else ('put' if l.get('right') == 'P' else 'call or put?')}"
                      + (f" {_exp_text(l['expiry'])}" if c["strategy"]["name"] == "calendar" and l.get("expiry") else ""))
-    return ", ".join(words) + " (all-or-none)"
+    return ", ".join(words) + " (separate tickets)"
 
 
 # ======================================================================================================================================
@@ -2121,25 +2121,27 @@ OPENING_WORDS = ("bto", "sto", "short")
 CASH_SIDES = ("BUY", "SELL", "SELL_SHORT", "BUY_TO_COVER")
 FUTURES_SIDES = ("BUY", "SELL")
 LIVE_ORDER_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
+#: the keys of a leg's ``position`` in the answer (unchanged since 1.0.7.2's first build: the unified app relays the answer)
+POSITION_KEYS = ("qty", "working_sells", "working_covers", "reserved", "lent", "free")
 KIND_WORDS = {"EQUITY": "equity", "ETF": "ETF", "ADR": "ADR", "REIT": "REIT", "PREFERRED": "preferred", "FUTURE": "future", "OPTION": "option", "FX": "FX pair",
               "BOND": "bond", "PRIVATE": "private company", "SWAP": "swap", "INDEX": "index", "YIELD": "yield"}
 OWN_TICKET_LABEL = {"FX": "Open the FX desk", "BOND": "Open the bond ticket", "PRIVATE": "Open the private-markets ticket", "OTC": "Open the OTC desk"}
 OWN_TICKET_ROLE = {"FX": "FOREIGN_FX", "BOND": "DEBT", "PRIVATE": "PRIVATE"}
 UNITS_OK = {"option": ("contracts", "x"), "future": ("contracts", "lots", "x"), "shares": ("shares", "x")}
-PACKAGE_TIFS = ("DAY", "GTC")
+#: option strategies the order ticket's Strategies tab has a template for (call / put spreads, straddles, strangles, iron condor and its
+#: reverse, iron butterfly, call butterfly, call / put calendars): their group offers the action "Strategies tab"
+TEMPLATE_STRATEGIES = ("call spread", "put spread", "vertical", "straddle", "strangle", "iron condor", "iron butterfly", "butterfly", "call butterfly",
+                       "calendar", "call calendar", "put calendar")
 
 
 def _norm_root(r: Optional[str]) -> str:
     return str(r or "").upper().replace(".", "").replace("-", "").replace("_", "")
 
 
-def _bare_side(text: str) -> str:
-    """R2 (1.0.7.2 fourth review): a clause's words without a leading "buy" / "sell" - the side an order went with is compared on its own -
-    so the words a choice wrote the carried side word into ("buy 2 ACME Dec 18 2026 240 calls" for "2 ACME Dec 18 2026 240 calls" after
-    "buy ...") still read as the order that went."""
-    t = " ".join(str(text or "").split())
-    m = re.match(r"(?i)(?:buy|sell)\s+", t)
-    return t[m.end():] if m else t
+def _send_rank(leg: dict) -> int:
+    """The sending order of a group's tickets: purchases first (shares, then options), then sales to close, then sales to open, then
+    share sales and short sales; an order with no side yet last."""
+    return {"BUY": 0, "BUY_TO_COVER": 0, "BTO": 1, "BTC": 1, "STC": 2, "STO": 3, "SELL": 4, "SELL_SHORT": 4}.get(str(leg.get("side") or ""), 5)
 
 
 def _groupish(text: str) -> bool:
@@ -2244,18 +2246,8 @@ class Resolver:
         self._opt_index: Dict[Tuple[str, str], list] = {}
         self._snaps: Dict[str, Any] = {}
         self._pos: Dict[Tuple[str, str], dict] = {}
-        self._wcalls: Dict[Tuple[str, str], int] = {}        # sixth review: shares the working sell-to-open calls will take (per parse)
-        # seventh review: the shares of (account, name) this reading's EARLIER orders take, in the order typed (per run): sales and short
-        # sales the shares they sell, every call sold to open on the name 100 a contract (a covered call's or a collar's own calls too);
-        # ``_pledged`` the part of it the covered calls and collars took as their cover
-        self._taken: Dict[Tuple[str, str], int] = {}
-        self._pledged: Dict[Tuple[str, str], int] = {}
-        self._shorted: Dict[Tuple[str, str], int] = {}      # ... and the part of it short sales took (never counted against a later sale)
-        self._called: Dict[Tuple[str, str], int] = {}       # ... and the part of it calls sold to open took as their cover
-        self._sent: Dict[Tuple[str, str], List[dict]] = {}
-        self._midnight = 0
+        self._cover: Dict[Tuple[str, str], dict] = {}        # 1.0.7.2: ``orders_preview.cover_state`` per (account, name), read once per parse
         self._fresh: Dict[tuple, tuple] = {}                 # fifth review: a chain's freshness, judged once per parse (shared with re-reads)
-        self._r2: Dict[tuple, str] = {}
 
     # ---- reads ---------------------------------------------------------------------------------------------------------------------
     def _lifetime(self, code: Optional[str]):
@@ -2334,6 +2326,18 @@ class Resolver:
                                       action={"kind": "load_chain", "label": "Load the chain", "instrument_id": uid}))
         return info
 
+    def _cover_of(self, aid: str, uid: str) -> dict:
+        """1.0.7.2: the shares of ``uid`` held in ``aid`` and the calls they cover, read by the server's one function
+        (``orders_preview.cover_state``, without the claims: the parse never reads ``commands``) once per parse, so the reading and the
+        order route agree - ``free`` (what a sale may take: net of working sells, of the shares covering calls sold or being sold, in whole
+        contracts as the margin assigns them, and of lent shares) and ``free_for_calls`` (what NEW calls may take as cover: also net of
+        working short sales).  A SELECT on the parse's own connection: nothing is written."""
+        key = (aid, uid)
+        if key not in self._cover:
+            from .orders_preview import cover_state
+            self._cover[key] = cover_state(self.s, self.conn, aid, uid)
+        return self._cover[key]
+
     def _position(self, aid: str, iid: str, equity_like: bool) -> dict:
         key = (aid, iid)
         if key not in self._pos:
@@ -2347,158 +2351,25 @@ class Resolver:
                     ws += rem
                 elif r["side"] in ("BUY_TO_COVER", "BTC"):
                     wc += rem
-            reserved = self._reserved(aid, iid) if equity_like else 0
-            lent = self._lent(aid, iid) if equity_like else 0
             qty = int(qty)
-            free = max(0, qty - ws - reserved - lent) if qty > 0 else (max(0, -qty - wc) if qty < 0 else 0)
-            self._pos[key] = {"qty": qty, "working_sells": ws, "working_covers": wc, "reserved": reserved, "lent": lent, "free": free}
+            out = {"qty": qty, "working_sells": ws, "working_covers": wc, "reserved": 0, "calls_working": 0, "lent": 0}
+            if equity_like and qty > 0:
+                st = self._cover_of(aid, iid)
+                out.update({"working_sells": int(st["working_sells"]), "reserved": int(st["reserved_sold"]), "calls_working": int(st["reserved_working"]),
+                            "lent": int(st["lent"]), "working_shorts": int(st["working_shorts"]), "free": int(st["free"]),
+                            "free_for_calls": int(st["free_for_calls"])})
+            else:
+                out["free"] = max(0, qty - ws) if qty > 0 else (max(0, -qty - wc) if qty < 0 else 0)
+            self._pos[key] = out
         return dict(self._pos[key])
 
-    def _calls_working(self, aid: str, uid: str) -> int:
-        """1.0.7.2 sixth review: the shares of ``uid`` the account's WORKING sell-to-open call orders will take as their cover once they fill
-        - the multiplier (100) x the contracts each still has to sell: a covered call resting at its limit, a buy write's released calls.
-        The calls already sold are in the reservation (``_reserved``); a call still waiting for shares not yet bought pledges none of the
-        shares held.  Read once per parse (a SELECT on the parse's own connection: nothing is written)."""
-        key = (aid, uid)
-        if key not in self._wcalls:
-            n = 0
-            for r in self.conn.execute("SELECT o.qty, o.filled_qty, i.multiplier FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id"
-                                       " WHERE o.account_id=? AND o.side='STO' AND o.status IN ('WORKING','PARTIAL','SUSPENDED') AND i.kind='OPTION'"
-                                       " AND i.right='C' AND i.underlying_id=? ORDER BY o.order_id", (aid, uid)).fetchall():
-                try:
-                    mult = int(Decimal(str(r["multiplier"] or "100")))
-                except (ArithmeticError, ValueError):
-                    mult = 100
-                n += max(0, int(r["qty"]) - int(r["filled_qty"] or 0)) * mult
-            self._wcalls[key] = n
-        return self._wcalls[key]
-
-    def _cover_free(self, aid: str, uid: str, pos: dict, sale: bool = False) -> int:
-        """1.0.7.2 sixth review: the shares held free to cover NEW calls (a covered call, a collar): the shares held free (``_position``:
-        net of working sells, the calls already sold and lent shares) less those the working sell-to-open calls will take, less those
-        this same instruction's earlier orders took.  Seventh review: the running count is every earlier order that takes the shares
-        (``_take_legs``: a sale or a short sale of them, a call sold to open on the name - a plain one, a covered call's, a collar's), and
-        a SALE of the shares is read against the same count (``_side``, ``_close_legs``), so the shares are counted once over the
-        instruction, in the order typed, and never sold and offered as cover too.  ``pos`` (the leg's position, a copy) gains the two
-        counts, so a refusal names them.  ``sale``: the shares a SALE may take - an earlier short sale of the instruction borrows its
-        shares and is not counted against it (as the order route counts none against a sale), unless a covered call or collar of the
-        instruction covers those shares (a short sale then nets the position below their cover, so it counts)."""
-        calls, here = self._calls_working(aid, uid), int(self._taken.get((aid, uid), 0))
-        if sale and not self._pledged.get((aid, uid)):
-            here = max(0, here - int(self._shorted.get((aid, uid), 0)))
-        pledged = min(here, int(self._pledged.get((aid, uid), 0)))
-        pos["calls_working"], pos["pledged_here"], pos["taken_here"] = calls, pledged, here - pledged
-        pos["calls_here"] = int(self._called.get((aid, uid), 0))
-        return max(0, int(pos.get("free") or 0) - calls - here) if int(pos.get("qty") or 0) > 0 else 0
-
-    def _take_legs(self, c: dict, legs: List[dict]) -> None:
-        """Seventh review: the shares the orders of clause ``c`` (one book's copy) take, added to the reading's running count: a covered
-        call's or a collar's calls on shares held (their cover: ``_claim``), a sale or short sale of the shares, a call sold to open on
-        the name (100 a contract), and a strategy's or a roll's calls sold beyond those it buys.  An order already sent (ALREADY_SENT: its
-        working order is counted with the account's), refused for its cover (COVER_TAKEN, SIDE_SPLIT ...: it has no side or carries the
-        refusal), or covered by shares its own package buys (a buy write: ``_own_cover``) takes nothing."""
-        kind = c.get("kind")
-
-        def add(key, n, pledge=False, short=False, call=False):
-            if key[0] and key[1] and n > 0:
-                self._taken[key] = self._taken.get(key, 0) + int(n)
-                for flag, d in ((pledge, self._pledged), (short, self._shorted), (call or pledge, self._called)):
-                    if flag:
-                        d[key] = d.get(key, 0) + int(n)
-        if kind in ("covered", "collar"):
-            for l in legs:
-                inst = l.get("instrument") or {}
-                if l.get("_claim") and l.get("qty") and l.get("side") == "STO":
-                    add((l.get("account_id"), inst.get("underlying_id")), 100 * int(l["qty"]), pledge=True)
-            return
-        if kind in ("strategy", "roll"):
-            net: Dict[Tuple[str, str], int] = {}
-            for l in legs:
-                inst = l.get("instrument") or {}
-                if inst.get("kind") != "OPTION" or inst.get("right") != "C" or not l.get("qty") or l.get("side") not in ("STO", "BTO", "BTC"):
-                    continue
-                key = (l.get("account_id"), inst.get("underlying_id"))
-                net[key] = net.get(key, 0) + (int(l["qty"]) if l["side"] == "STO" else -int(l["qty"]))
-            for key, n in net.items():
-                if n > 0 and key[0] and key[1] and self._pledged.get(key):
-                    # calls a strategy sells beyond those it buys, on shares an earlier covered call or collar covers: COVER_TAKEN, as a
-                    # call sold to open on its own (``_cover_taken``)
-                    upos = self._position(key[0], key[1], True)
-                    left = self._cover_free(key[0], key[1], upos) if int(upos["qty"]) > 0 else None
-                    if left is not None and left < 100 * n:
-                        for l in legs:
-                            inst = l.get("instrument") or {}
-                            if l.get("side") == "STO" and inst.get("right") == "C" and (l.get("account_id"), inst.get("underlying_id")) == key:
-                                l["flags"].append(_flag("COVER_TAKEN", f"the {n:,} call(s) this {c.get('kind')} sells beyond those it buys: the {int(upos['qty']):,}"
-                                                        f" {key[1]} held in {key[0]} cover the calls of a covered call or collar earlier in this instruction and"
-                                                        f" {left:,} are left free{self._not_free_words(upos)} - they would be written without shares to cover"
-                                                        " them: send it as its own order, or write the covered call or collar on fewer shares", l["span"]))
-                        continue
-                add(key, 100 * n, call=True)
-            return
-        for l in legs:
-            side, q = l.get("side"), l.get("qty")
-            inst = l.get("instrument") or {}
-            if not side or not q or l.get("_own_cover") or any(f["code"] in ("ALREADY_SENT", "COVER_TAKEN") for f in l["flags"]):
-                continue
-            if inst.get("kind") in EQUITY_KINDS and side in ("SELL", "SELL_SHORT"):
-                add((l.get("account_id"), inst.get("id")), int(q), short=side == "SELL_SHORT")
-            elif inst.get("kind") == "OPTION" and inst.get("right") == "C" and side == "STO":
-                add((l.get("account_id"), inst.get("underlying_id")), 100 * int(q), call=True)
-
-    def _cover_taken(self, leg: dict, con: Optional[dict]) -> None:
-        """Seventh review: a call sold to open, or a short sale, on shares the account holds that a covered call or collar EARLIER in this
-        instruction took as its cover, beyond the shares still free there, is refused (COVER_TAKEN): it would leave calls said to be
-        covered without shares (the same shares are never the cover of two orders).  An account that holds none of the name writes a
-        call as before (its margin is in the preview)."""
-        side, q, aid = leg.get("side"), leg.get("qty"), leg.get("account_id")
-        if not side or not q or not aid or con is None or leg.get("_own_cover"):
-            return
-        cls = self._cls(con)
-        if cls == "option" and side == "STO" and con.get("right") == "C" and con.get("underlying_id"):
-            uid, need = str(con["underlying_id"]), 100 * int(q)
-        elif cls == "shares" and side == "SELL_SHORT":
-            uid, need = str(con["id"]), int(q)
-        else:
-            return
-        pledged = int(self._pledged.get((aid, uid), 0))
-        if not pledged:
-            return
-        upos = self._position(aid, uid, True)
-        held = int(upos["qty"])
-        if held <= 0:
-            return
-        left = self._cover_free(aid, uid, upos)
-        if left >= need:
-            return
-        u = self.master.get(uid, self.conn)
-        sym = u.symbol if u is not None else uid
-        what = (f"sell to open {int(q):,} {con.get('words') or con.get('symbol') or ''}".rstrip() if cls == "option" else f"short {int(q):,} {sym}")
-        leg["flags"].append(_flag("COVER_TAKEN", f"{what}: {pledged:,} of the {held:,} {sym} held in {aid} cover the calls of a covered call or collar earlier in"
-                                  f" this instruction and {left:,} are left free{self._not_free_words(upos)} - "
-                                  + ("this call would be written without shares to cover it" if cls == "option" and int(q) == 1 else
-                                     "these calls would be written without shares to cover them" if cls == "option" else
-                                     "a short sale here would leave those calls without the shares")
-                                  + ": send it as its own order, or write the covered call or collar on fewer shares", leg["span"]))
-
-    def _reserved(self, aid: str, iid: str) -> int:
-        fn = getattr(getattr(self.s, "options", None), "reserved_shares", None)
-        if not callable(fn):
-            return 0
-        try:
-            got = fn(self.s, aid, iid)
-            return int(got) if isinstance(got, int) else 0
-        except Exception:   # noqa: BLE001 - a reservation lookup never blocks a parse (the preview re-checks)
-            return 0
-
-    def _lent(self, aid: str, iid: str) -> int:
-        fn = getattr(getattr(self.s, "lending", None), "lent_qty", None)
-        if not callable(fn):
-            return 0
-        try:
-            return max(0, int(fn(self.conn, aid, iid) or 0))
-        except Exception:   # noqa: BLE001
-            return 0
+    @staticmethod
+    def _cover_free(pos: Optional[dict]) -> int:
+        """The shares held free to cover NEW calls (a covered call, a collar): ``free_for_calls`` of the leg's position (``_position``), 0
+        when none are held long.  Each order is read on the account as it is: another order sent first may take them, and the order
+        route then refuses the calls as covered (NOT_COVERED)."""
+        pos = pos or {}
+        return int(pos.get("free_for_calls") or 0) if int(pos.get("qty") or 0) > 0 else 0
 
     def _holders(self, lid: Optional[str], iid: str) -> Dict[str, int]:
         if not lid:
@@ -3264,6 +3135,14 @@ class Resolver:
             return None
         if typed not in ("buy", "sell"):
             allowed = OPTION_SIDES if cls == "option" else (FUTURES_SIDES if cls == "future" else CASH_SIDES)
+            if cls == "shares" and typed in ("SELL_SHORT", "STO") and pos is not None and int(pos["qty"]) > 0:
+                # 1.0.7.2 simplification (INV-4): the order route refuses a short sale while the account holds the shares long - they leave
+                # only through a sale, which keeps the cover of calls; the sale of the free shares is offered
+                held_l, n = int(pos["qty"]), min(int(q or 0), int(pos["free"]))
+                ch = [{"label": f"sell {n:,} (sell the shares held first)", "clause": self._side_edit(c, "sell", n, leg, con)}] if n > 0 else None
+                flags.append(_flag("SHORT_WHILE_LONG", f"'{v.get('word')}' {words}: {leg['account_id']} holds {held_l:,} long - a short sale while the shares are"
+                                   " held is refused: sell them first (once they have sold, a short sale can follow)", leg["span"], ch))
+                return typed if typed in allowed else None
             if typed in allowed:
                 return typed
             # fourth review: "sto" (sell to open) on shares is a short sale; an alternative that reads the account another way than the typed
@@ -3351,37 +3230,26 @@ class Resolver:
                 closing("buy", None)
                 return None
             return "BUY"
-        busy = {}
-        if held > 0:
-            # seventh review: the shares a sale may take are also net of those the account's working sell-to-open calls will take and of
-            # those this instruction's earlier orders took (a sale, a short sale, calls sold to open, a covered call or collar on them)
-            busy = dict(pos)
-            free = self._cover_free(acct, con["id"], busy, sale=True)
+        # a sale takes the free shares only: net of working sells, of the shares covering calls sold or being sold and of lent shares
+        # (``_position`` reads ``cover_state``, as the order route does)
         if held > 0 and free >= q:
             return "SELL"
         free_long = free if held > 0 else 0
-        covers = bool(busy.get("calls_working") or busy.get("calls_here"))       # the shares cover calls (working, or of this instruction)
         choices = []
         if free_long > 0:
             choices.append({"label": f"sell {free_long:,}", "clause": self._side_edit(c, "sell", free_long, leg, con)})
-            if not covers:            # seventh review: a short sale of shares that cover calls would leave the calls without them
-                choices.append({"label": f"sell {free_long:,} + short {q - free_long:,}",
-                                "clause": self._side_edit(c, "sell", free_long, leg, con) + " and " + self._side_edit(c, "short", q - free_long, leg, con)})
-        elif not covers:
+        elif held <= 0:
+            # none held long: the sale reads as a short sale (the order route refuses one only while shares are held long)
             choices.append({"label": f"short {q:,}", "clause": self._side_edit(c, "short", q, leg, con)})
         why = []
         if pos["working_sells"]:
             why.append(f"{pos['working_sells']:,} in working sells")
         if pos["reserved"]:
-            why.append(f"{pos['reserved']:,} reserved by covered calls")
+            why.append(f"{pos['reserved']:,} covering calls already sold")
+        if pos.get("calls_working"):
+            why.append(f"{int(pos['calls_working']):,} covering calls being sold (working orders)")
         if pos["lent"]:
             why.append(f"{pos['lent']:,} lent")
-        if busy.get("calls_working"):
-            why.append(f"{int(busy['calls_working']):,} covering calls being sold (working orders)")
-        if busy.get("pledged_here"):
-            why.append(f"{int(busy['pledged_here']):,} covering the calls of an earlier order in this instruction")
-        if busy.get("taken_here"):
-            why.append(f"{int(busy['taken_here']):,} taken by earlier orders of this instruction (sold, or covering calls they sell to open)")
         flags.append(_flag("WOULD_OVERSELL", f"sell {q:,} {words} but the free quantity in {acct} is {free_long:,} (held {held:,}"
                            + ("; " + ", ".join(why) if why else "") + ")", leg["span"], choices or None))
         return None
@@ -3419,8 +3287,8 @@ class Resolver:
         flags = leg["flags"]
         p = None if market_only else c["mods"].get("price")
         if market_only and c["mods"].get("price") is not None:
-            # the price of a package clause is never applied to a leg (the combination refuses it: LIMIT_IN_AON / COMBO_INVALID), so the
-            # leg never says it was "read as a limit" (1.0.7.2 review)
+            # the price of a strategy, roll, collar or buy write is never applied to a leg (its group refuses it: NET_PRICE), so the leg
+            # never says it was "read as a limit" (1.0.7.2 review)
             leg["flags"] = flags = [f for f in flags if f["code"] != "TYPE_FROM_AT"]
         if p is None:
             leg["order_type"] = "MARKET"
@@ -3560,38 +3428,16 @@ class Resolver:
         # where the book holds the contract decides the account whatever the quantity's wording (1.0.7.2 review): read for every leg
         holders = self._holders(leg["lifetime_id"], con["id"]) if con is not None and con.get("id") and not con.get("_blocked") else None
         aware = typed not in ("BTO", "STO", "SELL_SHORT") or qa.get("kind") in ("all", "half")
-        sent = self._sent_before(c, leg, con) if con is not None and not con.get("_blocked") else None
-        a = None
-        if sent is not None:
-            a = next((x for x in self._accounts(leg["lifetime_id"]) if x["account_id"] == sent["account_id"]), None)
-            if a is not None:
-                leg["account_id"], leg["account_name"] = a["account_id"], a["name"]
-                leg["inferred"].append(f"account {a['account_id']}: the order these words already made ({sent['order_id']})")
-        if a is None:
-            sent = None
-            a = self._account(c, leg, binfo, tree, con, holders, aware) if not (con or {}).get("_blocked") else None
+        a = self._account(c, leg, binfo, tree, con, holders, aware) if not (con or {}).get("_blocked") else None
         pos = None
         if a is not None and con is not None and con.get("id"):
             pos = self._position(a["account_id"], con["id"], self._cls(con) == "shares")
             leg["position"] = pos
         if con is not None:
             q = self._qty(c, leg, con, pos)
-            if sent is not None:
-                if qa.get("kind") in ("all", "half"):
-                    q = int(sent["qty"])
-                leg["qty"] = q
-                leg["side"] = sent["side"]
-                st_words = str(sent["status"]).lower().replace("_", " ")
-                filled = int(sent["filled_qty"] or 0)
-                leg["flags"].append(_flag("ALREADY_SENT", f"these words were already sent from a Smart Ticket as {sent['order_id']} ({SIDE_TEXT.get(sent['side'], sent['side'])}"
-                                          f" {int(sent['qty']):,}, {st_words}{f', {filled:,} filled' if filled and st_words != 'filled' else ''}): they read as that order"
-                                          " again, never as a new one; to place another order, change the words (an explicit side: bto, sto, btc, stc, short, cover)",
-                                          leg["span"]))
-            else:
-                leg["qty"] = q
-                leg["side"] = self._side(c, leg, con, pos, q)
-                self._adds_check(c, leg, con, pos)
-                self._cover_taken(leg, con)
+            leg["qty"] = q
+            leg["side"] = self._side(c, leg, con, pos, q)
+            self._adds_check(c, leg, con, pos)
             self._price_tif(c, leg, con)
         else:
             self._price_tif(c, leg, None)
@@ -3615,100 +3461,6 @@ class Resolver:
         leg["flags"].append(_flag("ADDS_TO_POSITION", f"'{qa['text']}' takes the {abs(held):,} {'held' if held > 0 else 'short'} in {leg['account_id']}: "
                                   f"{SIDE_TEXT.get(side, side)} {leg['qty'] or 0:,} would add to the position, not close it", leg["span"],
                                   [{"label": "close them", "clause": choice}]))
-
-    def _sent_before(self, c: dict, leg: dict, con: Optional[dict]) -> Optional[dict]:
-        """R2 (1.0.7.2 review): the order these exact words already made from a Smart Ticket on this contract in this book - still live,
-        or filled today - so the same text read again reads as THAT order (its account and side), never as a new opening one once the
-        position it closed has moved.  Only a clause with its own side word ("buy" / "sell", read from the position); the words are the
-        clause as typed, kept with the order's command (``smart.clause``).  Second review: a clause whose "buy" / "sell" is carried from
-        the clause before is matched too, by its own words (the leg's clause, as the page stores it) and the carried side.  Fourth review:
-        the words are compared without a leading "buy" / "sell" too (the side's direction is compared on its own), so a choice on ANOTHER
-        order that writes the carried side word into these words never turns the order that went into a new one.  Read only (orders and
-        commands on the parse's connection)."""
-        v = c.get("verb") or {}
-        if con is None or not con.get("id") or v.get("kind") != "side" or v.get("side") not in ("buy", "sell"):
-            return None
-        if self._cls(con) == "future" or not leg.get("lifetime_id"):
-            return None
-        ids = [x["account_id"] for x in self._accounts(leg["lifetime_id"])]
-        if not ids:
-            return None
-        key = (leg["lifetime_id"], con["id"])
-        rows = self._sent.get(key)
-        if rows is None:
-            from .clock import epoch_of
-            midnight = int(epoch_of(self.today, "00:00"))
-            rows = [dict(r) for r in self.conn.execute(
-                "SELECT o.order_id, o.account_id, o.side, o.qty, o.filled_qty, o.status, o.created_ts, c.payload_json FROM orders o"
-                " JOIN commands c ON c.request_id = o.request_id"
-                f" WHERE o.instrument_id=? AND o.account_id IN ({','.join('?' * len(ids))}) AND o.request_id LIKE 'st:%'"
-                f" AND (o.status IN ({','.join('?' * len(LIVE_ORDER_STATUSES))}) OR o.created_ts >= ?)"
-                " ORDER BY o.created_ts DESC, o.order_id DESC", (con["id"], *ids, *LIVE_ORDER_STATUSES, midnight)).fetchall()]
-            self._sent[key] = rows
-            self._midnight = midnight
-        want = c["text"].strip()
-        bare = _bare_side(want)
-        buys = ("BUY", "BUY_TO_COVER", "BTO", "BTC")
-        for r in rows:
-            live = r["status"] in LIVE_ORDER_STATUSES
-            today = int(r["created_ts"]) >= self._midnight and int(r["filled_qty"] or 0) > 0
-            if not (live or today) or ((r["side"] in buys) != (v["side"] == "buy")):
-                continue
-            try:
-                payload = json.loads(r["payload_json"] or "{}")
-            except ValueError:
-                continue
-            smart = payload.get("smart") if isinstance(payload, dict) else None
-            if isinstance(smart, dict):
-                got = str(smart.get("clause") or "").strip()
-                if got == want or _bare_side(got) == bare:
-                    return r
-                # fifth review: a book phrase naming this order's own book, or an account phrase naming the account the order went to (the
-                # words a choice on another order writes out around it), never makes it another order
-                if self._r2_words(got, leg.get("book"), r["account_id"]) == self._r2_words(want, leg.get("book"), r["account_id"]):
-                    return r
-        return None
-
-    def _r2_words(self, text: str, code: Optional[str], account_id: Optional[str]) -> str:
-        """R2's words of a clause (fifth review): lower case, one space between words, without a leading "buy" / "sell" (the side's
-        direction is compared on its own), without a book phrase that names ``code`` (the book the words are read in; R2 reads that book's
-        orders only) and without an account phrase that names exactly ``account_id`` (the account the order went to).  Pure: the clause
-        is read by the grammar."""
-        key = (text, code, account_id)
-        cache = self.__dict__.setdefault("_r2", {})
-        if key in cache:
-            return cache[key]
-        try:
-            toks = tokenize(normalise(text)[0])
-            drop: List[Sequence[int]] = []
-            k = 0
-            while k < len(toks):
-                t = toks[k]
-                got = _scope_at(toks, k, self.vocab) if (_is_word(t, "in", "for") or self.vocab.book_codes(t)) else None
-                if got is not None and not got[0].get("bad"):
-                    val, k2, _fl = got
-                    bks = val.get("books") or []
-                    if code and bks and all(len(x["codes"]) == 1 for x in bks) and [code] in [x["codes"] for x in bks] and val.get("book_span"):
-                        drop.append(val["book_span"])
-                    acct = val.get("account")
-                    if acct is not None and account_id and code and self._named_to_id(acct, code) == account_id:
-                        drop.append(acct["span"])
-                    k = max(k2, k + 1)
-                    continue
-                got = _account_at(toks, k) if (_is_word(t, "at", "in") or t.kind == "acct" or _phrase(t, "acct") or _is_word(t, "exchange", "pb")) else None
-                if got is not None:
-                    val, k2, _fl = got
-                    if account_id and code and self._named_to_id(val, code) == account_id:
-                        drop.append(val["span"])
-                    k = max(k2, k + 1)
-                    continue
-                k += 1
-            words = " ".join(t.text for t in toks if not any(s[0] <= t.start and t.end <= s[1] for s in drop)).lower()
-            out = _bare_side(words)
-        except Exception:   # noqa: BLE001 - words the grammar cannot read compare as themselves
-            out = "\x00" + str(text)
-        cache[key] = out
-        return out
 
     def _resolve_date(self, exp: Optional[dict], snap=None) -> Optional[str]:
         """An expiry's date the way ``_expiry`` reads it, without its flags: a date; a day with its year, or the first on or after today
@@ -3819,9 +3571,9 @@ class Resolver:
         if a is not None and con is not None:
             shares["position"] = self._position(a["account_id"], con["id"], True)
             held_qty = int(shares["position"]["qty"])
-            # sixth review: free to cover NEW calls - net of the working sell-to-open calls and of the covered calls / collars earlier in
-            # this instruction, so the same shares are never offered as cover twice
-            free = self._cover_free(a["account_id"], con["id"], shares["position"]) if held_qty > 0 else 0
+            # free to cover NEW calls (``free_for_calls``): net of working sells and short sales, of the calls sold or being sold and of
+            # lent shares - the account as it is; the order route checks it again at Send (NOT_COVERED)
+            free = self._cover_free(shares["position"])
         shares["side"] = "BUY"
         sym = ia.get("symbol")
         uflag = self._share_unit(c, "buy write" if buy_write else "covered call")
@@ -3835,9 +3587,12 @@ class Resolver:
             lo, hi = q // 100 * 100, (q // 100 + 1) * 100
             choices = [{"label": f"{x:,} shares", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(x))])} for x in (lo, hi) if x > 0]
             shares["flags"].append(_flag("QTY_LOT", f"a covered call covers 100 shares per contract: {q:,} is not a multiple of 100", c["span"], choices))
-        elif not buy_write and con is not None and a is not None and q and held_qty < 0:
-            shares["flags"].append(_flag("NOTHING_HELD", f"covered call on {q:,} {sym}: the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']} - a covered"
-                                         " call writes calls on shares held long", c["span"]))
+        elif con is not None and a is not None and q and held_qty < 0:
+            # round 8: a buy write while the account is short the name buys shares that are not held long - its calls would be naked
+            what = "buy write" if buy_write else "covered call"
+            shares["flags"].append(_flag("NOTHING_HELD", f"{what} on {q:,} {sym}: the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']} - a {what}"
+                                         " sells calls on shares held long" + (" (the shares it buys would not be held long): cover the short first" if buy_write else ""),
+                                         c["span"]))
         elif not buy_write and con is not None and a is not None and q and held_qty > 0 and free < q:
             lots = free // 100 * 100
             choices = ([{"label": f"covered call on the {lots:,} held free", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else [])
@@ -3849,19 +3604,16 @@ class Resolver:
                     bw += " at " + _account_words_of(a)
                 choices.append({"label": f"buy write {q:,} (buy the shares)", "clause": bw})
             shares["flags"].append(_flag("SIDE_SPLIT", f"covered call on {q:,} {sym} but {free:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
-                                         + self._not_free_words(shares["position"]) + ": write calls on the free round lots, or buy the shares with the calls",
+                                         + self._not_free_words(shares["position"], calls=True) + ": write calls on the free round lots, or buy the shares with the calls",
                                          c["span"], choices or None))
         elif con is not None and q and not covered_by_held:
             shares["qty"] = self._qty(c, shares, con, shares["position"])
             if buy_write and held_qty > 0:
                 shares["flags"].append(_flag("SIDE_INFERRED", f"buy write: buys {q:,} {sym} although {held_qty:,} are held in {a['account_id']} ({free:,} free)"
                                              " (write 'covered call' to write calls on the shares held)", shares["span"]))
-            elif buy_write and held_qty < 0:
-                shares["flags"].append(_flag("SIDE_INFERRED", f"buy write: buys {q:,} {sym} while the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']}"
-                                             " (the purchase is a long lot beside the short, not a cover)", shares["span"]))
             elif not buy_write and a is not None:
-                shares["flags"].append(_flag("SIDE_INFERRED", f"no {sym} held in {a['account_id']}: the covered call buys the {q:,} shares first, then writes the"
-                                             " calls (a buy write)", shares["span"]))
+                shares["flags"].append(_flag("SIDE_INFERRED", f"no {sym} held in {a['account_id']}: the covered call buys the {q:,} shares, then sells the calls"
+                                             " as covered (a buy write: two tickets)", shares["span"]))
         self._price_tif(c, shares, con, market_only=True)
         if shares["qty"] and shares["order_type"] == "MARKET":
             shares["flags"].append(_flag("TYPE_DEFAULT", "no price: the shares at market (fills at the next executable delayed print)", shares["span"]))
@@ -3881,23 +3633,24 @@ class Resolver:
             call["flags"].extend(f for f in shares["flags"] if f["code"] == "QTY_LOT")
         call["flags"].extend(f for f in shares["flags"] if f["code"] in ("SIDE_SPLIT", "NOTHING_HELD") or f is uflag)
         if covered_by_held:
-            # the calls only, an order of their own (no package: nothing to wait for); a typed price is the calls' own limit
+            # the calls only, an order of their own (no group: nothing to wait for); a typed price is the calls' own limit
             call["flags"].extend(f for f in shares["flags"] if f["code"] in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK", "NOT_TRADEABLE_HERE") and f not in call["flags"])
             call["inferred"].extend(x for x in shares["inferred"] if x.startswith(("R-ACCT", "account")))
             call["flags"].append(_flag("SIDE_INFERRED", f"covered call on {q:,} of the {free:,} {ia.get('symbol')} held free in {a['account_id']}: the calls"
-                                       " only, no shares bought", call["span"]))
+                                       " only, no shares bought, sold as covered by the shares held free when read - another order you send first may take"
+                                       " them, and FinSim then refuses this one", call["span"]))
             self._price_tif(c, call, con2)
-            # sixth / seventh reviews: these shares now cover these calls (``_take_legs`` counts them); the order says so to the server, which
-            # places it only while the shares are still free (409 NOT_COVERED)
+            # the calls are sold as covered (``covered: true``): the order route places them only while these shares are free, and keeps
+            # them for the calls until they are closed (409 NOT_COVERED otherwise)
             call["_claim"] = True
             return [call]
-        call["_own_cover"] = True                     # a buy write: its calls are covered by the shares its own package buys
+        # a buy write (or a covered call on none held): two tickets - the shares, then the calls sold as covered by them, which the order
+        # route places only once those shares are held free; a price typed on the whole is a net price (NET_PRICE, on its group)
         self._price_tif(c, call, con2, market_only=True)
-        if c["mods"].get("price") is not None:
-            p = c["mods"]["price"]
-            shares["flags"].append(_flag("COMBO_INVALID", "a price on a covered call is unclear (the shares, or a net price?): give each leg its own price and say"
-                                         " 'as a package'", c["span"],
-                                         [{"label": "without the price", "clause": self._clause_edit(c, [(p["span"][0], p["span"][1], "")])}]))
+        if q is not None and not q % 100 and con is not None and con2 is not None and not self._blocked(shares["flags"]):
+            call["flags"].append(_flag("SIDE_INFERRED", f"sold as covered by the {q:,} {sym} bought: send it after the shares have filled - until they are held"
+                                       " free FinSim refuses it as covered", call["span"]))
+        call["_claim"] = True
         return [shares, call]
 
     def _collar_legs(self, ci: int, c: dict, binfo: dict, tree: dict) -> List[dict]:
@@ -3918,8 +3671,8 @@ class Resolver:
         if a is not None and con is not None:
             shares["position"] = self._position(a["account_id"], con["id"], True)
             held_qty = int(shares["position"]["qty"])
-            # sixth review: as the covered call - net of the working sell-to-open calls and of this instruction's earlier covers
-            held = self._cover_free(a["account_id"], con["id"], shares["position"]) if held_qty > 0 else 0
+            # as the covered call: the shares free for NEW calls (``free_for_calls``), the account as it is
+            held = self._cover_free(shares["position"])
         opts = []
         for right, k, side, i in (("P", ks[0], "BTO", 0), ("C", ks[1], "STO", 1)):
             leg = self._leg_base(ci, c, binfo, ia.get("symbol"))
@@ -3948,50 +3701,69 @@ class Resolver:
             for leg in [shares] + opts:
                 leg["flags"].append(_flag("QTY_LOT", f"a collar covers 100 shares per contract: {q:,} is not a multiple of 100", c["span"], choices))
             return [shares] + opts
+        try:
+            kp, kc = (Decimal(str(ks[0])), Decimal(str(ks[1]))) if ks[0] and ks[1] else (None, None)
+        except (ArithmeticError, ValueError):
+            kp = kc = None
+        if kp is not None and kc is not None and kp >= kc:
+            # round 8: a collar buys the put BELOW the call it sells - strikes typed the other way are refused, never swapped silently
+            sp = s.get("strikes_span")
+            lo, hi = _kstr(min(kp, kc)), _kstr(max(kp, kc))
+            choice = [{"label": f"strikes {lo}/{hi}", "clause": self._clause_edit(c, [(sp[0], sp[1], f"{lo}/{hi}")])}] if sp and kp != kc else None
+            # the orders the collar would be on the account as it is (the put and the call only on shares held free), each refused
+            legs = opts if (q is not None and con is not None and a is not None and held_qty > 0 and held >= q) else [shares] + opts
+            if legs is not opts:
+                self._price_tif(c, shares, con, market_only=True)
+            for leg in legs:
+                leg["flags"].append(_flag("STRIKE_ORDER", f"a collar buys a put below the call it sells: the put strike first, then the call's ({ks[0]}/{ks[1]}"
+                                          " is not)", c["span"], choice))
+            return legs
         if q is None or con is None or a is None:
             return [shares] + opts
         sym = ia.get("symbol")
         # second review: the SIGNED holding decides (as for the covered call): a short holding is refused; shares held but not free are a
         # SIDE_SPLIT naming why; only a book that holds none buys the shares
         if held_qty < 0:
-            self._price_tif(c, shares, con, market_only=True)        # the package's one time in force (no second refusal about it)
+            self._price_tif(c, shares, con, market_only=True)        # the shares ticket's time in force (no second refusal about it)
             for leg in [shares] + opts:
                 leg["flags"].append(_flag("NOTHING_HELD", f"collar on {q:,} {sym}: the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']} - a collar"
                                           " protects shares held long", leg["span"]))
             return [shares] + opts
         if held_qty > 0 and held >= q:
             for leg in opts:
-                leg["flags"].append(_flag("SIDE_INFERRED", f"collar on {q:,} of the {held:,} {sym} held: the put and the call only, all-or-none", leg["span"]))
-            opts[1]["_claim"] = True                  # sixth / seventh reviews: these shares now cover the collar's call (``_take_legs``)
+                leg["flags"].append(_flag("SIDE_INFERRED", f"collar on {q:,} of the {held:,} {sym} held: the put and the call only, two tickets", leg["span"]))
+            opts[1]["flags"].append(_flag("SIDE_INFERRED", f"sold as covered by the {sym} shares held free when read - another order you send first may take"
+                                          " them, and FinSim then refuses this one", opts[1]["span"]))
+            opts[1]["_claim"] = True                  # the collar's call is sold as covered by these shares (the order route checks it at Send)
             return opts
         if held_qty == 0:
-            opts[1]["_own_cover"] = True              # the collar buys its own shares first
+            opts[1]["_claim"] = True                  # sold as covered by the shares the collar buys: placed only once they are held free
             shares["qty"], shares["side"] = q, "BUY"
             self._price_tif(c, shares, con, market_only=True)
             shares["flags"].append(_flag("TYPE_DEFAULT", "no price: the shares at market (fills at the next executable delayed print)", shares["span"]))
             for leg in [shares] + opts:
                 leg["flags"].append(_flag("SIDE_INFERRED", f"no {sym} held: the collar buys the {q:,} shares first, then the put and the call", leg["span"]))
+            opts[1]["flags"].append(_flag("SIDE_INFERRED", f"sold as covered by the {q:,} {sym} bought: send it after the shares have filled - until they are held"
+                                          " free FinSim refuses it as covered", opts[1]["span"]))
             return [shares] + opts
         lots = held // 100 * 100
         choices = [{"label": f"collar the {lots:,} held free", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else None
-        self._price_tif(c, shares, con, market_only=True)            # the package's one time in force (no second refusal about it)
+        self._price_tif(c, shares, con, market_only=True)            # the shares ticket's time in force (no second refusal about it)
         for leg in [shares] + opts:
             leg["flags"].append(_flag("SIDE_SPLIT", f"collar {q:,} but {held:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
-                                      + self._not_free_words(shares["position"]) + ": collar the free round lots, or buy the shares as their own order",
+                                      + self._not_free_words(shares["position"], calls=True) + ": collar the free round lots, or buy the shares as their own order",
                                       leg["span"], choices))
         return [shares] + opts
 
     @staticmethod
-    def _not_free_words(pos: Optional[dict]) -> str:
-        """Why shares held are not free: " (300 in working sells, 100 reserved by covered calls, 50 lent)", or "".  Sixth review: also the
-        shares the working sell-to-open calls will take and those a covered call or collar earlier in the instruction took; seventh
-        review: those every earlier order of the instruction takes (a sale, a short sale, calls sold to open)."""
+    def _not_free_words(pos: Optional[dict], calls: bool = False) -> str:
+        """Why shares held are not free: " (300 in working sells, 100 covering calls already sold, 50 lent)", or "" (``cover_state``'s
+        counts).  ``calls``: the shares free for NEW calls, which working short sales take too."""
         pos = pos or {}
         why = []
-        for n, words in ((pos.get("working_sells"), "in working sells"), (pos.get("reserved"), "reserved by covered calls"), (pos.get("lent"), "lent"),
-                         (pos.get("calls_working"), "covering calls being sold (working orders)"),
-                         (pos.get("pledged_here"), "covering the calls of an earlier order in this instruction"),
-                         (pos.get("taken_here"), "taken by earlier orders of this instruction (sold, or covering calls they sell to open)")):
+        for n, words in ((pos.get("working_sells"), "in working sells"), (pos.get("reserved"), "covering calls already sold"),
+                         (pos.get("calls_working"), "covering calls being sold (working orders)"), (pos.get("lent"), "lent"),
+                         (pos.get("working_shorts") if calls else 0, "taken by working short sales")):
             if n:
                 why.append(f"{int(n):,} {words}")
         return f" ({', '.join(why)})" if why else ""
@@ -4150,13 +3922,9 @@ class Resolver:
             leg["position"] = pos
             held, free = int(pos["qty"]), int(pos["free"])
             cls2 = self._cls(con)
-            bz: dict = {}
-            if cls2 == "shares" and held > 0:
-                # seventh review: a close of shares sells them - net of the working sell-to-open calls' cover and of what this
-                # instruction's earlier orders took, as a sale (``_side``)
-                bz = dict(pos)
-                free = self._cover_free(t["account_id"], con["id"], bz, sale=True)
-            extra = int(bz.get("calls_working") or 0) + int(bz.get("pledged_here") or 0) + int(bz.get("taken_here") or 0)
+            # a close of shares sells them: ``free`` is also net of the shares covering calls (``cover_state``), as a sale (``_side``)
+            bz = pos if cls2 == "shares" and held > 0 else {}
+            extra = int(bz.get("reserved") or 0) + int(bz.get("calls_working") or 0)
             side = ({"option": "STC", "future": "SELL", "shares": "SELL"} if held > 0 else {"option": "BTC", "future": "BUY", "shares": "BUY_TO_COVER"})[cls2]
             lot = max(1, int(con.get("lot") or 1))
             q = free
@@ -4177,7 +3945,7 @@ class Resolver:
                 leg["flags"].append(_flag("NOTHING_HELD", f"nothing to close in {t['account_id']}", leg["span"]))
             else:
                 leg["qty"], leg["side"] = q, side
-                busy = int(pos["working_sells"]) + int(pos["reserved"]) + int(pos["lent"]) + extra if held > 0 else int(pos["working_covers"])
+                busy = int(pos["working_sells"]) + int(pos["lent"]) + extra if held > 0 else int(pos["working_covers"])
                 leg["flags"].append(_flag("SIDE_INFERRED", f"close = {SIDE_TEXT[side]} {q:,} of the {abs(held):,} {'held' if held > 0 else 'short'} in {t['account_id']}"
                                           + (f" ({busy:,} already in working orders or reserved)" if busy else ""), leg["span"]))
             self._price_tif(c, leg, con)
@@ -4200,184 +3968,103 @@ class Resolver:
             return self._close_legs(ci, c, binfo, tree)
         return []
 
-    # ---- combinations ---------------------------------------------------------------------------------------------------------------------
-    def _combo(self, src: dict) -> dict:
+    # ---- groups: the orders written together, each its own ticket (1.0.7.2 simplification) -------------------------------------------------
+    def _group(self, src: dict) -> dict:
+        """1.0.7.2 simplification: the orders written together - a strategy, a roll, a collar, a covered call that buys its shares, a group
+        word or parentheses: exactly the sources 1.0.7.2 made combinations of, so the same legs carry a group id (``combo``) - each its own
+        ticket that goes and fills on its own (SEPARATE_TICKETS), sent in the order ``order`` gives (purchases first: shares, then options;
+        then sales to close, sales to open, share sales and short sales).  A price on the whole (NET_PRICE) and words asking for one order
+        (ONE_ORDER_ASKED) are blockers of the group, repeated without their choices on each of its orders, whose ``request`` is then null:
+        no consumer can send one order of a group the owner asked to be one.  The group's own ``request`` is always null."""
         legs = src["legs"]
-        flags: List[dict] = []
         span = src["span"]
-        kinds = [l["instrument"].get("kind") for l in legs]
+        flags: List[dict] = []
+        opts = [l for l in legs if (l.get("instrument") or {}).get("kind") == "OPTION"]
+        names = sorted({str(l["instrument"].get("underlying_id")) for l in opts if l["instrument"].get("underlying_id")}
+                       | {str(l["instrument"].get("id")) for l in legs if l["instrument"].get("kind") in EQUITY_KINDS and l["instrument"].get("id")})
         accts = sorted({str(l["account_id"]) for l in legs})
         books_ = sorted({str(l["book"]) for l in legs})
-        fill = None
-        under = None
-        eq = [l for l in legs if l["instrument"].get("kind") in EQUITY_KINDS]
-        opts = [l for l in legs if l["instrument"].get("kind") == "OPTION"]
-        unders = sorted({str(l["instrument"].get("underlying_id")) for l in opts})
-        unknown = any(k is None for k in kinds)
-        if len(legs) < 2 or len(legs) > MAX_COMBO_LEGS:
-            why = (": the group word takes the clauses on the same name that end at it" if (src.get("group") or {}).get("kind") == "word" and len(legs) < 2 else "")
-            flags.append(_flag("COMBO_INVALID", f"a package holds 2 to {MAX_COMBO_LEGS} legs, not {len(legs)}{why}", span, self._ungroup_choice(src)))
-        elif not unknown and (len(accts) != 1 or "None" in accts):
-            flags.append(_flag("COMBO_INVALID", "a package is one account of one book: its legs are in " + ", ".join(accts), span, self._ungroup_choice(src)))
+        name = src.get("strategy")
+        option_only = bool(legs) and len(opts) == len(legs) and len(names) == 1
+        label = f"the {name}" if name else "these orders"
+        tab = None
+        if option_only and self._has_template(name, legs) and len(accts) == 1 and accts[0] != "None":
+            # the order ticket's Strategies tab builds one all-or-none order of options from its rules (the owner picks there)
+            tab = {"kind": "strategies_tab", "label": "Strategies tab", "instrument_id": names[0], "account_id": accts[0]}
+        asked = self._one_order_words(src)
+        if asked:
+            flags.append(_flag("ONE_ORDER_ASKED", f"'{asked}' asks for one order; the Smart Ticket fills separate tickets that go and fill on their own"
+                               + ("; for one all-or-none order, use the Strategies tab" if tab else ""), span, self._separate_choice(src), action=tab))
+        p = src.get("price")
+        if p is not None:
+            flags.append(_flag("NET_PRICE", f"'{self.text[p['span'][0]:p['span'][1]]}' on {label} is a price for the whole: separate tickets cannot carry a net"
+                               " price - give each order its own price, or leave it out", span,
+                               [{"label": "without the price", "clause": _edit(self.text, span, [(p["span"][0], p["span"][1], "")])}]))
+        n = len(legs)
+        if n == 1:                                       # a group word or parentheses around one order: that order is one ticket
+            words = f"{label if name else 'this order'} as one ticket: it goes and fills on its own (no all-or-none, no sequence)"
         else:
-            # 1.0.7.2 gate: the CUSTOM package refuses one contract named twice (strategies._custom_spec, 400 LEGS: the all-or-none size rule
-            # judges each leg's displayed size on its own), so a combination that names a contract twice is a blocker here, never a 400 later
-            first_leg: Dict[str, int] = {}
-            for l in legs:
-                iid = l["instrument"].get("id")
-                if not iid:
-                    continue
-                if iid in first_leg:
-                    flags.append(_flag("COMBO_INVALID", f"legs {first_leg[iid]} and {l['n']} are the same contract ({l['instrument'].get('words') or iid}): a package"
-                                       " names each contract once, with its whole quantity", span, self._ungroup_choice(src)))
-                    break
-                first_leg[iid] = l["n"]
-        if not unknown and len(legs) >= 2:
-            if opts and len(opts) == len(legs) and len(unders) == 1:
-                fill, under = "AON", unders[0]
-            elif len(eq) == 1 and opts and len(opts) == len(legs) - 1 and unders == [str(eq[0]["instrument"]["id"])]:
-                fill, under = "SEQUENTIAL", eq[0]["instrument"]["id"]
-            else:
-                flags.append(_flag("COMBO_INVALID", "a package holds one name: its shares and its options (options on one name fill all-or-none; the shares with"
-                                   " their options in sequence)", span, self._ungroup_choice(src)))
-        if fill == "AON":
-            priced = [l for l in legs if l["order_type"] not in (None, "MARKET")]
-            if priced or src.get("price") is not None:
-                flags.append(_flag("LIMIT_IN_AON", "an all-or-none option package fills each leg at its executable bid / ask: a leg cannot carry its own limit"
-                                   " (a net limit comes in a later version)", span, self._aon_limit_choices(src)))
-            for l in legs:
-                l["flags"] = [f for f in l["flags"] if f["code"] != "TYPE_DEFAULT"]
-            flags.append(_flag("COMBO_FILL_MODE", "all-or-none: every leg fills together from one Cboe observation at its executable bid / ask, or nothing"
-                               " fills; no net limit in this version"))
-        elif fill == "SEQUENTIAL":
-            prim = eq[0]
-            if prim["order_type"] not in (None, "MARKET", "LIMIT") or any(l["order_type"] not in (None, "MARKET", "LIMIT") for l in opts):
-                flags.append(_flag("COMBO_INVALID", "the legs of a package are market or limit orders (no stops)", span))
-            if prim.get("side") in ("SELL", "SELL_SHORT") and any(l.get("side") == "STO" and l["instrument"].get("right") == "C" for l in opts):
-                # seventh review (the CUSTOM package refuses it too): the options of a package are released as its shares fill - calls
-                # sold to open as their shares are SOLD would be written exactly as their cover goes
-                flags.append(_flag("COMBO_INVALID", "a package that sells its shares cannot sell calls to open as they go (the calls would be written as"
-                                   " their cover is sold): send the calls as their own order", span, self._ungroup_choice(src)))
-            if src.get("price") is not None:
-                p = src["price"]
-                flags.append(_flag("COMBO_INVALID", f"a price on a {src.get('strategy') or 'package'} that buys the shares first is unclear (the shares, or a net"
-                                   " price?): give each leg its own price and say 'as a package', or leave the price out", span,
-                                   [{"label": "without the price", "clause": _edit(self.text, span, [(p["span"][0], p["span"][1], "")])}]))
-            per = ", ".join(f"{int(l['qty'] or 0):,} {l['instrument'].get('symbol') or ''} for {int(prim['qty'] or 0):,} shares" for l in opts) if prim.get("qty") else ""
-            flags.append(_flag("COMBO_FILL_MODE", f"in sequence: the {prim['instrument'].get('symbol')} shares first; the options are released in proportion as the"
-                               f" shares fill" + (f" ({per}; all of them once the shares have filled)" if per else "")))
-        tifs = sorted({str(l["tif"]) for l in legs})
-        tif = tifs[0] if len(tifs) == 1 else None
-        if fill and tif is None:
-            flags.append(_flag("COMBO_INVALID", "one time in force per package: its legs say " + ", ".join(tifs), span))
-        elif fill and tif not in PACKAGE_TIFS:
-            flags.append(_flag("COMBO_INVALID", f"a package is DAY or GTC in this version, not {tif}", span))
-        combo = {"id": None, "legs": [l["n"] for l in legs], "fill_mode": fill, "kind": "CUSTOM", "underlying_id": under, "strategy": src.get("strategy"),
-                 "book": legs[0]["book"] if legs and len(books_) == 1 else None, "account_id": accts[0] if len(accts) == 1 and accts[0] != "None" else None,
-                 "span": list(span), "clause": self.text[span[0]:span[1]], "flags": flags, "request": None}
-        if fill and not self._blocked(flags) and not any(self._blocked(l["flags"]) for l in legs) and all(l["request"] for l in legs):
-            order = ([eq[0]] + [l for l in legs if l is not eq[0]]) if fill == "SEQUENTIAL" else list(legs)
-            pk = []
-            for l in order:
-                d = {"instrument_id": l["instrument"]["id"], "side": l["side"], "qty": int(l["qty"])}
-                if fill == "SEQUENTIAL":
-                    d["order_type"] = l["order_type"] or "MARKET"
-                    if l["order_type"] == "LIMIT":
-                        d["limit_px"] = l["limit_px"]
-                pk.append(d)
-            combo["request"] = {"account_id": combo["account_id"], "tif": tif, "package": {"strategy_key": "CUSTOM", "legs": pk}}
-            if fill == "AON" and any(l.get("_claim") for l in legs):
-                combo["request"]["covered"] = True    # seventh review: a collar on shares held - placed only while they are still free
+            words = (f"{label} as {n} separate tickets: each order goes and fills on its own (no all-or-none, no sequence); send them in the order"
+                     " shown" + ("; for one all-or-none order, use the Strategies tab" if tab else ""))
+        flags.append(_flag("SEPARATE_TICKETS", words, span, action=None if asked else tab))
+        if p is None:
+            for l in opts:
+                # each option of the group is a ticket of its own at market until the owner gives it a limit there: said, as every default
+                if l.get("order_type") == "MARKET" and not any(f["code"] == "TYPE_DEFAULT" for f in l["flags"]) and l.get("side"):
+                    what = "ask" if l["side"] in ("BTO", "BTC") else "bid"
+                    l["flags"].append(_flag("TYPE_DEFAULT", f"no price: a market order (fills at the next executable Cboe {what})", l["span"]))
         for f in flags:
             _widen(self.text, f)
-        combo["flags"] = sort_flags(flags)
-        return combo
+        for f in flags:
+            if f["severity"] == "blocker":
+                for l in legs:
+                    l["flags"].append({k: v for k, v in f.items() if k not in ("choices", "action")})
+        order = [l["n"] for l in sorted(legs, key=lambda l: (_send_rank(l), l["n"]))]
+        return {"id": None, "legs": [l["n"] for l in legs], "fill_mode": None, "kind": "SEPARATE", "underlying_id": names[0] if len(names) == 1 else None,
+                "strategy": name, "book": legs[0]["book"] if legs and len(books_) == 1 else None,
+                "account_id": accts[0] if len(accts) == 1 and accts[0] != "None" else None, "span": list(span), "clause": self.text[span[0]:span[1]],
+                "flags": sort_flags(flags), "request": None, "order": order}
 
-    def _ungroup_choice(self, src: dict) -> Optional[List[dict]]:
-        g = src.get("group")
-        if not g:
-            return None
-        edits = []
-        if g.get("word_span"):
-            edits.append((g["word_span"][0], g["word_span"][1], ""))
-        s0, e0 = g["span"]
-        # sixth review: a group word typed INSIDE the parentheses ("(..., sell 1 ACME Dec 18 2026 250 call as a package)") is only a word of
-        # its order there - with the parentheses gone it would group the same orders again, so it goes with them
-        for ci in g.get("clauses") or []:
+    @staticmethod
+    def _has_template(name: Optional[str], legs: List[dict]) -> bool:
+        """Whether the order ticket's Strategies tab has a template for the strategy ``name`` (a butterfly: of calls only)."""
+        if not name or name not in TEMPLATE_STRATEGIES:
+            return False
+        if name == "butterfly":
+            return all((l.get("instrument") or {}).get("right") == "C" for l in legs)
+        return True
+
+    def _one_order_spans(self, src: dict) -> List[List[int]]:
+        """The words of group ``src`` that ask for one order: its group word, and one typed inside its parentheses."""
+        g = src.get("group") or {}
+        spans = [list(g["word_span"])] if g.get("word_span") else []
+        s0, e0 = src["span"]
+        for ci in src.get("clauses") or []:
             gw = self._tree["clauses"][ci]["mods"].get("group")
-            if gw and gw.get("span") and s0 <= gw["span"][0] and gw["span"][1] <= e0 and gw["span"] != g.get("word_span"):
-                edits.append((gw["span"][0], gw["span"][1], ""))
-        for i, ch in enumerate(self.text[s0:e0], s0):           # every parenthesis of the group's text goes (a nested one too)
-            if ch in "()" and not (g.get("word_span") and g["word_span"][0] <= i < g["word_span"][1]):
-                edits.append((i, i + 1, ""))
-        span = [s0, e0]
-        # fourth review: once this group's words go, a group word right after it whose run reaches back over these orders (the same name,
-        # no group word between) would take them into ITS package - that group is written with parentheses instead (the same orders in
-        # it), so each package keeps its own orders; when its word is not the last words of its run, the choice is not offered
-        nxt = self._absorber(g)
-        if nxt is not None:
-            clauses = self._tree["clauses"]
-            ws = nxt["word_span"]
-            first, last = clauses[nxt["clauses"][0]], clauses[nxt["clauses"][-1]]
-            if self.text[ws[1]:last["span"][1]].strip(" ,;") or ws[0] < first["span"][0]:
-                return None
-            edits.append((first["span"][0], first["span"][0], "("))
-            edits.append((ws[0], ws[1], ")"))
-            span = [s0, max(e0, last["span"][1])]
-        out = {"label": "as separate orders", "clause": _edit(self.text, span, edits)}
-        if span != [s0, e0]:
-            out["_span"] = span
-        return [out]
+            if gw and gw.get("span") and s0 <= gw["span"][0] and gw["span"][1] <= e0 and list(gw["span"]) not in spans:
+                spans.append(list(gw["span"]))
+        return spans
 
-    def _absorber(self, g: dict) -> Optional[dict]:
-        """The group-word group right after group ``g`` whose run would reach back over ``g``'s last order once ``g`` is undone, else None."""
-        clauses = self._tree["clauses"]
-        last = max(g["clauses"])
-        nxt = next((h for h in self._tree["groups"] if h is not g and h.get("kind") == "word" and h.get("clauses") and min(h["clauses"]) == last + 1
-                    and h.get("word_span")), None)
-        if nxt is None:
-            return None
-        key = clauses[max(nxt["clauses"])].get("underlying_key")
-        c = clauses[last]
-        return nxt if key and c["kind"] in ("order", "strategy") and c.get("underlying_key") == key else None
+    def _one_order_words(self, src: dict) -> Optional[str]:
+        spans = self._one_order_spans(src)
+        return ", ".join(self.text[a:b] for a, b in spans) or None
 
-    def _aon_limit_choices(self, src: dict) -> List[dict]:
-        out = []
-        spans = []
-        for ci in src["clauses"]:
-            p = self._tree["clauses"][ci]["mods"].get("price")
-            if p is not None:
-                spans.append((p["span"][0], p["span"][1], ""))
-        if spans:
-            out.append({"label": "drop the limits (all-or-none at each leg's bid / ask)", "clause": _edit(self.text, src["span"], spans)})
-        if src.get("group"):
-            out.extend(self._ungroup_choice(src) or [])
-        elif src.get("kind") == "strategy":
-            c = self._tree["clauses"][src["clauses"][0]]
-            tail = " ".join(_mod_texts(c, self.text, ("tif", "scope", "account")))      # sixth review: an account in the book phrase once
-            parts = []
-            for l in src["legs"]:
-                if not (l["instrument"].get("id") and l["side"] and l["qty"]):
-                    parts = []
-                    break
-                parts.append(f"{SIDE_WORD[l['side']]} {l['qty']} {l['instrument']['id']}" + (f" {tail}" if tail else ""))
-            if parts:
-                out.append({"label": "the legs as separate orders (each at market: set each leg's limit)", "clause": " and ".join(parts)})
-        return out
+    def _separate_choice(self, src: dict) -> Optional[List[dict]]:
+        """ONE_ORDER_ASKED's choice "as separate tickets": the words asking for one order go (``_one_order_spans``); the parentheses stay
+        and only group the cards.  Checked by the choice guard like every choice (dropped where it would change another order)."""
+        edits = [(a, b, "") for a, b in self._one_order_spans(src)]
+        return [{"label": "as separate tickets", "clause": _edit(self.text, src["span"], edits)}] if edits else None
 
     # ---- the whole answer --------------------------------------------------------------------------------------------------------------------
     def run(self, tree: dict) -> dict:
         self.text = tree["text"]
         self._tree = tree
-        # sixth / seventh reviews: each reading counts the shares its own orders take, in the order typed (``_take_legs``)
-        self._taken, self._pledged, self._shorted, self._called = {}, {}, {}, {}
         clauses = tree["clauses"]
         insts: List[List[dict]] = []
         for ci, c in enumerate(clauses):
             row = []
             for b in self._books_for(ci, c, tree):
                 got = self._clause_legs(ci, c, b, tree)
-                self._take_legs(c, got)
                 row.append({"rep": b["rep"], "legs": got})
             insts.append(row)
         legs = [l for row in insts for inst in row for l in inst["legs"]]
@@ -4395,7 +4082,8 @@ class Resolver:
                                             sc["span"], severity="info"))
         for l in legs:
             l["request"] = self._request(l)
-        # combinations: strategy words, covered calls, collars and rolls, then the groups (a strategy inside a group joins the group)
+        # groups: strategy words, covered calls and collars that buy their shares, collars, rolls, then the group words and parentheses (a
+        # strategy inside a group joins the group) - the same sources as 1.0.7.2's combinations
         grouped = {ci for g in tree["groups"] for ci in g["clauses"]}
         sources: List[dict] = []
         for ci, row in enumerate(insts):
@@ -4404,27 +4092,28 @@ class Resolver:
                 continue
             for inst in row:
                 if c["kind"] in ("collar", "covered") and len(inst["legs"]) < 2:
-                    continue                      # the options alone (shares held): an order of their own, no package
+                    continue                      # the calls alone (shares held): an order of their own, no group
                 name = c["strategy"]["name"] if c["kind"] == "strategy" and c.get("strategy") else {"covered": "covered call", "collar": "collar", "roll": "roll"}.get(c["kind"])
                 if name == "condor" and c.get("strategy") and c["strategy"].get("right"):
                     name = f"{_call_put(c['strategy']['right'])} {name}"
-                # a typed price reaches the combination of a strategy, a roll or a collar (refused there: LIMIT_IN_AON / COMBO_INVALID), never
-                # dropped (1.0.7.2 review); a covered call's own price check stays on its shares leg
+                # a typed price reaches the group of a strategy, a roll, a collar or a covered call that buys its shares (NET_PRICE there),
+                # never dropped (1.0.7.2 review)
                 sources.append({"legs": inst["legs"], "span": c["span"], "clauses": [ci], "kind": c["kind"], "strategy": name,
-                                "price": c["mods"].get("price") if c["kind"] in ("strategy", "roll", "collar") else None})
+                                "price": c["mods"].get("price")})
         for g in tree["groups"]:
             reps = max((len(insts[ci]) for ci in g["clauses"]), default=0)
             names = [clauses[ci]["strategy"]["name"] for ci in g["clauses"] if clauses[ci]["kind"] == "strategy" and clauses[ci].get("strategy")]
-            # second review: a price typed on a strategy, a roll or a collar inside a group ('as a package', parentheses) reaches the
-            # group's combination and is refused there like an ungrouped one (its legs are priced at market), never dropped
-            gprice = next((clauses[ci]["mods"]["price"] for ci in g["clauses"] if clauses[ci]["kind"] in ("strategy", "roll", "collar")
-                           and clauses[ci]["mods"].get("price") is not None), None)
+            # second review: a price typed on a strategy, a roll, a collar or a covered call that buys its shares inside a group reaches
+            # the group and is refused there like an ungrouped one (its legs are at market), never dropped
+            gprice = next((clauses[ci]["mods"]["price"] for ci in g["clauses"] if clauses[ci]["mods"].get("price") is not None
+                           and (clauses[ci]["kind"] in ("strategy", "roll", "collar")
+                                or (clauses[ci]["kind"] == "covered" and any(len(inst["legs"]) > 1 for inst in insts[ci])))), None)
             for r in range(reps):
                 members = [l for ci in g["clauses"] for inst in insts[ci] if inst["rep"] == r for l in inst["legs"]]
                 if members:
                     sources.append({"legs": members, "span": g["span"], "clauses": list(g["clauses"]), "kind": "group", "group": g,
                                     "strategy": names[0] if len(names) == 1 and len(g["clauses"]) == 1 else None, "price": gprice})
-        combos = [self._combo(s) for s in sources]
+        combos = [self._group(s) for s in sources]
         combos.sort(key=lambda cb: min(cb["legs"]) if cb["legs"] else 0)
         for n, cb in enumerate(combos, 1):
             cb["id"] = f"C{n}"
@@ -4433,15 +4122,17 @@ class Resolver:
         self._cross_checks(legs, clauses, grouped)
         for l in legs:
             l["request"] = self._request(l)
-        for cb in combos:                     # a combination stays sendable only while every leg of it does
-            if cb["request"] is not None and any(legs[n - 1]["request"] is None for n in cb["legs"]):
-                cb["request"] = None
         self._last = (legs, combos)
         self._keep_others(tree, legs, combos)
         out_legs = []
         for l in legs:
             l["flags"] = sort_flags(l["flags"])
-            out_legs.append({k: v for k, v in l.items() if not k.startswith("_")})
+            o = {k: v for k, v in l.items() if not k.startswith("_")}
+            if isinstance(o.get("position"), dict):
+                # the answer's position keeps its keys (the reading's other counts - calls being sold, short sales working, the shares
+                # free for new calls - stay inside the reading)
+                o["position"] = {k: o["position"].get(k, 0) for k in POSITION_KEYS}
+            out_legs.append(o)
         top = list(tree["flags"])
         if tree.get("prefix"):
             top.extend(tree["prefix"].get("flags") or [])
@@ -4460,7 +4151,7 @@ class Resolver:
                 "counts": counts, "legs": out_legs, "combos": combos, "unparsed": list(tree["unparsed"]), "flags": top}
 
     def _cross_checks(self, legs: List[dict], clauses: List[dict], grouped: set) -> None:
-        """COVER_HINT on a share buy and a call sold as two independent orders on one name; DUPLICATE_LEG on two identical orders."""
+        """COVER_HINT on a share buy and a call sold as two orders on one name outside a group; DUPLICATE_LEG on two identical orders."""
         free = [l for l in legs if l["combo"] is None]
         for b in free:
             ib = b["instrument"]
@@ -4470,17 +4161,10 @@ class Resolver:
                 ia = a["instrument"]
                 if a is b or ia.get("kind") not in EQUITY_KINDS or a["side"] != "BUY" or ia.get("id") != ib.get("underlying_id") or a["account_id"] != b["account_id"]:
                     continue
-                c1, c2 = sorted((a["_ci"], b["_ci"]))
-                choices = None
-                span = b["span"]
-                if c2 == c1 + 1 and c1 not in grouped and c2 not in grouped and a["_rep"] == b["_rep"]:
-                    s, e = clauses[c1]["span"][0], clauses[c2]["span"][1]
-                    # fourth review: in parentheses, never with a group word - the word's run would reach back over an order on the same
-                    # name before them and take it into the package
-                    choices = [{"label": "group them as a package (in parentheses: the call waits for the shares)", "clause": "(" + self.text[s:e] + ")"}]
-                    span = [s, e]
-                b["flags"].append(_flag("COVER_HINT", f"legs {a['n']} and {b['n']} look like a covered call: as typed they are two orders and the call can fill"
-                                        " before the shares", span, choices))
+                # the call is its own ticket: sent after the shares have filled, it is covered by them (and only then can it be sold as
+                # covered: the order route needs the shares held free)
+                b["flags"].append(_flag("COVER_HINT", f"legs {a['n']} and {b['n']} look like a covered call: two tickets: send the call after the shares have"
+                                        " filled", b["span"]))
                 break
         seen: Dict[str, int] = {}
         for l in legs:
@@ -4504,12 +4188,12 @@ class Resolver:
         that carries its side, book and account from the order before; the orders after it that carry ITS side; a book or account phrase
         that lands in the closing phrase of the last order), the choice also writes out, in trader words, what those orders had inherited
         (``_guard_flag``), its span widened over them.  Fourth and fifth reviews: each choice is then RESOLVED as the page would re-read
-        it (``_reads_alike``: the positions, the accounts, the orders already sent, the packages) and offered only when every order but
+        it (``_reads_alike``: the positions, the accounts, the groups) and offered only when every order but
         the one it is on reads exactly as before - matched by position, the orders it wrote out too - and never becomes sendable; when
         the clause it is on is repeated per book ("in the Personal and Fund books"), the other books' orders of that clause read as
         before too (a choice computed from one book's holding is written for that book alone: ``_split_choice``), unless the same words
         are offered on them; the order it is on stays in its book and account (unless the choice is that book or account) and joins no
-        other order's package; and its words parse (no new word "not understood").  Fifth review, the parse budget: an instruction
+        other order's group; and its words parse (no new word "not understood").  Fifth review, the parse budget: an instruction
         whose orders fall into independent sections (each starting with its own side; no group; no closing phrase that reaches another
         section) has each flag checked on its section alone - the opening phrase and that section's words, kept only when they read
         those orders exactly as the whole instruction does - so the work grows with the section, not the instruction, and identical
@@ -4583,9 +4267,9 @@ class Resolver:
         secs = [(s, (starts[k + 1] - 1) if k + 1 < len(starts) else len(cl) - 1) for k, s in enumerate(starts)]
         if len(secs) < 2:
             return None
-        # seventh review: the shares an account holds are counted once over the whole instruction, in the order typed (``_take_legs``): a
-        # name whose orders fall in two sections, one of them reading that count (a covered call or collar, a close, a sale or short sale
-        # of the shares, an order on them with no side yet), is read whole - a choice on one of them could change how the other reads
+        # seventh review (kept: it only makes the guard read whole more often): a name whose orders fall in two sections, one of them
+        # reading the shares held (a covered call or collar, a close, a sale or short sale of the shares, an order on them with no side
+        # yet), is read whole
         where: Dict[str, set] = {}
         reads: set = set()
         for k, (s, e) in enumerate(secs):
@@ -4735,7 +4419,7 @@ class Resolver:
         return (t_mine + "; " + t_rest) if codes[0] in mine else (t_rest + "; " + t_mine)
 
     def _shadow(self) -> "Resolver":
-        """A resolver on the same connection, sharing this one's reads (positions, accounts, chains, the orders already sent), for a re-read
+        """A resolver on the same connection, sharing this one's reads (positions, accounts, chains, the cover of shares), for a re-read
         the guard makes; it offers no guard of its own."""
         r = Resolver.__new__(Resolver)
         r.__dict__.update(self.__dict__)
@@ -4744,8 +4428,8 @@ class Resolver:
 
     @staticmethod
     def _facts(legs: List[dict], combos: List[dict]) -> Dict[int, list]:
-        """Per clause: each leg's order body (book, account, side, quantity, contract, order type, prices, time in force, read as an order
-        already sent), whether it can be sent, the clauses its combination joins it with, and whether it has a request of its own."""
+        """Per clause: each leg's order body (book, account, side, quantity, contract, order type, prices, time in force), whether it can be
+        sent (its own request: a group blocker is on its legs), the clauses its group joins it with, and whether it has a request."""
         of: Dict[int, dict] = {}
         for cb in combos:
             for n in cb["legs"]:
@@ -4754,10 +4438,9 @@ class Resolver:
         for l in legs:
             cb = of.get(l["n"])
             partners = frozenset(legs[m - 1]["_ci"] for m in cb["legs"]) - {l["_ci"]} if cb else frozenset()
-            goes = l["request"] is not None and (cb is None or cb["request"] is not None)
+            goes = l["request"] is not None
             fact = (l["book"], l["account_id"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), l.get("order_type"), l.get("limit_px"),
-                    l.get("stop_px"), l.get("trail_amt"), l.get("trail_pct"), l.get("tif"), l.get("gtd_date"),
-                    any(f["code"] == "ALREADY_SENT" for f in l["flags"]))
+                    l.get("stop_px"), l.get("trail_amt"), l.get("trail_pct"), l.get("tif"), l.get("gtd_date"))
             out.setdefault(l["_ci"], []).append((fact, goes, partners, l["request"] is not None))
         return out
 
@@ -4773,16 +4456,16 @@ class Resolver:
                      own_keys: Optional[frozenset] = None) -> bool:
         """Fourth and fifth reviews: whether the instruction a choice gives, RESOLVED as the page re-reads it, leaves every order but the
         one it is on as it was read - matched by position (the orders before and after the words it replaces keep their words; the
-        orders it wrote out keep their place in it), each with the same order body, the same reading as an order already sent (R2) and
-        the same package, never newly sendable (a leg whose only blocker was its package with the order the choice fixes excepted);
+        orders it wrote out keep their place in it), each with the same order body and the same group, never newly sendable (its own
+        request: a group blocker is repeated on the group's legs);
         the other books' orders of the clause it is on read as before (unless the same words are offered on them: ``own_books``); the
-        order it is on stays in its book and account (unless the choice is about those, ``place``) and joins no other order's package;
+        order it is on stays in its book and account (unless the choice is about those, ``place``) and joins no other order's group;
         and its words parse (no new word "not understood").  ``span0`` = the words the flag is on, ``span`` = the words the choice
         replaces (wider when the guard wrote orders out).  A re-read the parser refuses stages nothing: that choice stays.
 
         Sixth review: ``own_keys`` = the orders the flag is on and those the same words are offered on, as (clause, copy) - the legs of
-        the package a flag is on, never every leg of the books that package shares: every other copy of a clause inside the words it
-        rewrites (another book's copy of a clause typed for several books, in another package or none) is found unchanged in the new
+        the group a flag is on, never every leg of the books that group shares: every other copy of a clause inside the words it
+        rewrites (another book's copy of a clause typed for several books, in another group or none) is found unchanged in the new
         reading and never newly sendable, else the choice is not offered."""
         a, b = int(span[0]), int(span[1])
         try:
@@ -4848,7 +4531,7 @@ class Resolver:
                 if f0 != f2:
                     return False
                 if g2 and not g0 and not (r0 and "IN" in q0):
-                    return False                          # newly sendable (a package partner the choice completes excepted)
+                    return False                          # newly sendable
         mine0 = [x for i in own for x in facts0.get(i, [])]
         mine2 = [x for j in mine for x in facts2.get(j, [])]
         others = {x[0][0] for x in mine0} - set(own_books) - {None}
@@ -5178,8 +4861,9 @@ def register_routes(router) -> None:
 def unsupported() -> List[dict]:
     return [{"item": "FX, bonds, OTC and private trades on the Smart Ticket", "state": "LIMITED",
              "wording": "FX, bonds, OTC and private trades open their own ticket from the Smart Ticket", "where": "Smart Ticket"},
-            {"item": "A net limit on an all-or-none option combination", "state": "NOT_OFFERED",
-             "wording": "all-or-none combinations have no net limit in this version (each leg at its executable bid / ask)", "where": "Smart Ticket"}]
+            {"item": "One all-or-none order from the Smart Ticket", "state": "NOT_OFFERED",
+             "wording": "the Smart Ticket fills separate tickets; one all-or-none order of options is built in the order ticket's Strategies tab",
+             "where": "Smart Ticket"}]
 
 
 __all__ = ["GRAMMAR", "MAX_CHARS", "MAX_LEGS", "SEVERITY_RANK", "FLAG_SEVERITY", "Token", "Vocab", "Resolver", "SmartTicketError", "normalise", "tokenize",

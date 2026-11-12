@@ -15,7 +15,8 @@ ET (``AT``): "Dec 18" is then 2026-12-18 and "Jan 15" 2027-01-15.  The futures r
 may carry the body's default ``account_id``; ``expect`` is matched by the test: ``status`` (200 unless said), ``error`` (the code of
 a 4xx), ``ok``, ``legs`` (a count or a list of leg checks: side, qty, order_type, limit_px, stop_px, trail_amt, trail_pct, tif,
 gtd_date, book, account_id, combo, id = the instrument id, codes = flag codes the leg carries, request = True / False / the exact
-body), ``combos`` (a count or a list: fill_mode, legs, strategy, request, codes), ``codes`` (flag codes somewhere in the answer),
+body), ``combos`` (a count or a list: kind, legs, strategy, order, request, codes; since the 1.0.7.2 simplification a group is separate
+tickets: ``kind`` "SEPARATE" and no request of its own), ``codes`` (flag codes somewhere in the answer),
 ``absent`` (codes nowhere in it) and ``top`` (instruction-level codes).  At least as many cases are refusals or ambiguities (``ok``
 false or a 4xx) as clean ones.
 """
@@ -128,9 +129,11 @@ CASES = [
     _case("clean-at-gtc", "buy 200 ACME at 225 gtc", {"ok": True, "legs": [{"order_type": "LIMIT", "limit_px": "225", "tif": "GTC", "codes": ["TYPE_FROM_AT"]}],
                                                       "absent": ["TIF_DEFAULT"]}),
     _case("clean-market-default", "buy 100 ACME", {"ok": True, "legs": [{"side": "BUY", "qty": 100, "order_type": "MARKET", "codes": ["TYPE_DEFAULT"]}]}),
+    # 1.0.7.2 simplified (INV-4): a short sale while the account holds the shares is refused (SHORT_WHILE_LONG, below), so the clean short
+    # sales are typed in the Institutional book, which holds no WIDG
     _case("clean-short-borrow", "short 300 WIDG limit 41.20", {"ok": True, "legs": [
-        {"side": "SELL_SHORT", "qty": 300, "limit_px": "41.20", "request": _req(P, "WIDG", "SELL_SHORT", 300, "LIMIT", limit_px="41.20", borrow=True)}]}),
-    _case("clean-sell-short-at", "sell short 100 WIDG at 41", {"ok": True, "legs": [{"side": "SELL_SHORT", "limit_px": "41", "codes": ["TYPE_FROM_AT"]}]}),
+        {"side": "SELL_SHORT", "qty": 300, "limit_px": "41.20", "request": _req(I, "WIDG", "SELL_SHORT", 300, "LIMIT", limit_px="41.20", borrow=True)}]}, book="I"),
+    _case("clean-sell-short-at", "sell short 100 WIDG at 41", {"ok": True, "legs": [{"side": "SELL_SHORT", "limit_px": "41", "codes": ["TYPE_FROM_AT"]}]}, book="I"),
     _case("clean-sell-free", "sell 200 WIDG limit 41.20", {"ok": True, "legs": [{"side": "SELL", "qty": 200, "limit_px": "41.20"}]}),
     _case("clean-caps", "BUY 100 ACME LIMIT 225 GTC", {"ok": True, "legs": [{"side": "BUY", "limit_px": "225", "tif": "GTC"}]}),
     _case("clean-mixed-case", "Buy 100 Acme limit 225", {"ok": True, "legs": [{"id": "ACME", "limit_px": "225"}]}),
@@ -206,18 +209,18 @@ CASES = [
     _case("clean-fut-id", "buy 10 ESZ26 limit 6500.25", {"ok": True, "legs": [{"id": "ESZ26", "limit_px": "6500.25"}]}),
     _case("clean-fut-digit-root", "buy 1 6E Dec", {"ok": True, "legs": [{"id": "6EZ26", "codes": ["YEAR_INFERRED"]}]}),
     _case("clean-fut-lots", "buy 2 lots ESZ26", {"ok": True, "legs": [{"qty": 2, "id": "ESZ26"}]}),
-    # ---- clean: combinations ----------------------------------------------------------------------------------------------------------
+    # ---- clean: combinations (1.0.7.2 simplified: groups of separate tickets, each order with its own request, sent in ``order``) ------
     _case("clean-call-spread", "buy 1 ACME Dec 18 2026 240/250 call spread", {"ok": True, "legs": [
-        {"side": "BTO", "qty": 1, "id": C240, "combo": "C1", "codes": ["STRATEGY_EXPANDED"]}, {"side": "STO", "qty": 1, "id": C250, "combo": "C1"}],
-        "combos": [{"fill_mode": "AON", "legs": [1, 2], "strategy": "call spread", "codes": ["COMBO_FILL_MODE"],
-                    "request": {"account_id": P, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-                        {"instrument_id": C240, "side": "BTO", "qty": 1}, {"instrument_id": C250, "side": "STO", "qty": 1}]}}}]}),
+        {"side": "BTO", "qty": 1, "id": C240, "combo": "C1", "codes": ["STRATEGY_EXPANDED"], "request": _req(P, C240, "BTO", 1)},
+        {"side": "STO", "qty": 1, "id": C250, "combo": "C1", "request": _req(P, C250, "STO", 1)}],
+        "combos": [{"kind": "SEPARATE", "legs": [1, 2], "strategy": "call spread", "codes": ["SEPARATE_TICKETS"], "request": False, "order": [1, 2]}]}),
     _case("clean-sell-call-spread", "sell 1 ACME Dec 18 2026 240/250 call spread", {"ok": True, "legs": [{"side": "STO", "id": C240}, {"side": "BTO", "id": C250}]}),
     _case("clean-put-spread", "buy 1 ACME Dec 18 2026 240/250 put spread", {"ok": True, "legs": [{"side": "STO", "id": P240}, {"side": "BTO", "id": P250}]}),
     _case("clean-call-vertical", "buy 1 ACME Dec 18 2026 240/250 call vertical", {"ok": True, "legs": [{"id": C240}, {"id": C250}]}),
     _case("clean-spread-exp-after", "buy 1 ACME 240/250 call spread Dec 18 2026", {"ok": True, "legs": [{"id": C240}, {"id": C250}]}),
     _case("clean-iron-condor-sell", "sell 1 ACME Dec 18 2026 210/220/250/260 iron condor", {"ok": True, "codes": ["STRATEGY_SIDE_CONVENTION"], "legs": [
-        {"side": "BTO", "id": P210}, {"side": "STO", "id": P220}, {"side": "STO", "id": C250}, {"side": "BTO", "id": C260}], "combos": [{"fill_mode": "AON", "legs": [1, 2, 3, 4]}]}),
+        {"side": "BTO", "id": P210}, {"side": "STO", "id": P220}, {"side": "STO", "id": C250}, {"side": "BTO", "id": C260}],
+        "combos": [{"kind": "SEPARATE", "legs": [1, 2, 3, 4], "order": [1, 4, 2, 3], "request": False}]}),
     _case("clean-iron-condor-buy", "buy 1 ACME Dec 18 2026 220/230/250/260 iron condor", {"ok": True, "legs": [
         {"side": "STO", "id": P220}, {"side": "BTO", "id": P230}, {"side": "BTO", "id": C250}, {"side": "STO", "id": C260}]}),
     _case("clean-iron-butterfly", "sell 1 ACME Dec 18 2026 220/230/240 iron butterfly", {"ok": True, "legs": [
@@ -229,28 +232,34 @@ CASES = [
     _case("clean-put-butterfly", "buy 1 ACME Dec 18 2026 220/230/240 put butterfly", {"ok": True, "legs": [{"id": P220}, {"qty": 2, "id": P230}, {"id": P240}]}),
     _case("clean-calendar", "buy 1 ACME Dec 18 2026/Jan 15 2027 240 call calendar", {"ok": True, "legs": [{"side": "STO", "id": C240}, {"side": "BTO", "id": J240C}]}),
     _case("clean-calendar-reversed", "buy 1 ACME Jan 15 2027/Dec 18 2026 240 put calendar", {"ok": True, "legs": [{"side": "STO", "id": P240}, {"side": "BTO", "id": J240P}]}),
-    _case("clean-spread-gtc", "buy 1 ACME Dec 18 2026 240/250 call spread gtc", {"ok": True, "combos": [{"request": True}], "legs": [{"tif": "GTC"}, {"tif": "GTC"}]}),
+    _case("clean-spread-gtc", "buy 1 ACME Dec 18 2026 240/250 call spread gtc", {"ok": True, "combos": [{"request": False, "codes": ["SEPARATE_TICKETS"]}],
+                                                                                    "legs": [{"tif": "GTC", "request": True}, {"tif": "GTC", "request": True}]}),
     _case("clean-roll-short", "roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250", {"ok": True, "legs": [
-        {"side": "BTC", "qty": 2, "id": C240}, {"side": "STO", "qty": 2, "id": J250C}], "combos": [{"fill_mode": "AON", "strategy": "roll", "request": True}]}),
+        {"side": "BTC", "qty": 2, "id": C240, "request": True}, {"side": "STO", "qty": 2, "id": J250C, "request": True}],
+        "combos": [{"kind": "SEPARATE", "strategy": "roll", "request": False, "order": [1, 2]}]}),
     _case("clean-roll-long-held", "roll ACME Dec 18 2026 250 calls to Jan 15 2027", {"ok": True, "legs": [{"side": "STC", "qty": 3, "id": C250}, {"side": "BTO", "qty": 3, "id": J250C}]}),
-    _case("clean-package-buy-write", "buy 200 ACME limit 225 and sell 2 ACME Dec 18 2026 240 calls as a package", {"ok": True, "legs": [
-        {"side": "BUY", "limit_px": "225", "combo": "C1"}, {"side": "STO", "qty": 2, "combo": "C1"}],
-        "combos": [{"fill_mode": "SEQUENTIAL", "request": {"account_id": P, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": 200, "order_type": "LIMIT", "limit_px": "225"},
-            {"instrument_id": C240, "side": "STO", "qty": 2, "order_type": "MARKET"}]}}}]}),
-    _case("clean-group-aon-word", "buy 1 ACME Dec 18 2026 240 call; buy 1 ACME Dec 18 2026 250 call aon", {"ok": True, "legs": [
-        {"side": "BTC", "combo": "C1"}, {"side": "BTO", "combo": "C1"}], "combos": [{"fill_mode": "AON", "legs": [1, 2]}]}),
+    # words asking for one order are refused on the group and each of its orders (ONE_ORDER_ASKED), never split: the ids keep 7b634e2's
+    _case("clean-package-buy-write", "buy 200 ACME limit 225 and sell 2 ACME Dec 18 2026 240 calls as a package", {"ok": False, "legs": [
+        {"side": "BUY", "limit_px": "225", "combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False},
+        {"side": "STO", "qty": 2, "combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False}],
+        "combos": [{"kind": "SEPARATE", "codes": ["ONE_ORDER_ASKED"], "request": False, "order": [1, 2]}]}),
+    _case("clean-group-aon-word", "buy 1 ACME Dec 18 2026 240 call; buy 1 ACME Dec 18 2026 250 call aon", {"ok": False, "legs": [
+        {"side": "BTC", "combo": "C1", "request": False}, {"side": "BTO", "combo": "C1", "request": False}],
+        "combos": [{"kind": "SEPARATE", "legs": [1, 2], "codes": ["ONE_ORDER_ASKED"]}]}),
     _case("clean-paren-package-fund", "(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call) in the Fund book", {"ok": True, "legs": [
-        {"book": "F", "account_id": F, "codes": ["BOOK_FROM_SCOPE", "OTHER_BOOK"]}, {"book": "F", "side": "BTO"}], "combos": [{"fill_mode": "SEQUENTIAL"}]}),
-    _case("clean-straddle-with-shares", "buy 1 ACME Dec 18 2026 240 straddle and buy 100 ACME as a package", {"ok": True, "legs": 3,
-                                                                                                           "combos": [{"fill_mode": "SEQUENTIAL", "legs": [1, 2, 3]}]}),
-    _case("clean-covered-call", "covered call 100 ACME Dec 18 2026 240", {"ok": True, "legs": [{"side": "BUY", "qty": 100}, {"side": "STO", "qty": 1, "id": C240}],
-                                                                         "combos": [{"fill_mode": "SEQUENTIAL", "strategy": "covered call"}]}),
+        {"book": "F", "account_id": F, "codes": ["BOOK_FROM_SCOPE", "OTHER_BOOK"], "request": True}, {"book": "F", "side": "BTO", "request": True}],
+        "combos": [{"kind": "SEPARATE", "order": [1, 2], "request": False}]}),
+    _case("clean-straddle-with-shares", "buy 1 ACME Dec 18 2026 240 straddle and buy 100 ACME as a package", {"ok": False, "legs": 3,
+        "combos": [{"kind": "SEPARATE", "legs": [1, 2, 3], "order": [3, 1, 2], "codes": ["ONE_ORDER_ASKED"]}]}),
+    _case("clean-covered-call", "covered call 100 ACME Dec 18 2026 240", {"ok": True, "legs": [
+        {"side": "BUY", "qty": 100, "request": _req(P, "ACME", "BUY", 100)}, {"side": "STO", "qty": 1, "id": C240, "request": _req(P, C240, "STO", 1, covered=True)}],
+        "combos": [{"kind": "SEPARATE", "strategy": "covered call", "order": [1, 2], "request": False}]}),
     _case("clean-buy-write", "buy write 200 ACME Dec 18 2026 250", {"ok": True, "legs": [{"side": "BUY", "qty": 200}, {"side": "STO", "qty": 2, "id": C250}]}),
     _case("clean-collar-held", "collar 100 ACME Dec 18 2026 220/260 in the Fund book", {"ok": True, "legs": [
-        {"side": "BTO", "id": P220, "book": "F", "codes": ["SIDE_INFERRED"]}, {"side": "STO", "id": C260}], "combos": [{"fill_mode": "AON", "strategy": "collar"}]}),
+        {"side": "BTO", "id": P220, "book": "F", "codes": ["SIDE_INFERRED"], "request": _req(F, P220, "BTO", 1)},
+        {"side": "STO", "id": C260, "request": _req(F, C260, "STO", 1, covered=True)}], "combos": [{"kind": "SEPARATE", "strategy": "collar", "order": [1, 2]}]}),
     _case("clean-collar-not-held", "collar 100 ACME Dec 18 2026 220/260", {"ok": True, "legs": [{"side": "BUY", "qty": 100}, {"side": "BTO", "id": P220}, {"side": "STO", "id": C260}],
-                                                                          "combos": [{"fill_mode": "SEQUENTIAL", "request": True}]}),
+                                                                          "combos": [{"kind": "SEPARATE", "order": [1, 2, 3], "request": False}]}),
     # ---- clean: books and accounts ----------------------------------------------------------------------------------------------------
     _case("clean-g-example", "buy 200 ACME limit 225, sell 2 ACME Dec 18 2026 240 calls, and buy 50 WIDG at market in the Fund book", {"ok": True, "legs": [
         {"book": "F", "side": "BUY", "codes": ["BOOK_FROM_SCOPE", "OTHER_BOOK"]}, {"book": "F", "side": "STO", "codes": ["BOOK_FROM_SCOPE", "COVER_HINT", "SIDE_INFERRED"]},
@@ -363,16 +372,24 @@ CASES = [
     _case("ref-stray-paren", "buy 100 ACME)", {"ok": False, "top": ["UNPARSED_TEXT"]}),
     _case("ref-junk-char", "buy 100 ACME #now", {"ok": False, "codes": ["UNPARSED_TEXT"]}),
     _case("ref-non-ascii", "buy 100 ACME \u2605", {"ok": False, "codes": ["UNPARSED_TEXT"]}),
-    # ---- refusals: combinations ------------------------------------------------------------------------------------------------------
+    # ---- refusals: combinations (1.0.7.2 simplified: a leg's own limit is its ticket's; a price on the whole is NET_PRICE; words asking for
+    # one order are ONE_ORDER_ASKED; two names, two equities, a future, GTD are separate tickets - the ids keep 7b634e2's) -----------------
     _case("ref-limit-in-aon-group", "(buy 1 ACME Dec 18 2026 240 call limit 3.20 and sell 1 ACME Dec 18 2026 250 call limit 1.10) together", {
-        "ok": False, "combos": [{"fill_mode": "AON", "codes": ["LIMIT_IN_AON"], "request": False}]}),
-    _case("ref-limit-in-aon-strategy", "buy 1 ACME Dec 18 2026 240/250 call spread limit 2.10", {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
-    _case("ref-combo-two-names", "(buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put) together", {"ok": False, "combos": [{"codes": ["COMBO_INVALID"]}]}),
-    _case("ref-combo-one-leg", "buy 100 WIDG and sell 1 ACME Dec 18 2026 260 call as a package", {"ok": False, "combos": [{"legs": [2], "codes": ["COMBO_INVALID"]}]}),
-    _case("ref-combo-two-equities", "(buy 100 ACME and buy 100 WIDG)", {"ok": False, "combos": [{"codes": ["COMBO_INVALID"]}]}),
-    _case("ref-combo-future", "(buy 1 ESZ26 and buy 1 ACME Dec 18 2026 240 call)", {"ok": False, "combos": [{"codes": ["COMBO_INVALID"]}]}),
-    _case("ref-combo-gtd", "buy 1 ACME Dec 18 2026 240/250 call spread gtd 2026-12-01", {"ok": False, "combos": [{"codes": ["COMBO_INVALID"]}]}),
-    _case("ref-covered-price", "covered call 100 ACME Dec 18 2026 240 limit 2", {"ok": False, "codes": ["COMBO_INVALID"]}),
+        "ok": False, "legs": [{"order_type": "LIMIT", "limit_px": "3.20", "request": False}, {"order_type": "LIMIT", "limit_px": "1.10", "request": False}],
+        "combos": [{"kind": "SEPARATE", "codes": ["ONE_ORDER_ASKED"], "request": False}], "absent": ["NET_PRICE"]}),
+    _case("ref-limit-in-aon-strategy", "buy 1 ACME Dec 18 2026 240/250 call spread limit 2.10", {"ok": False, "combos": [{"codes": ["NET_PRICE"], "request": False}],
+                                                                                                "legs": [{"request": False}, {"request": False}]}),
+    _case("ref-combo-two-names", "(buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put) together", {"ok": False, "combos": [{"codes": ["ONE_ORDER_ASKED"]}],
+                                                                                                                    "legs": [{"request": False}, {"request": False}]}),
+    _case("ref-combo-one-leg", "buy 100 WIDG and sell 1 ACME Dec 18 2026 260 call as a package", {"ok": False, "legs": [
+        {"combo": None, "request": True}, {"combo": "C1", "codes": ["ONE_ORDER_ASKED"], "request": False}], "combos": [{"legs": [2], "codes": ["ONE_ORDER_ASKED"]}]}),
+    _case("ref-combo-two-equities", "(buy 100 ACME and buy 100 WIDG)", {"ok": True, "legs": [{"combo": "C1", "request": True}, {"combo": "C1", "request": True}],
+                                                                       "combos": [{"kind": "SEPARATE", "codes": ["SEPARATE_TICKETS"], "request": False}]}),
+    _case("ref-combo-future", "(buy 1 ESZ26 and buy 1 ACME Dec 18 2026 240 call)", {"ok": True, "legs": [{"id": "ESZ26", "request": True}, {"request": True}],
+                                                                                   "combos": [{"codes": ["SEPARATE_TICKETS"], "request": False}]}),
+    _case("ref-combo-gtd", "buy 1 ACME Dec 18 2026 240/250 call spread gtd 2026-12-01", {"ok": True, "legs": [
+        {"tif": "GTD", "gtd_date": "2026-12-01", "request": True}, {"tif": "GTD", "gtd_date": "2026-12-01", "request": True}], "combos": [{"codes": ["SEPARATE_TICKETS"]}]}),
+    _case("ref-covered-price", "covered call 100 ACME Dec 18 2026 240 limit 2", {"ok": False, "codes": ["NET_PRICE"], "legs": [{"request": False}, {"request": False}]}),
     _case("ref-strike-order", "buy 1 ACME Dec 18 2026 240/220 strangle", {"ok": False, "codes": ["STRIKE_ORDER"]}),
     _case("ref-vertical-no-right", "buy 1 ACME Dec 18 2026 240/250 vertical", {"ok": False, "codes": ["MISSING_INSTRUMENT"]}),
     _case("ref-spread-one-strike", "buy 1 ACME Dec 18 2026 240 call spread", {"ok": False, "codes": ["MISSING_INSTRUMENT"]}),
@@ -394,7 +411,7 @@ CASES = [
     _case("ref-two-expiries", "buy 2 ACME 2026-12-18 2027-01-15 240 call", {"ok": False, "codes": ["MISSING_INSTRUMENT"]}),
     _case("ref-no-qty-second-name", "buy 100 ACME, WIDG", {"ok": False, "legs": 1, "codes": ["UNPARSED_TEXT"]}),
     _case("ref-unclosed-paren", "buy 1 ACME Dec 18 2026 240 call (and sell 1 ACME Dec 18 2026 250 call", {"ok": False, "legs": 2, "top": ["UNPARSED_TEXT"]}),
-    _case("ref-nested-paren", "((buy 100 ACME))", {"ok": False, "top": ["UNPARSED_TEXT"], "codes": ["COMBO_INVALID"]}),
+    _case("ref-nested-paren", "((buy 100 ACME))", {"ok": False, "top": ["UNPARSED_TEXT"], "combos": [{"legs": [1], "request": False}]}),
     _case("ref-future-with-terms", "buy 1 ESZ26 Dec 18 2026 240 call", {"ok": False, "codes": ["UNPARSED_TEXT"]}),
     _case("ref-occ-with-terms", "buy 1 ACME261218C00240000 240 call", {"ok": False, "codes": ["MISSING_INSTRUMENT"]}),
     _case("ref-occ-expired", "buy 1 ACME251219C00240000", {"ok": False, "codes": ["EXPIRY_NOT_LISTED"]}),
@@ -429,7 +446,8 @@ CASES = [
     _case("clean-put-spread-reversed", "buy 1 ACME Dec 18 2026 250/240 put spread", {"ok": True, "codes": ["STRATEGY_SIDE_CONVENTION"], "legs": [
         {"side": "STO", "id": P240}, {"side": "BTO", "id": P250}]}),
     _case("clean-call-condor", "buy 1 ACME Dec 18 2026 210/220/250/260 call condor", {"ok": True, "legs": [
-        {"side": "BTO", "id": C210}, {"side": "STO", "id": C220}, {"side": "STO", "id": C250}, {"side": "BTO", "id": C260}], "combos": [{"fill_mode": "AON"}]}),
+        {"side": "BTO", "id": C210}, {"side": "STO", "id": C220}, {"side": "STO", "id": C250}, {"side": "BTO", "id": C260}],
+        "combos": [{"kind": "SEPARATE", "order": [1, 4, 2, 3]}]}),
     _case("clean-calendar-year-once", "buy 1 ACME Dec 18/Jan 15 2027 240 call calendar", {"ok": True, "legs": [{"side": "STO", "id": C240}, {"side": "BTO", "id": J240C}]}),
     _case("clean-suffix-then-modifier", "buy 200 ACME limit 225, buy 50 WIDG in the Fund book at market", {"ok": True, "legs": [
         {"book": "F", "codes": ["BOOK_FROM_SCOPE"]}, {"book": "F"}]}),
@@ -439,9 +457,9 @@ CASES = [
     _case("clean-covered-call-held", "covered call 100 ACME Dec 18 2026 240", {"ok": True, "combos": 0, "legs": [
         {"side": "STO", "qty": 1, "id": C240, "book": "F", "codes": ["SIDE_INFERRED"]}]}, book="F"),
     _case("amb-bare-condor", "buy 1 ACME Dec 18 2026 210/220/250/260 condor", {"ok": False, "codes": ["TOKEN_AMBIGUOUS"], "combos": [{"request": False}]}),
-    _case("ref-roll-price", "roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 at 1.20", {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}],
+    _case("ref-roll-price", "roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 at 1.20", {"ok": False, "combos": [{"codes": ["NET_PRICE"], "request": False}],
                                                                                           "absent": ["TYPE_FROM_AT"]}),
-    _case("ref-collar-price", "collar 100 ACME Dec 18 2026 220/260 limit 0.50", {"ok": False, "combos": [{"codes": ["COMBO_INVALID"], "request": False}]}),
+    _case("ref-collar-price", "collar 100 ACME Dec 18 2026 220/260 limit 0.50", {"ok": False, "combos": [{"codes": ["NET_PRICE"], "request": False}]}),
     _case("ref-sell-all-short-option", "sell all ACME Dec 18 2026 240 calls", {"ok": False, "legs": [{"codes": ["ADDS_TO_POSITION"], "request": False}]}),
     _case("ref-buy-all-long", "buy all WIDG limit 40", {"ok": False, "legs": [{"codes": ["ADDS_TO_POSITION", "QTY_FROM_HELD"], "request": False}]}),
     _case("ref-qty-comma", "buy 1,5k ACME limit 225", {"ok": False, "legs": [{"codes": ["QTY_NOT_WHOLE"], "request": False}]}),
@@ -463,15 +481,15 @@ CASES = [
     _case("clean-calendar-month-only-sold", "sell 1 ACME Dec 2026/Jan 15 240 put calendar", {"ok": True, "legs": [{"side": "BTO", "id": P240}, {"side": "STO", "id": J240P}]}),
     _case("clean-calendar-month-then-day", "buy 1 ACME Jan 2027/Dec 18 240 call calendar", {"ok": True, "legs": [{"side": "STO", "id": C240}, {"side": "BTO", "id": J240C}]}),
     _case("ref-calendar-month-no-chain", "buy 1 WIDG Nov 2026/Dec 18 40 put calendar", {"ok": False, "codes": ["EXPIRY_MONTH_ONLY"], "combos": [{"request": False}]}),
-    # a price typed on a strategy, a roll or a collar inside a group reaches the group's combination (refused), never dropped
+    # a price typed on a strategy, a roll or a collar inside a group reaches the group (NET_PRICE, refused), never dropped
     _case("ref-grouped-spread-price", "buy 1 ACME Dec 18 2026 240/250 call spread at 1.00 as a package", {"ok": False, "combos": [
-        {"codes": ["LIMIT_IN_AON"], "request": False}]}),
-    _case("ref-paren-spread-price", "(buy 1 ACME Dec 18 2026 240/250 call spread limit 1.00)", {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
+        {"codes": ["NET_PRICE", "ONE_ORDER_ASKED"], "request": False}]}),
+    _case("ref-paren-spread-price", "(buy 1 ACME Dec 18 2026 240/250 call spread limit 1.00)", {"ok": False, "combos": [{"codes": ["NET_PRICE"], "request": False}]}),
     _case("ref-grouped-spread-price-and-call", "buy 1 ACME Dec 18 2026 240/250 call spread at 1.00 and sell 1 ACME Dec 18 2026 260 call as a package",
-          {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
-    _case("ref-paren-roll-price", "(roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 at 1.20)", {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
+          {"ok": False, "combos": [{"codes": ["NET_PRICE", "ONE_ORDER_ASKED"], "request": False}]}),
+    _case("ref-paren-roll-price", "(roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 at 1.20)", {"ok": False, "combos": [{"codes": ["NET_PRICE"], "request": False}]}),
     _case("ref-grouped-collar-price", "collar 100 ACME Dec 18 2026 220/260 limit 0.50 as a package", {"ok": False, "combos": [
-        {"codes": ["LIMIT_IN_AON"], "request": False}]}, book="F"),
+        {"codes": ["NET_PRICE", "ONE_ORDER_ASKED"], "request": False}]}, book="F"),
     # a side carried into a strategy: a strategy is bought or sold, never a carried short / stc read as a buy
     _case("ref-carried-short-strategy", "short 100 WIDG and 1 ACME Dec 18 2026 240/250 call spread", {"ok": False, "codes": ["MISSING_SIDE"], "combos": [{"request": False}],
                                                                                                     "absent": ["STRATEGY_SIDE_CONVENTION"]}),
@@ -500,6 +518,20 @@ CASES = [
     # a comma before four or more digits is one malformed number too, never two orders
     _case("ref-qty-comma-4-digits", "buy 1,5000 ACME limit 225", {"ok": False, "legs": [{"codes": ["QTY_NOT_WHOLE"], "request": False}]}),
     _case("ref-qty-comma-5-digits", "buy 12,34567 ACME limit 225", {"ok": False, "legs": [{"codes": ["QTY_NOT_WHOLE"], "request": False}]}),
+    # ---- 1.0.7.2 simplified: the cover read on the account as it is, words asking for one order, net prices ----------------------------
+    _case("ref-short-while-long", "short 300 WIDG limit 41.20", {"ok": False, "legs": [{"side": "SELL_SHORT", "codes": ["SHORT_WHILE_LONG"], "request": False}]}),
+    _case("ref-oversell-no-short", "sell 400 WIDG limit 41", {"ok": False, "legs": [{"codes": ["WOULD_OVERSELL"], "request": False}]}),
+    _case("ref-collar-inverted", "collar 100 ACME Dec 18 2026 260/220", {"ok": False, "codes": ["STRIKE_ORDER"], "combos": [{"strategy": "collar", "request": False}]},
+          book="F"),
+    _case("ref-buy-write-short", "buy write 200 GIZM Dec 18 2026 55", {"ok": False, "codes": ["NOTHING_HELD"], "legs": [{"request": False}, {"request": False}]}),
+    _case("ref-buy-write-price", "buy write 200 ACME Dec 18 2026 250 limit 2.10", {"ok": False, "combos": [{"codes": ["NET_PRICE"], "request": False}],
+                                                                                  "legs": [{"request": False}, {"request": False}]}),
+] + [
+    _case(f"ref-one-order-{where}-{w.replace(' ', '-')}", text + " " + w, {"ok": False, "combos": [{"kind": "SEPARATE", "codes": ["ONE_ORDER_ASKED"], "request": False}],
+                                                                       "legs": [{"codes": ["ONE_ORDER_ASKED"], "request": False}] * 2})
+    for w in ("as a package", "as one order", "as one", "as a combo", "all or none", "aon", "together")
+    for where, text in (("strategy", "buy 1 ACME Dec 18 2026 240/250 call spread"), ("group", "(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call)"))
+] + [
     # ---- the route's 400s -------------------------------------------------------------------------------------------------------------
     _case("ref-400-too-long", LONG_TEXT, {"status": 400, "error": "TEXT_TOO_LONG"}),
     _case("ref-400-too-many-legs", "; ".join(["sell 1 ACME Dec 18 2026 210/220/250/260 iron condor"] * 5) + "; buy 1 ACME", {"status": 400, "error": "TOO_MANY_LEGS"}),

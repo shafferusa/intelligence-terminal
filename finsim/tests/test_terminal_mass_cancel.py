@@ -5,8 +5,9 @@ ended with its primary reported with it), and a replay of the batch cancels noth
 The world: two real books built by ``server.build_runtime`` offline (the Personal Book P1, USD 1,000,000.00 in P1:TREASURY, and the
 Fund Book F1, USD 25,000,000.00), Tue 2026-10-20 14:00 ET (US equities and equity options open).  ACME (print 100.00) and WIDG
 (print 50.00) are fictional listings, each observed 2 minutes ago on a completed 1-minute bar of 50,000 shares; ACME's Cboe chain is
-invented, 20 contracts displayed on every bid and ask.  The orders, all sent through ``POST /api/orders`` as the ticket and the Smart
-Ticket send them:
+invented, 20 contracts displayed on every bid and ask.  The orders, all sent through ``POST /api/orders`` as the order ticket sends them
+(1.0.7.2 simplified: the all-or-none package is the Strategies tab's bull call spread, 3,000 units; each sequential package is a shares
+order with its hedge's own legs):
   P1:US_EXCHANGE  pA BUY 10 ACME LIMIT 90.00 and pB BUY 10 WIDG LIMIT 40.00 (below the prints: they rest); an all-or-none package
                   BTO 30 ACME Dec 100 call + STO 30 Dec 105 call (30 > 20 displayed: it works unfilled), legs pL1 / pL2; a sequential
                   package BUY 100 ACME LIMIT 95.00 (the primary pS, resting) + STO 1 Dec 105 call (the leg pH, waiting for it); pF BUY 5
@@ -87,16 +88,17 @@ class MassCancelBase(unittest.TestCase):
         load_acme_chain(rt)
         self.pA = self.order(P_ACCT, "ACME", "BUY", 10, "90.00", "ui:mc-test-pA", "P")
         self.pB = self.order(P_ACCT, "WIDG", "BUY", 10, "40.00", "ui:mc-test-pB", "P")
-        st, out, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": acme("C", 100), "side": "BTO", "qty": 30}, {"instrument_id": acme("C", 105), "side": "STO", "qty": 30}]}}, "st:0123456789ab:C1:r1")
-        self.assertEqual((200, "WORKING", "AON_SIZE"), (st, out["package"]["status"], out["decision"]["reason"]), out)
+        # the Strategies tab's bull call spread, 3,000 units: BTO 30 Dec 100 calls + STO 30 Dec 105 calls (tenor 1 month -> 2026-12-18)
+        st, out, _h = self.template_package("BULL_CALL_SPREAD", 3000, {0: 100, 1: 105}, "ui:mc-test-pkg-aon")
+        self.assertEqual((200, "AON", "WORKING", "AON_SIZE"), (st, out["package"]["fill_mode"], out["package"]["status"], out["decision"]["reason"]), out)
         self.aon = out["package"]["package_id"]
         self.pL1, self.pL2 = (o["order_id"] for o in out["orders"])
-        st, out, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT", "limit_px": "95.00"},
-            {"instrument_id": acme("C", 105), "side": "STO", "qty": 1}]}}, "st:0123456789ab:C2:r1")
-        self.assertEqual((200, "SEQUENTIAL"), (st, out["package"]["fill_mode"]), out)
-        self.seq = out["package"]["package_id"]
+        self.assertEqual([(acme("C", 100), "BTO", 30), (acme("C", 105), "STO", 30)],
+                         [(r["instrument_id"], r["side"], int(r["qty"])) for r in (self.one("SELECT * FROM orders WHERE order_id=?", (x,)) for x in (self.pL1, self.pL2))])
+        st, out, _h = self.seq_package({"account_id": P_ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT", "limit_px": "95.00"},
+                                       [{"instrument_id": acme("C", 105), "side": "STO", "qty": 1}], "ui:mc-test-pkg-seq")
+        self.assertEqual((200, "SEQUENTIAL"), (st, self.one("SELECT fill_mode FROM hedge_packages WHERE package_id=?", (out["hedge_package"],))["fill_mode"]), out)
+        self.seq = out["hedge_package"]
         self.pS = out["order"]["order_id"]
         self.pH = self.one("SELECT order_id FROM orders WHERE parent_order_id=?", (self.pS,))["order_id"]
         st, out, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "instrument_id": "WIDG", "side": "BUY", "qty": 5, "order_type": "MARKET",
@@ -117,6 +119,19 @@ class MassCancelBase(unittest.TestCase):
         if rid is not None:
             b["request_id"] = rid
         return self.rt.router.handle("POST", path, None, b, "127.0.0.1", headers)
+
+    def template_package(self, key: str, units: int, strikes: dict, rid: str, book: str = "P", acct: str = P_ACCT):
+        """A Strategies-tab package on ACME: ``{strategy_key, underlying, units, tenor_months 1, strikes}`` (a strike override >= 60 is the
+        strike itself)."""
+        params = {"underlying": "ACME", "units": units, "tenor_months": 1, "strikes": {str(i): v for i, v in strikes.items()}}
+        st, spec, _h = self.post(f"/api/strategies/preview?book={book}", {"account_id": acct, "key": key, "params": params})   # the tab's preview first:
+        self.assertEqual(200, st, spec)                                                                                        # it lists the contracts
+        load_acme_chain(self.rt)                                       # the quote worker's next chain: it records the contracts now listed
+        return self.post(f"/api/orders?book={book}", {"account_id": acct, "tif": "DAY", "package": dict(params, strategy_key=key)}, rid)
+
+    def seq_package(self, primary: dict, legs: list, rid: str, book: str = "P"):
+        """A sequential package as the order ticket places it: the shares order with its hedge's own legs (DAY)."""
+        return self.post(f"/api/orders?book={book}", dict(primary, tif="DAY", hedge={"legs": legs}), rid)
 
     def order(self, acct, sym, side, qty, limit, rid, book) -> str:
         st, out, _h = self.post(f"/api/orders?book={book}", {"account_id": acct, "instrument_id": sym, "side": side, "qty": qty, "order_type": "LIMIT",
@@ -255,9 +270,8 @@ class MassCancelTests(MassCancelBase):
         self.assertEqual((200, "CANCELLED"), (st, out["order"]["status"]), out)
         self.assertEqual(("WORKING", "CANCELLED"), (self.statuses()[self.pS], self.statuses()[self.pH]))
         # a new buy-write, its leg listed BEFORE its primary: the primary's cancel goes first; the leg, still waiting, ends with it
-        st, pkg, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": 200, "order_type": "LIMIT", "limit_px": "94.00"},
-            {"instrument_id": acme("C", 105), "side": "STO", "qty": 2}]}}, "st:0123456789ab:C3:r1")
+        st, pkg, _h = self.seq_package({"account_id": P_ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 200, "order_type": "LIMIT", "limit_px": "94.00"},
+                                       [{"instrument_id": acme("C", 105), "side": "STO", "qty": 2}], "ui:mc-test-pkg-e")
         self.assertEqual(200, st, pkg)
         p2 = pkg["order"]["order_id"]
         h2 = self.one("SELECT order_id FROM orders WHERE parent_order_id=?", (p2,))["order_id"]
@@ -276,10 +290,10 @@ class MassCancelTests(MassCancelBase):
         covers them: Pending lists it apart as 'keeps working' and leaves it out of the batch) and ends a leg still WAITING - nothing can
         release it any more - reported with its primary, no command of its own.  A released leg the owner ticks is cancelled by its own
         command."""
-        st, pkg, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00"},
-            {"instrument_id": acme("C", 105), "side": "STO", "qty": 3}, {"instrument_id": acme("C", 100), "side": "BTO", "qty": 1}]}}, "st:0123456789ab:C4:r1")
-        self.assertEqual((200, "SEQUENTIAL"), (st, pkg["package"]["fill_mode"]), pkg)
+        st, pkg, _h = self.seq_package({"account_id": P_ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00"},
+                                       [{"instrument_id": acme("C", 105), "side": "STO", "qty": 3}, {"instrument_id": acme("C", 100), "side": "BTO", "qty": 1}],
+                                       "ui:mc-test-pkg-f")
+        self.assertEqual((200, "SEQUENTIAL"), (st, self.one("SELECT fill_mode FROM hedge_packages WHERE package_id=?", (pkg["hedge_package"],))["fill_mode"]), pkg)
         p = pkg["order"]["order_id"]
         kids = {r["instrument_id"]: r["order_id"] for r in self.q("SELECT order_id, instrument_id FROM orders WHERE parent_order_id=?", (p,))}
         sold, bought = kids[acme("C", 105)], kids[acme("C", 100)]
@@ -305,7 +319,7 @@ class MassCancelTests(MassCancelBase):
         self.assertEqual("primary ended before it was due", self.one("SELECT reason FROM orders WHERE order_id=?", (bought,))["reason"])
         # the released call, ticked on its own: its own cancel
         st, out, _h = self.cancel([sold], "mc:f1f1f1f1f1f1", book="P")
-        self.assertEqual([{"order_id": sold, "status": "CANCELLED", "package_id": pkg["package"]["package_id"]}], out["cancelled"])
+        self.assertEqual([{"order_id": sold, "status": "CANCELLED", "package_id": pkg["hedge_package"]}], out["cancelled"])
         self.assertEqual(["mc:f1f1f1f1f1f1:" + sold], self.cancels("mc:f1f1f1f1f1f1"))
         assert_integrity(self, self.rt, "full")
 
@@ -320,11 +334,10 @@ class ListedWithItsPrimaryTests(MassCancelBase):
         super().setUp()
         # BUY 300 ACME limit 99 (below the 100.00 print: it rests) + BTO 3 Dec 100 calls limit 1.00 (below the 5.00 ask: they rest once
         # released); the other ACME buys rest at 95.00 and below.  Ratio 3 / 300 = 0.01
-        st, pkg, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00"},
-            {"instrument_id": acme("C", 100), "side": "BTO", "qty": 3, "order_type": "LIMIT", "limit_px": "1.00"}]}}, "st:0123456789ab:C5:r1")
-        self.assertEqual((200, "SEQUENTIAL"), (st, pkg["package"]["fill_mode"]), pkg)
-        self.pkg = pkg["package"]["package_id"]
+        st, pkg, _h = self.seq_package({"account_id": P_ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00"},
+                                       [{"instrument_id": acme("C", 100), "side": "BTO", "qty": 3, "order_type": "LIMIT", "limit_px": "1.00"}], "ui:mc-test-pkg-listed")
+        self.assertEqual((200, "SEQUENTIAL"), (st, self.one("SELECT fill_mode FROM hedge_packages WHERE package_id=?", (pkg["hedge_package"],))["fill_mode"]), pkg)
+        self.pkg = pkg["hedge_package"]
         self.p = pkg["order"]["order_id"]
         self.h = self.one("SELECT order_id FROM orders WHERE parent_order_id=?", (self.p,))["order_id"]
         self.bar(600)                                                    # 10 % x 600 = 60 shares: 60 x 3 // 300 = 0, the calls wait

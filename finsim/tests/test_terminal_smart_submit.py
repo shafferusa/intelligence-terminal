@@ -1,6 +1,13 @@
-"""1.0.7.2 (CHANGE_PLAN 3.2 / 3.4): what the Smart Ticket sends goes through the existing order route unchanged - a single leg is the
-ticket's own order, a combination is a CUSTOM package (``strategies._custom_spec``) - with the page's request ids and its ``smart``
-note.  Every expected number is worked by hand in the comment next to it; nothing touches the network or ~/.finsim.
+"""1.0.7.2 (simplified, SIMPLIFY_PLAN s9): the Smart Ticket's tickets through the normal order route; the covered-call invariant;
+sequential packages.  Every expected number is worked by hand in the comment next to it; nothing touches the network or ~/.finsim.
+
+The Smart Ticket sends nothing itself: each card opens the order ticket filled with its leg's ``request``, and the ticket sends it as it
+sends any order (its own preview, then ``POST /api/orders`` under the ticket's request id: ``ticket``).  Packages are placed as the order
+ticket places them: a shares order with its hedge (``seq_package``: the Hedges tab's pick ``{candidate_id, ratio, edits}``, or the
+hedge's own ``legs``, which the order route takes as 1.0.7.1 does - the cases below that need a leg's own limit or an uneven ratio, such
+as 1 call for 300 shares, use them) or a Strategies-tab template (``template_package``: ``{strategy_key, units, tenor_months,
+strikes}``; tenor 1 reaches 2026-12-18 here and a strike override >= 60 is the strike itself).  The server names a sequential package's
+waiting legs ``<rid>:H<i>`` and an all-or-none package's legs ``<rid>:L<i>``.
 
 The world: the Test Book T1 (USD 10,000,000.00 in T1:TREASURY, T1:US_EXCHANGE empty, funded by the automatic sweep at each fill)
 built by ``server.build_runtime`` offline (every module bound as ``serve`` binds it, the Router, FakeClock, FakeProvider), Tue
@@ -9,8 +16,9 @@ would add it), its print 100.00 observed 2 minutes ago on a completed 1-minute b
 bar).  Its Cboe chain is invented (every price below), observed one minute ago and fetched now, 20 contracts displayed on every bid
 and ask; the underlying shows no bid / ask, so shares fill at the print.  Option fees 0.65 a contract.
 
-Request ids are the page's (CHANGE_PLAN 3.2): a single leg ``st:<ticket12>:L<n>:r<rev>``, a combination ``st:<ticket12>:C<n>:r<rev>``;
-the server names an all-or-none package's legs ``<rid>:L<i>`` and a sequential package's waiting legs ``<rid>:H<i>``.
+The covered-call invariant (SIMPLIFY_PLAN s5: INV-1 to INV-5 and INV-9): a call is sold as covered (``covered: true``) only while shares
+held free cover it, and those shares stay reserved for it until it is closed - a sale, a short sale, a loan or an early put exercise
+of them is refused, and while calls sold as covered are open on a name a further call sold to open on it needs free shares of its own.
 """
 from __future__ import annotations
 
@@ -23,7 +31,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from tests.terminal_helpers import _Log, assert_integrity
+from tests.terminal_helpers import _Log, assert_integrity, execute
 from finsim.terminal import config, server as _server
 from finsim.terminal.clock import FakeClock
 from finsim.terminal.instruments import occ_symbol
@@ -76,10 +84,11 @@ def print_acme(rt, last: str, age: int, bar_t: int, vol: int) -> None:
                              bars_tail=[bar]), now)
 
 
-def acme_chain(now: int, size: int = 20, fetched_at=None, quote_time=None) -> ChainSnapshot:
+def acme_chain(now: int, size: int = 20, fetched_at=None, quote_time=None, extra=()) -> ChainSnapshot:
+    """The invented chain (``ROWS``), plus ``extra`` rows of the same shape for a test that needs more contracts listed."""
     qt = now - 60 if quote_time is None else quote_time
     rows = [ChainRow(acme(r, k, e), e, r, qprice(k), qprice(b), qprice(a), size, size, None, None, 0.30, None, None, None, None, 100, 10)
-            for e, r, k, b, a in ROWS]
+            for e, r, k, b, a in list(ROWS) + list(extra)]
     return ChainSnapshot("ACME", "ACME", ChainUnderlying("ACME", qprice("100.00"), None, None, None, None, qt, None, 0.30), rows,
                          now if fetched_at is None else fetched_at, qt, len(rows))
 
@@ -114,7 +123,7 @@ class SmartSubmitBase(unittest.TestCase):
         self.rt.close()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    # ---- the routes, as the page calls them -------------------------------------------------------------------------------------
+    # ---- the routes, as the page and the order ticket call them ---------------------------------------------------------------------
     def call(self, method: str, path: str, body=None, rid=None):
         b = dict(body or {})
         if rid is not None:
@@ -124,10 +133,44 @@ class SmartSubmitBase(unittest.TestCase):
     def send(self, body: dict, rid: str, book: str = "T"):
         return self.call("POST", f"/api/orders?book={book}", body, rid)
 
-    def combo(self, n: int, legs: list, rev: int = 1, clause: str = "", **extra):
-        body = dict({"account_id": ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": legs},
-                     "smart": {"ticket": TICKET, "item": f"C{n}", "clause": clause}}, **extra)
-        return self.send(body, f"st:{TICKET}:C{n}:r{rev}")
+    def parse(self, text: str, book: str = "T") -> dict:
+        """The Smart Ticket's reading (its only request to the server)."""
+        st, out, _h = self.call("POST", f"/api/smart-ticket/parse?book={book}", {"text": text, "book": book})
+        self.assertEqual(200, st, out)
+        return out
+
+    def ticket(self, req: dict, rid: str, book: str = "T") -> tuple:
+        """What the order ticket does with a card's request (or any order typed in it): its own preview, then the order under the
+        ticket's request id with that preview's id.  Returns (http status, answer)."""
+        st, pv, _h = self.call("POST", f"/api/orders/preview?book={book}", dict(req))
+        body = dict(req, preview_id=pv["preview_id"]) if st == 200 and pv.get("preview_id") else dict(req)
+        st, out, _h = self.send(body, rid, book)
+        return st, out
+
+    def seq_package(self, primary: dict, hedge, rid: str = "ui:seq-package-0001", preview: bool = True) -> tuple:
+        """A sequential package as the order ticket places it: the shares order ``primary`` (LIMIT or MARKET) with its hedge - the Hedges
+        tab's pick ``{candidate_id, ratio, edits}`` (a dict), or the hedge's own legs (a list: ``{"legs": [...]}``) - after the ticket's
+        preview of it.  Returns (http status, answer, the shares order's row, its legs' rows ``<rid>:H<i>`` in order)."""
+        body = dict(primary, hedge=hedge if isinstance(hedge, dict) else {"legs": list(hedge)})
+        if preview:
+            st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(body))
+            self.assertEqual(200, st, pv)
+            body["preview_id"] = pv["preview_id"]
+        st, out, _h = self.send(body, rid)
+        if st != 200:
+            return st, out, None, []
+        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
+        legs = sorted(self.q("SELECT * FROM orders WHERE request_id LIKE ?", (rid + ":H%",)), key=lambda r: int(r["request_id"].rsplit(":H", 1)[1]))
+        return st, out, p, legs
+
+    def template_package(self, key: str, units: int, strikes: Optional[dict] = None, tenor_months: int = 1, rid: str = "ui:tpl-package-0001",
+                         **extra) -> tuple:
+        """A Strategies-tab package on ACME: ``{strategy_key, underlying, units, tenor_months, strikes}`` (tenor 1 reaches 2026-12-18 here;
+        a strike override >= 60 is the strike itself), plus any ``extra`` body keys.  Returns (http status, answer)."""
+        body = dict({"account_id": ACCT, "tif": "DAY", "package": {"strategy_key": key, "underlying": "ACME", "units": units, "tenor_months": tenor_months,
+                                                                   "strikes": {str(i): v for i, v in (strikes or {}).items()}}}, **extra)
+        st, out, _h = self.send(body, rid)
+        return st, out
 
     def q(self, sql: str, params=()):
         with self.rt.db.reader() as conn:
@@ -143,82 +186,64 @@ class SmartSubmitBase(unittest.TestCase):
                 out.append((f["order_id"], side, int(f["qty"]), D(f["price"])))
         return out
 
-    def filled_aon(self, n: int, legs: list, prices: list, clause: str = ""):
-        """Send combination ``n`` and check it filled at the submit, every leg at ``prices`` (its executable bid / ask), all from ONE
-        observation; returns the package id."""
-        st, out, h = self.combo(n, legs, clause=clause)
-        self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C{n}:r1"
-        pk = out["package"]
-        self.assertEqual(("AON", "CUSTOM", "FILLED", "FILL"), (pk["fill_mode"], pk["strategy_key"], pk["status"], out["decision"]["action"]))
-        oids = [o["order_id"] for o in out["orders"]]
-        self.assertEqual([f"{rid}:L{i}" for i in range(1, len(legs) + 1)], [o["request_id"] for o in self.q(
-            f"SELECT request_id FROM orders WHERE order_id IN ({','.join('?' for _ in oids)}) ORDER BY order_id", oids)])
-        self.assertEqual(["FILLED"] * len(legs), [o["status"] for o in out["orders"]])
-        got = {(o, s, n_, p) for o, s, n_, p in self.fills_of(oids)}
-        want = {(o["order_id"], l["side"], int(l["qty"]), D(px)) for o, l, px in zip(out["orders"], legs, prices)}
-        self.assertEqual(want, got)
-        keys = {f["idem_key"].rsplit(":", 1)[0] for f in self.q(f"SELECT idem_key FROM fills WHERE order_id IN ({','.join('?' for _ in oids)})", oids)}
-        self.assertEqual(1, len(keys), keys)                         # matchpkg:<package>:<quote_time>: one observation for every leg
-        hp = self.q("SELECT strategy_key, candidate_id, fill_mode, status FROM hedge_packages WHERE package_id=?", (pk["package_id"],))[0]
-        self.assertEqual(("CUSTOM", "AON", "FILLED"), (hp["strategy_key"], hp["fill_mode"], hp["status"]))
-        assert_integrity(self, self.rt, "full")
-        return pk["package_id"]
 
-
-# ===== a single leg: the ticket's own order, with the page's id and note ===============================================================
+# ===== a single leg: the card's request is the ticket's own order =========================================================================
 class SingleLegTests(SmartSubmitBase):
-    def test_a_leg_with_smart_is_the_tickets_order_and_ids_keep_their_rules(self):
+    def test_a_a_legs_request_sent_as_the_ticket_sends_it_places_exactly_the_read_order(self):
+        """The card's request is a standard order ticket: sent as the ticket sends any order (no ``smart`` note, no ``st:`` request id), it
+        places exactly the order a hand-typed ticket with the same fields places, and the request ids keep their rules."""
         rt = self.rt
         ticket = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 10, "order_type": "LIMIT", "limit_px": "90.00", "tif": "DAY"}
         st, a, _h = self.send(ticket, "ui:ticket-acme-000001")
         self.assertEqual(200, st, a)
-        smart = dict(ticket, smart={"ticket": TICKET, "item": "L1", "clause": "buy 10 ACME limit 90"})
-        rid = f"st:{TICKET}:L1:r1"
-        st, b, h = self.send(smart, rid)
+        (l,) = self.parse("buy 10 ACME limit 90")["legs"]
+        req = l["request"]
+        self.assertEqual(dict(ticket, limit_px="90"), {k: v for k, v in req.items() if v not in (None, False)})   # the ticket's fields as typed
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(req))
+        self.assertEqual(200, st, pv)
+        body = dict(req, preview_id=pv["preview_id"])
+        rid = "ui:ticket-acme-000002"
+        st, b, h = self.send(body, rid)
         self.assertEqual(200, st, b)
         self.assertNotIn("X-Replayed", h)
         # the same order for the same fields: a 90.00 limit below the 100.00 print rests; 10 x 90.00 + the 1.00 minimum fee reserved
-        cols = ("account_id", "instrument_id", "side", "qty", "filled_qty", "order_type", "limit_px", "tif", "status", "expires_ts", "fill_mode", "package_id")
+        cols = ("account_id", "instrument_id", "side", "qty", "filled_qty", "order_type", "tif", "status", "expires_ts", "fill_mode", "package_id")
         oa, ob = (self.q("SELECT * FROM orders WHERE order_id=?", (x["order"]["order_id"],))[0] for x in (a, b))
-        self.assertEqual({k: oa[k] for k in cols}, {k: ob[k] for k in cols})
+        self.assertEqual(dict({k: oa[k] for k in cols}, limit_px=D(oa["limit_px"])), dict({k: ob[k] for k in cols}, limit_px=D(ob["limit_px"])))
         self.assertEqual(("WORKING", D("90.00"), rid), (ob["status"], D(ob["limit_px"]), ob["request_id"]))
-        # the note is stored with the command (the audit trail of what was typed) and read by nothing else
         stored = json.loads(self.q("SELECT payload_json FROM commands WHERE request_id=?", (rid,))[0]["payload_json"])
-        self.assertEqual({"ticket": TICKET, "item": "L1", "clause": "buy 10 ACME limit 90"}, stored["smart"])
-        self.assertNotIn("smart", json.loads(self.q("SELECT payload_json FROM commands WHERE request_id=?", ("ui:ticket-acme-000001",))[0]["payload_json"]))
+        self.assertEqual(set(), {"smart", "aon_confirmed", "seq_confirmed"} & set(stored))
+        self.assertEqual([], self.q("SELECT order_id FROM orders WHERE request_id LIKE 'st:%'"))
         n_orders = self.q("SELECT COUNT(*) n FROM orders")[0]["n"]
-        # a resend of the unchanged item is a replay: the same answer, X-Replayed, no second order
-        st, again, h = self.send(smart, rid)
+        # a resend of the unchanged order is a replay: the same answer, X-Replayed, no second order
+        st, again, h = self.send(body, rid)
+        self.assertEqual((200, "1", b["order"]["order_id"]), (st, h.get("X-Replayed"), again["order"]["order_id"]))
+        # ... also with a FRESH preview id and confirm_large false (the ticket's PREVIEW_STALE / CONFIRM_REQUIRED resends, INV-7)
+        st, pv2, _h = self.call("POST", "/api/orders/preview?book=T", dict(req, confirm_large=False))
+        self.assertEqual(200, st, pv2)
+        st, again, h = self.send(dict(req, preview_id=pv2["preview_id"], confirm_large=False), rid)
         self.assertEqual((200, "1", b["order"]["order_id"]), (st, h.get("X-Replayed"), again["order"]["order_id"]))
         self.assertEqual(n_orders, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
-        # ... also as the page resends it (1.0.7.2 review R1): a FRESH preview id, confirm_large false and the note of the words differ from
-        # the stored command, the order's terms do not - a replay, never 409 REQUEST_ID_REUSED for the order that works
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(ticket, confirm_large=False))
-        self.assertEqual(200, st, pv)
-        st, again, h = self.send(dict(smart, preview_id=pv["preview_id"], confirm_large=False, smart=dict(smart["smart"], clause="buy 10 ACME limit 90.00")), rid)
-        self.assertEqual((200, "1", b["order"]["order_id"]), (st, h.get("X-Replayed"), again["order"]["order_id"]))
-        self.assertEqual(n_orders, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
-        # the same id with another payload (an edited item must get a new rev) is refused, nothing written
-        st, out, _h = self.send(dict(smart, qty=11), rid)
+        # the same id with another payload is refused, nothing written
+        st, out, _h = self.send(dict(body, qty=11), rid)
         self.assertEqual((409, "REQUEST_ID_REUSED"), (st, out["error"]["code"]))
         self.assertEqual(n_orders, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
         # a refusal leaves no row: limit 90.005 is off the 0.01 tick; the same id works once the price is fixed
-        rid2 = f"st:{TICKET}:L2:r1"
-        st, out, _h = self.send(dict(smart, limit_px="90.005", smart={"ticket": TICKET, "item": "L2", "clause": "buy 10 ACME limit 90.005"}), rid2)
+        rid2 = "ui:ticket-acme-000003"
+        st, out, _h = self.send(dict(req, limit_px="90.005"), rid2)
         self.assertEqual((400, "PRICE_TICK"), (st, out["error"]["code"]))
         self.assertEqual([], self.q("SELECT id FROM commands WHERE request_id=?", (rid2,)))
         self.assertEqual([], self.q("SELECT order_id FROM orders WHERE request_id=?", (rid2,)))
-        st, out, _h = self.send(dict(smart, limit_px="90.01", smart={"ticket": TICKET, "item": "L2", "clause": "buy 10 ACME limit 90.01"}), rid2)
+        st, out, _h = self.send(dict(req, limit_px="90.01"), rid2)
         self.assertEqual((200, "WORKING", D("90.01")), (st, out["order"]["status"], D(out["order"]["limit_px"])))
         # ?book= is the leg's own book: the right one passes the guard (above); another book is refused before anything is written
-        rid3 = f"st:{TICKET}:L3:r1"
-        st, out, _h = self.send(dict(smart, qty=12), rid3, book="P")
+        rid3 = "ui:ticket-acme-000004"
+        st, out, _h = self.send(dict(req, qty=12), rid3, book="P")
         self.assertEqual((409, "BOOK_MISMATCH", "T", "P"), (st, out["error"]["code"], out["error"]["details"]["book"], out["error"]["details"]["selected"]))
         self.assertEqual([], self.q("SELECT id FROM commands WHERE request_id=?", (rid3,)))
-        # every id the page makes fits the request-id rule (8-80 of [A-Za-z0-9:_.-]), the server's leg suffixes included
+        # every id fits the request-id rule (8-80 of [A-Za-z0-9:_.-]), the server's leg suffixes included
         from finsim.terminal.commands import RID_RE
-        for x in (rid, f"st:{TICKET}:C8:r99:L8", f"st:{TICKET}:C8:r99:H7"):
+        for x in (rid, rid + ":L8", rid + ":H7"):
             self.assertTrue(RID_RE.match(x), x)
         assert_integrity(self, rt, "full")
 
@@ -249,171 +274,75 @@ class SingleLegTests(SmartSubmitBase):
         assert_integrity(self, self.rt, "full")
 
 
-# ===== all-or-none combinations: every leg from one observation, or nothing ============================================================
-class AonComboTests(SmartSubmitBase):
-    def test_b_vertical_straddle_and_strangle_fill_all_or_none(self):
-        # bull call spread: BTO C100 at the ask 5.00, STO C105 at the bid 2.60 (a debit of 2.40 x 100 = 240.00)
-        self.filled_aon(1, [leg(acme("C", 100), "BTO", 1), leg(acme("C", 105), "STO", 1)], ["5.00", "2.60"], "buy the ACME Dec 100/105 call spread")
-        # straddle: BTO C100 at 5.00 and BTO P100 at 4.30
-        self.filled_aon(2, [leg(acme("C", 100), "BTO", 1), leg(acme("P", 100), "BTO", 1)], ["5.00", "4.30"])
-        # strangle: BTO P95 at 2.25 and BTO C110 at 1.30
-        self.filled_aon(3, [leg(acme("P", 95), "BTO", 1), leg(acme("C", 110), "BTO", 1)], ["2.25", "1.30"])
-        # positions: C100 +2, C105 -1, P100 +1, P95 +1, C110 +1
-        pos = {r["instrument_id"]: int(r["qty"]) for r in self.q("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty != 0", (ACCT,))}
-        self.assertEqual({acme("C", 100): 2, acme("C", 105): -1, acme("P", 100): 1, acme("P", 95): 1, acme("C", 110): 1}, pos)
-
-    def test_c_iron_condor_and_butterfly_fill_all_or_none(self):
-        # iron condor: BTO P90 1.10, STO P95 2.10, STO C105 2.60, BTO C110 1.30 -> credit -1.10 + 2.10 + 2.60 - 1.30 = 2.30 (230.00)
-        pid = self.filled_aon(1, [leg(acme("P", 90), "BTO", 1), leg(acme("P", 95), "STO", 1), leg(acme("C", 105), "STO", 1), leg(acme("C", 110), "BTO", 1)],
-                              ["1.10", "2.10", "2.60", "1.30"])
-        self.assertEqual(4, self.q("SELECT COUNT(*) n FROM orders WHERE package_id=?", (pid,))[0]["n"])
-        # butterfly with a body of 2: BTO C110 1.30, STO 2 C115 0.50, BTO C120 0.25 -> debit 1.30 - 1.00 + 0.25 = 0.55 (55.00)
-        self.filled_aon(2, [leg(acme("C", 110), "BTO", 1), leg(acme("C", 115), "STO", 2), leg(acme("C", 120), "BTO", 1)], ["1.30", "0.50", "0.25"])
-        pos = {r["instrument_id"]: int(r["qty"]) for r in self.q("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty != 0", (ACCT,))}
-        self.assertEqual({acme("P", 90): 1, acme("P", 95): -1, acme("C", 105): -1, acme("C", 110): 2, acme("C", 115): -2, acme("C", 120): 1}, pos)
-
-    def test_d_calendar_and_a_roll_fill_all_or_none(self):
-        # calendar (two expiries, one name): STO C100 Dec at the bid 4.80, BTO C100 Jan at the ask 6.40
-        self.filled_aon(1, [leg(acme("C", 100), "STO", 1), leg(acme("C", 100, E2), "BTO", 1)], ["4.80", "6.40"])
-        # a short Dec 105 call held (sold alone at the bid 2.60), then rolled out: BTC it at the ask 2.75 and STO the Jan 105 at the bid 3.90
-        st, out, _h = self.send({"account_id": ACCT, "instrument_id": acme("C", 105), "side": "STO", "qty": 1, "order_type": "MARKET", "tif": "DAY",
-                                 "smart": {"ticket": TICKET, "item": "L1", "clause": "sell 1 ACME Dec 105 call"}}, f"st:{TICKET}:L1:r1")
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
-        self.filled_aon(2, [leg(acme("C", 105), "BTC", 1), leg(acme("C", 105, E2), "STO", 1)], ["2.75", "3.90"], "roll the Dec 105 call to Jan")
-        pos = {r["instrument_id"]: int(r["qty"]) for r in self.q("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty != 0", (ACCT,))}
-        self.assertEqual({acme("C", 100): -1, acme("C", 100, E2): 1, acme("C", 105, E2): -1}, pos)     # the Dec 105 is closed
-
-    def test_e_nothing_fills_on_too_small_a_size_or_a_stale_chain_then_one_fresh_observation_fills_all(self):
-        rt = self.rt
-        # 30 contracts against 20 displayed: AON_SIZE - the package works, no leg fills
-        st, out, _h = self.combo(1, [leg(acme("C", 100), "BTO", 30), leg(acme("C", 105), "STO", 30)])
-        self.assertEqual(200, st, out)
-        self.assertEqual(("WORKING", "NONE", "AON_SIZE"), (out["package"]["status"], out["decision"]["action"], out["decision"]["reason"]))
-        big = [o["order_id"] for o in out["orders"]]
-        self.assertEqual((["WORKING", "WORKING"], []), ([o["status"] for o in out["orders"]], self.fills_of(big)))
-        # a chain fetched 10 minutes ago (past the 5-minute fetch grace) is stale: priced, flagged, accepted - and nothing fills
-        load_chain(rt, acme_chain(self.now, fetched_at=self.now - 600, quote_time=self.now - 660))
-        legs = [leg(acme("C", 95), "BTO", 1), leg(acme("C", 110), "STO", 1)]
-        st, pv, _h = self.call("POST", "/api/strategies/preview?book=T", {"account_id": ACCT, "key": "CUSTOM", "params": {"legs": legs}})
-        self.assertEqual((200, "stale"), (st, pv["chain_quality"]), pv)
-        self.assertTrue(any("stale" in w for w in pv["warnings"]))
-        st, out, _h = self.combo(2, legs)
-        self.assertEqual(200, st, out)
-        self.assertEqual(("WORKING", "AON_STALE"), (out["package"]["status"], out["decision"]["reason"]))
-        small = [o["order_id"] for o in out["orders"]]
-        self.assertEqual([], self.fills_of(small))
-        # one fresh observation: both legs of the small package fill together (BTO C95 at the ask 8.10, STO C110 at the bid 1.20); the big
-        # one still finds 20 displayed and waits
-        changed = load_chain(rt, acme_chain(self.now))
-        self.assertIn(acme("C", 95), changed)
-        self.assertGreaterEqual(rt.matcher.on_quotes(changed), 1)
-        self.assertEqual({(small[0], "BTO", 1, D("8.10")), (small[1], "STO", 1, D("1.20"))}, set(self.fills_of(small)))
-        self.assertEqual(["FILLED", "FILLED"], [o["status"] for o in self.q(f"SELECT status FROM orders WHERE order_id IN (?,?) ORDER BY order_id", small)])
-        self.assertEqual([], self.fills_of(big))
-        self.assertEqual(["WORKING", "WORKING"], [o["status"] for o in self.q("SELECT status FROM orders WHERE order_id IN (?,?) ORDER BY order_id", big)])
-        # the Pending blotter names the package in words
-        rows = [r for r in self.call("GET", "/api/blotter/pending?book=T&status=open")[1]["rows"] if r.get("package_id")]
-        self.assertTrue(rows)
-        self.assertEqual({"your own legs (Smart Ticket)"}, {r["strategy_words"] for r in rows})
-        assert_integrity(self, rt, "full")
-
-    def test_f_refusals_of_a_combination_leave_no_row(self):
-        rt = self.rt
-        n0 = rt.instruments.count()
-        # a contract the chain does not list is never invented: 400 NOT_LISTED, nothing written, the id stays free
-        st, out, _h = self.combo(1, [leg(acme("C", 125), "STO", 1), leg(acme("C", 105), "BTO", 1)])
-        self.assertEqual((400, "NOT_LISTED"), (st, out["error"]["code"]))
-        self.assertIsNone(rt.instruments.get(acme("C", 125)))
-        self.assertEqual([], self.q("SELECT id FROM commands WHERE request_id=?", (f"st:{TICKET}:C1:r1",)))
-        # a limit on an all-or-none leg (no net limit in this version); two names in one package
-        st, out, _h = self.combo(1, [leg(acme("C", 100), "BTO", 1, order_type="LIMIT", limit_px="5.00"), leg(acme("C", 105), "STO", 1)])
-        self.assertEqual((400, "LIMIT_IN_AON"), (st, out["error"]["code"]))
-        st, out, _h = self.combo(1, [leg("WIDG", "BUY", 100), leg(acme("C", 105), "STO", 1)])
-        self.assertEqual((400, "COMBO_INVALID"), (st, out["error"]["code"]))
-        self.assertEqual([], self.q("SELECT order_id FROM orders"))
-        # the fixed combination with the same id is accepted (a refusal never used the id up)
-        self.filled_aon(1, [leg(acme("C", 100), "BTO", 1), leg(acme("C", 105), "STO", 1)], ["5.00", "2.60"])
-        self.assertEqual(n0 + 2, rt.instruments.count())                     # exactly the two contracts the chain lists
-        # ?book= of another book is refused before anything
-        st, out, _h = self.send({"account_id": ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [leg(acme("P", 100), "BTO", 1),
-                                                                                                              leg(acme("P", 95), "STO", 1)]}},
-                                f"st:{TICKET}:C2:r1", book="P")
-        self.assertEqual((409, "BOOK_MISMATCH"), (st, out["error"]["code"]))
-        self.assertEqual([], self.q("SELECT id FROM commands WHERE request_id=?", (f"st:{TICKET}:C2:r1",)))
-        assert_integrity(self, rt, "full")
-
-
-# ===== sequential: the shares first, the options wait and follow its fills ==============================================================
+# ===== sequential packages: the shares first, the options wait and follow its fills ======================================================
 class SequentialComboTests(SmartSubmitBase):
     def test_g_children_wait_then_resize_to_the_primarys_fill(self):
+        """The Hedges tab's collar picked for BUY 1,000 ACME limit 99.  With two puts listed on the default expiry for this test (Jan 15 2027
+        90 bid 2.40 / ask 2.55, 95 bid 3.80 / ask 4.00), COLLAR_7 is BTO 10 Jan 95 puts + STO 10 Jan 105 calls (K = 0.93 x 100.00 = 93 ->
+        nearest listed 95; 1.07 x 100.00 = 107 -> 105; n = floor(1,000 / 100) = 10; ratio 10 / 1,000 = 0.01)."""
         rt = self.rt
+        put, call = acme("P", 95, E2), acme("C", 105, E2)
+        extra = [(E2, "P", 90, "2.40", "2.55"), (E2, "P", 95, "3.80", "4.00")]
+        load_chain(rt, acme_chain(self.now, extra=extra))
         primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 1000, "order_type": "LIMIT", "limit_px": "99.00", "tif": "DAY"}
-        legs = [leg(acme("C", 105), "STO", 10), leg("ACME", "BUY", 1000, order_type="LIMIT", limit_px="99.00")]      # named call first
-        # a preview id the store does not know: the sequential package checks its primary's preview like a single order -> 409 PREVIEW_STALE
-        st, out, _h = self.combo(1, legs, preview_id="pv:0000000000000000")
+        pick = {"candidate_id": "COLLAR_7", "ratio": None, "edits": {}}
+        # a preview id the store does not know: the package checks its shares order's preview like a single order -> 409 PREVIEW_STALE
+        st, out, _h = self.send(dict(primary, hedge=pick, preview_id="pv:0000000000000000"), "ui:seq-g-000001")
         self.assertEqual((409, "PREVIEW_STALE"), (st, out["error"]["code"]))
         self.assertEqual([], self.q("SELECT order_id FROM orders"))
-        # the page's fresh preview of the primary leg, then the package with that preview id
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
-        self.assertEqual(200, st, pv)
-        st, out, h = self.combo(1, legs, rev=2, clause="buy 1000 ACME limit 99 and sell 10 Dec 105 calls", preview_id=pv["preview_id"])
+        # the ticket's fresh preview, then the order with its hedge
+        rid = "ui:seq-g-000002"
+        st, out, p, (hp, hc) = self.seq_package(primary, pick, rid=rid)
         self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C1:r2"
-        self.assertEqual(("SEQUENTIAL", "CUSTOM"), (out["package"]["fill_mode"], out["package"]["strategy_key"]))
-        # the 99.00 limit is below the 100.00 print: the shares rest; the 10 calls wait for them (ratio 10 / 1,000 = 0.01)
-        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
-        c = self.q("SELECT * FROM orders WHERE request_id=?", (rid + ":H1",))[0]
+        # the 99.00 limit is below the 100.00 print: the shares rest; the puts and calls wait for them
         self.assertEqual(("ACME", "BUY", 1000, "LIMIT", D("99.00"), "WORKING", 0), (p["instrument_id"], p["side"], p["qty"], p["order_type"], D(p["limit_px"]),
                                                                                     p["status"], p["filled_qty"]))
-        self.assertEqual((acme("C", 105), "STO", 10, "MARKET", "WAITING_PARENT", p["order_id"], "0.01", p["package_id"]),
-                         (c["instrument_id"], c["side"], c["qty"], c["order_type"], c["status"], c["parent_order_id"], c["ratio"], c["package_id"]))
-        hp = self.q("SELECT strategy_key, fill_mode, primary_order_id FROM hedge_packages WHERE package_id=?", (p["package_id"],))[0]
-        self.assertEqual(("CUSTOM", "SEQUENTIAL", p["order_id"]), (hp["strategy_key"], hp["fill_mode"], hp["primary_order_id"]))
+        for r, (iid, side) in zip((hp, hc), ((put, "BTO"), (call, "STO"))):
+            self.assertEqual((iid, side, 10, "MARKET", "WAITING_PARENT", p["order_id"], "0.01", p["package_id"]),
+                             (r["instrument_id"], r["side"], r["qty"], r["order_type"], r["status"], r["parent_order_id"], r["ratio"], r["package_id"]))
+        pk = self.q("SELECT candidate_id, fill_mode, primary_order_id FROM hedge_packages WHERE package_id=?", (p["package_id"],))[0]
+        self.assertEqual(("COLLAR_7", "SEQUENTIAL", p["order_id"]), (pk["candidate_id"], pk["fill_mode"], pk["primary_order_id"]))
         stored = json.loads(self.q("SELECT payload_json FROM commands WHERE request_id=?", (rid,))[0]["payload_json"])
-        self.assertEqual("C1", stored["smart"]["item"])
+        self.assertEqual(("COLLAR_7", None), (stored["hedge"]["candidate_id"], stored.get("smart")))
         # a resend is a replay: no second package
-        st, again, h2 = self.combo(1, legs, rev=2, clause="buy 1000 ACME limit 99 and sell 10 Dec 105 calls", preview_id=pv["preview_id"])
+        st, again, h2 = self.send(dict(primary, hedge=pick, preview_id=stored["preview_id"]), rid)
         self.assertEqual((200, "1"), (st, h2.get("X-Replayed")))
-        self.assertEqual(2, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
-        # the same id with an edited leg (11 calls) is another payload: 409 REQUEST_ID_REUSED, nothing written (an edit takes a new rev)
-        st, out, _h = self.combo(1, [leg(acme("C", 105), "STO", 11), legs[1]], rev=2, clause="buy 1000 ACME limit 99 and sell 10 Dec 105 calls",
-                                 preview_id=pv["preview_id"])
+        self.assertEqual(3, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
+        # the same id with another hedge (a ratio) is another payload: 409 REQUEST_ID_REUSED, nothing written
+        st, out, _h = self.send(dict(primary, hedge=dict(pick, ratio="0.011"), preview_id=stored["preview_id"]), rid)
         self.assertEqual((409, "REQUEST_ID_REUSED"), (st, out["error"]["code"]))
-        self.assertEqual(2, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
+        self.assertEqual(3, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
         # a print at 98.90 on the next completed bar (13:59, 4,000 shares): the resting 99.00 limit is crossed and fills at its limit, capped
-        # at 10 % x 4,000 = 400 shares; the calls are resized to floor(400 x 0.01) = 4 and start working
+        # at 10 % x 4,000 = 400 shares; each leg is resized to floor(400 x 10 / 1,000) = 4 and starts working
         print_acme(rt, "98.90", 10, self.now - 60, 4000)
         self.assertEqual(1, rt.matcher.on_quotes(["ACME"]))
         p = self.q("SELECT * FROM orders WHERE order_id=?", (p["order_id"],))[0]
-        c = self.q("SELECT * FROM orders WHERE order_id=?", (c["order_id"],))[0]
         self.assertEqual(("PARTIAL", 400), (p["status"], p["filled_qty"]))
         self.assertEqual([(p["order_id"], "BUY", 400, D("99.00"))], self.fills_of([p["order_id"]]))
-        self.assertEqual(("WORKING", 4, 0), (c["status"], c["qty"], c["filled_qty"]))
-        self.assertTrue(any("resized to 4 = floor(400" in e["note"] for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c["order_id"],))))
-        # the working calls fill at the bid 2.60 from the chain observation (20 displayed >= 4)
-        self.assertEqual(1, rt.matcher.on_quotes([acme("C", 105)]))
-        self.assertEqual([(c["order_id"], "STO", 4, D("2.60"))], self.fills_of([c["order_id"]]))
+        for oid in (hp["order_id"], hc["order_id"]):
+            r = self.q("SELECT * FROM orders WHERE order_id=?", (oid,))[0]
+            self.assertEqual(("WORKING", 4, 0), (r["status"], r["qty"], r["filled_qty"]))
+            self.assertTrue(any("resized to 4 = floor(400" in e["note"] for e in self.q("SELECT note FROM order_events WHERE order_id=?", (oid,))))
+        # the next chain observation (20 displayed >= 4): the puts are bought at the 4.00 ask, the calls sold at the 3.90 bid
+        rt.clock.advance(30)
+        load_chain(rt, acme_chain(rt.clock.epoch(), extra=extra))
+        rt.matcher.on_quotes([put, call])
+        self.assertEqual([(hp["order_id"], "BTO", 4, D("4.00")), (hc["order_id"], "STO", 4, D("3.90"))], self.fills_of([hp["order_id"], hc["order_id"]]))
         pos = {r["instrument_id"]: int(r["qty"]) for r in self.q("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty != 0", (ACCT,))}
-        self.assertEqual({"ACME": 400, acme("C", 105): -4}, pos)
+        self.assertEqual({"ACME": 400, put: 4, call: -4}, pos)
         assert_integrity(self, rt, "full")
 
-
     def test_h_a_package_of_300_shares_and_one_call_releases_the_call(self):
-        """1.0.7.2 review: the release is whole-number arithmetic on the leg's own quantity: 1 call for 300 shares (ratio 0.00333333 at 8
-        decimals) is released once the shares have filled, never lost to floor(300 x 0.00333333) = 0."""
-        legs = [leg("ACME", "BUY", 300), leg(acme("C", 105), "STO", 1)]
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300,
-                                                                       "order_type": "MARKET", "tif": "DAY"})
-        self.assertEqual(200, st, pv)
-        st, out, _h = self.combo(1, legs, clause="buy 300 ACME, sell 1 ACME Dec 18 2026 105 call as a package", preview_id=pv["preview_id"])
+        """1.0.7.2 review: the release is whole-number arithmetic on the leg's own quantity: 1 call for 300 shares (the hedge's own leg;
+        ratio 0.00333333 at 8 decimals) is released once the shares have filled, never lost to floor(300 x 0.00333333) = 0."""
+        primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "MARKET", "tif": "DAY"}
+        st, out, p, (c,) = self.seq_package(primary, [leg(acme("C", 105), "STO", 1)], rid="ui:seq-h-000001")
         self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C1:r1"
-        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
-        c = self.q("SELECT * FROM orders WHERE request_id=?", (rid + ":H1",))[0]
         self.assertEqual(("FILLED", 300, "0.00333333"), (p["status"], p["filled_qty"], c["ratio"]))
         self.assertNotEqual("WAITING_PARENT", c["status"])
         self.assertEqual(1, int(c["qty"]))
-        self.assertTrue(any(e["note"].startswith("resized to 1 = floor(300 ") and e["note"].endswith(" 1 / 300) after the primary's fill") for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c["order_id"],))))
+        self.assertTrue(any(e["note"].startswith("resized to 1 = floor(300 ") and e["note"].endswith(" 1 / 300) after the primary's fill")
+                            for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c["order_id"],))))
         assert_integrity(self, self.rt, "full")
 
 
@@ -427,14 +356,8 @@ class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
 
     def package(self, shares: int, calls: int, n: int = 1):
         primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": shares, "order_type": "LIMIT", "limit_px": "99.00", "tif": "DAY"}
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
-        self.assertEqual(200, st, pv)
-        legs = [leg("ACME", "BUY", shares, order_type="LIMIT", limit_px="99.00"), leg(self.CALL, "STO", calls)]
-        st, out, _h = self.combo(n, legs, clause=f"buy {shares} ACME limit 99, sell {calls} ACME Dec 18 2026 105 calls as a package", preview_id=pv["preview_id"])
+        st, out, p, (c,) = self.seq_package(primary, [leg(self.CALL, "STO", calls)], rid=f"ui:seq-release-{n:04d}")
         self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C{n}:r1"
-        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
-        c = self.q("SELECT * FROM orders WHERE request_id=?", (rid + ":H1",))[0]
         self.assertEqual(("WORKING", "WAITING_PARENT", calls), (p["status"], c["status"], int(c["qty"])))
         return p["order_id"], c["order_id"]
 
@@ -620,8 +543,8 @@ class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
 
 class HedgeLegLifetimeTests(SmartSubmitBase):
     """1.0.7.2 fifth review: a sequential package's hedge legs live exactly as long as their shares order.  BUY 300 ACME limit 99 (below the
-    100.00 print: it rests) + BTO 3 Dec 18 2026 95 puts limit 1.00 (below the 2.10 bid: they rest once released), DAY, as the Smart Ticket
-    sends it.  A shares order amended or re-priced to a longer time in force (GTC, next session) takes its legs with it - their time in
+    100.00 print: it rests) + BTO 3 Dec 18 2026 95 puts limit 1.00 (below the 2.10 bid: they rest once released), DAY, placed as the order
+    ticket places a shares order with its hedge.  A shares order amended or re-priced to a longer time in force (GTC, next session) takes its legs with it - their time in
     force, expiry, good-till date and next-session start - so at the close the puts still wait, and the next session they are released
     as the shares fill.  A waiting leg is never expired on its own clock while its shares order works (a leg left with an older expiry is
     kept, then takes its shares order's lifetime when released); a leg whose own contract ends while its shares order still works ends,
@@ -633,14 +556,8 @@ class HedgeLegLifetimeTests(SmartSubmitBase):
 
     def package(self, tif: str = "DAY"):
         primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00", "tif": tif}
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
-        self.assertEqual(200, st, pv)
-        st, out, _h = self.combo(1, [leg("ACME", "BUY", 300, order_type="LIMIT", limit_px="99.00"), leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px="1.00")],
-                                 clause="buy 300 ACME limit 99 and buy 3 ACME Dec 18 2026 95 puts limit 1 as a package", preview_id=pv["preview_id"], tif=tif)
+        st, out, p, (h,) = self.seq_package(primary, [leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px="1.00")], rid="ui:seq-life-0001")
         self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C1:r1"
-        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
-        h = self.q("SELECT * FROM orders WHERE request_id=?", (rid + ":H1",))[0]
         self.assertEqual(("WORKING", tif, "WAITING_PARENT", tif, int(p["expires_ts"])), (p["status"], p["tif"], h["status"], h["tif"], int(h["expires_ts"])))
         return p["order_id"], h["order_id"]
 
@@ -717,7 +634,7 @@ class HedgeLegLifetimeTests(SmartSubmitBase):
         self.assertEqual(("LIMIT", "2.80", acme("C", 105)), (req["order_type"], req["limit_px"], req["instrument_id"]))
         st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(req))
         self.assertEqual(200, st, pv)
-        st, res, _h = self.send(dict(req, preview_id=pv["preview_id"]), f"st:{TICKET}:L1:r1")
+        st, res, _h = self.send(dict(req, preview_id=pv["preview_id"]), "ui:ticket-acme-c105-01")
         self.assertEqual((200, "FILLED"), (st, res["order"]["status"]), res)
         self.assertEqual([(2, "2.75")], [(int(f["qty"]), str(qprice(f["price"]))) for f in res["fills"]])   # at the 2.75 ask, within the 2.80 typed
         assert_integrity(self, self.rt, "full")
@@ -741,16 +658,10 @@ class ReleasedLegLifetimeTests(SmartSubmitBase):
 
     def package(self, tif: str = "DAY", put_limit: Optional[str] = "1.00", call: bool = False) -> tuple:
         primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00", "tif": tif}
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
-        self.assertEqual(200, st, pv)
         opt = leg(self.CALL, "STO", 3) if call else (leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px=put_limit) if put_limit else leg(self.PUT, "BTO", 3))
-        st, out, _h = self.combo(1, [leg("ACME", "BUY", 300, order_type="LIMIT", limit_px="99.00"), opt], clause="buy 300 ACME limit 99 and its options as a package",
-                                 preview_id=pv["preview_id"], tif=tif)
+        st, out, p, (h,) = self.seq_package(primary, [opt], rid="ui:seq-released-0001")
         self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C1:r1"
-        p = self.q("SELECT order_id FROM orders WHERE request_id=?", (rid,))[0]["order_id"]
-        h = self.q("SELECT order_id FROM orders WHERE request_id=?", (rid + ":H1",))[0]["order_id"]
-        return p, h
+        return p["order_id"], h["order_id"]
 
     def released(self, tif: str = "DAY", put_limit: Optional[str] = "1.00", call: bool = False) -> tuple:
         p, h = self.package(tif, put_limit, call)
@@ -911,77 +822,11 @@ class ReleasedLegLifetimeTests(SmartSubmitBase):
         assert_integrity(self, self.rt, "full")
 
 
-class AonConfirmedTests(SmartSubmitBase):
-    """1.0.7.2 sixth review (the send loop): an all-or-none combination sent with the figures its confirm listed (``aon_confirmed``: the
-    package preview's net cash and server time, as the Smart Ticket sends it) is placed only when it FILLS NOW, all-or-none, at most 0.5 %
-    worse than that net cash and within 2 minutes of that preview - checked by the server at the placement, so a resend after a busy
-    writer's 503 or a dropped connection is held to the confirm too; otherwise 409 AON_NOT_PLACED and nothing is written (the page keeps
-    it staged).  Without it (any other client) the package keeps its rule.  BUY 10 ACME Dec 18 2026 100/105 call spread: BTO 10 at the
-    5.00 ask, STO 10 at the 2.60 bid: net cash 10 x (2.60 - 5.00) x 100 = -2,400.00; 20 contracts displayed."""
-    C100, C105 = acme("C", 100), acme("C", 105)
-
-    def spread(self, n: int, qty: int = 10, **extra):
-        return self.combo(n, [leg(self.C100, "BTO", qty), leg(self.C105, "STO", qty)], clause=f"buy {qty} ACME Dec 18 2026 100/105 call spread", **extra)
-
-    def rows(self, n: int) -> list:
-        return self.q("SELECT order_id, status FROM orders WHERE request_id LIKE ?", (f"st:{TICKET}:C{n}:%",))
-
-    def moved_chain(self) -> None:
-        now = self.rt.clock.epoch()
-        rows = [ChainRow(acme(r, k, e), e, r, qprice(k), qprice("5.90" if (r, k) == ("C", 100) else b), qprice("6.00" if (r, k) == ("C", 100) else a), 20, 20,
-                         None, None, 0.30, None, None, None, None, 100, 10) for e, r, k, b, a in ROWS]
-        load_chain(self.rt, ChainSnapshot("ACME", "ACME", ChainUnderlying("ACME", qprice("100.00"), None, None, None, None, now - 60, None, 0.30), rows, now, now - 60,
-                                          len(rows)))
-
-    def test_aa_held_to_its_confirm_it_fills_now_within_it_or_nothing_is_placed(self):
-        now = self.rt.clock.epoch()
-        conf = {"net_cash": "-2400.00", "previewed_at": now - 30}
-        # within: placed and filled at once, at -2,400.00
-        st, out, _h = self.spread(1, aon_confirmed=conf)
-        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]), out)
-        self.assertEqual({self.C100: 10, self.C105: -10}, {k: v for k, v in ReleaseAfterAmendOrReplaceTests.positions(self).items()})
-        # 0.48 % worse is within the 0.5 % rule (confirmed -2,388.50: -2,400.00 is 11.50 worse)
-        st, out, _h = self.spread(2, aon_confirmed={"net_cash": "-2388.50", "previewed_at": now - 30})
-        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]), out)
-        # moved: the 100 call's ask is 6.00 now: net cash -3,400.00, 41.67 % against the confirmed -2,400.00
-        self.moved_chain()
-        st, out, _h = self.spread(3, aon_confirmed=conf)
-        self.assertEqual((409, "AON_NOT_PLACED", "MOVED"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
-        self.assertIn("-3,400.00 instead of the -2,400.00", out["error"]["message"])
-        self.assertEqual([], self.rows(3))                               # nothing was placed
-        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
-        # the same request id sent again once the price is back: the refusal stored nothing, so it is placed now (a 503's resend)
-        st, out, _h = self.spread(3, aon_confirmed=conf)
-        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]), out)
-        # old: the preview its confirm listed is 121 s old
-        st, out, _h = self.spread(4, aon_confirmed={"net_cash": "-2400.00", "previewed_at": now - 121})
-        self.assertEqual((409, "AON_NOT_PLACED", "OLD"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
-        # it cannot fill at once: 25 contracts, 20 displayed - never left working to fill later at other prices
-        st, out, _h = self.spread(5, qty=25, aon_confirmed={"net_cash": "-6000.00", "previewed_at": now - 30})
-        self.assertEqual((409, "AON_NOT_PLACED", "NOT_NOW"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
-        self.assertEqual([], self.rows(5))
-        # malformed
-        st, out, _h = self.spread(6, aon_confirmed={"net_cash": "lots", "previewed_at": now})
-        self.assertEqual((400, "AON_CONFIRMED"), (st, out["error"]["code"]), out)
-        assert_integrity(self, self.rt, "full")
-
-    def test_ab_without_its_confirmed_figures_a_package_keeps_its_rule_and_a_resend_is_the_same_order(self):
-        st, out, _h = self.spread(1, qty=25)                             # any other client: it rests until one observation covers it
-        self.assertEqual((200, "WORKING"), (st, out["package"]["status"]), out)
-        now = self.rt.clock.epoch()
-        st, out, _h = self.spread(2, aon_confirmed={"net_cash": "-2400.00", "previewed_at": now - 30})
-        self.assertEqual((200, "FILLED"), (st, out["package"]["status"]))
-        st, again, h = self.spread(2, aon_confirmed={"net_cash": "-2400.00", "previewed_at": now - 10})     # only the check differs: the same order
-        self.assertEqual((200, "1", out["package"]["package_id"]), (st, h.get("X-Replayed"), again["package"]["package_id"]))
-        assert_integrity(self, self.rt, "full")
-
-
 class CoveredSharesPledgedTests(SmartSubmitBase):
-    """1.0.7.2 sixth review (the money path: nothing may leave an uncovered short): the shares free to cover NEW calls (a covered call, a
-    collar) are the shares held free less those the account's working sell-to-open calls will take once they fill (an earlier ticket's
-    covered call resting at its limit, a buy write's released calls) and less those a covered call or collar earlier in the same
-    instruction took - so the same shares are never offered as cover twice; a covered call or collar beyond what is left is SIDE_SPLIT,
-    naming the calls that hold them, never "the calls only" / "the put and the call only".  The book holds 300 ACME (bought first)."""
+    """1.0.7.2 (simplified; the sixth review's cases): a covered call or a collar's call is read against the shares held free at the reading
+    (less what working sells, calls sold or being sold and lent shares take), and its card fills a standard ticket with ``covered:
+    true``; the order route places it only while those shares are still free (409 NOT_COVERED, nothing placed) and keeps them for it
+    until it is closed - so the same shares never cover two calls.  The book holds 300 ACME (bought first)."""
     C105, C110, P95 = acme("C", 105), acme("C", 110), acme("P", 95)
     row = ReleaseAfterAmendOrReplaceTests.row
     positions = ReleaseAfterAmendOrReplaceTests.positions
@@ -991,15 +836,8 @@ class CoveredSharesPledgedTests(SmartSubmitBase):
         st, out, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "MARKET", "tif": "DAY"}, "ui:cover-hold-300-01")
         self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
 
-    def parse(self, text: str) -> dict:
-        st, out, _h = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": text, "book": "T"})
-        self.assertEqual(200, st, out)
-        return out
-
     def send_leg(self, req: dict, rid: str) -> str:
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(req))
-        self.assertEqual(200, st, pv)
-        st, out, _h = self.send(dict(req, preview_id=pv["preview_id"]), rid)
+        st, out = self.ticket(req, rid)
         self.assertEqual(200, st, out)
         return out["order"]["order_id"]
 
@@ -1013,28 +851,37 @@ class CoveredSharesPledgedTests(SmartSubmitBase):
 
     def resting_call(self, n: int = 3) -> str:
         first = self.parse(f"covered call {n * 100} ACME Dec 18 2026 105 limit 2.70")          # above the 2.60 bid: it rests
-        req = [l["request"] for l in first["legs"] if l.get("request")][0]
-        oid = self.send_leg(req, f"st:{TICKET}:L1:r1")
+        (req,) = [l["request"] for l in first["legs"] if l.get("request")]
+        self.assertTrue(req.get("covered"), req)
+        oid = self.send_leg(req, "ui:cover-rest-0001")
         self.assertEqual(("WORKING", "STO", n), (self.row(oid)["status"], self.row(oid)["side"], int(self.row(oid)["qty"])))
         return oid
 
     def test_ad_two_covered_calls_in_one_instruction_never_share_their_cover(self):
+        """Each covered call is read against the 300 ACME held free at the reading - the reading counts no other order of the instruction,
+        and both cards say another order sent first may take the shares; sent in the order typed, the first is placed and sold, the
+        second is refused 409 NOT_COVERED: the 300 ACME cover one set of calls, never two."""
         out = self.parse("covered call 300 ACME Dec 18 2026 105, covered call 300 ACME Dec 18 2026 110")
-        a, b = out["legs"][0], self.call_leg(out, self.C110)
-        self.assertEqual(("STO", 3, self.C105), (a["request"]["side"], a["request"]["qty"], a["request"]["instrument_id"]))
-        self.assertIn("the calls only, no shares bought", self.flag_text(a, "SIDE_INFERRED"))
-        self.assertEqual([None, None], [l["request"] for l in out["legs"][1:]])              # the second: its shares leg and its call, blocked
-        self.assertIn("0 of the 300 ACME held", self.flag_text(b, "SIDE_SPLIT"))
-        self.assertIn("300 covering the calls of an earlier order in this instruction", self.flag_text(b, "SIDE_SPLIT"))
-        oid = self.send_leg(a["request"], f"st:{TICKET}:L1:r1")
+        a, b = out["legs"]
+        self.assertEqual([(self.C105, "STO", 3, True), (self.C110, "STO", 3, True)],
+                         [(l["request"]["instrument_id"], l["request"]["side"], l["request"]["qty"], l["request"].get("covered")) for l in (a, b)])
+        for l in (a, b):
+            self.assertIn("the calls only, no shares bought", self.flag_text(l, "SIDE_INFERRED"))
+            self.assertIn("another order you send first may take them, and FinSim then refuses", self.flag_text(l, "SIDE_INFERRED"))
+        oid = self.send_leg(a["request"], "ui:cover-ad-0001")
         self.rt.clock.advance(30)
         load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
         self.rt.matcher.on_quotes([self.C105])
         self.assertEqual(("FILLED", {"ACME": 300, self.C105: -3}), (self.row(oid)["status"], self.positions()))
+        st, res = self.ticket(b["request"], "ui:cover-ad-0002")
+        self.assertEqual((409, "NOT_COVERED"), (st, res["error"]["code"]), res)
+        self.assertIn("the calls sold as covered need 300 ACME held free in T1:US_EXCHANGE as their cover and 0 are free now (held 300; 300 covering"
+                      " calls already sold)", res["error"]["message"])
+        self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())
         assert_integrity(self, self.rt, "full")
 
     def test_ae_a_working_covered_call_holds_its_cover_for_the_next_ticket(self):
-        self.resting_call(3)
+        cc = self.resting_call(3)
         out = self.parse("covered call 300 ACME Dec 18 2026 110")
         l = self.call_leg(out, self.C110)
         self.assertTrue(all(x["request"] is None for x in out["legs"]), out["legs"])
@@ -1043,6 +890,12 @@ class CoveredSharesPledgedTests(SmartSubmitBase):
         self.assertTrue(all(l["request"] is None for l in out["legs"]), out["legs"])
         self.assertTrue(all("SIDE_SPLIT" in [f["code"] for f in l["flags"]] for l in out["legs"]))
         self.assertFalse(any("the put and the call only" in f["text"] for l in out["legs"] for f in l["flags"]))
+        # a card filled before the call was placed (or the same ticket typed by hand) is refused at the route: the shares stay with it
+        st, res = self.ticket({"account_id": ACCT, "instrument_id": self.C110, "side": "STO", "qty": 3, "order_type": "MARKET", "tif": "DAY", "covered": True},
+                              "ui:cover-ae-0001")
+        self.assertEqual((409, "NOT_COVERED"), (st, res["error"]["code"]), res)
+        self.assertIn("(held 300; 300 covering calls being sold)", res["error"]["message"])
+        self.assertEqual(("WORKING", {"ACME": 300}), (self.row(cc)["status"], self.positions()))
         assert_integrity(self, self.rt, "full")
 
     def test_af_what_a_working_call_leaves_free_is_offered_and_a_filled_one_is_reserved(self):
@@ -1054,7 +907,7 @@ class CoveredSharesPledgedTests(SmartSubmitBase):
         out = self.parse("covered call 200 ACME Dec 18 2026 110")
         (l,) = out["legs"]
         self.assertEqual(("STO", 2), (l["request"]["side"], l["request"]["qty"]))
-        # control: once the resting call has filled, the calls already sold reserve their shares (1.0.7.2's rule)
+        # control: once the resting call has filled, the calls already sold reserve their shares
         self.rt.clock.advance(30)
         snap = acme_chain(self.rt.clock.epoch())
         for r in snap.contracts:
@@ -1070,55 +923,50 @@ class CoveredSharesPledgedTests(SmartSubmitBase):
 
 
 class CoverCountedOnceTests(SmartSubmitBase):
-    """1.0.7.2 seventh review (the money path: nothing may leave an uncovered short call said to be covered).  The book holds 300 ACME
-    (bought first).  One instruction counts the shares once, in the order typed: a sale or short sale of them, or calls sold to open on
-    them, before a covered call or collar leave it fewer free shares (SIDE_SPLIT); a sale, a short sale or a call sold to open after one
-    on the same shares is refused (WOULD_OVERSELL / COVER_TAKEN).  Each instruction is sent as the page sends it (every sendable order in
-    turn: a fresh preview, then the order under st:<ticket>:L<n>:r1; a combination as its request), then the 105 call is bid 2.70 (a
-    covered call resting at 2.70 fills): never a short call the shares held do not cover.  A covered call or collar on shares held is
-    sent ``covered: true`` and the order route places it only while those shares are still free (409 NOT_COVERED, nothing placed), and a
-    CUSTOM package that sells its shares never sells calls to open as they go (400 COMBO_INVALID)."""
+    """1.0.7.2 (simplified; the seventh review's cases).  The book holds 300 ACME (bought first).  Each order of an instruction is read
+    against the shares as they are at the reading, and every card's ticket is sent through the order route as the ticket sends it, in
+    the order shown (a group's tickets in its order).  The route keeps the end state - never a call sold as covered without its shares:
+    a call claimed after a sale of its shares, after plain calls on them or after another claimed call on them is 409 NOT_COVERED; a sale
+    after a resting claimed call is 400 OVERSELL (SHARES_RESERVED); a plain call sold to open after a claimed one on the same shares is
+    409 SHARES_RESERVED (INV-9), also with an earlier expiry or a lower strike, the calls the margin would otherwise cover first.  After
+    each instruction the 105 call is bid 2.70 (a covered call resting at 2.70 fills)."""
     C105, C110, P95 = acme("C", 105), acme("C", 110), acme("P", 95)
     row = ReleaseAfterAmendOrReplaceTests.row
     positions = ReleaseAfterAmendOrReplaceTests.positions
 
     def setUp(self):
         super().setUp()
-        st, out, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "MARKET", "tif": "DAY"}, "ui:cover7-hold-300-01")
+        self.k = 0
+        self.hold(300)
+
+    def hold(self, n: int) -> None:
+        self.k += 1
+        st, out, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": n, "order_type": "MARKET", "tif": "DAY"}, f"ui:cover7-hold-{self.k:03d}")
         self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
 
-    def parse(self, text: str) -> dict:
-        st, out, _h = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": text, "book": "T"})
-        self.assertEqual(200, st, out)
-        return out
-
-    def run_items(self, out: dict) -> list:
-        """Every sendable item of the reading, in turn, as the page sends it; (item, http status, order / package status or refusal code)."""
-        got, done = [], set()
-        combos = {c["id"]: c for c in out["combos"]}
+    @staticmethod
+    def shown(out: dict) -> list:
+        """The cards' order: the legs as typed, a group's legs in its own order."""
+        groups = {c["id"]: c for c in out["combos"]}
+        seen, order = set(), []
         for l in out["legs"]:
-            if l.get("combo"):
-                cb = combos[l["combo"]]
-                if cb["id"] in done or cb.get("request") is None:
-                    continue
-                done.add(cb["id"])
-                req = dict(cb["request"])
-                if cb["fill_mode"] == "AON":
-                    st, spec, _h = self.call("POST", "/api/strategies/preview?book=T", {"account_id": req["account_id"], "key": "CUSTOM",
-                                                                                         "params": {"legs": req["package"]["legs"]}})
-                    self.assertEqual(200, st, spec)
-                    req["aon_confirmed"] = {"net_cash": spec["totals"]["net_cash"], "previewed_at": spec["previewed_at"]}
-                st, res, _h = self.send(dict(req, smart={"ticket": TICKET, "item": cb["id"], "clause": cb["clause"]}), f"st:{TICKET}:{cb['id']}:r1")
-                got.append((cb["id"], st, (res.get("package") or {}).get("status") if st == 200 else (res.get("error") or {}).get("code")))
+            for n in (groups[l["combo"]]["order"] if l.get("combo") else [l["n"]]):
+                if n not in seen:
+                    seen.add(n)
+                    order.append(n)
+        return order
+
+    def run_tickets(self, out: dict) -> list:
+        """Every card with a request, in the order shown, sent as the ticket sends it: (leg n, http status, order status or refusal code)."""
+        by_n = {l["n"]: l for l in out["legs"]}
+        got = []
+        for n in self.shown(out):
+            req = by_n[n].get("request")
+            if req is None:
                 continue
-            if l.get("request") is None:
-                continue
-            req = dict(l["request"])
-            st, pv, _h = self.call("POST", "/api/orders/preview?book=T", req)
-            self.assertEqual(200, st, pv)
-            st, res, _h = self.send(dict(req, preview_id=pv["preview_id"], smart={"ticket": TICKET, "item": f"L{l['n']}", "clause": l["clause"]}),
-                                    f"st:{TICKET}:L{l['n']}:r1")
-            got.append((f"L{l['n']}", st, (res.get("order") or {}).get("status") if st == 200 else (res.get("error") or {}).get("code")))
+            self.k += 1
+            st, res = self.ticket(req, f"ui:cover7-ticket-{self.k:03d}")
+            got.append((n, st, (res.get("order") or {}).get("status") if st == 200 else (res.get("error") or {}).get("code")))
         return got
 
     def options_move(self) -> None:
@@ -1131,175 +979,103 @@ class CoverCountedOnceTests(SmartSubmitBase):
         load_chain(self.rt, snap)
         self.rt.matcher.on_quotes([self.C105, self.C110, self.P95])
 
-    def covered(self) -> int:
+    def uncovered(self) -> int:
         """The ACME the book's short ACME calls need beyond the ACME it holds (0: every short call is covered)."""
         pos = self.positions()
-        short_calls = -sum(q for iid, q in pos.items() if iid.startswith("ACME2") and iid[-9] == "C" and q < 0)
+        short_calls = -sum(q for iid, q in pos.items() if iid.startswith("ACME2") and iid[10] == "C" and q < 0)
         return max(0, 100 * short_calls - max(0, pos.get("ACME", 0)))
 
-    def blockers(self, out: dict) -> list:
+    @staticmethod
+    def blockers(out: dict) -> list:
         return [(l["n"], f["code"]) for l in out["legs"] for f in l["flags"] if f["severity"] == "blocker"]
 
-    def check(self, text: str, refused: list, sent: list) -> dict:
+    def check(self, text: str, sent: list) -> dict:
         out = self.parse(text)
-        self.assertEqual(refused, self.blockers(out), json.dumps([(l["n"], l["side"], l["qty"], [f["text"] for f in l["flags"] if f["severity"] == "blocker"])
-                                                               for l in out["legs"]]))
-        got = self.run_items(out)
-        self.assertEqual(sent, [(k, s, x) for k, s, x in got], got)
+        self.assertEqual([], self.blockers(out), json.dumps([(l["n"], [f["text"] for f in l["flags"] if f["severity"] == "blocker"]) for l in out["legs"]]))
+        got = self.run_tickets(out)
+        self.assertEqual(sent, got, got)
         self.options_move()
-        self.assertEqual(0, self.covered(), self.positions())
+        self.assertEqual(0, self.uncovered(), self.positions())
         assert_integrity(self, self.rt, "full")
         return out
 
+    def margin_rules(self) -> dict:
+        """The margin engine's reading of each short ACME call (covered_call / naked_call), from the stored margin detail."""
+        rows = self.q("SELECT options_detail_json FROM margin_state WHERE account_id=?", (ACCT,))
+        d = json.loads(rows[0]["options_detail_json"]) if rows else {}
+        return {it["instrument_id"]: it["rule"] for g in d.get("groups") or [] for it in g.get("items") or [] if it["instrument_id"].startswith("ACME2")
+                and it["instrument_id"][10] == "C"}
+
     def test_ag_a_sale_before_a_covered_call_or_collar_leaves_it_no_free_shares(self):
-        out = self.check("sell 300 ACME, covered call 300 ACME Dec 18 2026 105", [(2, "SIDE_SPLIT"), (3, "SIDE_SPLIT")], [("L1", 200, "FILLED")])
-        self.assertIn("300 taken by earlier orders of this instruction", next(f["text"] for f in out["legs"][2]["flags"] if f["code"] == "SIDE_SPLIT"))
+        self.check("sell 300 ACME, covered call 300 ACME Dec 18 2026 105", [(1, 200, "FILLED"), (2, 409, "NOT_COVERED")])
         self.assertEqual({}, self.positions())
 
     def test_ah_a_sale_before_a_collar(self):
-        self.check("sell 300 ACME, collar 300 ACME Dec 18 2026 95/110", [(2, "SIDE_SPLIT"), (3, "SIDE_SPLIT"), (4, "SIDE_SPLIT")], [("L1", 200, "FILLED")])
-        self.assertEqual({}, self.positions())
+        # the collar's put ticket is an ordinary purchase (sent, bought at the 2.25 ask); its call, sold as covered, finds no shares
+        self.check("sell 300 ACME, collar 300 ACME Dec 18 2026 95/110", [(1, 200, "FILLED"), (2, 200, "FILLED"), (3, 409, "NOT_COVERED")])
+        self.assertEqual({self.P95: 3}, self.positions())
 
     def test_ai_a_sale_after_a_covered_call_resting_at_its_limit_is_refused(self):
-        out = self.check("covered call 300 ACME Dec 18 2026 105 limit 2.70, sell 300 ACME", [(2, "WOULD_OVERSELL")], [("L1", 200, "WORKING")])
-        f = next(f for f in out["legs"][1]["flags"] if f["code"] == "WOULD_OVERSELL")
-        self.assertIn("300 covering the calls of an earlier order in this instruction", f["text"])
-        self.assertEqual([], f.get("choices") or [])
+        self.check("covered call 300 ACME Dec 18 2026 105 limit 2.70, sell 300 ACME", [(1, 200, "WORKING"), (2, 400, "OVERSELL")])
         self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())          # the calls filled at 2.70, covered
 
     def test_aj_calls_sold_to_open_before_a_covered_call_take_its_shares(self):
-        self.check("sell 3 ACME Dec 18 2026 105 calls, covered call 300 ACME Dec 18 2026 110", [(2, "SIDE_SPLIT"), (3, "SIDE_SPLIT")], [("L1", 200, "FILLED")])
+        self.check("sell 3 ACME Dec 18 2026 105 calls, covered call 300 ACME Dec 18 2026 110", [(1, 200, "FILLED"), (2, 409, "NOT_COVERED")])
         self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())
 
     def test_ak_calls_sold_to_open_after_a_covered_call_on_the_same_shares_are_refused(self):
-        out = self.check("covered call 300 ACME Dec 18 2026 105, sto 3 ACME Dec 18 2026 110 calls", [(2, "COVER_TAKEN")], [("L1", 200, "FILLED")])
-        self.assertIn("300 of the 300 ACME held in T1:US_EXCHANGE cover the calls of a covered call or collar",
-                      next(f["text"] for f in out["legs"][1]["flags"] if f["code"] == "COVER_TAKEN"))
+        self.check("covered call 300 ACME Dec 18 2026 105, sto 3 ACME Dec 18 2026 110 calls", [(1, 200, "FILLED"), (2, 409, "SHARES_RESERVED")])
+        self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())
+        # a lower strike in the same expiry: the call the margin would cover first
+        self.check("sto 1 ACME Dec 18 2026 100 call", [(1, 409, "SHARES_RESERVED")])
+        # an earlier expiry than the claimed calls (a new world: the calls sold as covered expire on Jan 15 2027)
+        self.tearDown()
+        self.setUp()
+        self.check("covered call 300 ACME Jan 15 2027 105, sto 3 ACME Dec 18 2026 110 calls", [(1, 200, "FILLED"), (2, 409, "SHARES_RESERVED")])
+        # with free shares the same calls are accepted, and the margin then covers every call, the claimed ones included
+        self.hold(300)
+        self.check("sto 3 ACME Dec 18 2026 110 calls", [(1, 200, "FILLED")])
+        jan = acme("C", 105, E2)
+        self.assertEqual({"ACME": 600, jan: -3, self.C110: -3}, self.positions())
+        self.assertEqual({jan: "covered_call", self.C110: "covered_call"}, self.margin_rules())
+
+    def test_al_grouped_with_a_sale_of_its_shares_nothing_goes_uncovered(self):
+        # a group's tickets go in its order: the call sold to open before the sale; the sale then finds its shares covering the calls
+        self.check("(covered call 300 ACME Dec 18 2026 105, sell 300 ACME)", [(1, 200, "FILLED"), (2, 400, "OVERSELL")])
+        self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())
+        # a partial sale after the covered call: what is left free only (0 here), never the shares the calls need
+        self.tearDown()
+        self.setUp()
+        self.check("covered call 300 ACME Dec 18 2026 105 then sell 100 ACME", [(1, 200, "FILLED"), (2, 400, "OVERSELL")])
         self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())
 
-    def test_al_grouped_with_a_sale_of_its_shares_nothing_goes(self):
-        self.check("(covered call 300 ACME Dec 18 2026 105, sell 300 ACME)", [(2, "WOULD_OVERSELL")], [])
-        self.assertEqual({"ACME": 300}, self.positions())
-        # a partial sale after the covered call: what is left free only (0 here), never the shares the calls need
-        self.check("covered call 300 ACME Dec 18 2026 105 then sell 100 ACME", [(2, "WOULD_OVERSELL")], [("L1", 200, "FILLED")])
-
-    def test_am_a_staged_covered_call_or_collar_is_placed_only_while_its_shares_are_free(self):
+    def test_am_a_covered_call_or_a_collars_call_ticket_is_placed_only_while_its_shares_are_free(self):
         call = [l["request"] for l in self.parse("covered call 300 ACME Dec 18 2026 105")["legs"] if l.get("request")][0]
-        collar = self.parse("collar 300 ACME Dec 18 2026 95/110")["combos"][0]["request"]
-        self.assertEqual((True, True), (call.get("covered"), collar.get("covered")))
-        # before the owner presses Send, the 300 ACME are sold (the docked ticket, another tab): an ordinary sale
+        put, call2 = [l["request"] for l in self.parse("collar 300 ACME Dec 18 2026 95/110")["legs"]]
+        self.assertEqual((True, None, True), (call.get("covered"), put.get("covered"), call2.get("covered")))
+        # before the owner sends them, the 300 ACME are sold (the docked ticket, another tab): an ordinary sale
         st, res, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "SELL", "qty": 300, "order_type": "MARKET", "tif": "DAY"}, "ui:cover7-sell-300-01")
         self.assertEqual((200, "FILLED"), (st, res["order"]["status"]), res)
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(call))
-        self.assertEqual(200, st, pv)
-        st, res, _h = self.send(dict(call, preview_id=pv["preview_id"]), f"st:{TICKET}:L1:r1")
+        st, res = self.ticket(call, "ui:cover7-am-call-01")
         self.assertEqual((409, "NOT_COVERED"), (st, res["error"]["code"]), res)
-        self.assertIn("the calls need 300 ACME held free in T1:US_EXCHANGE as their cover and 0 are free now", res["error"]["message"])
-        st, res, _h = self.send(dict(collar), f"st:{TICKET}:C1:r1")
+        self.assertIn("the calls sold as covered need 300 ACME held free in T1:US_EXCHANGE as their cover and 0 are free now", res["error"]["message"])
+        st, res = self.ticket(call2, "ui:cover7-am-collar-01")
         self.assertEqual((409, "NOT_COVERED"), (st, res["error"]["code"]), res)
-        self.assertEqual([], self.q("SELECT order_id FROM orders WHERE request_id LIKE ?", (f"st:{TICKET}:%",)))
+        self.assertEqual([], self.q("SELECT order_id FROM orders WHERE request_id LIKE 'ui:cover7-am-%'"))
         # the shares bought back: the same request id places it (the refusal stored nothing)
-        st, res, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "MARKET", "tif": "DAY"}, "ui:cover7-buy-300-02")
-        self.assertEqual(200, st, res)
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(call))
-        st, res, _h = self.send(dict(call, preview_id=pv["preview_id"]), f"st:{TICKET}:L1:r1")
+        self.hold(300)
+        st, res = self.ticket(call, "ui:cover7-am-call-01")
         self.assertEqual((200, "FILLED"), (st, res["order"]["status"]), res)
-        # ... and once those calls hold the shares, the collar on them is refused (the calls already sold reserve them)
-        st, res, _h = self.send(dict(collar), f"st:{TICKET}:C1:r2")
+        # ... and once those calls hold the shares, the collar's call ticket is refused (the calls already sold reserve them)
+        st, res = self.ticket(call2, "ui:cover7-am-collar-02")
         self.assertEqual((409, "NOT_COVERED"), (st, res["error"]["code"]), res)
         self.assertEqual({"ACME": 300, self.C105: -3}, self.positions())
-        # covered: true is for calls sold to open on shares held
+        # covered: true is for calls sold to open on shares held; a package that buys its shares brings its own cover
         st, res, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 1, "order_type": "MARKET", "tif": "DAY", "covered": True},
                                 "ui:cover7-bad-0001")
         self.assertEqual((400, "COVERED_INVALID"), (st, res["error"]["code"]), res)
-        st, res, _h = self.combo(9, [leg("ACME", "BUY", 100), leg(self.C110, "STO", 1)], covered=True)
+        st, res = self.template_package("COVERED_CALL", 100, {1: 110}, rid="ui:cover7-bad-0002", covered=True)
         self.assertEqual((400, "COVERED_INVALID"), (st, res["error"]["code"]), res)
-        assert_integrity(self, self.rt, "full")
-
-    def test_an_a_package_that_sells_its_shares_never_sells_calls_to_open_as_they_go(self):
-        st, res, _h = self.combo(1, [leg("ACME", "SELL", 300), leg(self.C105, "STO", 3)], clause="sell 300 ACME, then sell 3 calls", confirm_large=True)
-        self.assertEqual((400, "COMBO_INVALID"), (st, res["error"]["code"]), res)
-        self.assertIn("a package that sells its shares cannot sell calls to open as they go", res["error"]["message"])
-        st, res, _h = self.call("POST", "/api/strategies/preview?book=T", {"account_id": ACCT, "key": "CUSTOM", "params": {"legs": [leg("ACME", "SELL", 300),
-                                                                                                                              leg(self.C105, "STO", 3)]}})
-        self.assertEqual((400, "COMBO_INVALID"), (st, res["error"]["code"]), res)
-        self.assertEqual([], self.q("SELECT order_id FROM orders WHERE request_id LIKE ?", (f"st:{TICKET}:%",)))
-        self.assertEqual({"ACME": 300}, self.positions())
-        assert_integrity(self, self.rt, "full")
-
-
-class SeqConfirmedTests(SmartSubmitBase):
-    """1.0.7.2 seventh review (the send loop): a sequential combination sent with the cash its option legs at market had in the package
-    preview its confirm listed (``seq_confirmed {options_cash, previewed_at}``, as the Smart Ticket sends it) is held to it when its shares
-    fill at once (its options released now): placed only within 0.5 % of that cash and 2 minutes of that preview, checked by the server
-    at the placement (every send and resend) - else 409 SEQ_NOT_PLACED and nothing is written.  Shares that rest release their options
-    later, at the prices then; a leg with its own limit holds its price; without the figures (any other client) nothing changes.
-    BUY 100 ACME at market (fills at the 100.00 print) + BTO 1 Dec 18 2026 95 put (ask 2.25): options cash -225.00."""
-    P95, C105 = acme("P", 95), acme("C", 105)
-
-    def package(self, n: int, put=None, shares=None, **extra):
-        legs = [shares or leg("ACME", "BUY", 100), put or leg(self.P95, "BTO", 1)]
-        return self.combo(n, legs, clause="buy 100 ACME and buy 1 ACME Dec 18 2026 95 put as a package", **extra)
-
-    def rows(self, n: int) -> list:
-        return self.q("SELECT order_id, status FROM orders WHERE request_id LIKE ?", (f"st:{TICKET}:C{n}:%",))
-
-    def moved(self, occ: str, bid: str, ask: str) -> None:
-        now = self.rt.clock.epoch()
-        snap = acme_chain(now)
-        for r in snap.contracts:
-            if r.occ == occ:
-                r.bid, r.ask = qprice(bid), qprice(ask)
-        load_chain(self.rt, snap)
-
-    def test_ao_its_options_at_market_go_only_within_the_confirmed_cash_when_the_shares_fill_at_once(self):
-        now = self.rt.clock.epoch()
-        st, spec, _h = self.call("POST", "/api/strategies/preview?book=T", {"account_id": ACCT, "key": "CUSTOM", "params": {"legs": [leg("ACME", "BUY", 100),
-                                                                                                                               leg(self.P95, "BTO", 1)]}})
-        self.assertEqual(200, st, spec)
-        cash = sum(l["cash_c"] for l in spec["legs"] if l["kind"] == "OPTION" and l["order_type"] == "MARKET")
-        self.assertEqual(-22500, cash)                                    # 1 x 2.25 x 100, paid
-        conf = {"options_cash": "-225.00", "previewed_at": now - 30}
-        st, out, _h = self.package(1, seq_confirmed=conf)                 # within: placed, the shares fill, the put released
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
-        # moved: the put's ask 4.30 -> -430.00, 91.11 % against the confirmed -225.00: nothing placed
-        self.moved(self.P95, "4.10", "4.30")
-        st, out, _h = self.package(2, seq_confirmed=conf)
-        self.assertEqual((409, "SEQ_NOT_PLACED", "MOVED"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
-        self.assertIn("its options at market would now be -430.00 instead of the -225.00 its confirm listed (91.11 % against you)", out["error"]["message"])
-        self.assertEqual([], self.rows(2))
-        # a covered call's premium falling is the same (the 105 call bid 1.20 instead of 2.60: +120.00 for +260.00 confirmed)
-        self.moved(self.C105, "1.20", "1.30")
-        st, out, _h = self.package(3, put=leg(self.C105, "STO", 1), seq_confirmed={"options_cash": "260.00", "previewed_at": now - 30})
-        self.assertEqual((409, "SEQ_NOT_PLACED", "MOVED"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
-        self.assertEqual([], self.rows(3))
-        # old: the preview its confirm listed is 121 s old
-        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
-        st, out, _h = self.package(4, seq_confirmed={"options_cash": "-225.00", "previewed_at": now - 121})
-        self.assertEqual((409, "SEQ_NOT_PLACED", "OLD"), (st, out["error"]["code"], out["error"]["details"]["why"]), out)
-        # the market back: the same request id places it (the refusal stored nothing); a resend differing only in the figures is the same order
-        st, out, _h = self.package(2, seq_confirmed=conf)
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
-        st, again, h = self.package(2, seq_confirmed={"options_cash": "-225.00", "previewed_at": now - 5})
-        self.assertEqual((200, "1", out["order"]["order_id"]), (st, h.get("X-Replayed"), again["order"]["order_id"]))
-        # malformed
-        st, out, _h = self.package(5, seq_confirmed={"options_cash": "a lot", "previewed_at": now})
-        self.assertEqual((400, "SEQ_CONFIRMED"), (st, out["error"]["code"]), out)
-        assert_integrity(self, self.rt, "full")
-
-    def test_ap_resting_shares_a_limit_on_the_leg_or_no_figures_keep_the_rule(self):
-        now = self.rt.clock.epoch()
-        conf = {"options_cash": "-225.00", "previewed_at": now - 30}
-        self.moved(self.P95, "4.10", "4.30")
-        # the shares rest (limit 99 below the 100.00 print): the put waits for them - released later at the prices then
-        st, out, _h = self.package(1, shares=leg("ACME", "BUY", 100, order_type="LIMIT", limit_px="99.00"), seq_confirmed=conf)
-        self.assertEqual((200, "WORKING"), (st, out["order"]["status"]), out)
-        # a limit typed on the put holds its price: nothing at market to hold
-        st, out, _h = self.package(2, put=leg(self.P95, "BTO", 1, order_type="LIMIT", limit_px="2.30"), seq_confirmed=conf)
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
-        # any other client (no figures): placed as before
-        st, out, _h = self.package(3)
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
         assert_integrity(self, self.rt, "full")
 
 
@@ -1313,14 +1089,9 @@ class RepricedLegBatchTests(SmartSubmitBase):
 
     def package(self) -> tuple:
         primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00", "tif": "DAY"}
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
-        self.assertEqual(200, st, pv)
-        st, out, _h = self.combo(1, [leg("ACME", "BUY", 300, order_type="LIMIT", limit_px="99.00"), leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px="1.00")],
-                                 clause="buy 300 ACME limit 99 and buy 3 ACME Dec 18 2026 95 puts limit 1 as a package", preview_id=pv["preview_id"])
+        st, out, p, (h,) = self.seq_package(primary, [leg(self.PUT, "BTO", 3, order_type="LIMIT", limit_px="1.00")], rid="ui:seq-repriced-0001")
         self.assertEqual(200, st, out)
-        rid = f"st:{TICKET}:C1:r1"
-        p = self.q("SELECT order_id FROM orders WHERE request_id=?", (rid,))[0]["order_id"]
-        h = self.q("SELECT order_id FROM orders WHERE request_id=?", (rid + ":H1",))[0]["order_id"]
+        p, h = p["order_id"], h["order_id"]
         self.bar(1000)
         self.assertEqual((100, "WORKING", 1), (int(self.row(p)["filled_qty"]), self.row(h)["status"], int(self.row(h)["qty"])))
         st, out, _h = self.call("POST", f"/api/orders/{p}/replace?book=T", {"limit_px": "99.00"}, "ui:repriced7-0001")
@@ -1429,11 +1200,11 @@ class _LifeWorld:
         return True
 
     def package(self, p0, legs, tif):
+        """A shares order BUY ``p0`` ACME limit 99.00 with its hedge's own ``legs``, as the order ticket places it."""
         self.n += 1
-        rid = f"st:{TICKET}:C{self.n}:r1"
-        body = {"account_id": ACCT, "tif": tif, "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": p0, "order_type": "LIMIT", "limit_px": "99.00"}] + legs},
-                "smart": {"ticket": TICKET, "item": f"C{self.n}", "clause": f"package {self.n}"}}
+        rid = f"ui:prop6-pkg-{self.n:06d}"
+        body = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": p0, "order_type": "LIMIT", "limit_px": "99.00", "tif": tif,
+                "hedge": {"legs": legs}}
         st, out, _h = self.call("POST", "/api/orders?book=T", body, rid)
         assert st == 200, (st, out)
         for i, lg in enumerate(legs, 1):
@@ -1601,61 +1372,468 @@ class LifetimeSeedTests(unittest.TestCase):
         self.assertEqual({}, failures)
 
 
-class ReadAgainTests(SmartSubmitBase):
-    def test_i_a_closing_leg_sent_then_read_again_is_the_order_that_went(self):
-        """1.0.7.2 review R2: 'buy 2 ... calls' while short 2 reads buy to close; once that order is working (or filled), the same words
-        read again are THAT order (ALREADY_SENT), never a new buy to open; a position wholly in working closing orders that other words
-        name is ALREADY_CLOSING (a blocker), never silently an opening order."""
-        c100 = acme("C", 100)
-        st, out, _h = self.send({"account_id": ACCT, "instrument_id": c100, "side": "STO", "qty": 2, "order_type": "MARKET", "tif": "DAY"}, "ui:readagain-seed-0001")
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
-        text = "buy 2 ACME Dec 18 2026 100 calls limit 1.00"
+# ===== the covered-call invariant at the order route (SIMPLIFY_PLAN s5: INV-1 to INV-5, INV-9; the round 8 scenarios) ===================
+class CoverReservedTests(SmartSubmitBase):
+    """1.0.7.2 (simplified): a call sold as covered keeps its shares until it is closed, whichever ticket sends the orders.  The cover of
+    every call sold or being sold on a name is reserved in whole contracts as FinSim's margin assigns it (the calls already sold first,
+    then the working sell-to-open orders, each by expiry and strike), read from the positions at the check - never from the last margin
+    run.  A sale, an amend or a replace of a sale, a short sale, an early put exercise or a loan never takes it (400 OVERSELL naming
+    SHARES_RESERVED, 400 SHORT_WHILE_LONG, 409 SHARES_RESERVED); a covered call raised beyond its shares by an amend or a replace is 409
+    NOT_COVERED; while calls sold as covered are open on a name, every further call sold to open on it needs free shares of its own
+    (INV-9: 409 SHARES_RESERVED).  The round 8 reviews' scenarios are here, each named where it runs (money path cover_kept a-d,
+    stale_reservation a-b, exercise a; send loop e-f; property tester cover a-e, g, i).  ACME is borrowable in this class (an average
+    daily volume of 5,000,000 in the master)."""
+    C100, C105, C110, C120, P95 = acme("C", 100), acme("C", 105), acme("C", 110), acme("C", 120), acme("P", 95)
+    C105J = acme("C", 105, E2)
+    row = ReleaseAfterAmendOrReplaceTests.row
+    positions = ReleaseAfterAmendOrReplaceTests.positions
 
-        def parse(t):
-            st_, ans, _h_ = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": t, "book": "T"})
-            self.assertEqual(200, st_, ans)
-            return ans["legs"][0]
-        first = parse(text)
-        self.assertEqual(("BTC", 2), (first["side"], first["qty"]))
-        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(first["request"], confirm_large=False))
-        self.assertEqual(200, st, pv)
-        st, sent, _h = self.send(dict(first["request"], preview_id=pv["preview_id"], confirm_large=False, smart={"ticket": TICKET, "item": "L1", "clause": first["clause"]}),
-                                 f"st:{TICKET}:L1:r1")
-        self.assertEqual((200, "WORKING"), (st, sent["order"]["status"]), sent)
-        again = parse(text)
-        self.assertEqual(first["request"], again["request"])
-        self.assertIn("ALREADY_SENT", [f["code"] for f in again["flags"]])
-        other = parse("buy 2 ACME Dec 18 2026 100 calls limit 1.05")                     # other words: the short is already being closed
-        self.assertEqual((None, None), (other["side"], other["request"]))
-        f = next(f for f in other["flags"] if f["code"] == "ALREADY_CLOSING")
-        self.assertEqual(("blocker", ["bto 2 ACME Dec 18 2026 100 calls limit 1.05"]), (f["severity"], [ch["clause"] for ch in f["choices"]]))
+    def setUp(self):
+        super().setUp()
+        with self.rt.db.writer() as tx:
+            self.rt.instruments.upsert(tx, instrument_id="ACME", kind="EQUITY", symbol="ACME", name="ACME test listing", currency="USD", session_group="US_EQUITY",
+                                       account_kinds=["US_EXCHANGE", "PB"], yahoo_symbol="ACME", cboe_symbol="ACME", spec={"exchange": "NYQ", "adv": 5000000})
+        self.k = 0
+
+    def rid(self) -> str:
+        self.k += 1
+        return f"ui:cover-res-{self.k:04d}"
+
+    def order(self, iid: str, side: str, qty: int, **kw) -> tuple:
+        """An ordinary order from another ticket (the docked ticket, the instrument page, another tab): (http status, order status or
+        refusal code, refusal message, answer)."""
+        st, out, _h = self.send(dict({"account_id": ACCT, "instrument_id": iid, "side": side, "qty": qty, "order_type": "MARKET", "tif": "DAY"}, **kw), self.rid())
+        return st, (out.get("order") or {}).get("status") if st == 200 else (out.get("error") or {}).get("code"), (out.get("error") or {}).get("message", ""), out
+
+    def hold(self, n: int) -> None:
+        st, status, _m, out = self.order("ACME", "BUY", n)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+
+    def covered(self, occ: str, n: int, limit: Optional[str] = None) -> tuple:
+        """Calls sold as covered as a Smart Ticket card fills the ticket (``covered: true``) and the ticket sends them: (http status, order
+        status or refusal code, order id, answer)."""
+        req = dict({"account_id": ACCT, "instrument_id": occ, "side": "STO", "qty": n, "order_type": "LIMIT" if limit else "MARKET", "tif": "DAY",
+                    "covered": True}, **({"limit_px": limit} if limit else {}))
+        st, out = self.ticket(req, self.rid())
+        return st, (out.get("order") or {}).get("status") if st == 200 else (out.get("error") or {}).get("code"), (out.get("order") or {}).get("order_id"), out
+
+    def bid(self, occ: str, bid: str, ask: str) -> None:
+        """The next chain observation with ``occ`` at bid / ask (a call resting at its limit fills); every ACME option is matched."""
+        self.rt.clock.advance(30)
+        snap = acme_chain(self.rt.clock.epoch())
+        for r in snap.contracts:
+            if r.occ == occ:
+                r.bid, r.ask = qprice(bid), qprice(ask)
+        load_chain(self.rt, snap)
+        self.rt.matcher.on_quotes([r.occ for r in snap.contracts])
+
+    def uncovered(self) -> int:
+        """The ACME the book's short ACME calls need beyond the ACME it holds (0: every short call is covered)."""
+        pos = self.positions()
+        short = -sum(q for iid, q in pos.items() if iid.startswith("ACME2") and iid[10] == "C" and q < 0)
+        return max(0, 100 * short - max(0, pos.get("ACME", 0)))
+
+    def stored_reservation(self) -> dict:
+        rows = self.q("SELECT options_detail_json FROM margin_state WHERE account_id=?", (ACCT,))
+        return (json.loads(rows[0]["options_detail_json"]).get("shares_reserved") or {}) if rows else {}
+
+    margin_rules = CoverCountedOnceTests.margin_rules
+
+    def test_a_sale_of_shares_a_working_call_covers_is_refused(self):
+        """Round 8 cover_kept a, send loop f, property tester cover i: a covered call resting at its limit keeps its 300 ACME - an ordinary
+        sale of them from another ticket is refused, whole or in part.  Round 8 cover_kept b, send loop e: the Smart Ticket's sale read
+        while the shares were free, its card sent after the covered call was placed (the ticket's own fresh preview), is refused too."""
+        self.hold(300)
+        (sale,) = [l["request"] for l in self.parse("sell 300 ACME")["legs"]]             # read while the 300 are free: a plain sale
+        self.assertEqual(("SELL", 300), (sale["side"], sale["qty"]))
+        st, status, cc, out = self.covered(self.C105, 3, "2.70")                            # above the 2.60 bid: it rests
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        for qty in (300, 1):
+            st, code, msg, out = self.order("ACME", "SELL", qty)
+            self.assertEqual((400, "OVERSELL"), (st, code), out)
+            self.assertIn(f"300 ACME cover calls being sold ({cc}): cancel or close them first (SHARES_RESERVED)", msg)
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(sale))            # the ticket's fresh preview says so
+        self.assertEqual(["OVERSELL"], [b["code"] for b in pv["blockers"]])
+        self.assertIn("(SHARES_RESERVED)", pv["blockers"][0]["message"])
+        st, out = self.ticket(sale, "ui:cover-res-sale-01")
+        self.assertEqual((400, "OVERSELL"), (st, out["error"]["code"]), out)
+        out = self.parse("sell 300 ACME")                                                   # a reading now refuses it as well
+        self.assertEqual([None], [l["request"] for l in out["legs"]])
+        self.assertIn("300 covering calls being sold (working orders)", next(f["text"] for f in out["legs"][0]["flags"] if f["code"] == "WOULD_OVERSELL"))
+        self.bid(self.C105, "2.70", "2.80")                                                 # the calls fill at their limit, covered
+        self.assertEqual(("FILLED", {"ACME": 300, self.C105: -3}, 0), (self.row(cc)["status"], self.positions(), self.uncovered()))
+        st, code, msg, out = self.order("ACME", "SELL", 300)                               # sold: the calls already sold keep them
+        self.assertEqual((400, "OVERSELL"), (st, code), out)
+        self.assertIn("cover calls already sold", msg)
         assert_integrity(self, self.rt, "full")
 
-    def test_m_a_closing_leg_whose_side_is_carried_reads_again_as_the_order_that_went(self):
-        """Second review (R2 with a carried side): 'buy 100 ACME limit 100.00 and 2 ACME Dec 18 2026 105 calls limit 2.75' while short those
-        2 calls reads BUY 100 and BUY TO CLOSE 2 (the side carried from leg 1); both are sent and fill.  The same words read again are
-        those orders - leg 2 too, matched by its own words and the carried 'buy' - never a buy to open of 2 calls."""
-        c105 = acme("C", 105)
-        st, out, _h = self.send({"account_id": ACCT, "instrument_id": c105, "side": "STO", "qty": 2, "order_type": "MARKET", "tif": "DAY"}, "ui:readagain-seed-0002")
-        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
-        text = "buy 100 ACME limit 100.00 and 2 ACME Dec 18 2026 105 calls limit 2.75"
+    def test_a_working_sale_raised_by_amend_or_replace_over_the_cover_is_refused(self):
+        """Round 8 cover_kept c: a sale of 100 works at 120.00; a covered call takes the 200 it leaves free; the sale raised to 300 by an
+        amend or by a re-price (replace) is refused and stays as it was; a change of its price alone is unchanged."""
+        self.hold(300)
+        st, status, _m, out = self.order("ACME", "SELL", 100, order_type="LIMIT", limit_px="120.00")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        sale = out["order"]["order_id"]
+        st, status, _cc, out = self.covered(self.C105, 2, "2.70")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        st, out, _h = self.call("PATCH", f"/api/orders/{sale}?book=T", {"qty": 300, "limit_px": "100.00"}, "ui:cover-res-amend-01")
+        self.assertEqual((400, "OVERSELL"), (st, out["error"]["code"]), out)
+        self.assertIn("(SHARES_RESERVED)", out["error"]["message"])
+        st, out, _h = self.call("POST", f"/api/orders/{sale}/replace?book=T", {"qty": 300, "order_type": "LIMIT", "limit_px": "100.00"}, "ui:cover-res-repl-01")
+        self.assertEqual((400, "OVERSELL"), (st, out["error"]["code"]), out)
+        r = self.row(sale)
+        self.assertEqual(("WORKING", 100, D("120.00")), (r["status"], int(r["qty"]), D(r["limit_px"])))
+        st, out, _h = self.call("PATCH", f"/api/orders/{sale}?book=T", {"limit_px": "119.00"}, "ui:cover-res-amend-02")
+        self.assertEqual(200, st, out)
+        self.bid(self.C105, "2.70", "2.80")
+        self.assertEqual(({"ACME": 300, self.C105: -2}, 0), (self.positions(), self.uncovered()))
+        assert_integrity(self, self.rt, "full")
 
-        def parse():
-            st_, ans, _h_ = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": text, "book": "T"})
-            self.assertEqual(200, st_, ans)
-            return ans["legs"]
-        first = parse()
-        self.assertEqual([("BUY", 100), ("BTC", 2)], [(x["side"], x["qty"]) for x in first])
-        for x in first:
-            st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(x["request"], confirm_large=False))
+    def test_a_covered_call_amended_or_replaced_beyond_its_shares_is_not_covered(self):
+        """Round 8 cover_kept d: a covered call of 1 contract on the 100 ACME held, amended or replaced to 5 contracts, is refused 409
+        NOT_COVERED and stays as it was; with 500 ACME held the same amend is accepted and the 5 calls are covered."""
+        self.hold(100)
+        st, status, cc, out = self.covered(self.C105, 1, "2.70")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        st, out, _h = self.call("PATCH", f"/api/orders/{cc}?book=T", {"qty": 5}, "ui:cover-res-cc-amend-01")
+        self.assertEqual((409, "NOT_COVERED"), (st, out["error"]["code"]), out)
+        st, out, _h = self.call("POST", f"/api/orders/{cc}/replace?book=T", {"qty": 5, "order_type": "LIMIT", "limit_px": "2.70"}, "ui:cover-res-cc-repl-01")
+        self.assertEqual((409, "NOT_COVERED"), (st, out["error"]["code"]), out)
+        self.assertEqual(("WORKING", 1), (self.row(cc)["status"], int(self.row(cc)["qty"])))
+        self.hold(400)
+        st, out, _h = self.call("PATCH", f"/api/orders/{cc}?book=T", {"qty": 5}, "ui:cover-res-cc-amend-02")
+        self.assertEqual(200, st, out)
+        self.bid(self.C105, "2.70", "2.80")
+        self.assertEqual(({"ACME": 500, self.C105: -5}, 0), (self.positions(), self.uncovered()))
+        assert_integrity(self, self.rt, "full")
+
+    def test_a_short_sale_while_the_shares_are_held_is_refused_cleanly(self):
+        """Round 8 property tester cover a-e: with 300 ACME held and 3 calls sold as covered on them (resting, then sold), no reading offers a
+        short sale ('sell 400 ACME': WOULD_OVERSELL with no short-sale choice; 'short 400 ACME': SHORT_WHILE_LONG), and the order route
+        refuses a short sale from any ticket 400 SHORT_WHILE_LONG - also one no larger than the holding, which 1.0.7.1 rolled back 500
+        INTEGRITY at its fill - with no ERROR attention item."""
+        self.hold(300)
+        st, status, cc, out = self.covered(self.C105, 3, "2.70")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        for when in ("resting", "sold"):
+            with self.subTest(when=when):
+                out = self.parse("sell 400 ACME")
+                (f,) = [f for l in out["legs"] for f in l["flags"] if f["code"] == "WOULD_OVERSELL"]
+                self.assertEqual([], [c["label"] for c in f.get("choices") or [] if "short" in c["label"].lower()])
+                out = self.parse("short 400 ACME")
+                self.assertEqual([None], [l["request"] for l in out["legs"]])
+                self.assertIn("SHORT_WHILE_LONG", [f["code"] for l in out["legs"] for f in l["flags"] if f["severity"] == "blocker"])
+                for qty in (400, 300, 100):
+                    st, code, msg, out = self.order("ACME", "SELL_SHORT", qty, borrow=True)
+                    self.assertEqual((400, "SHORT_WHILE_LONG"), (st, code), out)
+                    self.assertIn("holds 300 ACME long - sell them first (SELL)", msg)
+                self.bid(self.C105, "2.70", "2.80")
+        self.assertEqual(("FILLED", {"ACME": 300, self.C105: -3}, 0), (self.row(cc)["status"], self.positions(), self.uncovered()))
+        self.assertEqual([], self.q("SELECT code FROM attention WHERE severity='ERROR'"))
+        assert_integrity(self, self.rt, "full")
+
+    def test_the_reservation_is_read_from_the_positions_not_the_last_margin_run(self):
+        """Round 8 stale_reservation a-b, property tester cover g: calls sold first, the shares bought after them.  The margin run of the
+        calls' fill stored the reservation of that moment; the shares bought are those calls' cover at once: the reading offers no covered
+        call on them, a covered call ticket is refused 409 NOT_COVERED, and a sale of them 400 OVERSELL (calls already sold)."""
+        for held, bought in ((0, 300), (100, 200)):
+            with self.subTest(held=held, bought=bought):
+                if held:
+                    self.tearDown()
+                    self.setUp()
+                    self.hold(held)
+                st, status, _m, out = self.order(self.C105, "STO", 3)                    # 3 calls sold: naked, or on 100 ACME
+                self.assertEqual((200, "FILLED"), (st, status), out)
+                self.assertEqual({"ACME": held} if held else {}, self.stored_reservation())
+                self.hold(bought)
+                out = self.parse(f"covered call {bought} ACME Dec 18 2026 110")
+                self.assertTrue(all(l["request"] is None for l in out["legs"]), out["legs"])
+                self.assertIn("SIDE_SPLIT", [f["code"] for l in out["legs"] for f in l["flags"] if f["severity"] == "blocker"])
+                st, status, _cc, out = self.covered(self.C110, bought // 100)
+                self.assertEqual((409, "NOT_COVERED"), (st, status), out)
+                st, code, msg, out = self.order("ACME", "SELL", 1)
+                self.assertEqual((400, "OVERSELL"), (st, code), out)
+                self.assertIn("cover calls already sold", msg)
+                self.assertEqual(({"ACME": held + bought, self.C105: -3}, 0), (self.positions(), self.uncovered()))
+                assert_integrity(self, self.rt, "full")
+
+    def test_an_early_put_exercise_never_delivers_shares_that_cover_calls(self):
+        """Round 8 exercise a: a collar on the 300 ACME held - its two tickets, the put bought and the call sold as covered - then ACME falls
+        to 90.00: exercising the 3 puts early would deliver the 300 ACME the calls are covered by: 409 SHARES_RESERVED, nothing delivered;
+        a sale of them is refused as well.  With 300 more ACME bought, the same exercise delivers those and the calls stay covered."""
+        self.hold(300)
+        put, call = [l["request"] for l in self.parse("collar 300 ACME Dec 18 2026 95/110")["legs"]]
+        self.assertEqual((("BTO", None), ("STO", True)), ((put["side"], put.get("covered")), (call["side"], call.get("covered"))))
+        for req in (put, call):
+            st, out = self.ticket(req, self.rid())
+            self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
+        self.assertEqual({"ACME": 300, self.P95: 3, self.C110: -3}, self.positions())
+        self.rt.clock.advance(60)
+        print_acme(self.rt, "90.00", 60, self.rt.clock.epoch() - 120, 50000)
+        st, out, _h = self.call("POST", "/api/options/exercise?book=T", {"account_id": ACCT, "instrument_id": self.P95, "qty": 3}, "ui:cover-res-exercise-01")
+        self.assertEqual((409, "SHARES_RESERVED"), (st, out["error"]["code"]), out)
+        self.assertEqual({"ACME": 300, self.P95: 3, self.C110: -3}, self.positions())
+        st, code, _m, out = self.order("ACME", "SELL", 300)
+        self.assertEqual((400, "OVERSELL"), (st, code), out)
+        self.hold(300)
+        st, out, _h = self.call("POST", "/api/options/exercise?book=T", {"account_id": ACCT, "instrument_id": self.P95, "qty": 3}, "ui:cover-res-exercise-02")
+        self.assertEqual(200, st, out)
+        self.assertEqual(({"ACME": 300, self.C110: -3}, 0), (self.positions(), self.uncovered()))
+        assert_integrity(self, self.rt, "full")
+
+    def test_lending_never_lends_shares_that_cover_calls(self):
+        """INV-2: what the securities-lending program may lend leaves out the shares covering calls sold or being sold, in whole contracts
+        (2 calls resting as covered: 200; then 1 plain call sold: 300 of the 300 held)."""
+        from finsim.terminal.lending_accruals import free_to_lend
+
+        def lend() -> dict:
+            with self.rt.db.reader() as conn:
+                return free_to_lend(self.rt, conn, ACCT, "ACME")
+        self.hold(300)
+        self.assertEqual((300, 0), (lend()["position"], lend()["reserved"]))
+        st, status, _cc, out = self.covered(self.C105, 2, "2.70")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        self.assertEqual(200, lend()["reserved"])
+        st, status, _m, out = self.order(self.C110, "STO", 1)                               # the 100 left free: allowed (INV-9)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        f = lend()
+        self.assertEqual((300, 300, 0), (f["position"], f["reserved"], f["free"]))
+        assert_integrity(self, self.rt, "full")
+
+    def test_the_preview_shows_not_covered(self):
+        """INV-1 / INV-9 at the ticket's preview: a covered call whose shares are not free shows NOT_COVERED (the refusal's own words), a
+        further plain call on the name SHARES_RESERVED, a sale of the reserved shares OVERSELL naming the calls."""
+        def blockers(req: dict) -> list:
+            st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(req))
             self.assertEqual(200, st, pv)
-            st, sent, _h = self.send(dict(x["request"], preview_id=pv["preview_id"], confirm_large=False, smart={"ticket": TICKET, "item": f"L{x['n']}", "clause": x["clause"]}),
-                                     f"st:{TICKET}:L{x['n']}:r1")
-            self.assertEqual((200, "FILLED"), (st, sent["order"]["status"]), sent)
-        again = parse()
-        self.assertEqual([("BUY", 100), ("BTC", 2)], [(x["side"], x["qty"]) for x in again])
-        self.assertEqual([True, True], ["ALREADY_SENT" in [f["code"] for f in x["flags"]] for x in again])
+            return [(b["code"], b["message"]) for b in pv.get("blockers") or []]
+        cc = {"account_id": ACCT, "instrument_id": self.C105, "side": "STO", "qty": 3, "order_type": "MARKET", "tif": "DAY", "covered": True}
+        ((code, msg),) = blockers(cc)
+        self.assertEqual("NOT_COVERED", code)
+        self.assertIn("need 300 ACME held free in T1:US_EXCHANGE as their cover and 0 are free now (held 0)", msg)
+        st, out = self.ticket(cc, "ui:cover-res-pv-01")
+        self.assertEqual((409, "NOT_COVERED", msg), (st, out["error"]["code"], out["error"]["message"]))
+        self.hold(300)
+        self.assertEqual([], blockers(cc))
+        st, status, oid, out = self.covered(self.C105, 3, "2.70")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        ((code, msg),) = blockers(cc)
+        self.assertEqual("NOT_COVERED", code)
+        self.assertIn("(held 300; 300 covering calls being sold)", msg)
+        plain = {k: v for k, v in cc.items() if k != "covered"}
+        ((code, msg),) = blockers(dict(plain, instrument_id=self.C110, qty=1))
+        self.assertEqual("SHARES_RESERVED", code)
+        self.assertIn(f"covers calls sold as covered (3 contracts: {oid})", msg)
+        ((code, msg),) = blockers({"account_id": ACCT, "instrument_id": "ACME", "side": "SELL", "qty": 100, "order_type": "MARKET", "tif": "DAY"})
+        self.assertEqual("OVERSELL", code)
+        self.assertIn(f"300 ACME cover calls being sold ({oid})", msg)
         assert_integrity(self, self.rt, "full")
+
+    def test_controls_closed_calls_free_their_shares_and_a_plain_sale_is_unchanged(self):
+        """Controls: a covered call cancelled, or bought back, frees its shares at once (a sale of them is accepted); with no call on the
+        name a sale and an oversell read as in 1.0.7.1."""
+        self.hold(300)
+        st, status, cc, out = self.covered(self.C105, 3, "2.70")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        st, out, _h = self.call("DELETE", f"/api/orders/{cc}?book=T", {}, "ui:cover-res-x-01")
+        self.assertEqual(200, st, out)
+        st, status, _m, out = self.order("ACME", "SELL", 100)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        st, status, _cc, out = self.covered(self.C105, 2)                                  # sold at the 2.60 bid
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        st, status, _m, out = self.order("ACME", "SELL", 100)
+        self.assertEqual((400, "OVERSELL"), (st, status), out)
+        st, status, _m, out = self.order(self.C105, "BTC", 2)                              # bought back at the 2.75 ask
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        st, status, _m, out = self.order("ACME", "SELL", 200)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        self.assertEqual({}, self.positions())
+        self.hold(100)
+        st, status, msg, out = self.order("ACME", "SELL", 150)
+        self.assertEqual((400, "OVERSELL"), (st, status), out)
+        self.assertNotIn("SHARES_RESERVED", msg)
+        st, status, _m, out = self.order("ACME", "SELL", 100)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        assert_integrity(self, self.rt, "full")
+
+    def test_a_further_call_on_a_name_with_calls_sold_as_covered_needs_free_shares(self):
+        """INV-9: FinSim's margin gives shares to calls by expiry, then strike - never by claim.  While 3 Jan 15 2027 105 calls are sold as
+        covered on the 300 ACME held, a further call sold to open on ACME without free shares would take their cover: an earlier expiry, a
+        lower strike, the short leg of an all-or-none spread (the Strategies tab) and a sequential package selling more calls than the
+        shares it buys are refused 409 SHARES_RESERVED, nothing placed; a buy write through the Hedges tab (its call covered by the shares
+        it buys, released as they fill) is accepted; with free shares a plain call is accepted, an amend raising it beyond them is refused,
+        and the margin then covers every call, the claimed ones included."""
+        self.hold(300)
+        st, status, cc, out = self.covered(self.C105J, 3)                                   # sold at the 3.90 bid
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        got = {}
+        for what, occ in (("an earlier expiry", self.C110), ("a lower strike", acme("C", 100, E2))):
+            st, code, msg, out = self.order(occ, "STO", 1)
+            got[what] = (st, code)
+            self.assertIn(f"covers calls sold as covered (3 contracts: {self.C105J})", msg)       # calls sold: named by their contract
+        st, out = self.template_package("BULL_CALL_SPREAD", 100, {0: 100, 1: 105}, rid="ui:cover-res-tpl-01")    # BTO Dec 100, STO Dec 105
+        got["an all-or-none spread's short leg"] = (st, (out.get("error") or {}).get("code"))
+        primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT", "limit_px": "99.00", "tif": "DAY"}
+        st, out, _p, _l = self.seq_package(primary, [leg(self.C120, "STO", 2)], rid="ui:cover-res-seq-01")      # 2 calls on 100 shares bought
+        got["a package selling more calls than its shares"] = (st, (out.get("error") or {}).get("code"))
+        self.assertEqual({k: (409, "SHARES_RESERVED") for k in got}, got)
+        self.assertEqual([], self.q("SELECT order_id FROM orders WHERE request_id LIKE 'ui:cover-res-tpl-%' OR request_id LIKE 'ui:cover-res-seq-%'"))
+        # a buy write: 100 ACME bought at the print, its 1 call released at the fill and sold at the 0.20 bid
+        st, out, p, (h,) = self.seq_package(dict(primary, order_type="MARKET", limit_px=None), [leg(self.C120, "STO", 1)], rid="ui:cover-res-seq-02")
+        self.assertEqual((200, "FILLED"), (st, p["status"]), out)
+        self.bid(self.C120, "0.20", "0.25")
+        self.assertEqual(("FILLED", 1), (self.row(h["order_id"])["status"], int(self.row(h["order_id"])["filled_qty"])))
+        # with free shares (200 more bought): a plain Dec 110 call resting at 1.50 is accepted; raised beyond the free shares it is refused
+        self.hold(200)
+        st, status, _m, out = self.order(self.C110, "STO", 1, order_type="LIMIT", limit_px="1.50")
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        plain = out["order"]["order_id"]
+        st, out, _h = self.call("PATCH", f"/api/orders/{plain}?book=T", {"qty": 3}, "ui:cover-res-plain-amend-01")
+        self.assertEqual((409, "SHARES_RESERVED"), (st, out["error"]["code"]), out)
+        st, out, _h = self.call("PATCH", f"/api/orders/{plain}?book=T", {"qty": 2}, "ui:cover-res-plain-amend-02")
+        self.assertEqual(200, st, out)
+        self.bid(self.C110, "1.50", "1.60")
+        self.assertEqual({"ACME": 600, self.C105J: -3, self.C120: -1, self.C110: -2}, self.positions())
+        # the margin covers every call: Dec 110 (200) and Dec 120 (100) first, then the Jan 105 calls sold as covered (300)
+        self.assertEqual({self.C105J: "covered_call", self.C110: "covered_call", self.C120: "covered_call"}, self.margin_rules())
+        self.assertEqual(0, self.uncovered())
+        assert_integrity(self, self.rt, "full")
+
+    def test_a_resting_short_sale_counts_against_new_calls(self):
+        """INV-4's known limit, counted: a short sale placed while the book was flat (300 ACME at 110.00, resting) still works when 300 ACME
+        are bought: those are the shares it will sell, so the reading offers no covered call on them and a covered call ticket is refused
+        409 NOT_COVERED (300 in working short sales); once the short sale is cancelled the same ticket is placed."""
+        st, status, _m, out = self.order("ACME", "SELL_SHORT", 300, order_type="LIMIT", limit_px="110.00", borrow=True)
+        self.assertEqual((200, "WORKING"), (st, status), out)
+        short = out["order"]["order_id"]
+        self.hold(300)
+        out = self.parse("covered call 300 ACME Dec 18 2026 105")
+        self.assertTrue(all(l["request"] is None for l in out["legs"]), out["legs"])
+        self.assertTrue(any("300 taken by working short sales" in f["text"] for l in out["legs"] for f in l["flags"] if f["code"] == "SIDE_SPLIT"))
+        st, status, _cc, out = self.covered(self.C105, 3)
+        self.assertEqual((409, "NOT_COVERED"), (st, status), out)
+        self.assertIn("(held 300; 300 in working short sales)", out["error"]["message"])
+        st, out, _h = self.call("DELETE", f"/api/orders/{short}?book=T", {}, "ui:cover-res-x-short")
+        self.assertEqual(200, st, out)
+        st, status, _cc, out = self.covered(self.C105, 3)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        self.assertEqual(({"ACME": 300, self.C105: -3}, 0), (self.positions(), self.uncovered()))
+        assert_integrity(self, self.rt, "full")
+
+    def test_reservations_are_whole_contracts_as_the_margin_assigns_them(self):
+        """150 ACME held and 2 calls sold (or still working): the margin covers 1 call with 100 shares and charges the other as naked, so 100
+        are reserved and 50 can be sold - SELL 51 is refused, SELL 50 accepted."""
+        for sold in (True, False):
+            with self.subTest(sold=sold):
+                if not sold:
+                    self.tearDown()
+                    self.setUp()
+                self.hold(150)
+                st, status, _m, out = self.order(self.C105, "STO", 2, **({} if sold else {"order_type": "LIMIT", "limit_px": "2.70"}))
+                self.assertEqual((200, "FILLED" if sold else "WORKING"), (st, status), out)
+                st, code, msg, out = self.order("ACME", "SELL", 51)
+                self.assertEqual((400, "OVERSELL"), (st, code), out)
+                self.assertIn("shares covering calls is 50", msg)
+                st, status, _m, out = self.order("ACME", "SELL", 50)
+                self.assertEqual((200, "FILLED"), (st, status), out)
+                self.assertEqual({"ACME": 100, self.C105: -2} if sold else {"ACME": 100}, self.positions())
+                assert_integrity(self, self.rt, "full")
+
+    def test_an_expiry_exercise_that_delivers_the_cover_is_said(self):
+        """The known limit, said: a long Dec 18 2026 95 put exercised automatically at its expiry (ACME's close 90.00) delivers the 300 ACME
+        that cover 3 Jan 15 2027 105 calls sold as covered; ONE WARN attention item (COVER_DELIVERED) names them - they are now naked."""
+        self.hold(300)
+        st, status, cc, out = self.covered(self.C105J, 3)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        st, status, _m, out = self.order(self.P95, "BTO", 3)
+        self.assertEqual((200, "FILLED"), (st, status), out)
+        # Fri 2026-12-18 after the 16:20 expiry time (the trades of Oct 20 settled); ACME's observed close of the day 90.00 (a marks CLOSE row:
+        # fixture)
+        self.rt.clock.set("2026-12-18T16:30:00-05:00")
+        self.assertIsNotNone(self.rt.lifecycle.tick(at="2026-12-18T16:30:00-05:00", only="SETTLE_DUE")["ran"])
+        ts = self.rt.clock.epoch()
+        with self.rt.db.writer() as tx:
+            tx.conn.execute("INSERT INTO marks(instrument_id, mark_date, kind, price, currency, quality, source, method, quote_time, fetched_at, note)"
+                            " VALUES ('ACME', '2026-12-18', 'CLOSE', '90.00', 'USD', 'close', 'test', 'direct', ?, ?, 'fixture')", (ts - 1800, ts))
+        r = execute(self.rt, "options.expire", {"account_id": ACCT, "instrument_id": self.P95}, "job:cover-res-expiry-01", actor="lifecycle")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("EXERCISE", 3), (r.body["kind"], r.body["contracts"]))
+        self.assertEqual({self.C105J: -3}, self.positions())
+        items = self.q("SELECT severity, message FROM attention WHERE code='COVER_DELIVERED'")
+        self.assertEqual(["WARN"], [i["severity"] for i in items])
+        for words in ("the expiry exercise of", "delivered 300 ACME that covered the calls sold as covered", self.C105J, "they are now naked"):
+            self.assertIn(words, items[0]["message"])
+        assert_integrity(self, self.rt, "full")
+
+
+# ===== rows the candidate 7b634e2 may have written (SIMPLIFY_PLAN s7) ======================================================================
+class OldCandidateRowsTests(SmartSubmitBase):
+    """Rows the 1.0.7.2 candidate could have written in a test home or a scratch copy - CUSTOM packages (all-or-none and sequential), orders
+    under ``st:`` request ids, command payloads with ``smart`` and its confirmed figures - load read-only: Pending Trades and the order
+    drawer read them in words, the generic machinery cancels and fills them as 1.0.7.1 does, a resend under such a request id is the
+    replay of the order placed, the parse reads none of them, and a new CUSTOM package is refused 400 UNKNOWN_STRATEGY.  The rows are
+    written as the candidate wrote them: packages placed with the candidate's request ids and notes, then given its CUSTOM key (the one
+    fixture write)."""
+    CALL = acme("C", 105)
+
+    def test_custom_packages_and_st_orders_load_read_only_and_new_custom_is_refused(self):
+        rt = self.rt
+        # an all-or-none package: 30 x (BTO Dec 18 100 call, STO Dec 18 105 call) - 30 > 20 displayed: it works unfilled
+        aon_body = {"account_id": ACCT, "tif": "DAY", "package": {"strategy_key": "BULL_CALL_SPREAD", "underlying": "ACME", "units": 3000, "tenor_months": 1,
+                                                                  "strikes": {"0": 100, "1": 105}},
+                    "smart": {"ticket": TICKET, "item": "C1", "clause": "buy 30 ACME Dec 18 2026 100/105 call spread"},
+                    "aon_confirmed": {"net_cash": "-7200.00", "previewed_at": self.now}}
+        st, aon, _h = self.send(aon_body, f"st:{TICKET}:C1:r1")
+        self.assertEqual((200, "WORKING"), (st, aon["package"]["status"]), aon)
+        # a sequential package: BUY 300 ACME limit 99 (resting) + STO 3 Dec 18 105 calls waiting for it
+        seq_body = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00", "tif": "DAY",
+                    "hedge": {"legs": [leg(acme("C", 105), "STO", 3)]}, "smart": {"ticket": TICKET, "item": "C2", "clause": "buy 300 ACME limit 99 and sell 3"
+                                                                                                                            " calls as a package"},
+                    "seq_confirmed": {"options_cash": "780.00", "previewed_at": self.now}}
+        st, seq, _h = self.send(seq_body, f"st:{TICKET}:C2:r1")
+        self.assertEqual(200, st, seq)
+        # a single order with the page's note
+        st, one, _h = self.send({"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": 10, "order_type": "LIMIT", "limit_px": "90.00", "tif": "DAY",
+                                 "smart": {"ticket": TICKET, "item": "L3", "clause": "buy 10 ACME limit 90"}}, f"st:{TICKET}:L3:r1")
+        self.assertEqual((200, "WORKING"), (st, one["order"]["status"]), one)
+        pids = (aon["package"]["package_id"], seq["hedge_package"])
+        with rt.db.writer() as tx:                                         # the candidate's key (fixture)
+            tx.conn.execute(f"UPDATE hedge_packages SET strategy_key='CUSTOM', candidate_id='CUSTOM' WHERE package_id IN ({','.join('?' for _ in pids)})", pids)
+        legs = {r["request_id"]: r for r in self.q("SELECT * FROM orders WHERE request_id LIKE 'st:%'")}
+        self.assertEqual({f"st:{TICKET}:C1:r1:L1", f"st:{TICKET}:C1:r1:L2", f"st:{TICKET}:C2:r1", f"st:{TICKET}:C2:r1:H1", f"st:{TICKET}:L3:r1"}, set(legs))
+        # Pending Trades and the order drawer read the packages in words
+        st, pend, _h = self.call("GET", "/api/blotter/pending?scope=T1:ALL")
+        self.assertEqual(200, st, pend)
+        words = {r["order_id"]: r.get("strategy_words") for r in pend["rows"] if r.get("package_id")}
+        self.assertEqual({"your own legs (Smart Ticket)"}, set(words.values()), words)
+        self.assertEqual(4, len(words))
+        st, d, _h = self.call("GET", f"/api/orders/{legs[f'st:{TICKET}:C1:r1:L1']['order_id']}")
+        self.assertEqual((200, "CUSTOM", "your own legs (Smart Ticket)"), (st, d["package"]["strategy_key"], d["package"]["strategy_words"]), d)
+        # a resend under such a request id is the replay of the order placed
+        n = self.q("SELECT COUNT(*) n FROM orders")[0]["n"]
+        st, again, h = self.send(aon_body, f"st:{TICKET}:C1:r1")
+        self.assertEqual((200, "1"), (st, h.get("X-Replayed")), again)
+        self.assertEqual(n, self.q("SELECT COUNT(*) n FROM orders")[0]["n"])
+        # the parse reads none of them: the same words read as a new order
+        (l,) = self.parse("buy 10 ACME limit 90")["legs"]
+        self.assertIsNotNone(l["request"])
+        # the owner cancels the all-or-none package from Pending Trades; the sequential one fills as 1.0.7.1 fills it
+        st, out, _h = self.call("POST", "/api/orders/cancel?book=T", {"order_ids": [legs[f"st:{TICKET}:C1:r1:L1"]["order_id"]], "reason": "cancelled by the owner"},
+                                "mc:oldrows00001")
+        self.assertEqual(200, st, out)
+        self.assertEqual(["CANCELLED", "CANCELLED"], [r["status"] for r in self.q("SELECT status FROM orders WHERE package_id=? ORDER BY order_id", (pids[0],))])
+        ReleaseAfterAmendOrReplaceTests.bar(self, 50000)                   # 98.90 crosses the 99.00 limit: 300 filled, the 3 calls released
+        ReleaseAfterAmendOrReplaceTests.sell_calls(self)
+        self.assertEqual({"ACME": 300, acme("C", 105): -3}, ReleaseAfterAmendOrReplaceTests.positions(self))
+        # a new CUSTOM package is refused, nothing written - at the order route and at the Strategies preview
+        st, out, _h = self.send({"account_id": ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [leg(acme("C", 100), "BTO", 1),
+                                                                                                               leg(acme("C", 105), "STO", 1)]}}, "ui:old-custom-01")
+        self.assertEqual((400, "UNKNOWN_STRATEGY"), (st, out["error"]["code"]), out)
+        self.assertEqual([], self.q("SELECT id FROM commands WHERE request_id='ui:old-custom-01'"))
+        st, out, _h = self.call("POST", "/api/strategies/preview?book=T", {"account_id": ACCT, "key": "CUSTOM", "params": {"legs": [leg(acme("C", 100), "BTO", 1)]}})
+        self.assertEqual((400, "UNKNOWN_STRATEGY"), (st, out["error"]["code"]), out)
+        assert_integrity(self, rt, "full")
+
 
 if __name__ == "__main__":
     unittest.main()

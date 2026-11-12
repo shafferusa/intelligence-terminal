@@ -164,17 +164,21 @@ class EquityTests(unittest.TestCase):
         self.settle("2026-10-22")
         self.assertEqual((before + 41399400, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "1200")))
         assert_integrity(self, rt, "full")
-        # SELL 400 with a 300 position -> 400 OVERSELL; SELL 300 is the accepted size (+ SELL_SHORT 100 with a borrow once WP-06 lands)
+        # SELL 400 with a 300 position -> 400 OVERSELL; SELL 300 is the accepted size, then SELL_SHORT 100 with a borrow once they have
+        # sold (1.0.7.2 INV-4: a short sale while the shares are held is refused, so the hint says "once they have sold")
         rt.clock.set("2026-10-22T10:00:00-04:00")
         now = rt.clock.epoch()
         rt.marks.set_quote(sc.rec("AAPL", "345.00", now - 60, now))
         r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="AAPL", side="SELL", qty=400, order_type="MARKET")
         self.assertEqual((400, "OVERSELL"), (r.http, r.code))
-        self.assertIn("sell 300 and SELL_SHORT 100", r.message)
+        self.assertIn("sell 300; once they have sold, SELL_SHORT 100 with a borrow", r.message)
         pv = orders.preview(rt, {"account_id": US_EXCHANGE, "instrument_id": "AAPL", "side": "SELL", "qty": 300, "order_type": "MARKET"})
         self.assertTrue(pv["ok"], pv["blockers"])
+        # changed with a stated reason (SIMPLIFY_PLAN s13): the short sale while 300 are held long is now refused by INV-4 itself
+        # (SHORT_WHILE_LONG: "sell them first"), before the build's missing securities-lending package is reached; still refused, nothing booked
         r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="AAPL", side="SELL_SHORT", qty=100, order_type="MARKET")
-        self.assertEqual((400, "NOT_IN_THIS_BUILD"), (r.http, r.code))
+        self.assertEqual((400, "SHORT_WHILE_LONG"), (r.http, r.code))
+        self.assertIn("sell them first", r.message)
         self.assertEqual(300, rt.accounting.position(US_EXCHANGE, "AAPL").qty)
 
 

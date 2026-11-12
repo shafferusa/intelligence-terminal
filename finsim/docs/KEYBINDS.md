@@ -33,8 +33,7 @@ the app (Settings > Keyboard) and every page follows them.
 | Shift+F7 | Accounting |
 | Shift+F8 | Completed Trades - executions and their settlement (on an account page: that account's) |
 | Shift+F9 | Watchlists |
-| Ctrl+F9 | Smart Ticket: type what you want to trade - several orders, options and combinations in one instruction; nothing is sent until you confirm |
-| Ctrl+Shift+Enter | Smart Ticket: submit the selected legs - opens the confirm that lists every order (only on the Smart Ticket page; elsewhere it says where it works) - also in a box |
+| Ctrl+F9 | Smart Ticket: type what you want to trade - several orders, options included, in one instruction; it fills one order ticket per order and sends nothing itself |
 | Shift+F10 | History: NAV history, transactions, account activity, past lifetimes |
 | Shift+F11 | Settings |
 | Shift+F12 | Keyboard help |
@@ -61,7 +60,7 @@ What changed from 1.0.5:
 
 Those earlier pages keep their actions without a key; bind them in Settings > Keyboard. Keys you changed yourself in Settings > Keyboard are kept.
 
-The registry holds 76 actions (1.0.7.2 added the Smart Ticket's two: Ctrl+F9 and Ctrl+Shift+Enter). A page's key shows in the '?' help and in Settings > Keyboard only once that page is in the build.
+The registry holds 75 actions (1.0.7.2 added the Smart Ticket's Ctrl+F9; its Ctrl+Shift+Enter was removed before release with the page's own send). A page's key shows in the '?' help and in Settings > Keyboard only once that page is in the build.
 
 ### Single keys (never while you type in a box)
 
@@ -100,11 +99,10 @@ The registry holds 76 actions (1.0.7.2 added the Smart Ticket's two: Ctrl+F9 and
 | --- | --- |
 | Enter | Read the instruction in the box (the text is read only when you press it) |
 | Shift+Enter | A new line in the box |
-| Esc | Clear the box (what is staged stays until you read a new text or start a new ticket) |
-| Ctrl+Shift+Enter | Submit selected: the confirm opens with Back focused; only a click on 'Send N orders' sends (no global key acts while a dialog is open) |
+| Esc | Clear the box (the cards stay until you read a new text or start a new ticket) |
 | / | Put the cursor in the instruction box |
 
-The order ticket's keys, Ctrl+Enter included, never act on this page: the ticket dock shows only on account pages.
+The page has no send key: each card's Open in ticket fills the order ticket on its account page, and that ticket's own keys (Ctrl+Enter included) send it there. The order ticket's keys never act on this page: the ticket dock shows only on account pages.
 
 ### Actions without a default key (bind them in Settings > Keyboard)
 

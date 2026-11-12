@@ -15,6 +15,12 @@ and numbers; the clock is Tuesday 2026-10-20 14:00 ET):
   the quote cache's pins and every corpus symbol's priorities, and the preview store are equal before and after, and instance-level
   spies on every function of CHANGE_PLAN 2.2's never-called list record zero calls.  Every corpus case's expectation is checked on
   the same pass; a 20-leg instruction parses in under 300 ms (deviation D-f; the measured time is printed).
+
+1.0.7.2 simplified (SIMPLIFY_PLAN s4-s6, s9): the orders written together are groups of separate tickets, each with its own request,
+sent in a safe order - words asking for one order and a price on the whole refused, never split or dropped, and the groups exactly
+7b634e2's combinations (``SeparateTicketsTests``); a covered call, collar or buy write is read on the account as it is, by the order
+route's own ``orders_preview.cover_state`` without the claims (``CoverReadingTests``); and the answer keeps the keys the unified app
+reads, with nothing read as "already sent" (``ParseContractTests``).
 Nothing touches the network or ``~/.finsim``.
 """
 from __future__ import annotations
@@ -414,7 +420,8 @@ class ResolverRules(_ResolverBase):
         out = self.parse(f["choices"][0]["clause"])
         self.assertEqual([("BTC", 2), ("BTO", 1)], [(l["side"], l["qty"]) for l in out["legs"]])
         f = flag(self.one("sell 201 WIDG"), "WOULD_OVERSELL")
-        self.assertEqual(["sell 200 WIDG", "sell 200 WIDG and short 1 WIDG"], [c["clause"] for c in f["choices"]])
+        # 1.0.7.2 simplified (INV-4): no "and short the rest" while shares are held - a short sale is refused while the account is long
+        self.assertEqual(["sell 200 WIDG"], [c["clause"] for c in f["choices"]])
         self.assertIn("100 in working sells", f["text"])
         self.assertEqual(["short 10 ACME"], [c["clause"] for c in flag(self.one("sell 10 ACME"), "WOULD_OVERSELL")["choices"]])
         for text, side in (("short 10 ACME", "SELL_SHORT"), ("cover 10 GIZM", "BUY_TO_COVER"), ("bto 1 ACME Dec 18 2026 240 call", "BTO"),
@@ -474,76 +481,101 @@ class ResolverRules(_ResolverBase):
         self.assertEqual("Q", self.one("buy 100 $Q")["instrument"]["id"])
         self.assertEqual("Q", self.one("buy 100 Q")["instrument"]["id"])
 
-    # ---- combinations ----------------------------------------------------------------------------------------------------------------------
+    # ---- groups (1.0.7.2 simplified: the orders written together are separate tickets, never one order) ------------------------------------
     def test_combinations_and_their_requests(self):
         out = self.parse("buy 2 ACME Dec 18 2026 220/240 strangle")
         cb = out["combos"][0]
-        self.assertEqual(("C1", [1, 2], "AON", "CUSTOM", "ACME", "strangle", "P", P), (cb["id"], cb["legs"], cb["fill_mode"], cb["kind"], cb["underlying_id"], cb["strategy"],
-                                                                                      cb["book"], cb["account_id"]))
-        self.assertEqual({"account_id": P, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME261218P00220000", "side": "BTO", "qty": 2}, {"instrument_id": "ACME261218C00240000", "side": "BTO", "qty": 2}]}}, cb["request"])
-        self.assertTrue(all(l["combo"] == "C1" and l["request"] is not None for l in out["legs"]))      # each leg keeps its own body (per-leg view)
-        self.assertNotIn("TYPE_DEFAULT", all_codes(out))                                 # AON legs are market by design: the combination says so
-        out = self.parse("buy 100 ACME limit 225 and sell 1 ACME Dec 18 2026 260 call as a package")
-        self.assertEqual({"account_id": P, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
-            {"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT", "limit_px": "225"},
-            {"instrument_id": "ACME261218C00260000", "side": "STO", "qty": 1, "order_type": "MARKET"}]}}, out["combos"][0]["request"])
-        out = self.parse("sell 1 ACME Dec 18 2026 260 call and buy 100 ACME together")  # the shares go first in a sequential package
-        self.assertEqual(["ACME", "ACME261218C00260000"], [l["instrument_id"] for l in out["combos"][0]["request"]["package"]["legs"]])
+        self.assertEqual(("C1", [1, 2], None, "SEPARATE", "ACME", "strangle", "P", P, None, [1, 2]),
+                         (cb["id"], cb["legs"], cb["fill_mode"], cb["kind"], cb["underlying_id"], cb["strategy"], cb["book"], cb["account_id"], cb["request"], cb["order"]))
+        self.assertEqual([{"account_id": P, "instrument_id": "ACME261218P00220000", "side": "BTO", "qty": 2, "order_type": "MARKET", "tif": "DAY"},
+                          {"account_id": P, "instrument_id": "ACME261218C00240000", "side": "BTO", "qty": 2, "order_type": "MARKET", "tif": "DAY"}],
+                         [l["request"] for l in out["legs"]])                            # each leg is its own ticket, at market unless it has a limit
+        self.assertTrue(all(l["combo"] == "C1" and "TYPE_DEFAULT" in codes(l["flags"]) for l in out["legs"]))
+        f = flag(cb, "SEPARATE_TICKETS")
+        self.assertEqual("check", f["severity"])
+        self.assertIn("the strangle as 2 separate tickets: each order goes and fills on its own (no all-or-none, no sequence)", f["text"])
+        self.assertEqual({"kind": "strategies_tab", "label": "Strategies tab", "instrument_id": "ACME", "account_id": P}, f["action"])
+        self.assertTrue(out["ok"])
+        # words asking for one order are a blocker on the group and on each of its orders (never split silently); the choice drops them
+        for text, words, order in (("buy 100 ACME limit 225 and sell 1 ACME Dec 18 2026 260 call as a package", "as a package", [1, 2]),
+                                   ("sell 1 ACME Dec 18 2026 260 call and buy 100 ACME together", "together", [2, 1])):
+            out = self.parse(text)
+            cb = out["combos"][0]
+            f = flag(cb, "ONE_ORDER_ASKED")
+            self.assertEqual(("blocker", order), (f["severity"], cb["order"]), text)        # the shares first, then the calls
+            self.assertIn("'%s' asks for one order" % words, f["text"], text)
+            self.assertTrue(all(l["request"] is None and "ONE_ORDER_ASKED" in codes(l["flags"]) for l in out["legs"]), text)
+            self.assertEqual([text.replace(" " + words, "")], [c["clause"] for c in f["choices"]], text)
+            again = self.parse(f["choices"][0]["clause"])
+            self.assertTrue(again["ok"], text)
+            self.assertTrue(all(l["request"] is not None for l in again["legs"]), text)
+        # a leg's own limit is that ticket's limit (no all-or-none to hold it); "together" asks for one order
         out = self.parse("(buy 1 ACME Dec 18 2026 240 call limit 3.20 and sell 1 ACME Dec 18 2026 250 call limit 1.10) together")
-        f = flag(out["combos"][0], "LIMIT_IN_AON")
-        self.assertEqual(["(buy 1 ACME Dec 18 2026 240 call and sell 1 ACME Dec 18 2026 250 call) together",
-                          "buy 1 ACME Dec 18 2026 240 call limit 3.20 and sell 1 ACME Dec 18 2026 250 call limit 1.10"], [c["clause"] for c in f["choices"]])
+        f = flag(out["combos"][0], "ONE_ORDER_ASKED")
+        self.assertEqual(["(buy 1 ACME Dec 18 2026 240 call limit 3.20 and sell 1 ACME Dec 18 2026 250 call limit 1.10)"], [c["clause"] for c in f["choices"]])
         self.assertEqual(f["span"], [0, len(out["text"])])
-        first = self.parse(f["choices"][0]["clause"])
-        self.assertEqual((True, "AON"), (first["ok"], first["combos"][0]["fill_mode"]))
-        second = self.parse(f["choices"][1]["clause"])
-        self.assertEqual((True, 0, ["LIMIT", "LIMIT"]), (second["ok"], len(second["combos"]), [l["order_type"] for l in second["legs"]]))
+        again = self.parse(f["choices"][0]["clause"])
+        self.assertEqual((True, 1, [("LIMIT", "3.20"), ("LIMIT", "1.10")]), (again["ok"], len(again["combos"]), [(l["order_type"], l["limit_px"]) for l in again["legs"]]))
+        self.assertIn("SEPARATE_TICKETS", codes(again["combos"][0]["flags"]))
+        # a price on the strategy as a whole is a net price the tickets cannot carry: refused with "without the price", never dropped
         out = self.parse("buy 1 ACME Dec 18 2026 240/250 call spread limit 2.10")
-        self.assertEqual(["buy 1 ACME Dec 18 2026 240/250 call spread", "bto 1 ACME261218C00240000 and sto 1 ACME261218C00250000"],
-                         [c["clause"] for c in flag(out["combos"][0], "LIMIT_IN_AON")["choices"]])
+        f = flag(out["combos"][0], "NET_PRICE")
+        self.assertEqual(("blocker", ["buy 1 ACME Dec 18 2026 240/250 call spread"]), (f["severity"], [c["clause"] for c in f["choices"]]))
+        self.assertTrue(all(l["request"] is None for l in out["legs"]))
+        self.assertTrue(self.parse(f["choices"][0]["clause"])["ok"])
+        # two names, two share orders, a future and an option, two books: separate tickets, each with its request (no COMBO_INVALID)
         for text in ("(buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put)", "(buy 100 ACME and buy 100 WIDG)",
                      "(buy 1 ESZ26 and buy 1 ACME Dec 18 2026 240 call)", "(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call in the Fund book)"):
-            cb = self.parse(text)["combos"][0]                                           # two names, two share legs, a futures leg, two books
-            self.assertIsNone(cb["request"], text)
-            self.assertIn("COMBO_INVALID", codes(cb["flags"]), text)
-        cb = self.parse("(buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put)")["combos"][0]
-        self.assertEqual(["buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put"], [c["clause"] for c in flag(cb, "COMBO_INVALID")["choices"]])
+            out = self.parse(text)
+            cb = out["combos"][0]
+            self.assertEqual((None, "SEPARATE", [1, 2]), (cb["request"], cb["kind"], cb["legs"]), text)
+            self.assertIn("SEPARATE_TICKETS", codes(cb["flags"]), text)
+            self.assertTrue(all(l["request"] is not None and l["combo"] == "C1" for l in out["legs"]), text)
+            self.assertTrue(out["ok"], text)
+        self.assertEqual((None, None), (cb["book"], cb["account_id"]))                     # two books: the group names neither
 
     def test_covered_calls_collars_and_rolls(self):
-        out = self.parse("covered call 300 ACME Dec 18 2026 250")
+        out = self.parse("covered call 300 ACME Dec 18 2026 250")                         # none held in P: a buy write, two tickets
         self.assertEqual([("BUY", 300, "ACME"), ("STO", 3, C250)], [(l["side"], l["qty"], l["instrument"]["id"]) for l in out["legs"]])
-        self.assertEqual(("SEQUENTIAL", "covered call"), (out["combos"][0]["fill_mode"], out["combos"][0]["strategy"]))
-        out = self.parse("collar 100 ACME Dec 18 2026 220/260", book="F")               # 100 held in F: the options only
+        cb = out["combos"][0]
+        self.assertEqual(("SEPARATE", None, "covered call", [1, 2]), (cb["kind"], cb["fill_mode"], cb["strategy"], cb["order"]))
+        self.assertEqual((None, True), (out["legs"][0]["request"].get("covered"), out["legs"][1]["request"]["covered"]))
+        self.assertTrue(any("send it after the shares have filled" in f["text"] for f in out["legs"][1]["flags"] if f["code"] == "SIDE_INFERRED"))
+        out = self.parse("collar 100 ACME Dec 18 2026 220/260", book="F")               # 100 held in F: the options only, two tickets
         self.assertEqual(["BTO", "STO"], [l["side"] for l in out["legs"]])
+        self.assertEqual([None, True], [l["request"].get("covered") for l in out["legs"]])
+        self.assertTrue(any("the put and the call only, two tickets" in f["text"] for f in out["legs"][0]["flags"]))
+        self.assertTrue(any("held free when read - another order you send first may take them" in f["text"] for f in out["legs"][1]["flags"]))
         out = self.parse("collar 100 ACME Dec 18 2026 220/260")                          # none in P: the shares first
         self.assertEqual(["BUY", "BTO", "STO"], [l["side"] for l in out["legs"]])
+        self.assertEqual([1, 2, 3], out["combos"][0]["order"])
         out = self.parse("roll ACME Dec 18 2026 240 calls to 250")                       # the 2 held short: buy them back, sell the new strike
         self.assertEqual([("BTC", 2, C240), ("STO", 2, C250)], [(l["side"], l["qty"], l["instrument"]["id"]) for l in out["legs"]])
-        self.assertEqual("AON", out["combos"][0]["fill_mode"])
+        cb = out["combos"][0]
+        self.assertEqual(("SEPARATE", None, "roll", [1, 2]), (cb["kind"], cb["fill_mode"], cb["strategy"], cb["order"]))
+        self.assertTrue(all(l["request"] is not None for l in out["legs"]))
+        self.assertNotIn("Strategies tab", flag(cb, "SEPARATE_TICKETS")["text"])        # no template for a roll: nothing promised
 
     def test_cover_hint_and_duplicate_leg(self):
         text = "buy 100 ACME and sell 1 ACME Dec 18 2026 260 call"
         out = self.parse(text)
         f = flag(out["legs"][1], "COVER_HINT")
-        # fourth review: the pair is grouped with parentheses (a group word's run would reach back over an order before them)
-        self.assertEqual(([0, len(text)], ["(" + text + ")"]), (f["span"], [c["clause"] for c in f["choices"]]))
-        self.assertEqual("SEQUENTIAL", self.parse(f["choices"][0]["clause"])["combos"][0]["fill_mode"])
+        # two tickets: the call is sent after the shares have filled (no grouping choice: a group would be separate tickets too)
+        self.assertEqual("legs 1 and 2 look like a covered call: two tickets: send the call after the shares have filled", f["text"])
+        self.assertNotIn("choices", f)
+        self.assertEqual([None, None], [l["combo"] for l in out["legs"]])
         out = self.parse("buy 100 ACME; buy 100 ACME")
         self.assertTrue(all("DUPLICATE_LEG" in codes(l["flags"]) for l in out["legs"]))
         self.assertTrue(out["ok"])                                                       # a check, not a blocker
-        # ... but inside ONE combination a contract named twice is a blocker: the CUSTOM package refuses it (400 LEGS), so it is never sent
-        for text in ("(buy 1 ACME Dec 18 2026 260 call and buy 1 ACME Dec 18 2026 260 call)",
-                     "(buy 1 ACME Dec 18 2026 260 call and sell 1 ACME Dec 18 2026 260 call) together"):
-            out = self.parse(text)
-            cb = out["combos"][0]
-            f = flag(cb, "COMBO_INVALID")
-            self.assertEqual((False, None, [1, 2]), (out["ok"], cb["request"], cb["legs"]), text)
-            self.assertIn("same contract", f["text"], text)
-            self.assertEqual([[0, len(out["text"])]], [f["span"]], text)
-            self.assertEqual(1, len(f["choices"]), text)                             # as separate orders: no package, so no 400
-            self.assertNotIn("COMBO_INVALID", all_codes(self.parse(f["choices"][0]["clause"])), text)
-        self.assertNotIn("COMBO_INVALID", all_codes(self.parse("sell 1 ACME Dec 18 2026 220/230/240 iron butterfly")))   # P230 and C230: two contracts
+        # inside a group a contract named twice is two tickets too: a check, never a package refused
+        out = self.parse("(buy 1 ACME Dec 18 2026 260 call and buy 1 ACME Dec 18 2026 260 call)")
+        self.assertTrue(out["ok"])
+        self.assertTrue(all("DUPLICATE_LEG" in codes(l["flags"]) and l["request"] is not None for l in out["legs"]))
+        out = self.parse("(buy 1 ACME Dec 18 2026 260 call and sell 1 ACME Dec 18 2026 260 call) together")
+        f = flag(out["combos"][0], "ONE_ORDER_ASKED")
+        self.assertEqual((False, None, [1, 2]), (out["ok"], out["combos"][0]["request"], out["combos"][0]["legs"]))
+        self.assertTrue(self.parse(f["choices"][0]["clause"])["ok"])
+        self.assertNotIn("COMBO_INVALID", all_codes(self.parse("sell 1 ACME Dec 18 2026 220/230/240 iron butterfly")))
 
 
 class ResolverRenamedBooks(_ResolverBase):
@@ -617,7 +649,7 @@ class ChoicesKeepOtherOrders(_ResolverBase):
 
     @staticmethod
     def goes(out, l) -> bool:
-        return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+        return l["request"] is not None             # 1.0.7.2 simplified: an order goes when its own ticket is complete (a group sends nothing)
 
     def test_every_choice_changes_only_the_order_it_is_on(self):
         applied = widened = dropped = 0
@@ -683,13 +715,12 @@ class ChoicesKeepOtherOrders(_ResolverBase):
 
 
 class ChoicesFourthReview(_ResolverBase):
-    """1.0.7.2 fourth review, applied as the page applies a choice (its text in place of the flag's span, then a new reading): a choice on
-    one order never turns an order already sent into a new one (R2 reads the words without a leading "buy" / "sell"); "as separate
-    orders" and the cover hint never merge another order into a package (the next group, or the pair, is written with parentheses); a
-    choice keeps the order it is on in the account it was read in (the buy write, the side alternatives: "sto" on shares is a short
-    sale); a covered call or collar quantity in contracts or lots is refused, never read as shares.  The world: the corpus's, a WIDG
-    chain, 100 WIDG short in the Fund book, 200 WIDG long at I1:PB_MS, and the Personal book's Dec-18 240 / 250 calls closed today by two
-    Smart Ticket orders whose commands keep the clause as the page stores it (fixture rows, fictional ids)."""
+    """1.0.7.2 fourth review, applied as the page applies a choice (its text in place of the flag's span, then a new reading): a choice
+    keeps the order it is on in the account it was read in (the buy write, the side alternatives: "sto" on shares is a short sale) and
+    every other order as it was read, in its group or alone; a covered call or collar quantity in contracts or lots is refused, never
+    read as shares.  The world: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, 200 WIDG long at I1:PB_MS, and the Personal
+    book's Dec-18 240 / 250 calls closed today by two orders whose request ids carry the earlier Smart Ticket's prefix (fixture rows,
+    fictional ids): since the simplification they are read as any other order - nothing is read as "already sent"."""
 
     SENT = (("O-ST4-BTC", "st:4f4f4f4f4f01:L2:r1", C240, "BTC", 2, "2 ACME Dec 18 2026 240 calls"),
             ("O-ST4-STC", "st:4f4f4f4f4f02:L2:r1", C250, "STC", 3, "3 ACME Dec 18 2026 250 calls"))
@@ -704,7 +735,7 @@ class ChoicesFourthReview(_ResolverBase):
                               + [(F, "WIDG", "SHORT", 100, "40"), (PB, "WIDG", "LONG", 200, "40")])
         build_world(unittest.TestCase(), cls.rt, world)
         now = int(cls.rt.clock.epoch())
-        with cls.rt.db.writer() as tx:                               # fixture only: two Smart Ticket orders sent and filled today
+        with cls.rt.db.writer() as tx:                               # fixture only: two orders of the earlier Smart Ticket, filled today
             for oid, rid, iid, side, qty, clause in cls.SENT:
                 payload = json.dumps({"account_id": P, "instrument_id": iid, "side": side, "qty": qty, "order_type": "MARKET", "tif": "DAY",
                                       "smart": {"ticket": rid.split(":")[1], "item": "L2", "clause": clause}}, sort_keys=True)
@@ -722,7 +753,7 @@ class ChoicesFourthReview(_ResolverBase):
 
     @staticmethod
     def goes(out, l) -> bool:
-        return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+        return l["request"] is not None             # 1.0.7.2 simplified: an order goes when its own ticket is complete (a group sends nothing)
 
     def apply(self, text, book, code, label):
         out = self.parse(text, book)
@@ -733,47 +764,6 @@ class ChoicesFourthReview(_ResolverBase):
                         a, b = f["span"]
                         return out, f, ch, self.parse(out["text"][:a] + ch["clause"] + out["text"][b:], book)
         self.fail(f"no {code} choice labelled {label!r} on {text!r}: {json.dumps([l['flags'] for l in out['legs']])[:2000]}")
-
-    def test_r2_an_order_already_sent_reads_as_it_after_a_choice_on_another_order(self):
-        for text, code, label, iid, side in (("buy 300 GIZM and 2 ACME Dec 18 2026 240 calls", "SIDE_SPLIT", "cover 200 only", C240, "BTC"),
-                                             ("sell 400 WIDG and 3 ACME Dec 18 2026 250 calls", "WOULD_OVERSELL", "sell 200 + short 200", C250, "STC")):
-            with self.subTest(text=text):
-                out, f, ch, out2 = self.apply(text, "P", code, label)
-                self.assertIn(("buy " if side == "BTC" else "sell ") + text.split(" and ")[1], ch["clause"])     # the guard wrote the carried side word
-                for o in (out, out2):
-                    leg = next(l for l in o["legs"] if l["instrument"].get("id") == iid)
-                    self.assertEqual((side, True), (leg["side"], "ALREADY_SENT" in codes(leg["flags"])), o["text"])
-        # the words with their own side word read as the order that went too (the side's direction is compared on its own)
-        leg = self.one("buy 2 ACME Dec 18 2026 240 calls")
-        self.assertEqual(("BTC", True), (leg["side"], "ALREADY_SENT" in codes(leg["flags"])))
-        leg = self.one("sell 2 ACME Dec 18 2026 240 calls")                                     # the other direction is another order
-        self.assertNotIn("ALREADY_SENT", codes(leg["flags"]))
-
-    def test_grouping_choices_keep_each_package_its_own_orders(self):
-        cases = (("buy 1 ACME Dec 18 2026 220 put as a package, buy 1 ACME Dec 18 2026 240/250 call spread as a package", "F", "COMBO_INVALID", "as separate orders",
-                  "buy 1 ACME Dec 18 2026 220 put, (buy 1 ACME Dec 18 2026 240/250 call spread)"),
-                 ("(bto 1 ACME Dec 18 2026 260 call); 1 ACME Dec 18 2026 210/220 put spread as a package", "P", "COMBO_INVALID", "as separate orders",
-                  "bto 1 ACME Dec 18 2026 260 call; (1 ACME Dec 18 2026 210/220 put spread)"),
-                 ("in the Fund book: sell 2 ACME Dec 18 2026 250 calls limit 1.10 as a package, 100 ACME as a package", "I", "COMBO_INVALID", "as separate orders",
-                  "sell 2 ACME Dec 18 2026 250 calls limit 1.10, (100 ACME)"),
-                 ("buy 1 ACME Dec 18 2026 240/250 call spread, buy 100 ACME, sell 1 ACME Dec 18 2026 260 call; buy 50 WIDG", "F", "COVER_HINT", "group them",
-                  "(buy 100 ACME, sell 1 ACME Dec 18 2026 260 call)"))
-        for text, book, code, label, want in cases:
-            with self.subTest(text=text):
-                out, f, ch, out2 = self.apply(text, book, code, label)
-                self.assertTrue(ch["clause"].endswith(want), ch["clause"])
-                before = {tuple(c["legs"]) for c in out["combos"] if c["request"] is not None}
-                a, b = f["span"]
-                inside = {l["n"] for l in out2["legs"] if a <= l["span"][0] and l["span"][1] <= a + len(ch["clause"])}
-                merged = [c["legs"] for c in out2["combos"] if c["request"] is not None and set(c["legs"]) & inside and set(c["legs"]) - inside]
-                self.assertEqual([], merged, out2["text"])
-                for c in before:                              # every sendable package of the other orders is still there, with its legs
-                    self.assertIn(len(c), [len(x["legs"]) for x in out2["combos"] if x["request"] is not None], out2["text"])
-        # the pair alone: grouped with parentheses (a sequential package of the shares and the call)
-        out = self.parse("buy 100 ACME, sell 1 ACME Dec 18 2026 260 call", "F")
-        f = flag(out["legs"][1], "COVER_HINT")
-        self.assertEqual(["(buy 100 ACME, sell 1 ACME Dec 18 2026 260 call)"], [c["clause"] for c in f["choices"]])
-        self.assertEqual("SEQUENTIAL", self.parse(f["choices"][0]["clause"], "F")["combos"][0]["fill_mode"])
 
     def test_a_choice_keeps_the_order_it_is_on_in_its_account(self):
         out, f, ch, out2 = self.apply("covered call 300 WIDG Dec 18 2026 45 in the Institutional book", "P", "SIDE_SPLIT", "buy write")
@@ -796,10 +786,22 @@ class ChoicesFourthReview(_ResolverBase):
              ("covered call 300 WIDG Dec 18 2026 45 in the Institutional book", "P"), ("sto 50 WIDG in the Institutional book", "P"),
              ("bto 50 WIDG in the Fund book", "P"), ("covered call 100 contracts WIDG Dec 18 2026 45", "P"))
 
+    @staticmethod
+    def partners(out, l, span) -> tuple:
+        """The orders ``l`` is grouped with, outside ``span`` (by their words), and whether it has one inside: a group is separate tickets
+        since the simplification, so what a choice could change about another order's group is who it is grouped with."""
+        cb = next((c for c in out["combos"] if l["n"] in c["legs"]), None)
+        if cb is None:
+            return (False, (), False)
+        legs = [out["legs"][n - 1] for n in cb["legs"] if n != l["n"]]
+        a, b = span
+        outside = sorted(st._clause_words(m["clause"]) for m in legs if not (a <= m["span"][0] and m["span"][1] <= b))
+        return (True, tuple(outside), any(a <= m["span"][0] and m["span"][1] <= b for m in legs))
+
     def test_every_choice_keeps_the_other_orders_and_its_own_account(self):
-        """Every choice offered on these texts, applied: every OTHER order keeps its book, account, side, quantity and reading as an
-        order already sent, and is never newly sendable; the orders the choice writes stay in the book and account they were read in
-        (unless the choice is about those) and join no package with an order outside them."""
+        """Every choice offered on these texts, applied: every OTHER order keeps its book, account, side, quantity and group partners, and
+        is never newly sendable; the orders the choice writes stay in the book and account they were read in (unless the choice is
+        about those)."""
         problems, applied = [], 0
         for text, book in self.TEXTS:
             out = self.parse(text, book)
@@ -809,26 +811,25 @@ class ChoicesFourthReview(_ResolverBase):
                         applied += 1
                         a, b = f["span"]
                         out2 = self.parse(out["text"][:a] + ch["clause"] + out["text"][b:], book)
-                        delta, end = len(ch["clause"]) - (b - a), a + len(ch["clause"])
+                        end = a + len(ch["clause"])
                         where = f"{text!r} [{f['code']} -> {ch['clause']!r}]"
                         before = {(l["book"], l["account_id"]) for l in out["legs"] if a <= l["span"][0] and l["span"][1] <= b}
                         inside = {m["n"] for m in out2["legs"] if a <= m["span"][0] and m["span"][1] <= end}
                         for m in out2["legs"]:
-                            if m["n"] in inside and f["code"] not in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK") and self.goes(out2, m) and before and                                     (m["book"], m["account_id"]) not in before:
+                            if (m["n"] in inside and f["code"] not in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK") and self.goes(out2, m) and before
+                                    and (m["book"], m["account_id"]) not in before):
                                 problems.append(f"{where}: leg {m['n']} moved to {m['book']} {m['account_id']}")
-                        for c in out2["combos"]:
-                            if c["request"] is not None and set(c["legs"]) & inside and set(c["legs"]) - inside:
-                                problems.append(f"{where}: package {c['legs']} joins the choice's orders with others")
                         for l in out["legs"]:
                             if a <= l["span"][0] and l["span"][1] <= b:
                                 continue
                             words = st._clause_words(l["clause"])           # a parenthesis written next to it can move a comma into its clause
                             m = next((m for m in out2["legs"] if m["n"] not in inside and st._clause_words(m["clause"]) == words
                                       and m["instrument"].get("id") == l["instrument"].get("id")), None)
-                            sent = ("ALREADY_SENT" in codes(l["flags"]), m is not None and "ALREADY_SENT" in codes(m["flags"]))
-                            if m is None or (m["book"], m["account_id"], m["side"], m["qty"]) != (l["book"], l["account_id"], l["side"], l["qty"])                                     or sent[0] != sent[1] or (self.goes(out2, m) and not self.goes(out, l)):
-                                problems.append(f"{where}: the other leg {l['n']} {(l['book'], l['account_id'], l['side'], l['qty'])} became "
-                                                f"{None if m is None else (m['book'], m['account_id'], m['side'], m['qty'], sent[1], self.goes(out2, m))}")
+                            group = (self.partners(out, l, (a, b)), None if m is None else self.partners(out2, m, (a, end)))
+                            if (m is None or (m["book"], m["account_id"], m["side"], m["qty"]) != (l["book"], l["account_id"], l["side"], l["qty"])
+                                    or group[0] != group[1] or (self.goes(out2, m) and not self.goes(out, l))):
+                                problems.append(f"{where}: the other leg {l['n']} {(l['book'], l['account_id'], l['side'], l['qty'], group[0])} became "
+                                                f"{None if m is None else (m['book'], m['account_id'], m['side'], m['qty'], group[1], self.goes(out2, m))}")
         self.assertEqual([], problems, "\n".join(problems))
         self.assertGreaterEqual(applied, 12)
 
@@ -1045,12 +1046,12 @@ PT5_SEED_TEXTS = (
 
 
 def _fifth_goes(out, l) -> bool:
-    return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+    return l["request"] is not None                     # 1.0.7.2 simplified: its own ticket complete (a group blocker is on its legs)
 
 
 def _fifth_body(l) -> tuple:
     return (l["book"], l["account_id"], l["side"], l["qty"], l["instrument"].get("id"), l["order_type"], l["limit_px"], l["stop_px"], l["trail_amt"],
-            l["trail_pct"], l["tif"], l["gtd_date"], "ALREADY_SENT" in codes(l["flags"]))
+            l["trail_pct"], l["tif"], l["gtd_date"])
 
 
 def _fifth_unparsed(out) -> set:
@@ -1188,7 +1189,7 @@ class _FifthReviewBase(_ResolverBase):
         build_world(unittest.TestCase(), cls.rt, world)
         if cls.WORLD_KIND == "B":
             now = int(cls.rt.clock.epoch())
-            with cls.rt.db.writer() as tx:                           # fixture only: two Smart Ticket orders sent and filled today
+            with cls.rt.db.writer() as tx:                           # fixture only: two orders of the earlier Smart Ticket, filled today
                 for oid, rid, iid, side, qty, clause in cls.SENT:
                     payload = json.dumps({"account_id": P, "instrument_id": iid, "side": side, "qty": qty, "order_type": "MARKET", "tif": "DAY",
                                           "smart": {"ticket": rid.split(":")[1], "item": "L2", "clause": clause}}, sort_keys=True)
@@ -1244,43 +1245,17 @@ class _FifthReviewBase(_ResolverBase):
 
 class ChoicesFifthReview(_FifthReviewBase):
     """1.0.7.2 fifth review (world B: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, 200 WIDG long at I1:PB_MS, the Personal
-    book's Dec-18 240 / 250 calls closed today by two Smart Ticket orders): an order already sent keeps its reading when a choice on
-    another order writes out its book or account (R2 reads a book phrase naming its own book, and an account phrase naming the account it
-    went to, as the same words); a choice on one book's order of a clause repeated per book is written for that book alone; the shares
-    split offers the cover alone; a book choice replaces the order's own book phrase; a fix inside a package and every book an unknown
-    book word may mean are offered; an account typed with "at" is replaced whole; the cover hint keeps the pair in the account it was
-    read in; and every case the review's property tests reported keeps the choice contract."""
-
-    def test_an_order_already_sent_keeps_its_reading_when_a_choice_writes_out_its_book_or_account(self):
-        for text, code, label, iid, side, want in (
-                ("buy 300 GIZM in the Personal book and 2 ACME Dec 18 2026 240 calls", "SIDE_SPLIT", "cover 200 only", C240, "BTC",
-                 "cover 200 GIZM in the Personal book and buy 2 ACME Dec 18 2026 240 calls"),
-                ("buy 300 GIZM at us exchange and 2 ACME Dec 18 2026 240 calls", "SIDE_SPLIT", "cover 200 only", C240, "BTC", None),
-                ("sell 400 WIDG in the Personal book and 3 ACME Dec 18 2026 250 calls", "WOULD_OVERSELL", "sell 200 + short 200", C250, "STC", None),
-                ("buy 2 ACME Dec 18 2026 240 calls and buy 1 ACME Dec 18 2026 240/250 call spread at I1:PB_MS", "ACCOUNT_NOT_IN_BOOK", "in the Institutional Book",
-                 C240, "BTC", "buy 2 ACME Dec 18 2026 240 calls in the Personal book and buy 1 ACME Dec 18 2026 240/250 call spread at I1:PB_MS in the Institutional book")):
-            with self.subTest(text=text):
-                out = self.parse(text, "P")
-                item, f, ch = self.find(out, code, label)
-                if want is not None:
-                    self.assertTrue(ch["clause"].startswith(want) or ch["clause"] == want, ch["clause"])
-                out2 = self.apply(out, f, ch, "P")
-                sent = [l for l in out2["legs"] if l["instrument"].get("id") == iid and l["combo"] is None]
-                self.assertEqual([(side, True)], [(l["side"], "ALREADY_SENT" in codes(l["flags"])) for l in sent], out2["text"])
-                self.assertEqual([], choice_contract(out, item, f, ch, out2))
-        # R2 itself: the words with a book phrase naming their own book (one or several) or the account they went to read as the order sent
-        for text in ("buy 2 ACME Dec 18 2026 240 calls in the Personal book", "buy 2 ACME Dec 18 2026 240 calls at us exchange",
-                     "buy 2 ACME Dec 18 2026 240 calls in the Personal and Fund books", "buy 100 WIDG and 2 ACME Dec 18 2026 240 calls in the Personal book"):
-            leg = next(l for l in self.parse(text, "P")["legs"] if l["book"] == "P" and l["instrument"].get("id") == C240)
-            self.assertEqual(("BTC", True), (leg["side"], "ALREADY_SENT" in codes(leg["flags"])), text)
-        leg = self.one("buy 2 ACME Dec 18 2026 240 calls at pb ms", "P")                   # another account: another order
-        self.assertNotIn("ALREADY_SENT", codes(leg["flags"]))
+    book's Dec-18 240 / 250 calls closed today by two orders of the earlier Smart Ticket): a choice on one book's order of a clause
+    repeated per book is written for that book alone; the shares split offers the cover alone; a book choice replaces the order's own
+    book phrase; a fix inside a group and every book an unknown book word may mean are offered; an account typed with "at" is replaced
+    whole; and every case the review's property tests reported keeps the choice contract (1.0.7.2 simplified: the tests of the "already
+    sent" reading and of the cover hint's grouping choice went with them)."""
 
     def test_a_choice_on_one_books_order_is_written_for_that_book_alone(self):
         for text, code, label, on, other, want in (
                 ("sell 300 WIDG in the Personal and Fund books", "WOULD_OVERSELL", "short 300", "F", "P", "sell 300 WIDG in the Personal book; short 300 WIDG in the Fund book"),
-                ("sell 300 WIDG in the Personal and Fund books", "WOULD_OVERSELL", "sell 200 + short 100", "P", "F",
-                 "sell 200 WIDG in the Personal book and short 100 WIDG in the Personal book; sell 300 WIDG in the Fund book"),
+                ("sell 300 WIDG in the Personal and Fund books", "WOULD_OVERSELL", "sell 200", "P", "F",       # no short while shares are held (INV-4)
+                 "sell 200 WIDG in the Personal book; sell 300 WIDG in the Fund book"),
                 ("sell 3 ACME Dec 18 2026 250 calls in the Personal and Institutional books", "SIDE_SPLIT", "stc 2 only", "I", "P",
                  "sell 3 ACME Dec 18 2026 250 calls in the Personal book; stc 2 ACME Dec 18 2026 250 calls in the Institutional book")):
             with self.subTest(text=text, label=label):
@@ -1317,14 +1292,20 @@ class ChoicesFifthReview(_FifthReviewBase):
                 self.assertEqual([("I", PB, False)], [(l["book"], l["account_id"], "DUPLICATE_FIELD" in codes(l["flags"])) for l in out2["legs"]])
 
     def test_a_fix_inside_a_package_and_every_book_an_unknown_word_may_mean_are_offered(self):
-        for text in ("(buy 1 ACME Dec 18 2026 240 call, sell 1 ACME Dec 18 2026 215 call)", "buy 1 ACME Dec 18 2026 240 call, sell 1 ACME Dec 18 2026 215 call as a package"):
-            with self.subTest(text=text):
-                out = self.parse(text, "P")
-                item, f, ch = self.find(out, "STRIKE_NOT_LISTED", "210 call")
-                self.assertEqual(["210 call", "220 call"], [c["label"] for c in f["choices"]])
-                out2 = self.apply(out, f, ch, "P")
-                self.assertEqual(1, len([c for c in out2["combos"] if c["request"] is not None]), out2["text"])     # the package typed, completed
-                self.assertEqual([], choice_contract(out, item, f, ch, out2))
+        # 1.0.7.2 simplified: a group, not a package - the fix completes the group's own ticket and changes nothing else
+        out = self.parse("(buy 1 ACME Dec 18 2026 240 call, sell 1 ACME Dec 18 2026 215 call)", "P")
+        item, f, ch = self.find(out, "STRIKE_NOT_LISTED", "210 call")
+        self.assertEqual(["210 call", "220 call"], [c["label"] for c in f["choices"]])
+        out2 = self.apply(out, f, ch, "P")
+        self.assertEqual(([[1, 2]], [True, True]), ([c["legs"] for c in out2["combos"]], [l["request"] is not None for l in out2["legs"]]), out2["text"])
+        self.assertEqual([], choice_contract(out, item, f, ch, out2))
+        # words asking for one order stay where they were typed: the fix is offered, and the group still asks for one order (never split)
+        out = self.parse("buy 1 ACME Dec 18 2026 240 call, sell 1 ACME Dec 18 2026 215 call as a package", "P")
+        item, f, ch = self.find(out, "STRIKE_NOT_LISTED", "210 call")
+        out2 = self.apply(out, f, ch, "P")
+        self.assertIn("ONE_ORDER_ASKED", codes(out2["combos"][0]["flags"]), out2["text"])
+        self.assertEqual([None, None], [l["request"] for l in out2["legs"]])
+        self.assertEqual([], choice_contract(out, item, f, ch, out2))
         leg = self.one("buy 100 ACME in the Fnd book", "P")
         self.assertEqual((None, None), (leg["book"], leg["request"]))                     # unread: never the selected book
         f = flag(leg, "UNPARSED_TEXT")
@@ -1348,17 +1329,6 @@ class ChoicesFifthReview(_FifthReviewBase):
         _item, f, ch = self.find(out, "ACCOUNT_CHOICE", "(I1:PB_MS)")
         self.assertEqual("cover 300 GIZM in the Institutional book at pb ms", ch["clause"])
 
-    def test_the_cover_hint_keeps_the_pair_in_the_account_it_was_read_in(self):
-        text = "buy 50 WIDG then (close 100 GIZM in the Fund book) then buy 100 ACME, sell 1 ACME Dec 18 2026 260 call, in the Institutional book at pb ms"
-        out = self.parse(text, "P")
-        self.assertEqual({PB}, {l["account_id"] for l in out["legs"] if (l["instrument"].get("id") or "").startswith("ACME")})
-        item, f, ch = self.find(out, "COVER_HINT", "group them")
-        out2 = self.apply(out, f, ch, "P")
-        pair = [l for l in out2["legs"] if (l["instrument"].get("id") or "").startswith("ACME")]
-        self.assertEqual(({PB}, set()), ({l["account_id"] for l in pair}, _fifth_unparsed(out2)), out2["text"])
-        self.assertEqual(["SEQUENTIAL"], [c["fill_mode"] for c in out2["combos"] if c["request"] is not None])
-        self.assertEqual([], choice_contract(out, item, f, ch, out2))
-
     def test_every_case_the_reviews_property_tests_reported_keeps_the_choice_contract(self):
         rows = [(f"seed {seed} case {case}", book, text) for seed, case, book, text in PROP5_SEED_TEXTS]
         rows += [(f"seed {seed} step {k}", book, t) for seed, world, book, texts in PT5_SEED_TEXTS if world == "B" for k, t in enumerate(texts)]
@@ -1370,8 +1340,7 @@ class ChoicesFifthReview(_FifthReviewBase):
 class ChoicesFifthReviewWorldA(_FifthReviewBase):
     """1.0.7.2 fifth review (world A: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, two working closing orders): a year or a
     roll's target strike typed before "limit" is never the price; a calendar's listed-expiry choices parse and never repeat the other
-    leg's expiry; the cover hint after a parenthesis and a connector parses; and every world-A case the review's property test reported
-    keeps the choice contract."""
+    leg's expiry; and every world-A case the review's property test reported keeps the choice contract."""
     WORLD_KIND = "A"
 
     def test_a_year_or_a_roll_strike_typed_before_limit_is_never_the_price(self):
@@ -1387,8 +1356,8 @@ class ChoicesFifthReviewWorldA(_FifthReviewBase):
                     self.assertIn("MISSING_PRICE", codes(l["flags"]))
         out = self.parse("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260 limit 1.20", "P")
         self.assertEqual([C250, "ACME270115C00260000"], [l["instrument"].get("id") for l in out["legs"]])
-        f = flag(out["combos"][0], "LIMIT_IN_AON")
-        drop = next(c for c in f["choices"] if c["label"].startswith("drop the limits"))
+        f = flag(out["combos"][0], "NET_PRICE")                    # 1.0.7.2 simplified: a price on the roll as a whole, refused (never dropped)
+        drop = next(c for c in f["choices"] if c["label"] == "without the price")
         self.assertEqual("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260", drop["clause"])
         out = self.parse("roll 3 ACME Dec 18 2026 250 calls to Jan 15 2027 260 limit", "P")
         self.assertEqual([C250, "ACME270115C00260000"], [l["instrument"].get("id") for l in out["legs"]])
@@ -1404,13 +1373,6 @@ class ChoicesFifthReviewWorldA(_FifthReviewBase):
                     out2 = self.apply(out, f, c, "P")
                     self.assertEqual(set(), _fifth_unparsed(out2), c["clause"])
                     self.assertNotIn("a calendar takes two different expiries", json.dumps(out2))
-
-    def test_the_cover_hint_after_a_parenthesis_and_a_connector_parses(self):
-        out = self.parse("(buy 50 WIDG and sell 1 WIDG Nov 20 2026 45 call) then buy 100 ACME, sell 1 ACME Dec 18 2026 260 call", "F")
-        item, f, ch = self.find(out, "COVER_HINT", "group them")
-        out2 = self.apply(out, f, ch, "F")
-        self.assertEqual(set(), _fifth_unparsed(out2))
-        self.assertEqual([], choice_contract(out, item, f, ch, out2))
 
     def test_every_case_the_reviews_property_test_reported_keeps_the_choice_contract(self):
         rows = [(f"seed {seed} step {k}", book, t) for seed, world, book, texts in PT5_SEED_TEXTS if world == "A" for k, t in enumerate(texts)]
@@ -1504,10 +1466,8 @@ class ChoicesSixthReview(_FifthReviewBase):
     """1.0.7.2 sixth review (the world of its Smart Ticket lens: the corpus's, a WIDG chain, 100 WIDG short in the Fund book, 200 WIDG long
     at I1:PB_MS): a book word that names no book leaves unread every order that takes that phrase's book (carried with the side, under the
     closing or the opening phrase) - never the selected book - each with a blocker that names the words and offers every book, and the
-    choice that settles the word may give them the book it names; a choice never writes the account of a book phrase twice; "as separate
-    orders" also drops a group word typed inside the parentheses; a choice offered on one book's copy of a package never changes another
-    book's copy outside that package (property C2, seed 762690); a two-digit year before a bare "limit" is never the price (property R2);
-    and the unread-book property's seeds keep U1-U3."""
+    choice that settles the word may give them the book it names; a choice never writes the account of a book phrase twice; a two-digit
+    year before a bare "limit" is never the price (property R2); and the unread-book property's seeds keep U1-U3."""
     WORLD_KIND = "SIXTH"
 
     @classmethod
@@ -1556,8 +1516,8 @@ class ChoicesSixthReview(_FifthReviewBase):
                 self.assertEqual([], choice_contract(out, item, f, ch, out2))
 
     def test_a_choice_never_writes_the_account_of_a_book_phrase_twice(self):
-        for text, code, label in (("sell 1 ACME Dec 18 2026 240/250 call spread at 1.00 gtc in the Institutional book at pb ms", "LIMIT_IN_AON", "the legs as separate orders"),
-                                  ("buy 1 ACME Dec 18 2026 220/230/240 butterfly limit 0.50 in the Institutional book at pb ms", "LIMIT_IN_AON", "the legs as separate orders"),
+        for text, code, label in (("sell 1 ACME Dec 18 2026 240/250 call spread at 1.00 gtc in the Institutional book at pb ms", "NET_PRICE", "without the price"),
+                                  ("buy 1 ACME Dec 18 2026 220/230/240 butterfly limit 0.50 in the Institutional book at pb ms", "NET_PRICE", "without the price"),
                                   ("buy 100 LOT TOGETHER in the Institutional book at pb ms", "TOKEN_AMBIGUOUS", "read as: ")):
             with self.subTest(text=text):
                 out = self.parse(text, "P")
@@ -1569,37 +1529,6 @@ class ChoicesSixthReview(_FifthReviewBase):
                     out2 = self.apply(out, f, ch, "P")
                     self.assertEqual([], [l["n"] for l in out2["legs"] if "DUPLICATE_FIELD" in codes(l["flags"])], out2["text"])
                     self.assertEqual({PB}, {l["account_id"] for l in out2["legs"]}, out2["text"])
-
-    def test_as_separate_orders_also_drops_a_group_word_inside_the_parentheses(self):
-        for text in ("(buy 1 ACME Dec 18 2026 240 call limit 1.00, sell 1 ACME Dec 18 2026 250 call as a package)",
-                     "(buy 1 ACME Dec 18 2026 240 call limit 1.00 and sell 1 ACME Dec 18 2026 250 call together)"):
-            with self.subTest(text=text):
-                out = self.parse(text, "F")
-                item, f, ch = self.find(out, "LIMIT_IN_AON", "as separate orders")
-                out2 = self.apply(out, f, ch, "F")
-                self.assertEqual([None, None], [l["combo"] for l in out2["legs"]], out2["text"])
-                self.assertEqual([("LIMIT", "1.00"), ("MARKET", None)], [(l["order_type"], l["limit_px"]) for l in out2["legs"]])
-                self.assertEqual([], choice_contract(out, item, f, ch, out2))
-
-    def test_a_package_choice_never_changes_another_books_copy_outside_it(self):
-        """Property C2, seed 762690: the run of "as a package" reaches back over a clause typed for two books, so the Personal copy of the 250
-        call is in a package with the 240 call (Fund book, the selected one) and the Fund copy is a package of its own.  No choice offered
-        on the first package rewrites the Fund copy's limit 2.00 ("drop the limits" would: it is not offered there); "as separate orders",
-        offered on both, keeps every typed limit."""
-        out = self.parse("buy 1 ACME Dec 18 2026 250 call limit 2.00 in the Personal and Fund books then buy 1 ACME Dec 18 2026 240 call limit 1.00 as a package", "F")
-        f250 = next(l for l in out["legs"] if l["book"] == "F" and l["instrument"].get("id") == C250)
-        for cb in out["combos"]:
-            if f250["n"] in cb["legs"]:
-                continue
-            for f in cb["flags"]:
-                for ch in f.get("choices") or []:
-                    with self.subTest(code=f["code"], choice=ch["label"]):
-                        out2 = self.apply(out, f, ch, "F")
-                        g = next(l for l in out2["legs"] if l["book"] == "F" and l["instrument"].get("id") == C250)
-                        self.assertEqual(("LIMIT", "2.00"), (g["order_type"], g["limit_px"]), ch)
-                        self.assertEqual([], choice_contract(out, cb, f, ch, out2))
-        self.assertFalse(any(ch["label"].startswith("drop the limits") for cb in out["combos"] if f250["n"] not in cb["legs"] for f in cb["flags"]
-                             for ch in f.get("choices") or []))
 
     def test_a_two_digit_year_before_a_bare_limit_is_never_the_price(self):
         for seed, text in SIXTH_YEAR_TEXTS:
@@ -1632,7 +1561,7 @@ class ChoicesSixthReview(_FifthReviewBase):
                                     self.assertTrue(not mine or any(l["book"] == code for l in mine), (seed, ch, [(l["n"], l["book"]) for l in mine]))
 
 
-# ===== 1.0.7.2 seventh review: the shares an account holds are counted once over an instruction ======================================
+# ===== the cover reading (1.0.7.2 simplified: each order is read on the account as it is; FinSim's order route keeps the cover) ========
 #: the worlds of the seventh review's cover property (fictional names and numbers): W1 = the corpus world with a WIDG chain and 200 WIDG
 #: held at the fictional prime broker I1:PB_MS; W2 = W1 with a working sell-to-open WIDG call in P1:US_EXCHANGE and another at I1:PB_MS
 #: (each takes 100 shares as its cover); W3 = W1 with 200 more ACME in the Fund book (300 held) and a working sale of 50 of them; L = the
@@ -1663,174 +1592,281 @@ def seventh_world(kind: str) -> dict:
     return w
 
 
-def _seventh_goes(out, l) -> bool:
-    return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+# ===== 1.0.7.2 simplified: groups of separate tickets, the cover reading on the account as it is, the parse contract ==================
+#: 7b634e2's combinations of the corpus (its own parser run on these texts in the corpus world, recorded 2026-11-12 from ``git archive
+#: 7b634e2``): (the legs of each combination, the cases) - the simplification groups exactly the same legs
+GROUPS_7B634E2 = (
+    ([[1]], ("ref-nested-paren",)),
+    ([[2]], ("ref-combo-one-leg",)),
+    ([[1, 2]], ("clean-buy-write", "clean-calendar", "clean-calendar-month-only", "clean-calendar-month-only-reversed",
+        "clean-calendar-month-only-sold", "clean-calendar-month-then-day", "clean-calendar-reversed", "clean-calendar-year-once",
+        "clean-call-spread", "clean-call-vertical", "clean-collar-held", "clean-covered-call", "clean-group-aon-word", "clean-package-buy-write",
+        "clean-paren-package-fund", "clean-put-spread", "clean-put-spread-reversed", "clean-roll-long-held", "clean-roll-short",
+        "clean-sell-call-spread", "clean-spread-exp-after", "clean-spread-gtc", "clean-straddle", "clean-strangle", "ref-buy-write-lot",
+        "ref-buy-write-no-qty", "ref-buy-write-price", "ref-buy-write-short", "ref-calendar-month-no-chain", "ref-collar-inverted",
+        "ref-combo-future", "ref-combo-gtd", "ref-combo-two-equities", "ref-combo-two-names", "ref-covered-call-short", "ref-covered-call-short-pb",
+        "ref-covered-price", "ref-covered-put", "ref-grouped-collar-price", "ref-grouped-spread-price", "ref-limit-in-aon-group",
+        "ref-limit-in-aon-strategy", "ref-one-order-group-all-or-none", "ref-one-order-group-aon", "ref-one-order-group-as-a-combo",
+        "ref-one-order-group-as-a-package", "ref-one-order-group-as-one", "ref-one-order-group-as-one-order", "ref-one-order-group-together",
+        "ref-one-order-strategy-all-or-none", "ref-one-order-strategy-aon", "ref-one-order-strategy-as-a-combo",
+        "ref-one-order-strategy-as-a-package", "ref-one-order-strategy-as-one", "ref-one-order-strategy-as-one-order",
+        "ref-one-order-strategy-together", "ref-paren-roll-price", "ref-paren-spread-price", "ref-roll-alone", "ref-roll-no-target",
+        "ref-roll-nothing", "ref-roll-price", "ref-roll-same", "ref-roll-too-many", "ref-roll-unheld-stale", "ref-strategy-short",
+        "ref-strike-order",)),
+    ([[2, 3]], ("ref-carried-short-strategy", "ref-carried-stc-strategy",)),
+    ([[1, 2, 3]], ("clean-butterfly", "clean-collar-not-held", "clean-put-butterfly", "clean-straddle-with-shares", "ref-collar-lot",
+        "ref-collar-one-strike", "ref-collar-price", "ref-collar-short", "ref-fly-order", "ref-grouped-spread-price-and-call",)),
+    ([[1, 2, 3, 4]], ("amb-bare-condor", "clean-call-condor", "clean-iron-butterfly", "clean-iron-condor-buy", "clean-iron-condor-sell",
+        "ref-condor-order",)),
+)
+#: the words that ask for one order (SIMPLIFY_PLAN s4)
+ONE_ORDER_WORDS = ("as a package", "as one order", "as one", "as a combo", "all or none", "aon", "together")
+#: the sending order of a group's tickets (SIMPLIFY_PLAN s4): purchases first (shares, then options), sales to close, sales to open, then
+#: share sales and short sales
+SEND_RANK = {"BUY": 0, "BUY_TO_COVER": 0, "BTO": 1, "BTC": 1, "STC": 2, "STO": 3, "SELL": 4, "SELL_SHORT": 4}
+#: what a leg's ``request`` may carry: the normal order ticket's body (no package, no hedge, no Smart Ticket ids)
+TICKET_KEYS = {"account_id", "instrument_id", "side", "qty", "order_type", "limit_px", "stop_px", "trail_amt", "trail_pct", "tif", "gtd_date", "borrow",
+               "covered"}
+WC40, WC45 = "WIDG261218C00040000", "WIDG261218C00045000"
 
 
-def _seventh_claim(l) -> bool:
-    """A call said to be covered by shares held: "covered call on N of the M ... held free ...: the calls only, no shares bought", or a
-    collar's "the put and the call only"."""
-    return any(f["code"] == "SIDE_INFERRED" and ((str(f["text"]).startswith("covered call on") and "the calls only" in f["text"])
-                                                 or (str(f["text"]).startswith("collar on") and "the put and the call only" in f["text"])) for f in l["flags"])
+def _corpus_body(case) -> dict:
+    body = {"text": case["text"], "book": case["book"]}
+    if case["setup"].get("account_id"):
+        body["account_id"] = case["setup"]["account_id"]
+    return body
 
 
-def seventh_cc1(rt, out) -> list:
-    """The cover property's CC1 on one reading: per account and name with a SENDABLE call labelled covered by shares held, the shares left
-    once the instruction's sendable orders ran (held - working sells - sold - shorted + bought) cover every call labelled so, the calls
-    already short or working, the calls of its buy writes and every call sold to open before the last one labelled covered."""
-    combos = {c["id"]: c for c in out["combos"]}
-    by: Dict[tuple, list] = {}
-    for l in out["legs"]:
-        if not _seventh_goes(out, l):
-            continue
-        inst = l.get("instrument") or {}
-        name = inst.get("underlying_id") if inst.get("kind") == "OPTION" else inst.get("id")
-        if l["account_id"] and name:
-            by.setdefault((l["account_id"], name), []).append(l)
-    probs = []
-    for (aid, name), legs in by.items():
-        if not any(_seventh_claim(l) and (l.get("instrument") or {}).get("right") == "C" and l["side"] == "STO" for l in legs):
-            continue
-        with rt.db.reader() as conn:
-            h = conn.execute("SELECT COALESCE(SUM(qty), 0) n FROM v_positions WHERE account_id=? AND instrument_id=?", (aid, name)).fetchone()["n"]
-            w = conn.execute("SELECT COALESCE(SUM(qty - filled_qty), 0) n FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL', 'SELL_SHORT')"
-                             " AND status IN ('WORKING', 'PARTIAL', 'SUSPENDED')", (aid, name)).fetchone()["n"]
-            c = conn.execute("SELECT COALESCE(SUM(-p.qty), 0) n FROM v_positions p JOIN instruments i ON i.instrument_id=p.instrument_id WHERE p.account_id=?"
-                             " AND i.kind='OPTION' AND i.right='C' AND i.underlying_id=? AND p.qty < 0", (aid, name)).fetchone()["n"]
-            c += conn.execute("SELECT COALESCE(SUM(o.qty - o.filled_qty), 0) n FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id WHERE"
-                              " o.account_id=? AND o.side='STO' AND o.status IN ('WORKING', 'PARTIAL', 'SUSPENDED') AND i.kind='OPTION' AND i.right='C'"
-                              " AND i.underlying_id=?", (aid, name)).fetchone()["n"]
-        sold = shorted = bought = cov = bw = sto_seen = sto_before = 0
-        for l in legs:
-            inst = l.get("instrument") or {}
-            q = int(l["qty"] or 0)
-            if inst.get("kind") != "OPTION":
-                sold += q if l["side"] == "SELL" else 0
-                shorted += q if l["side"] == "SELL_SHORT" else 0
-                bought += q if l["side"] in ("BUY", "BUY_TO_COVER") else 0
+class SeparateTicketsTests(_ResolverBase):
+    """1.0.7.2 simplified (SIMPLIFY_PLAN s4): the orders written together - a strategy, a roll, a collar, a buy write, a group word or
+    parentheses - are each a standard ticket of their own, sent in a safe order; nothing in the answer is one order of several legs.
+    Words asking for one order and a price on the whole are refused on the group and on each of its orders, never split or dropped.  The
+    corpus world (read only)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp, cls.rt = cls._make()
+        build_world(unittest.TestCase(), cls.rt)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rt.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def group(self, out) -> dict:
+        self.assertEqual(1, len(out["combos"]), out["text"])
+        return out["combos"][0]
+
+    @staticmethod
+    def body(l) -> tuple:
+        return (l["book"], l["account_id"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), l["order_type"], l["limit_px"], l["stop_px"],
+                l["trail_amt"], l["trail_pct"], l["tif"], l["gtd_date"])
+
+    def test_a_strategy_is_its_legs_as_separate_tickets_in_a_safe_order(self):
+        for text, order in (("sell 1 ACME Dec 18 2026 210/220/250/260 iron condor", [1, 4, 2, 3]), ("buy 1 ACME Dec 18 2026 220/230/240 butterfly", [1, 3, 2]),
+                            ("sell 1 ACME Dec 18 2026 240/250 call spread", [2, 1]), ("roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250", [1, 2]),
+                            ("buy write 200 ACME Dec 18 2026 250", [1, 2]), ("(buy 1 ACME Dec 18 2026 240 call and sell 50 WIDG limit 41 and buy 100 ACME)", [3, 1, 2])):
+            with self.subTest(text=text):
+                out = self.parse(text)
+                cb = self.group(out)
+                self.assertEqual(("SEPARATE", None, None, order), (cb["kind"], cb["fill_mode"], cb["request"], cb["order"]))
+                ranks = [SEND_RANK.get(out["legs"][k - 1]["side"], 5) for k in cb["order"]]
+                self.assertEqual(sorted(ranks), ranks)                                   # purchases first, short sales last
+                for l in out["legs"]:
+                    self.assertEqual(cb["id"], l["combo"])
+                    self.assertIsNotNone(l["request"], l["flags"])
+                    self.assertLessEqual(set(l["request"]), TICKET_KEYS)
+                f = flag(cb, "SEPARATE_TICKETS")
+                self.assertEqual("check", f["severity"])
+                self.assertIn(f" as {len(cb['legs'])} separate tickets: each order goes and fills on its own (no all-or-none, no sequence); send them in the"
+                              " order shown", f["text"])
+                self.assertTrue(out["ok"], all_codes(out))
+
+    def test_group_words_and_parentheses_group_without_a_package(self):
+        out = self.parse("(buy 100 ACME and buy 100 WIDG); sell 1 ACME Dec 18 2026 250 call")
+        cb = self.group(out)
+        self.assertEqual(([1, 2], None, "SEPARATE", [1, 2]), (cb["legs"], cb["request"], cb["kind"], cb["order"]))
+        self.assertEqual([("C1", True), ("C1", True), (None, True)], [(l["combo"], l["request"] is not None) for l in out["legs"]])
+        self.assertTrue(out["ok"])
+        self.assertNotIn("ONE_ORDER_ASKED", all_codes(out))                                # parentheses alone only group
+        # over the corpus: no group is one order (no request, no fill mode), and no leg's request is more than a standard ticket's body
+        for case in corpus.CASES:
+            if case["expect"].get("status", 200) != 200:
                 continue
-            if inst.get("right") != "C" or l["side"] != "STO":
+            out = st.parse_view(self.rt, _corpus_body(case))
+            for c in out["combos"]:
+                self.assertEqual((None, None, "SEPARATE"), (c["request"], c["fill_mode"], c["kind"]), case["id"])
+            for l in out["legs"]:
+                self.assertLessEqual(set(l["request"] or {}), TICKET_KEYS, case["id"])
+
+    def test_a_net_price_on_a_strategy_roll_or_collar_is_refused_never_dropped(self):
+        for text, book, words in (("buy 1 ACME Dec 18 2026 240/250 call spread limit 2.10", "P", "limit 2.10"),
+                                  ("roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 at 1.20", "P", "at 1.20"),
+                                  ("collar 100 ACME Dec 18 2026 220/260 limit 0.50", "F", "limit 0.50"),
+                                  ("(buy 1 ACME Dec 18 2026 240/250 call spread limit 1.00)", "P", "limit 1.00")):
+            with self.subTest(text=text):
+                out = self.parse(text, book)
+                f = flag(self.group(out), "NET_PRICE")
+                self.assertEqual("blocker", f["severity"])
+                self.assertIn(f"'{words}' on the ", f["text"])
+                self.assertEqual([(None, None)] * len(out["legs"]), [(l["request"], l["limit_px"]) for l in out["legs"]])     # never put on a leg
+                self.assertEqual(["without the price"], [c["label"] for c in f["choices"]])
+                clause = f["choices"][0]["clause"]
+                self.assertNotIn(words, clause)
+                again = self.parse(clause, book)
+                self.assertTrue(again["ok"], (clause, all_codes(again)))
+                self.assertEqual(len(out["legs"]), len(again["legs"]))
+
+    def test_a_legs_own_limit_inside_a_group_is_that_tickets_limit(self):
+        out = self.parse("(buy 1 ACME Dec 18 2026 240 call limit 3.20 and sell 1 ACME Dec 18 2026 250 call limit 1.10)")
+        self.assertTrue(out["ok"], all_codes(out))
+        self.assertEqual([("LIMIT", "3.20"), ("LIMIT", "1.10")], [(l["request"]["order_type"], l["request"]["limit_px"]) for l in out["legs"]])
+        self.assertNotIn("NET_PRICE", all_codes(out))
+        out = self.parse("(buy 1 ACME Dec 18 2026 240 call limit 3.20 and sell 1 ACME Dec 18 2026 250 call)")    # the other at market, said
+        self.assertEqual([("LIMIT", "3.20"), ("MARKET", None)], [(l["request"]["order_type"], l["request"].get("limit_px")) for l in out["legs"]])
+        self.assertIn("TYPE_DEFAULT", codes(out["legs"][1]["flags"]))
+
+    def test_two_names_futures_and_two_books_in_a_group_are_separate_tickets(self):
+        for text in ("(buy 1 ACME Dec 18 2026 240 call and sell 1 WIDG Dec 18 2026 40 put)", "(buy 100 ACME and buy 100 WIDG)",
+                     "(buy 1 ESZ26 and buy 1 ACME Dec 18 2026 240 call)", "(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call in the Fund book)",
+                     "(buy 100 ACME gtc and buy 100 WIDG)", "(buy 1 ACME Dec 18 2026 260 call and buy 1 ACME Dec 18 2026 260 call)"):
+            with self.subTest(text=text):
+                out = self.parse(text)
+                cb = self.group(out)
+                self.assertTrue(out["ok"], all_codes(out))
+                self.assertIn("SEPARATE_TICKETS", codes(cb["flags"]))
+                self.assertTrue(all(l["request"] is not None for l in out["legs"]))
+                self.assertFalse({"COMBO_INVALID", "ONE_ORDER_ASKED", "NET_PRICE"} & all_codes(out))
+        self.assertEqual(["GTC", "DAY"], [l["request"]["tif"] for l in self.parse("(buy 100 ACME gtc and buy 100 WIDG)")["legs"]])
+        out = self.parse("(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call in the Fund book)")
+        self.assertEqual({"P", "F"}, {l["book"] for l in out["legs"]})
+        self.assertEqual((None, None), (out["combos"][0]["book"], out["combos"][0]["account_id"]))    # two books: the group names neither
+        out = self.parse("(buy 1 ACME Dec 18 2026 260 call and buy 1 ACME Dec 18 2026 260 call)")
+        self.assertTrue(all("DUPLICATE_LEG" in codes(l["flags"]) for l in out["legs"]))            # two identical orders: said, a check
+
+    def test_words_asking_for_one_order_are_refused_never_split(self):
+        applied = 0
+        for w in ONE_ORDER_WORDS:
+            for text in (f"buy 1 ACME Dec 18 2026 240/250 call spread {w}; sell 100 WIDG limit 41",
+                         f"buy 50 GIZM limit 49; (buy 100 ACME and buy 1 ACME Dec 18 2026 240 call) {w}"):
+                with self.subTest(text=text):
+                    out = self.parse(text)
+                    cb = next(c for c in out["combos"] if "ONE_ORDER_ASKED" in codes(c["flags"]))
+                    f = flag(cb, "ONE_ORDER_ASKED")
+                    self.assertEqual("blocker", f["severity"])
+                    self.assertTrue(f["text"].startswith(f"'{w}' asks for one order; the Smart Ticket fills separate tickets that go and fill on their own"),
+                                    f["text"])
+                    inside = set(cb["legs"])
+                    self.assertEqual([None] * len(inside), [out["legs"][k - 1]["request"] for k in sorted(inside)])
+                    self.assertTrue(all(l["request"] is not None for l in out["legs"] if l["n"] not in inside), all_codes(out))
+                    (ch,) = f["choices"]
+                    self.assertEqual("as separate tickets", ch["label"])
+                    self.assertNotIn(f" {w}", ch["clause"] + " ")
+                    a, b = f["span"]
+                    out2 = self.parse(out["text"][:a] + ch["clause"] + out["text"][b:])
+                    applied += 1
+                    self.assertTrue(out2["ok"], (out2["text"], all_codes(out2)))
+                    self.assertEqual([self.body(l) for l in out["legs"]], [self.body(l) for l in out2["legs"]])     # every order as it was read
+                    self.assertEqual([], choice_contract(out, cb, f, ch, out2))
+        self.assertEqual(2 * len(ONE_ORDER_WORDS), applied)
+
+    def test_a_group_blocker_holds_every_leg_of_the_group(self):
+        for text, code in (("buy 1 ACME Dec 18 2026 240/250 call spread limit 2.10", "NET_PRICE"), ("buy 1 ACME Dec 18 2026 240/250 call spread aon", "ONE_ORDER_ASKED"),
+                           ("(buy 100 ACME and buy 1 ACME Dec 18 2026 240 call) together", "ONE_ORDER_ASKED")):
+            with self.subTest(text=text):
+                out = self.parse(text)
+                g = flag(self.group(out), code)
+                self.assertTrue(g["choices"])
+                for l in out["legs"]:
+                    f = flag(l, code)
+                    self.assertEqual(("blocker", g["text"], None), (f["severity"], f["text"], l["request"]))
+                    self.assertFalse(f.get("choices"))                                    # the choice is the group's, offered once
+                self.assertFalse(out["ok"])
+
+    def test_a_price_on_a_buy_write_is_a_net_price(self):
+        for text in ("buy write 200 ACME Dec 18 2026 250 limit 2.10", "covered call 100 ACME Dec 18 2026 240 limit 2"):     # none held in P: shares bought
+            with self.subTest(text=text):
+                out = self.parse(text)
+                f = flag(self.group(out), "NET_PRICE")
+                self.assertEqual([None, None], [l["request"] for l in out["legs"]])
+                again = self.parse(f["choices"][0]["clause"])
+                self.assertEqual([("BUY", None, None), ("STO", None, True)], [(l["side"], l["limit_px"], l["request"].get("covered")) for l in again["legs"]])
+        # a covered call on shares held free keeps its typed price as the calls' own limit: one ticket, no net price
+        leg = self.one("covered call 100 ACME Dec 18 2026 240 limit 2", "F")
+        self.assertEqual(("STO", "LIMIT", "2", True, None), (leg["side"], leg["order_type"], leg["limit_px"], leg["request"]["covered"], leg["combo"]))
+
+    def test_the_groups_are_the_combinations_of_7b634e2(self):
+        want = {cid: legs for legs, ids in GROUPS_7B634E2 for cid in ids}
+        grouped = 0
+        for case in corpus.CASES:
+            if case["expect"].get("status", 200) != 200:
                 continue
-            combo = combos.get(l["combo"]) if l["combo"] else None
-            own = combo is not None and any((out["legs"][k - 1].get("instrument") or {}).get("kind") != "OPTION" and out["legs"][k - 1]["side"] == "BUY"
-                                            for k in combo["legs"])
-            if _seventh_claim(l):
-                cov += q
-                sto_before = sto_seen
-            elif own:
-                bw += q
-            else:
-                sto_seen += q
-        left = max(0, int(h)) - int(w) - sold - shorted + bought
-        if left < 100 * (int(c) + cov + bw + sto_before):
-            probs.append(f"CC1 {aid} {name}: {left} shares left for {int(c) + cov + bw + sto_before} short calls - sendable: "
-                         + "; ".join(f"{l['side']} {l['qty']} {(l.get('instrument') or {}).get('id')}" for l in legs))
-    return probs
+            out = st.parse_view(self.rt, _corpus_body(case))
+            got = [c["legs"] for c in out["combos"]]
+            self.assertEqual(want.get(case["id"], []), got, case["id"])
+            for c in out["combos"]:
+                self.assertEqual([c["id"]] * len(c["legs"]), [out["legs"][k - 1]["combo"] for k in c["legs"]], case["id"])
+            grouped += bool(got)
+        self.assertEqual(len(want), grouped)
 
-
-def seventh_s1_s2(out, free_held: dict) -> list:
-    """The Smart Ticket lens property: walked in send order per account, a sendable call said to be covered by shares held has them at
-    its turn (S1: shares sold before it + 100 for each call sold to open before it and of its own <= held free + bought before it), and no
-    sendable sale after it sells them (S2)."""
-    probs = []
-    for aid, free in free_held.items():
-        sold = bought = calls = said = 0
-        for l in out["legs"]:
-            if not _seventh_goes(out, l) or l["account_id"] != aid:
+    def test_no_label_promises_all_or_none_or_a_package(self):
+        words = re.compile(r"(?i)all[- ]or[- ]none|package|\baon\b|sequen")
+        said = []
+        for case in corpus.CASES:
+            if case["expect"].get("status", 200) != 200:
                 continue
-            inst = l.get("instrument") or {}
-            q = int(l["qty"])
-            if inst.get("id") == "ACME" and l["side"] == "SELL":
-                sold += q
-                if said and sold + 100 * said > free + bought:
-                    probs.append(f"S2 {aid}: leg {l['n']} sells {q} ACME after {said} call(s) said covered")
-            elif inst.get("id") == "ACME" and l["side"] == "BUY":
-                bought += q
-            elif inst.get("kind") == "OPTION" and inst.get("underlying_id") == "ACME" and inst.get("right") == "C" and l["side"] == "STO":
-                if _seventh_claim(l) and sold + 100 * (calls + q) > free + bought:
-                    probs.append(f"S1 {aid}: leg {l['n']} said covered after {sold} sold and {calls} call(s) sold to open")
-                calls += q
-                said += q if _seventh_claim(l) else 0
-    return probs
+            out = st.parse_view(self.rt, _corpus_body(case))
+            for f in [f for l in out["legs"] for f in l["flags"]] + [f for c in out["combos"] for f in c["flags"]] + out["flags"]:
+                # only these two name all-or-none, to say the Smart Ticket does not do it; the words a flag quotes are the owner's
+                if f["code"] not in ("ONE_ORDER_ASKED", "SEPARATE_TICKETS") and words.search(re.sub(r"'[^']*'", "''", f["text"])):
+                    said.append((case["id"], f["code"], f["text"]))
+        self.assertEqual([], said)
+        self.assertTrue(flag(self.parse("buy 1 ACME Dec 18 2026 240/250 call spread")["legs"][0], "STRATEGY_EXPANDED")["text"].endswith("(separate tickets)"))
+        self.assertIn("the put and the call only, two tickets", flag(self.parse("collar 100 ACME Dec 18 2026 220/260", "F")["legs"][0], "SIDE_INFERRED")["text"])
+        self.assertIn("two tickets: send the call after the shares have filled",
+                      flag(self.parse("buy 100 ACME and sell 1 ACME Dec 18 2026 260 call")["legs"][1], "COVER_HINT")["text"])
+        out = self.parse("buy 1 ACME Dec 18 2026 240/250 call spread aon")
+        self.assertIn("the Smart Ticket fills separate tickets that go and fill on their own", flag(out["combos"][0], "ONE_ORDER_ASKED")["text"])
+        self.assertIn("(no all-or-none, no sequence)", flag(out["combos"][0], "SEPARATE_TICKETS")["text"])
+        rows = st.unsupported()
+        self.assertEqual([("LIMITED", None), ("NOT_OFFERED", True)],
+                         [(r["state"], True if "one all-or-none order of options is built in the order ticket's Strategies tab" in r["wording"] else None)
+                          for r in rows])
+        self.assertIsNone(words.search(tables.CONVENTIONS["SMART_TICKET"]))
+        self.assertIn("each order goes from the order ticket after its own preview", tables.CONVENTIONS["SMART_TICKET"])
 
 
-#: the cover property's reported seeds (seventh review, CC1: SOLD, STO, SHORT, MIXED) as (seed, world, selected book, text)
-SEVENTH_CC1_SEEDS = [
-    (770010, "W2", "P", "(buy write 100 ACME Jan 15 2027 260 in the Fund book, sell 250 ACME in the Fund book); sell all ACME in the Fund book, and covered call 100"
-                        " ACME Dec 18 2026 250 in the Fund book"),
-    (770020, "W2", "F", "sell 150 WIDG in the Personal book, and covered call 100 WIDG Dec 18 2026 45 in the Personal book"),
-    (770046, "W3", "I", "covered call 200 WIDG Dec 18 2026 45 then sell 100 WIDG"),
-    (770052, "W3", "P", "(covered call 200 WIDG Dec 18 2026 45, sell 100 WIDG)"),
-    (770053, "W2", "I", "sell all WIDG; then covered call 100 WIDG Dec 18 2026 45 in the Institutional book"),
-    (770038, "W1", "F", "covered call 200 ACME Dec 18 2026 250 and sell 200 ACME, sell 1 ACME Dec 18 2026 250 call then collar 100 ACME Dec 18 2026 210/250"),
-    (770168, "W3", "F", "sto 2 WIDG Nov 20 2026 45 calls in the Personal book and covered call 200 WIDG Dec 18 2026 45 in the Personal book"),
-    (770130, "W2", "I", "(sell 150 WIDG, covered call 100 WIDG Dec 18 2026 40), and covered call 300 WIDG Dec 18 2026 45 in the Institutional book"),
-    (770137, "W3", "I", "short 50 WIDG in the Institutional book; sell 150 WIDG then covered call 200 WIDG Dec 18 2026 45"),
-    (770141, "W1", "F", "(covered call 100 ACME Dec 18 2026 260 in the Fund book, sell 50 ACME in the Fund book) then sell to open 1 ACME Jan 15 2027 260 call"),
-    (770142, "W3", "P", "covered call 200 WIDG Dec 18 2026 40 in the Personal book; covered call 300 WIDG Nov 20 2026 45 then covered call 100 WIDG Nov 20 2026 40;"
-                        " short 100 WIDG"),
-    (770157, "W3", "F", "covered call 100 ACME Dec 18 2026 250, and sell 100 ACME; then covered call 200 ACME Jan 15 2027 250 and covered call 100 ACME Jan 15 2027 250"),
-    (770162, "W1", "P", "covered call 200 WIDG Dec 18 2026 40, and buy write 100 WIDG Dec 18 2026 45; then sell 50 WIDG"),
-    (770171, "W2", "P", "covered call 100 WIDG Nov 20 2026 45, and sell 2 WIDG Dec 18 2026 40 calls, buy write 100 WIDG Dec 18 2026 40 in the Personal book, and sell"
-                        " 50 WIDG"),
-    (770173, "W2", "P", "sell 250 ACME in the Fund book, and covered call 200 ACME Dec 18 2026 250 in the Fund book; short 50 ACME in the Fund book, and covered call"
-                        " 100 ACME Dec 18 2026 260 in the Fund book"),
-    (770176, "W3", "F", "sell 200 ACME, and covered call 100 ACME Dec 18 2026 250; sell to open 2 ACME Dec 18 2026 250 calls in the Fund book, short 100 ACME"),
-]
-#: the choice property's X3 seeds (seventh review): the instruction the choice was offered on, then the text it gave
-SEVENTH_X3_SEEDS = [
-    (772058, "W1", "F", "in the Personal and Fund books: sell 2 ACME 230p Dec 18 2026 limit 1.00, and sell 300 WIDG in the Personal and Fund books; covered call 300 WIDG"
-                        " Dec 18 2026 45 in the Personal and Fund books"),
-    (772058, "W1", "F", "in the Personal and Fund books: sell 2 ACME 230p Dec 18 2026 limit 1.00, and sell 200 WIDG in the Personal book and short 100 WIDG in the"
-                        " Personal book; sell 300 WIDG in the Fund book; covered call 200 WIDG Dec 18 2026 45 in the Personal book; covered call 300 WIDG Dec 18 2026 45"
-                        " in the Fund book"),
-    (772143, "W1", "P", "covered call 1 contract WIDG Dec 18 2026 45 then sell 200 WIDG"),
-    (772143, "W1", "P", "covered call 100 WIDG Dec 18 2026 45 then sell 200 WIDG"),
-    (772242, "W3", "P", "covered call 200 WIDG Dec 18 2026 40 and sto 200 WIDG in the Fnd book at 2.50 then 100 WIDG"),
-    (772242, "W3", "P", "covered call 200 WIDG Dec 18 2026 40 and short 200 WIDG in the Personal book at 2.50 then sto 100 WIDG in the Personal book"),
-    (772415, "W1", "P", "(sell 250 WIDG, covered call 200 WIDG Dec 18 2026 40)"),
-    (772415, "W1", "P", "sell 200 WIDG and short 50 WIDG, covered call 200 WIDG Dec 18 2026 40"),
-    (772698, "W1", "P", "sell all WIDG; covered call 200 WIDG Dec 18 2026 40 at us exchange and all WIDG Dec 18 26 45 calls, and sell 100 LOTX"),
-    (772698, "W1", "P", "sell 200 WIDG and short 100 WIDG; covered call 200 WIDG Dec 18 2026 40 at us exchange and close all WIDG Dec 18 26 45 calls, and sell 100 LOTX"),
-    (772803, "W1", "I", "stc half WIDG; covered call 200 WIDG Dec 18 2026 40 at 2.50 in the Institutional book at us exchange"),
-    (772803, "W1", "I", "sell half WIDG at pb ms; covered call 200 WIDG Dec 18 2026 40 at 2.50 in the Institutional book at pb ms"),
-    (772875, "W2", "P", "in the Fund book: sto 2 ACME Dec 18 2026 240 calls in the Fund and Institutional books and covered call 200 ACME Dec 18 2026 260 and sell 2 WIDG"
-                        " Dec 18 2026 35/40 put spread in the Personal book"),
-    (772875, "W2", "P", "in the Fund book: sto 2 ACME Dec 18 2026 240 calls in the Fund and Institutional books and covered call 100 ACME Dec 18 2026 260 and sell 2 WIDG"
-                        " Dec 18 2026 35/40 put spread in the Personal book"),
-    (772932, "W1", "P", "covered call 100 WIDG Nov 20 2026 45 together, and sell all WIDG"),
-    (772932, "W1", "P", "covered call 100 WIDG Nov 20 2026 45, and sell 200 WIDG and short 100 WIDG"),
-    (773767, "W3", "P", "sell 2 WIDG Nov 2026 40 calls, and collar 200 WIDG Dec 18 2026 35/45 and cover 1 LOTX in the Institutional book"),
-    (773767, "W3", "P", "sell 2 WIDG Nov 2026 40 calls at pb ms, and collar 200 WIDG Dec 18 2026 35/45 and cover 10 LOTX in the Institutional book"),
-]
-#: the Smart Ticket lens property's reported seeds (S1 / S2) as (seed, selected book, text), on world L
-SEVENTH_LENS_SEEDS = [
-    (770001, "P", "close ACME and collar 100 ACME Dec 18 2026 220/260"), (770002, "F", "covered call 100 ACME Dec 18 2026 240 and sell half ACME"),
-    (770018, "F", "covered call 100 ACME Dec 18 2026 250, close ACME"), (770020, "F", "sell 100 ACME limit 231 then collar 100 ACME Dec 18 2026 210/250"),
-    (770030, "F", "sell 1 ACME Dec 18 2026 260 call, covered call 100 ACME Jan 15 2027 260"),
-    (770027, "F", "sell half ACME then sell half ACME; collar 100 ACME Dec 18 2026 220/260"),
-    (770028, "F", "buy 1 ACME Dec 18 2026 220 put; sell all ACME and buy 50 WIDG then collar 100 ACME Dec 18 2026 220/260"),
-    (770029, "F", "sell 1 ACME Dec 18 2026 260 call and collar 100 ACME Dec 18 2026 220/260 then sell 1 ACME Dec 18 2026 260 call"),
-    (770032, "F", "sell 3 ACME Dec 18 2026 260 call and collar 100 ACME Dec 18 2026 220/260"),
-]
+def cover_world(kind: str) -> dict:
+    """The cover reading's worlds (fictional): "W2" = the seventh review's W2 (a working sell-to-open WIDG call in P1:US_EXCHANGE, whose
+    300 WIDG have 100 in a working sale, and another at I1:PB_MS on its 200 WIDG); "A" = its W1 (200 WIDG at I1:PB_MS) with 2 WIDG calls
+    sold there (all 200 cover them; no margin run since), 150 ACME and 2 ACME calls sold in I1:US_EXCHANGE (100 cover one call, 50 are
+    free: whole contracts), and a short sale of 100 ACME resting in the Fund book beside its 100 ACME held."""
+    if kind == "W2":
+        return seventh_world("W2")
+    w = seventh_world("W1")
+    c260 = "ACME261218C00260000"
+    w["instruments"] = list(w["instruments"]) + [corpus._opt("ACME", c260)]
+    w["positions"] = list(w["positions"]) + [(PB, WC45, "SHORT", 2, "1.00"), (I, "ACME", "LONG", 150, "225"), (I, c260, "SHORT", 2, "1.00")]
+    w["working"] = list(w["working"]) + [{"order_id": "O-STC-S1", "request_id": "test:stc-short-1", "account_id": F, "instrument_id": "ACME",
+                                          "side": "SELL_SHORT", "qty": 100, "order_type": "LIMIT", "limit_px": "260", "tif": "DAY", "status": "WORKING",
+                                          "session_group": "US_EQUITY"}]
+    return w
 
 
-class CoverCountedOnceSeventhReview(unittest.TestCase):
-    """1.0.7.2 seventh review: in one instruction the shares an account holds are counted once, in the order typed - a sale or a short sale
-    takes the shares it sells, every call sold to open on the name 100 a contract (a covered call's or a collar's own calls too).  A covered
-    call or collar is "the calls only" / "the put and the call only" only when its shares are still free at its turn (else SIDE_SPLIT with
-    the count); a sale after one is WOULD_OVERSELL naming the calls it would uncover (never offering a short sale of them); a call sold to
-    open or a short sale on shares a covered call or collar of the same instruction covers is COVER_TAKEN; a package that sells its shares
-    never sells calls to open as they go.  Every seed the review's three properties reported is replayed by its text (CC1, S1 / S2, X3)."""
+class CoverReadingTests(unittest.TestCase):
+    """1.0.7.2 simplified (SIMPLIFY_PLAN s4 / s5): a covered call, a collar or a buy write is read on the account as it is - the shares
+    free for new calls by ``orders_preview.cover_state`` (net of working sells and working short sales, of the calls sold or being sold
+    in whole contracts, of lent shares), the one reading the order route checks at Send.  No short sale is offered on shares held long;
+    an explicit one is SHORT_WHILE_LONG; a book short the shares is NOTHING_HELD; a collar's put strike is below its call's."""
     worlds: Dict[str, tuple] = {}
 
     @classmethod
     def setUpClass(cls):
         cls.worlds = {}
-        for kind in ("W1", "W2", "W3", "L"):
+        for kind in ("A", "W2"):
             tmp, rt = _ResolverBase._make()
             cls.worlds[kind] = (tmp, rt)
-            build_world(unittest.TestCase(), rt, seventh_world(kind))
+            build_world(unittest.TestCase(), rt, cover_world(kind))
 
     @classmethod
     def tearDownClass(cls):
@@ -1838,119 +1874,225 @@ class CoverCountedOnceSeventhReview(unittest.TestCase):
             rt.close()
             shutil.rmtree(tmp, ignore_errors=True)
 
-    def parse(self, kind: str, text: str, book: str) -> dict:
+    def parse(self, kind: str, text: str, book: str = "P") -> dict:
         return st.parse_view(self.worlds[kind][1], {"text": text, "book": book})
 
-    @staticmethod
-    def staged(out) -> list:
-        return [(l["n"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), "sendable" if _seventh_goes(out, l) else "blocked",
-                 [f["code"] for f in l["flags"] if f["severity"] == "blocker"]) for l in out["legs"]]
+    def test_a_covered_call_on_free_shares_is_one_call_ticket_with_the_claim(self):
+        out = self.parse("A", "covered call 200 WIDG Dec 18 2026 45")
+        self.assertEqual(([], True, 1), (out["combos"], out["ok"], len(out["legs"])))
+        leg = out["legs"][0]
+        self.assertEqual({"account_id": P, "instrument_id": WC45, "side": "STO", "qty": 2, "order_type": "MARKET", "tif": "DAY", "covered": True}, leg["request"])
+        self.assertIn("covered call on 200 of the 200 WIDG held free in P1:US_EXCHANGE: the calls only, no shares bought, sold as covered by the shares"
+                      " held free when read - another order you send first may take them, and FinSim then refuses this one",
+                      [f["text"] for f in leg["flags"] if f["code"] == "SIDE_INFERRED"])
+        leg = self.parse("A", "covered call 200 WIDG Dec 18 2026 45 limit 1.10")["legs"][0]                # its typed price is the calls' own limit
+        self.assertEqual(("LIMIT", "1.10", True), (leg["request"]["order_type"], leg["request"]["limit_px"], leg["request"]["covered"]))
+        # more calls than the free shares cover: refused with the count (the calls on the free round lots, or a buy write)
+        out = self.parse("A", "covered call 300 WIDG Dec 18 2026 45")
+        f = flag(out["legs"][1], "SIDE_SPLIT")
+        self.assertIn("200 of the 300 WIDG held in P1:US_EXCHANGE are free (100 in working sells)", f["text"])
+        self.assertEqual(["covered call 200 WIDG Dec 18 2026 45", "buy write 300 WIDG Dec 18 2026 45"], [c["clause"] for c in f["choices"]])
+        self.assertEqual([None, None], [l["request"] for l in out["legs"]])
+        # a call sold to open that is not a covered call carries no claim
+        leg = self.parse("A", "sell 2 WIDG Dec 18 2026 45 calls")["legs"][0]
+        self.assertEqual(("STO", None), (leg["side"], leg["request"].get("covered")))
 
-    def test_a_the_shares_one_instruction_sells_or_writes_calls_on_are_never_counted_as_cover(self):
-        # the Fund book holds 100 ACME free in F1:US_EXCHANGE: what the sendable orders take of them, never more than held + bought
-        def taken(out):
-            sold = calls = bought = 0
-            for l in out["legs"]:
-                if not _seventh_goes(out, l) or l["account_id"] != F:
-                    continue
-                inst = l.get("instrument") or {}
-                if inst.get("id") == "ACME":
-                    sold += int(l["qty"]) if l["side"] == "SELL" else 0
-                    bought += int(l["qty"]) if l["side"] == "BUY" else 0
-                elif inst.get("kind") == "OPTION" and inst.get("underlying_id") == "ACME" and inst.get("right") == "C" and l["side"] == "STO":
-                    calls += int(l["qty"])
-            return sold + 100 * calls - bought
-        ref = self.parse("L", "covered call 100 ACME Dec 18 2026 240, covered call 100 ACME Dec 18 2026 250", "F")     # the sixth fix
-        self.assertEqual(100, taken(ref), self.staged(ref))
-        for text in ("sell 100 ACME, covered call 100 ACME Dec 18 2026 240", "covered call 100 ACME Dec 18 2026 240 and sell 100 ACME",
-                     "covered call 100 ACME Dec 18 2026 240; sell all ACME", "covered call 100 ACME Dec 18 2026 240; close ACME",
-                     "collar 100 ACME Dec 18 2026 220/260; sell 100 ACME", "sell 1 ACME Dec 18 2026 240 call, covered call 100 ACME Dec 18 2026 250",
-                     "covered call 100 ACME Dec 18 2026 250; sto 1 ACME Dec 18 2026 240 call", "covered call 100 ACME Dec 18 2026 250; short 100 ACME",
-                     "(covered call 100 ACME Dec 18 2026 240, sell 100 ACME)", "covered call 100 ACME Dec 18 2026 240 then sell half ACME"):
+    def test_a_buy_write_is_a_share_ticket_then_a_call_ticket_with_the_claim(self):
+        for text in ("buy write 200 ACME Dec 18 2026 250", "covered call 200 ACME Dec 18 2026 250"):      # no ACME held in P1:US_EXCHANGE
             with self.subTest(text=text):
-                out = self.parse("L", text, "F")
-                self.assertLessEqual(taken(out), 100, self.staged(out))
-                self.assertEqual([], seventh_s1_s2(out, {F: 100}))
-                self.assertEqual([], seventh_cc1(self.worlds["L"][1], out))
+                out = self.parse("A", text)
+                cb = out["combos"][0]
+                self.assertEqual(("covered call", [1, 2], None), (cb["strategy"], cb["order"], cb["request"]))
+                self.assertEqual([{"account_id": P, "instrument_id": "ACME", "side": "BUY", "qty": 200, "order_type": "MARKET", "tif": "DAY"},
+                                  {"account_id": P, "instrument_id": C250, "side": "STO", "qty": 2, "order_type": "MARKET", "tif": "DAY", "covered": True}],
+                                 [l["request"] for l in out["legs"]])
+                self.assertIn("sold as covered by the 200 ACME bought: send it after the shares have filled - until they are held free FinSim refuses it"
+                              " as covered", [f["text"] for f in out["legs"][1]["flags"]])
 
-    def test_b_the_second_order_is_refused_with_the_count_and_what_took_the_shares(self):
-        out = self.parse("L", "covered call 100 ACME Dec 18 2026 240 and sell 100 ACME", "F")
-        call, sale = out["legs"]
-        self.assertEqual(("STO", True, True), (call["side"], call["request"].get("covered"), _seventh_claim(call)))
-        f = next(f for f in sale["flags"] if f["code"] == "WOULD_OVERSELL")
-        self.assertIn("the free quantity in F1:US_EXCHANGE is 0 (held 100; 100 covering the calls of an earlier order in this instruction)", f["text"])
-        self.assertEqual([], f.get("choices") or [])                             # never a short sale of shares that cover calls
-        out = self.parse("L", "sell 100 ACME, covered call 100 ACME Dec 18 2026 240", "F")
-        self.assertEqual(("SELL", 100), (out["legs"][0]["request"]["side"], out["legs"][0]["request"]["qty"]))
-        f = next(f for f in out["legs"][-1]["flags"] if f["code"] == "SIDE_SPLIT")
-        self.assertIn("0 of the 100 ACME held in F1:US_EXCHANGE are free (100 taken by earlier orders of this instruction", f["text"])
-        self.assertIn("buy write 100 (buy the shares)", [c["label"] for c in f.get("choices") or []])
-        for text, n in (("covered call 100 ACME Dec 18 2026 250; sto 1 ACME Dec 18 2026 240 call", 2), ("covered call 100 ACME Dec 18 2026 250; short 100 ACME", 2)):
-            out = self.parse("L", text, "F")
-            f = next(f for f in out["legs"][n - 1]["flags"] if f["code"] == "COVER_TAKEN")
-            self.assertEqual("blocker", f["severity"])
-            self.assertIn("100 of the 100 ACME held in F1:US_EXCHANGE cover the calls of a covered call or collar earlier in this instruction", f["text"])
-            self.assertIsNone(out["legs"][n - 1]["request"])
-        # a strategy after it: a call spread sells no call beyond the one it buys (it goes); a straddle's call has no shares left (refused)
-        out = self.parse("L", "covered call 100 ACME Dec 18 2026 250; sell 1 ACME Dec 18 2026 240/250 call spread", "F")
-        self.assertTrue(all(_seventh_goes(out, l) for l in out["legs"]), self.staged(out))
-        out = self.parse("L", "covered call 100 ACME Dec 18 2026 250; sell 1 ACME Dec 18 2026 240 straddle", "F")
-        self.assertEqual([(2, "STO", 1, "ACME261218C00240000", "blocked", ["COVER_TAKEN"])], [x for x in self.staged(out) if x[5]])
-        # an account that holds the shares covers a call sold to open after a covered call on part of them; none held: a call is written as before
-        out = self.parse("L", "covered call 100 ACME Dec 18 2026 250; sto 1 ACME Dec 18 2026 240 call", "P")              # 300 ACME held in P1
-        self.assertTrue(all(_seventh_goes(out, l) for l in out["legs"]), self.staged(out))
-        out = self.parse("L", "sto 1 WIDG Dec 18 2026 45 call", "F")
-        self.assertTrue(all(_seventh_goes(out, l) for l in out["legs"]), self.staged(out))
-        # a collar on shares held goes as a package said to be covered: the server places it only while the shares are free
-        out = self.parse("L", "collar 100 ACME Dec 18 2026 220/260", "F")
-        (cb,) = out["combos"]
-        self.assertEqual(("AON", True), (cb["fill_mode"], cb["request"].get("covered")))
-        # grouped with a sale of its shares: the calls would be written as their cover is sold - refused
-        out = self.parse("L", "(sell 100 ACME, sell 1 ACME Dec 18 2026 240 call)", "F")
-        (cb,) = out["combos"]
-        self.assertIsNone(cb["request"])
-        self.assertTrue(any(f["code"] == "COMBO_INVALID" and "a package that sells its shares cannot sell calls to open as they go" in f["text"] for f in cb["flags"]))
+    def test_no_short_sale_is_offered_on_shares_that_cover_calls(self):
+        f = flag(self.parse("A", "sell 100 WIDG in the Institutional book at pb ms")["legs"][0], "WOULD_OVERSELL")
+        self.assertIn("the free quantity in I1:PB_MS is 0 (held 200; 200 covering calls already sold)", f["text"])
+        self.assertFalse(f.get("choices"))                                    # nothing free to sell, and never "short the rest"
+        f = flag(self.parse("A", "sell 400 WIDG")["legs"][0], "WOULD_OVERSELL")
+        self.assertEqual([("sell 200", "sell 200 WIDG")], [(c["label"], c["clause"]) for c in f["choices"]])
+        for text in ("sell 400 WIDG", "sell 300 WIDG in the Personal and Fund books", "sell 100 WIDG in the Institutional book at pb ms",
+                     "sell 51 ACME in the Institutional book", "close 300 WIDG", "sell 200 ACME in the Fund book"):
+            with self.subTest(text=text):
+                out = self.parse("A", text)
+                offered = [c for l in out["legs"] if int((l.get("position") or {}).get("qty") or 0) > 0 for g in l["flags"] for c in g.get("choices") or []]
+                self.assertEqual([], [c for c in offered if "short" in c["label"] or re.search(r"\b(short|sto)\b", c["clause"])])
 
-    def test_c_a_choice_that_would_change_another_orders_cover_is_never_offered(self):
-        # "100 ACME" has no side: "sell" would take the shares the covered call after it reads as free - only "buy" is offered
-        out = self.parse("L", "100 ACME, covered call 100 ACME Dec 18 2026 240", "F")
-        labels = [c["label"] for f in out["legs"][0]["flags"] if f["code"] == "MISSING_SIDE" for c in f.get("choices") or []]
-        self.assertFalse(any(x.startswith("sell") for x in labels), labels)
-        for l0 in labels:
-            f = next(f for f in out["legs"][0]["flags"] if f["code"] == "MISSING_SIDE")
-            ch = next(c for c in f["choices"] if c["label"] == l0)
-            a, b = f["span"]
-            out2 = self.parse("L", out["text"][:a] + ch["clause"] + out["text"][b:], "F")
-            self.assertTrue(_seventh_claim(out2["legs"][-1]), self.staged(out2))
+    def test_an_explicit_short_of_shares_held_is_short_while_long(self):
+        for text, held, offered in (("short 300 WIDG limit 41.20", 300, ["sell 200 WIDG limit 41.20"]), ("sto 50 WIDG", 300, ["sell 50 WIDG"]),
+                                    ("sell short 50 WIDG in the Institutional book at pb ms", 200, [])):
+            with self.subTest(text=text):
+                out = self.parse("A", text)
+                f = flag(out["legs"][0], "SHORT_WHILE_LONG")
+                self.assertEqual("blocker", f["severity"])
+                self.assertIn(f"holds {held} long - a short sale while the shares are held is refused: sell them first", f["text"])
+                self.assertEqual(offered, [c["clause"] for c in f.get("choices") or []])
+                self.assertIsNone(out["legs"][0]["request"])
+        leg = self.parse("A", "short 300 WIDG", "I")["legs"][0]                # the account holds none: a short sale as ever, with its borrow
+        self.assertEqual(("SELL_SHORT", I, True), (leg["side"], leg["account_id"], leg["request"]["borrow"]))
 
-    def test_d_the_cover_propertys_seeds_keep_cc1(self):
-        for seed, kind, book, text in SEVENTH_CC1_SEEDS:
-            with self.subTest(seed=seed):
-                out = self.parse(kind, text, book)
-                self.assertEqual([], seventh_cc1(self.worlds[kind][1], out), self.staged(out))
+    def test_a_buy_write_or_collar_beside_a_short_is_nothing_held(self):
+        for text, what in (("buy write 200 GIZM Dec 18 2026 55", "buy write"), ("covered call 200 GIZM Dec 18 2026 55", "covered call"),
+                           ("collar 200 GIZM Dec 18 2026 45/55", "collar")):
+            with self.subTest(text=text):
+                out = self.parse("A", text)
+                self.assertTrue(all("NOTHING_HELD" in codes(l["flags"]) and l["request"] is None for l in out["legs"]), all_codes(out))
+                self.assertIn(f"{what} on 200 GIZM: the Personal Book is short 200 GIZM in P1:US_EXCHANGE", flag(out["legs"][0], "NOTHING_HELD")["text"])
 
-    def test_e_the_lens_propertys_seeds_keep_s1_s2(self):
-        for seed, book, text in SEVENTH_LENS_SEEDS:
-            with self.subTest(seed=seed):
-                out = self.parse("L", text, book)
-                self.assertEqual([], seventh_s1_s2(out, {P: 300, F: 100}), self.staged(out))
-                self.assertEqual([], seventh_cc1(self.worlds["L"][1], out), self.staged(out))
+    def test_a_collar_whose_put_is_not_below_its_call_is_strike_order(self):
+        out = self.parse("W2", "collar 100 ACME Dec 18 2026 260/220", "F")          # 100 held free in the Fund book: the put and the call
+        self.assertEqual([("BTO", "ACME261218P00260000"), ("STO", "ACME261218C00220000")], [(l["side"], l["instrument"]["id"]) for l in out["legs"]])
+        for l in out["legs"]:
+            f = flag(l, "STRIKE_ORDER")
+            self.assertEqual(("blocker", None, ["collar 100 ACME Dec 18 2026 220/260"]), (f["severity"], l["request"], [c["clause"] for c in f["choices"]]))
+        again = self.parse("W2", "collar 100 ACME Dec 18 2026 220/260", "F")
+        self.assertEqual([("BTO", "ACME261218P00220000", None), ("STO", "ACME261218C00260000", True)],
+                         [(l["side"], l["instrument"]["id"], l["request"].get("covered")) for l in again["legs"]])
+        out = self.parse("W2", "collar 100 ACME Dec 18 2026 220/220", "F")         # equal strikes: refused, nothing to swap
+        self.assertTrue(all("STRIKE_ORDER" in codes(l["flags"]) and not flag(l, "STRIKE_ORDER").get("choices") for l in out["legs"]))
+        out = self.parse("W2", "collar 100 ACME Dec 18 2026 260/220")               # none held: the shares ticket is refused too
+        self.assertEqual((3, [None] * 3), (len(out["legs"]), [l["request"] for l in out["legs"]]))
+        self.assertTrue(all("STRIKE_ORDER" in codes(l["flags"]) for l in out["legs"]))
 
-    def test_f_the_choice_propertys_seeds_keep_x3_every_choice_on_them_too(self):
-        for seed, kind, book, text in SEVENTH_X3_SEEDS:
-            with self.subTest(seed=seed, text=text):
-                rt = self.worlds[kind][1]
-                out = self.parse(kind, text, book)
-                self.assertEqual([], seventh_cc1(rt, out), self.staged(out))
-                for item in out["legs"] + out["combos"]:
-                    for f in item["flags"]:
-                        for ch in f.get("choices") or []:
-                            a, b = f["span"]
-                            try:
-                                out2 = self.parse(kind, text[:a] + ch["clause"] + text[b:], book)
-                            except st.SmartTicketError:
-                                continue
-                            self.assertEqual([], seventh_cc1(rt, out2), (f["code"], ch["label"], out2["text"], self.staged(out2)))
+    def test_the_reading_uses_the_live_reservation(self):
+        # calls sold (read from the positions now: no margin run since) keep their shares from a sale and from new calls
+        out = self.parse("A", "covered call 100 WIDG Dec 18 2026 40 in the Institutional book at pb ms")
+        f = flag(out["legs"][1], "SIDE_SPLIT")
+        self.assertIn("0 of the 200 WIDG held in I1:PB_MS are free (200 covering calls already sold)", f["text"])
+        self.assertEqual(["buy write 100 (buy the shares)"], [c["label"] for c in f["choices"]])
+        self.assertEqual({"qty": 200, "working_sells": 0, "working_covers": 0, "reserved": 200, "lent": 0, "free": 0}, out["legs"][0]["position"])
+        # working sell-to-open call orders take theirs too
+        out = self.parse("W2", "covered call 200 WIDG Dec 18 2026 45")
+        f = flag(out["legs"][1], "SIDE_SPLIT")
+        self.assertIn("100 of the 300 WIDG held in P1:US_EXCHANGE are free (100 in working sells, 100 covering calls being sold (working orders))", f["text"])
+        self.assertEqual("covered call 100 WIDG Dec 18 2026 45", f["choices"][0]["clause"])
+        self.assertTrue(self.parse("W2", f["choices"][0]["clause"])["ok"])
+        f = flag(self.parse("W2", "sell 200 WIDG")["legs"][0], "WOULD_OVERSELL")
+        self.assertEqual(["sell 100 WIDG"], [c["clause"] for c in f["choices"]])
+        # whole contracts, as the margin assigns them: 150 held under 2 calls sold - 100 cover one call, 50 are free
+        leg = self.parse("A", "sell 50 ACME in the Institutional book")["legs"][0]
+        self.assertEqual(("SELL", 50, 100, 50), (leg["request"]["side"], leg["request"]["qty"], leg["position"]["reserved"], leg["position"]["free"]))
+        f = flag(self.parse("A", "sell 51 ACME in the Institutional book")["legs"][0], "WOULD_OVERSELL")
+        self.assertIn("the free quantity in I1:US_EXCHANGE is 50 (held 150; 100 covering calls already sold)", f["text"])
+        f = flag(self.parse("A", "covered call 100 ACME Dec 18 2026 240 in the Institutional book")["legs"][1], "SIDE_SPLIT")
+        self.assertIn("50 of the 150 ACME held in I1:US_EXCHANGE are free (100 covering calls already sold)", f["text"])
+
+    def test_a_resting_short_sale_is_not_offered_as_cover(self):
+        out = self.parse("A", "covered call 100 ACME Dec 18 2026 240", "F")
+        f = flag(out["legs"][1], "SIDE_SPLIT")
+        self.assertIn("0 of the 100 ACME held in F1:US_EXCHANGE are free (100 taken by working short sales)", f["text"])
+        self.assertEqual(["buy write 100 (buy the shares)"], [c["label"] for c in f["choices"]])
+        self.assertEqual([None, None], [l["request"] for l in out["legs"]])
+        out = self.parse("A", "collar 100 ACME Dec 18 2026 220/260", "F")
+        self.assertTrue(all("SIDE_SPLIT" in codes(l["flags"]) and l["request"] is None for l in out["legs"]), all_codes(out))
+        leg = self.parse("A", "sell 100 ACME", "F")["legs"][0]                  # a sale is not what the short sale takes: read as before
+        self.assertEqual(("SELL", 100), (leg["request"]["side"], leg["request"]["qty"]))
+
+    def test_the_parse_reads_no_command_and_stays_under_its_budget(self):
+        import finsim.terminal.orders_preview as m_orders_preview
+        rt = self.worlds["W2"][1]
+        orig = m_orders_preview.cover_state
+        claims, sqls = [], []
+
+        def spy(*a, **k):
+            claims.append(bool(k.get("claims")) or (len(a) > 5 and bool(a[5])))
+            return orig(*a, **k)
+        m_orders_preview.cover_state = spy
+        try:
+            with rt.db.reader() as conn:                       # the parse's one reader is this connection (re-entrant per thread)
+                conn.set_trace_callback(sqls.append)
+                try:
+                    outs = [st.parse_view(rt, {"text": text, "book": book}) for text, book in (("covered call 100 WIDG Dec 18 2026 45", "P"),
+                                                                                             ("sell 100 WIDG", "P"), ("collar 100 ACME Dec 18 2026 220/260", "F"))]
+                finally:
+                    conn.set_trace_callback(None)
+        finally:
+            m_orders_preview.cover_state = orig
+        self.assertEqual([(True, 1), (True, 1), (True, 2)], [(o["ok"], len(o["legs"])) for o in outs])
+        self.assertTrue(claims)
+        self.assertEqual([False] * len(claims), claims)        # the claims are read from commands: never by the parse
+        self.assertTrue(any(re.search(r"(?i)\bfrom orders\b", s) for s in sqls), sqls[:5])
+        self.assertEqual([], [s for s in sqls if re.search(r"(?i)\bcommands\b", s)])
+        # the budget: 10 covered calls (the grammar counts each as its 2 possible legs: the 20-leg limit), each read on the account as it is
+        text = "; ".join(["covered call 100 ACME Dec 18 2026 240 in the Fund book"] * 10)
+        st.parse_view(rt, {"text": text, "book": "P"})
+        best = None
+        for _ in range(3):
+            t0 = time.perf_counter()
+            out = st.parse_view(rt, {"text": text, "book": "P"})
+            ms = (time.perf_counter() - t0) * 1000.0
+            best = ms if best is None else min(best, ms)
+        self.assertEqual([True] * 10, [bool(l["request"] and l["request"].get("covered")) for l in out["legs"]])
+        sys.stderr.write(f"\nsmart ticket: 10 covered calls read in {best:.1f} ms (limit 300 ms)\n")
+        self.assertLess(best, 300.0)
+
+
+class ParseContractTests(_ResolverBase):
+    """The pure parse route's answer as the unified app reads it (SIMPLIFY_PLAN s6: the contract stays): the keys of the answer, of a leg,
+    of its position and of a group; ``request`` null exactly when the leg carries a blocker; every grouped leg names its group; and no
+    order is read as already sent (orders of the earlier Smart Ticket change nothing).  The corpus world in its own temp home (one test
+    writes fixture rows)."""
+
+    TOP = {"grammar", "selected_book", "text", "ok", "counts", "legs", "combos", "unparsed", "flags", "as_of"}
+    LEG = {"n", "clause", "span", "book", "book_name", "lifetime_id", "account_id", "account_name", "side", "qty", "instrument", "order_type", "limit_px",
+           "stop_px", "trail_amt", "trail_pct", "tif", "gtd_date", "combo", "position", "inferred", "flags", "request"}
+    GROUP = {"id", "legs", "kind", "fill_mode", "underlying_id", "strategy", "book", "account_id", "span", "clause", "flags", "request", "order"}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp, cls.rt = cls._make()
+        build_world(unittest.TestCase(), cls.rt)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rt.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_the_answer_keeps_the_keys_the_unified_app_reads(self):
+        legs = grouped = 0
+        for case in corpus.CASES:
+            if case["expect"].get("status", 200) != 200:
+                continue
+            out = st.parse_view(self.rt, _corpus_body(case))
+            self.assertEqual(self.TOP, set(out), case["id"])
+            for l in out["legs"]:
+                self.assertEqual(self.LEG, set(l), case["id"])
+                self.assertIn("id", l["instrument"])
+                self.assertTrue(l["position"] is None or set(l["position"]) == set(st.POSITION_KEYS), (case["id"], l["position"]))
+                self.assertEqual(any(f["severity"] == "blocker" for f in l["flags"]), l["request"] is None, (case["id"], l["n"]))
+                for f in l["flags"]:
+                    self.assertTrue({"code", "severity", "text"} <= set(f) <= {"code", "severity", "text", "span", "choices", "action"}, f)
+                legs += 1
+            for c in out["combos"]:
+                self.assertEqual(self.GROUP, set(c), case["id"])
+                self.assertEqual(sorted(c["legs"]), sorted(c["order"]), case["id"])
+                grouped += len(c["legs"])
+            self.assertEqual({k for c in out["combos"] for k in c["legs"]}, {l["n"] for l in out["legs"] if l["combo"] is not None}, case["id"])
+        self.assertGreater(legs, 300)
+        self.assertGreater(grouped, 150)
+
+    def test_no_order_is_read_as_already_sent(self):
+        texts = ("buy 2 ACME Dec 18 2026 240 calls", "sell 3 ACME Dec 18 2026 250 calls", "buy 300 GIZM and 2 ACME Dec 18 2026 240 calls")
+        before = [json.dumps(self.parse(t), sort_keys=True) for t in texts]
+        now = int(self.rt.clock.epoch())
+        with self.rt.db.writer() as tx:          # fixture only: two orders of the earlier Smart Ticket ("st:" ids, its "smart" payload), filled today
+            for oid, rid, iid, side, qty, clause in (("O-STP-1", "st:abcdefabcdef:L1:r1", C240, "BTC", 2, "buy 2 ACME Dec 18 2026 240 calls"),
+                                                     ("O-STP-2", "st:abcdefabcdef:L2:r1", C250, "STC", 3, "sell 3 ACME Dec 18 2026 250 calls")):
+                payload = json.dumps({"account_id": P, "instrument_id": iid, "side": side, "qty": qty, "order_type": "MARKET", "tif": "DAY",
+                                      "smart": {"ticket": "abcdefabcdef", "item": rid.split(":")[2], "clause": clause}}, sort_keys=True)
+                tx.conn.execute("INSERT INTO commands(request_id, kind, actor, payload_json, payload_sha256, result_json, http_status, started_ts, finished_ts,"
+                                " duration_ms, app_version, state_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                                (rid, "order.submit", "ui", payload, "0" * 64, "{}", 200, now, now, 1, "test", 0))
+                tx.conn.execute("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, filled_qty, order_type, tif, status, session_group,"
+                                " created_ts, updated_ts, expires_ts, preview_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'{}')",
+                                (oid, rid, P, iid, side, qty, qty, "MARKET", "DAY", "FILLED", "US_EQUITY_OPTIONS", now, now, now + 7200))
+        self.assertEqual(before, [json.dumps(self.parse(t), sort_keys=True) for t in texts])
+        self.assertFalse({"ALREADY_SENT", "COVER_TAKEN", "LIMIT_IN_AON", "COMBO_INVALID", "COMBO_FILL_MODE"} & set(st.FLAG_SEVERITY))
+
 
 # ===== the route on a full runtime: registration, 400s, the corpus and the purity proof ================================================
 def _build_full(tmp):
@@ -1995,7 +2137,8 @@ class Route(unittest.TestCase):
         self.assertIn("SMART_TICKET", tables.CONVENTIONS)
         rows = [r for r in _api.unsupported_rows(rt) if r["where"] == "Smart Ticket"]
         self.assertEqual(2, len(rows))
-        self.assertIn("all-or-none combinations have no net limit in this version (each leg at its executable bid / ask)", [r["wording"] for r in rows])
+        self.assertIn("the Smart Ticket fills separate tickets; one all-or-none order of options is built in the order ticket's Strategies tab",
+                      [r["wording"] for r in rows])                                     # 1.0.7.2 simplified: no all-or-none of its own
 
     def test_no_request_id_needed_and_one_sent_is_ignored(self):
         s1, b1, _h = self.post({"text": "buy 1 ACME limit 1.00", "book": "P"}, "?book=P")

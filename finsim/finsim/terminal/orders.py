@@ -99,14 +99,15 @@ from .db import dumps, next_id
 from .clock import ny_of
 from .instruments import Instrument
 from .matcher import Matcher                                                                        # noqa: F401 (re-export)
-from .orders_preview import (AMENDABLE_STATUSES, PreviewStore, ValidatedOrder, _as_dict, _jsonable, _s, bar_usage, funding_fit, order_context,   # noqa: F401
-                             preview, preview_store, quote_of, resting_need, session_for, tif_choice, tif_label, validate, with_nbbo)
+from .orders_preview import (AMENDABLE_STATUSES, PreviewStore, ValidatedOrder, _as_dict, _jsonable, _s, bar_usage, change_cover_check, cover_check,   # noqa: F401
+                             funding_fit, order_claimed, order_context, preview, preview_store, quote_of, resting_need, sequential_cover_check, session_for, tif_choice,
+                             tif_label, validate, with_nbbo)
 from .orders_rules import (AUTO_RESUME_NOTE, BUY_SIDES, CASH_SIDES, FUNDS_CODES, FUNDS_WAIT, FUNDS_WAIT_ITEM, FUTURES_SIDES, LIVE_STATUSES,   # noqa: F401
                            NEEDS_QUOTE_TYPES, OPEN_STATUSES, OPENING_SIDES, OPTION_SIDES, ORDER_TYPES, SELL_SIDES, STOP_TYPES, TIFS, Decision, LegDecision,
                            OrderRow, PackageDecision, evaluate, evaluate_package, exec_price, fill_cap, funds_wait_from_error, funds_wait_reason, is_funds_wait,
                            match_idem, on_tick, px_words, queued_until_text, review, trail_amount, trail_stop)
 from .quotes import QuoteRecord
-from .units import fmt_money, mul_c, qprice, to_c
+from .units import fmt_money, qprice, to_c
 
 
 class NotBuilt(RejectError):
@@ -588,6 +589,10 @@ def create_hedge_children(ctx: TxContext, services, primary_order_id: str, legs:
     if praw is None:
         raise RejectError("NOT_FOUND", f"order {primary_order_id} does not exist")
     pqty = int(praw["qty"])
+    # 1.0.7.2 INV-9: call legs sold to open on a name with calls sold as covered go only with a shares order that buys their cover
+    sequential_cover_check(services, conn, str(praw["account_id"]), (services.instruments.get(praw["instrument_id"], conn), str(praw["side"]), pqty),
+                           [(services.instruments.get(str(l.get("instrument_id") or ""), conn), str(l.get("side") or "").upper(), int(l.get("qty") or 0))
+                            for l in legs])
     pid = praw["package_id"]
     if not pid:
         pid = next_id(conn, "package")
@@ -657,107 +662,6 @@ def _submit_single(ctx: TxContext, services, payload: dict, vo: ValidatedOrder, 
             "hedge_package": package_id, "warnings": vo.warnings, "decision": dec.to_dict(), "preview": vo.preview}
 
 
-#: 1.0.7.2 sixth review: the refusal of an all-or-none combination held to its confirm (``aon_confirmed``): nothing was placed
-AON_NOT_PLACED = "AON_NOT_PLACED"
-
-
-def _aon_guard_of(payload: dict) -> Optional[tuple]:
-    """1.0.7.2 sixth review: ``aon_confirmed {net_cash, previewed_at}`` of an all-or-none package - the net cash and the server time of the
-    package preview the Smart Ticket's confirm listed - as ``(net cash in cents, previewed_at)``, or None when the request has none (any
-    other client: the package keeps 1.0.7.2's rule, filled whenever one observation covers every leg).  400 AON_CONFIRMED when malformed."""
-    g = payload.get("aon_confirmed")
-    if g is None:
-        return None
-    try:
-        if not isinstance(g, dict):
-            raise ValueError("not an object")
-        net = Decimal(str(g.get("net_cash")))
-        at = int(g.get("previewed_at"))
-        if not net.is_finite() or at <= 0:
-            raise ValueError("out of range")
-    except (ArithmeticError, TypeError, ValueError) as e:
-        raise RejectError("AON_CONFIRMED", f"aon_confirmed needs the confirmed net_cash (a number) and previewed_at (the preview's server time): {e}",
-                          {"aon_confirmed": g if isinstance(g, (dict, str, int, float)) else None}) from None
-    return to_c(net), at
-
-
-def _aon_guard_check(guard: tuple, legs: List[OrderRow], dec: PackageDecision) -> None:
-    """1.0.7.2 sixth review: an all-or-none combination sent with its confirmed figures (``aon_confirmed``) is placed only when it FILLS NOW,
-    all-or-none, at a net cash at most ``config.PRICE_MOVED_PCT`` (0.5 %) worse than the one its confirm listed - checked here, at the
-    placement itself, so every send and every resend of it (after a busy writer's 503, a dropped connection, the large-order question) is
-    held to the confirm, whoever resends it.  A combination that cannot fill at once (a displayed size too small, a stale chain, the
-    session closed) is never left working: there is no net limit in this version, and it would fill later at whatever prices then.
-    Raises 409 AON_NOT_PLACED (the command rolls back: nothing was placed); the Smart Ticket keeps it staged with its new figures."""
-    net0, _at = guard
-    if dec.action != "FILL":
-        why = {"AON_SIZE": "the displayed size does not cover every leg", "AON_STALE": "a leg has no fresh executable Cboe quote",
-               "AON_OBSERVATION": "the legs come from different chain observations", "AWAITING_SESSION": "the session is not open"}.get(dec.reason, dec.reason)
-        raise ConflictError(AON_NOT_PLACED, f"not placed: it cannot fill all-or-none now ({why}{': ' + dec.note if dec.note else ''}); a combination has no net limit in"
-                                            " this version, so it is never left working to fill later at other prices", {"why": "NOT_NOW", "decision": dec.to_dict()})
-    by_id = {l.order_id: l for l in legs}
-    net1 = 0
-    for ld in dec.legs:
-        g = mul_c(int(ld.qty), ld.price, by_id[ld.order_id].multiplier)
-        net1 += g if ld.side in SELL_SIDES else -g
-    worse = net0 - net1                                  # net cash: received +, paid -; worse = paying more or receiving less
-    pct = Decimal(str(config.PRICE_MOVED_PCT))
-    if worse > 0 and (net0 == 0 or Decimal(worse) > abs(Decimal(net0)) * pct):
-        moved = f" ({(Decimal(worse) / abs(Decimal(net0)) * 100).quantize(Decimal('0.01'))} % against you)" if net0 else ""
-        raise ConflictError(AON_NOT_PLACED, f"not placed: its net cash now would be {fmt_money(net1)} instead of the {fmt_money(net0)} its confirm listed{moved},"
-                                            f" more than {(pct * 100).normalize()} % worse", {"why": "MOVED", "net_cash_c": net1, "confirmed_net_cash_c": net0,
-                                                                                              "decision": dec.to_dict()})
-
-
-#: 1.0.7.2 seventh review: the refusal of a sequential combination whose options at market moved since its confirm: nothing was placed
-SEQ_NOT_PLACED = "SEQ_NOT_PLACED"
-
-
-def _seq_guard_of(payload: dict) -> Optional[tuple]:
-    """1.0.7.2 seventh review: ``seq_confirmed {options_cash, previewed_at}`` of a sequential package - the cash of its option legs at
-    market and the server time of the package preview the Smart Ticket's confirm listed - as ``(cents, previewed_at)``, or None when the
-    request has none (any other client: unchanged).  400 SEQ_CONFIRMED when malformed."""
-    g = payload.get("seq_confirmed")
-    if g is None:
-        return None
-    try:
-        if not isinstance(g, dict):
-            raise ValueError("not an object")
-        cash = Decimal(str(g.get("options_cash")))
-        at = int(g.get("previewed_at"))
-        if not cash.is_finite() or at <= 0:
-            raise ValueError("out of range")
-    except (ArithmeticError, TypeError, ValueError) as e:
-        raise RejectError("SEQ_CONFIRMED", f"seq_confirmed needs the confirmed options_cash (a number: the option legs at market of the package preview) and"
-                                           f" previewed_at (that preview's server time): {e}",
-                          {"seq_confirmed": g if isinstance(g, (dict, str, int, float)) else None}) from None
-    return to_c(cash), at
-
-
-def _seq_guard_check(ctx: TxContext, guard: tuple, legs: List[dict]) -> None:
-    """1.0.7.2 seventh review: a sequential combination sent with its confirmed figures (``seq_confirmed``) whose shares FILL AT ONCE
-    releases its options now: the option legs at market (a leg with its own limit holds its price) are placed only within
-    ``config.PRICE_MOVED_PCT`` (0.5 %) of the cash its confirm listed and within ``config.PREVIEW_TTL_S`` (120 s) of that preview - checked
-    at the placement, so every send and resend of it is held to the confirm, as an option order alone is (PREVIEW_STALE) and an
-    all-or-none combination is (AON_NOT_PLACED).  ``legs``: the package's legs priced now (``strategies.package_legs``).  Raises 409
-    SEQ_NOT_PLACED (the command rolls back: nothing was placed).  Shares that rest release their options later, at the prices then."""
-    cash0, at = guard
-    mkt = [l for l in legs if str(l.get("kind")) == "OPTION" and str(l.get("order_type") or "MARKET").upper() == "MARKET"]
-    if not mkt:
-        return
-    ttl = int(config.PREVIEW_TTL_S)
-    if ctx.ts - at > ttl:
-        raise ConflictError(SEQ_NOT_PLACED, f"not placed: its shares fill at once, and the package preview its confirm listed was taken {ctx.ts - at:,} s ago - its"
-                                            f" options at market go only within {ttl} s of it: confirm it again", {"why": "OLD", "previewed_at": at, "ttl_s": ttl})
-    cash1 = sum(int(l.get("cash_c") or 0) for l in mkt)
-    worse = cash0 - cash1                                # cash: received +, paid -; worse = paying more or receiving less
-    pct = Decimal(str(config.PRICE_MOVED_PCT))
-    if worse > 0 and (cash0 == 0 or Decimal(worse) > abs(Decimal(cash0)) * pct):
-        moved = f" ({(Decimal(worse) / abs(Decimal(cash0)) * 100).quantize(Decimal('0.01'))} % against you)" if cash0 else ""
-        raise ConflictError(SEQ_NOT_PLACED, f"not placed: its shares fill at once, and its options at market would now be {fmt_money(cash1)} instead of the"
-                                            f" {fmt_money(cash0)} its confirm listed{moved}, more than {(pct * 100).normalize()} % worse",
-                            {"why": "MOVED", "options_cash_c": cash1, "confirmed_options_cash_c": cash0})
-
-
 def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     strategies = getattr(services, "strategies", None)
     if strategies is None or not hasattr(strategies, "package_legs"):
@@ -786,32 +690,22 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
             raise RejectError("AON_LEGS", "a SEQUENTIAL package needs a stock or futures primary; an option-only package must be AON")
         if payload.get("covered"):
             raise RejectError("COVERED_INVALID", "covered: true is for calls sold on shares held: a package that trades its shares brings its own")
-        seq_guard = _seq_guard_of(payload)
         req = {"account_id": account_id, "instrument_id": primary["instrument_id"], "side": primary["side"], "qty": int(primary["qty"]),
                "order_type": primary.get("order_type") or "MARKET", "limit_px": primary.get("limit_px"), "tif": tif, "confirm_large": payload.get("confirm_large"),
                "preview_id": payload.get("preview_id")}
         vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, queue_unfunded=True)
         others = [l for l in legs if l is not primary]
         out = _submit_single(ctx, services, req, vo, hedge_legs=others, candidate_id=key)
-        if seq_guard is not None and out.get("fills"):
-            # seventh review: the shares filled at once, so their options are released now - at market they are held to the confirm (raises:
-            # the command rolls back, nothing was placed)
-            _seq_guard_check(ctx, seq_guard, legs)
         out["package"] = {"package_id": out["hedge_package"], "fill_mode": "SEQUENTIAL", "strategy_key": key}
         return out
     insts = [services.instruments.get(l["instrument_id"], conn) for l in legs]
     if any(i is None or i.kind != "OPTION" for i in insts) or len({i.underlying_id for i in insts}) != 1:
         raise RejectError("AON_LEGS", "an all-or-none package must be options on one underlying only", {"legs": [l.get("instrument_id") for l in legs]})
-    guard = _aon_guard_of(payload)
-    if guard is not None and ctx.ts - guard[1] > int(config.PREVIEW_TTL_S):
-        raise ConflictError(AON_NOT_PLACED, f"not placed: the package preview its confirm listed was taken {ctx.ts - guard[1]:,} s ago, and a combination goes"
-                                            f" only within {int(config.PREVIEW_TTL_S)} s of it - confirm it again", {"why": "OLD", "previewed_at": guard[1],
-                                                                                                                     "ttl_s": int(config.PREVIEW_TTL_S)})
     vos = []
     for l in legs:
         req = {"account_id": account_id, "instrument_id": l["instrument_id"], "side": l["side"], "qty": int(l["qty"]), "order_type": "MARKET", "tif": tif}
         vos.append(validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, rest_ok=True, queue_unfunded=True))
-    _covered_check(ctx, services, payload, [(v.inst, v.side, v.qty) for v in vos])     # seventh review: a collar on shares held
+    _covered_check(ctx, services, payload, [(v.inst, v.side, v.qty) for v in vos])     # INV-1 (covered: true) / INV-9 (calls sold to open)
     if any(v.funding.get("confirm_required") for v in vos) and not payload.get("confirm_large"):
         reasons = [f"{v.inst.symbol}: {v.funding.get('confirm_reason')}" for v in vos if v.funding.get("confirm_required")]
         raise ConflictError("CONFIRM_REQUIRED", "confirm the large package: " + "; ".join(reasons),
@@ -820,9 +714,6 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     # FUNDS_WAIT: a leg the account cannot fund queues the whole package (every leg SUSPENDED, no reservation, one INFO item)
     waiting = [v for v in vos if v.funds_wait]
     wait = funds_wait_reason(vos[0].inst.currency, sum(int(v.need_c) for v in vos), int(waiting[0].funds_wait["available_c"])) if waiting else None
-    if guard is not None and wait:
-        raise ConflictError(AON_NOT_PLACED, f"not placed: it cannot be funded now ({wait}), and a combination held to its confirm is never queued to fill"
-                                            " later at other prices", {"why": "FUNDS", "reason": wait})
     status = "SUSPENDED" if wait else "WORKING"
     pid = next_id(conn, "package")
     conn.execute("INSERT INTO hedge_packages(package_id, command_id, account_id, primary_order_id, candidate_id, strategy_key, legs_json, fill_mode, status, created_ts)"
@@ -844,14 +735,9 @@ def _submit_package(ctx: TxContext, services, payload: dict) -> dict:
     recs = {vo.inst.instrument_id: vo.rec for vo in vos}
     pkg = conn.execute("SELECT * FROM hedge_packages WHERE package_id=?", (pid,)).fetchone()
     dec = evaluate_package(pkg, rows, recs, vos[0].session, ctx.ts)
-    if guard is not None:
-        _aon_guard_check(guard, rows, dec)               # sixth review: raises (nothing placed) unless it fills now within its confirm
     result = None
     if dec.action == "FILL":
         result = _fill_package(ctx, services, pkg, rows, recs, dec, new_package=True)
-        if guard is not None and (result or {}).get("status") != "FILLED":
-            raise ConflictError(AON_NOT_PLACED, "not placed: its fill could not be funded, and a combination held to its confirm is never queued to fill later"
-                                                " at other prices", {"why": "FUNDS", "reason": (result or {}).get("reason")})
     return {"package": {"package_id": pid, "fill_mode": "AON", "strategy_key": key, "status": (result or {}).get("status", "WORKING"), "legs": legs},
             "orders": [order_view(conn, oid) for oid in oids], "decision": dec.to_dict(), "fills": (result or {}).get("fills", []), "margin": (result or {}).get("margin"),
             "sweeps": (result or {}).get("sweeps", []), "warnings": [w for v in vos for w in v.warnings], "previews": [v.preview for v in vos]}
@@ -909,61 +795,19 @@ def h_submit(ctx: TxContext, payload: dict) -> dict:
     return _submit_single(ctx, services, payload, vo)
 
 
-#: 1.0.7.2 seventh review: calls sent as covered by shares held (``covered: true``) whose shares are no longer free: nothing was placed
+#: 1.0.7.2: calls sent as covered by shares held (``covered: true``) whose shares are not free: nothing was placed (INV-1)
 NOT_COVERED = "NOT_COVERED"
 
 
 def _covered_check(ctx: TxContext, services, payload: dict, legs: List[tuple]) -> None:
-    """1.0.7.2 seventh review: an order or an all-or-none package sent with ``covered: true`` - the Smart Ticket's covered call or collar on
-    shares held, calls said to be covered by shares the account holds with no shares bought - is placed only while those shares are free
-    NOW, checked here at its placement (every send and resend of it): the shares of the calls' name held long in the account, net of its
-    working sells, of the shares reserved by calls already sold, of lent shares and of the cover the account's other working
-    sell-to-open calls will take, must be at least the multiplier (100) a contract sold.  Else 409 NOT_COVERED and nothing is placed: the
-    shares were sold, or taken by other calls, since the reading.  ``legs``: (instrument, side, quantity) of each order of the request;
-    400 COVERED_INVALID when none sells calls to open on one name."""
-    if not payload.get("covered"):
-        return
-    from .orders_preview import _lent_shares, _reserved_shares
-    from .ledger import position as _ledger_position
-    calls = [(inst, int(qty)) for inst, side, qty in legs if side == "STO" and inst is not None and inst.kind == "OPTION" and inst.right == "C"]
-    if not calls or len({inst.underlying_id for inst, _q in calls}) != 1 or not calls[0][0].underlying_id:
-        raise RejectError("COVERED_INVALID", "covered: true is for an order, or an all-or-none package, that sells calls to open on one name the account holds")
-    uid = str(calls[0][0].underlying_id)
-    acct = str(payload.get("account_id") or "")
-    conn = ctx.conn
-
-    def mult(inst) -> int:
-        try:
-            return int(Decimal(str(inst.multiplier or 100)))
-        except (ArithmeticError, ValueError):
-            return 100
-    need = sum(q * mult(inst) for inst, q in calls)
-    held = int(_ledger_position(conn, acct, uid)[0])
-    sells = sum(int(r["qty"]) - int(r["filled_qty"] or 0) for r in conn.execute(
-        "SELECT qty, filled_qty FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC')"
-        " AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')", (acct, uid)).fetchall())
-    working = 0
-    for r in conn.execute("SELECT o.qty, o.filled_qty, i.multiplier FROM orders o JOIN instruments i ON i.instrument_id=o.instrument_id WHERE o.account_id=?"
-                          " AND o.side='STO' AND o.status IN ('WORKING','PARTIAL','SUSPENDED') AND i.kind='OPTION' AND i.right='C' AND i.underlying_id=?",
-                          (acct, uid)).fetchall():
-        try:
-            m = int(Decimal(str(r["multiplier"] or "100")))
-        except (ArithmeticError, ValueError):
-            m = 100
-        working += max(0, int(r["qty"]) - int(r["filled_qty"] or 0)) * m
-    reserved = _reserved_shares(services, acct, uid) if held > 0 else 0
-    lent = _lent_shares(services, conn, acct, uid) if held > 0 else 0
-    free = max(0, held) - sells - reserved - lent - working
-    if free >= need:
-        return
-    inst_u = services.instruments.get(uid, conn)
-    sym = inst_u.symbol if inst_u is not None else uid
-    why = [f"{n:,} {w}" for n, w in ((sells, "in working sells"), (reserved, "reserved by calls already sold"), (lent, "lent"),
-                                     (working, "covering other calls being sold")) if n]
-    raise ConflictError(NOT_COVERED, f"not placed: the calls need {need:,} {sym} held free in {acct} as their cover and {max(free, 0):,} are free now (held"
-                                     f" {held:,}{'; ' + ', '.join(why) if why else ''}) - the shares were sold, or taken by other calls, since it was read:"
-                                     " read it again", {"need": need, "free": max(free, 0), "held": held, "working_sells": sells, "reserved_shares": reserved,
-                                                        "lent": lent, "calls_working": working, "underlying_id": uid})
+    """1.0.7.2 INV-1 / INV-9 at the placement (every send and resend), the same check the order preview runs
+    (``orders_preview.cover_check``, on ``orders_preview.cover_state``): an order or an all-or-none package sent with ``covered: true``
+    is placed only while the shares of its calls' name are held free for them - net of working sells and short sales, of the cover of
+    the calls already sold and being sold (in whole contracts, as the margin assigns it) and of lent shares - else 409 NOT_COVERED,
+    nothing placed (400 COVERED_INVALID when it sells no call to open on one name); and while the account has calls on a name sold as
+    covered, every further call sold to open on it needs the same free shares - else 409 SHARES_RESERVED.  ``legs``: (instrument, side,
+    quantity) of each order of the request."""
+    cover_check(services, ctx.conn, str(payload.get("account_id") or ""), legs, bool(payload.get("covered")))
 
 
 # ---- order.match / order.match_package ------------------------------------------------------------------------------------------
@@ -1498,6 +1342,7 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
         req["trail_pct"] = payload.get("trail_pct") if payload.get("trail_pct") not in (None, "") else None
     vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, rest_ok=True, queue_unfunded=context["status"] == "SUSPENDED", context=context)
     _check_preview_and_confirm(ctx, services, vo, payload)
+    change_cover_check(services, conn, oid, vo.inst, int(vo.qty), int(context["remaining"]))      # 1.0.7.2 INV-5 / INV-9: a call raised
     new_qty = int(vo.total_qty if vo.total_qty is not None else int(raw["qty"]))
     new = {"qty": new_qty, "limit_px": _s(vo.limit_px), "stop_px": _s(vo.stop_px), "trail_amt": _s(vo.trail_amt), "trail_pct": _s(vo.trail_pct)}
     changes = []
@@ -1599,6 +1444,7 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
         req["tif"] = "DAY"                                 # the old next-session order is working its session: the replacement is a DAY order of it
     vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, queue_unfunded=context["status"] == "SUSPENDED", context=context)
     _check_preview_and_confirm(ctx, services, vo, payload)
+    change_cover_check(services, conn, oid, vo.inst, int(vo.qty), int(context["remaining"]))      # 1.0.7.2 INV-5 / INV-9: a call raised
     wait = vo.funds_wait
     status = "SUSPENDED" if wait else "WORKING"
     new_id = _insert_order(ctx, vo, ctx.request_id, status=status, fill_mode=old["fill_mode"], package_id=old["package_id"],

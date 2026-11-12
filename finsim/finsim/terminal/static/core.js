@@ -33,8 +33,8 @@
  *             hub is not in the build); #/settings/data (the old Data Status address) opens Settings > Market data; an error is
  *             said in the server's words without its internal code (V104R2-BW-04: T.api.describe; the code stays in the console).
  *   1.0.7.2:  #/smart?query renders T.pages.smart (the Smart Ticket, pages/smartticket.js; NOT YET BUILT while its file is not in
- *             the build); Ctrl+F9 opens it and Ctrl+Shift+Enter ('smart.submit') asks the page for its confirm - on any other page
- *             that key only says where it works.  The dock stays hidden there (no account route), so the ticket's keys never act.
+ *             the build); Ctrl+F9 opens it.  It fills the order ticket docked on an account page (T.ticket.open with fresh: true) and
+ *             sends nothing itself.  The dock stays hidden there (no account route), so the ticket's keys never act on #/smart.
  *
  * Conventions this file enforces on screen
  * - Nothing is computed here: every figure is a field of an API response; this file formats and routes.
@@ -462,13 +462,12 @@
         return r;
       });
     },
-    /* Mutating call.  opts: {request_id, reconcile: account_id (orders re-GET on a lost response), match, retries}
+    /* Mutating call.  opts: {request_id, reconcile: account_id (orders re-GET on a lost response), retries}
      * - request_id: one per click (crypto.randomUUID), kept in T.api.pending until the call settles;
      * - 503 (Retry-After) and transient network errors retry the SAME id up to 3 times;
      * - a network error on an order submit with opts.reconcile re-GETs the account's orders (status=all) and either
      *   returns the order found under this request_id (recovered) or throws LostResponse(found=null) - the caller
-     *   keeps its button disabled until this settles; with opts.match(order, list) (1.0.7.2 third review) an order found under the id
-     *   whose terms do not match is never "recovered": the call fails 409 REQUEST_ID_REUSED instead (another order took the id);
+     *   keeps its button disabled until this settles;
      * - X-Replayed: 1 -> result.replayed = true and the toast "already submitted". */
     mutate: function (method, path, body, opts) {
       opts = opts || {};
@@ -494,10 +493,6 @@
                 var found = null;
                 list.forEach(function (o) { if (o && o.request_id === rid) { found = o; } });
                 delete T.api.pending[rid];
-                if (found && typeof opts.match === 'function' && !opts.match(found, list)) {
-                  throw new ApiError(409, 'REQUEST_ID_REUSED', 'request ' + rid + ' already carries ' + (found.order_id || 'an order') + ' with other terms',
-                                     { order_id: found.order_id || null }, null, {});
-                }
                 if (found) { return { order: found, recovered: true, request_id: rid }; }
                 throw new LostResponse(rid, null);
               }, function () {
@@ -1559,10 +1554,8 @@
     'page.accounts': goPage('#/accounts'),
     'page.cash_collateral': function () { var id = routeAccount(); T.router.go(id ? T.router.account(id, 'cash') : '#/cash'); },
     'page.derivatives': goPage('#/derivatives'),
-    /* 1.0.7.2: the Smart Ticket; its submit key acts only on #/smart and always opens the page's confirm first (a global key never
-       runs while a dialog is open, so the confirm itself can never be pressed by it) */
+    /* 1.0.7.2: the Smart Ticket (type what you want to trade; it fills the order tickets and sends nothing itself) */
     'page.smart': goPage('#/smart'),
-    'smart.submit': function () { var p = T.pages.smart; var r = T.router.current; if (r && r.page === 'smart' && p && p.submit) { p.submit(); } else { T.ui.toast('open the Smart Ticket first' + (K.paren ? K.paren('page.smart') : ''), '', 2500); } },
     'dock.toggle': toggleDock,
     'app.search': focusSearch,
     'app.help': function () { T.ui.help(); },

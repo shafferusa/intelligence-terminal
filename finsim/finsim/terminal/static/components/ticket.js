@@ -1,6 +1,7 @@
 /* The ticket (TERMINAL_DESIGN.md s17.6, s10.1-10.3, s17.4; WP-13): one component, docked on every account page.
  *
- *   T.components.ticket.open(dockBody, {account_id, instrument_id, side, qty, order_type, hedge, close, position_qty, kind, price, leg})
+ *   T.components.ticket.open(dockBody, {account_id, instrument_id, side, qty, order_type, hedge, close, position_qty, kind, price, leg,
+ *                                       fresh, limit_px, stop_px, trail_amt, trail_pct, tif, gtd_date, covered, hedge_tab})
  *   (called by T.ticket.open in core.js; a second open on the same dock applies the fields to the live ticket)
  *
  * Safety rules (hotfix 2026-10-21, after the US Exchange UI sweep):
@@ -65,6 +66,14 @@
  *   account and the side are fixed (an amend also keeps the order type; its quantity is the new TOTAL, at least what has filled).
  *   The preview carries amend_of / replace_of, so the server validates the new terms with the order's own reservation released;
  *   Submit (Ctrl+Enter) sends PATCH /api/orders/{id} (amend) or POST /api/orders/{id}/replace.  Clear / Esc leaves the mode.
+ * FinSim 1.0.7.2 (the Smart Ticket's hand-off, SIMPLIFY_PLAN s3.2): open({fresh: true, ...}) starts a NEW order first - it leaves an
+ *   amend / replace or a hedge-this-position mode and empties the order as a new instrument does (no limit, stop, trail, time in force,
+ *   GTD date, hedge pick, package, FX conversion or claim of the previous order rides along), then applies the fields handed over;
+ *   trail_amt / trail_pct prefill the trail; covered: true marks an STO call 'sold as covered' (one ticked line; unticked it is a plain
+ *   call; ignored for any other order; a new instrument, a Close, Clear, an amend / replace and a fresh order without it drop it) and
+ *   the preview and the submit then carry covered: true (never an amend / replace body); hedge_tab: 'strategies' (with hedge: true)
+ *   opens the hedge panel on its Strategies tab.  The ticket's own preview, Submit and dialogs are unchanged: the Smart Ticket sends
+ *   nothing itself.
  * Keys inside the ticket (focus inside the dock; typing fields take only the box actions preview / submit / clear) are the
  * registry's ticket actions (keys.js, Settings > Keyboard; defaults = the 1.0.3 keys): b s x c sides, m l k j r types,
  * = + - _ qty by lot (the numpad + / - one lot, Shift ten), h hedge panel, 1..5 pick a candidate / 0 none, Enter preview,
@@ -118,6 +127,22 @@
     return null;
   }
   function instKind() { return (st.inst && st.inst.kind) || guessKind(st.instrument_id) || 'EQUITY'; }
+  /* 1.0.7.2: a call option (the instrument's right, else its OCC id) and its underlying / multiplier, for 'sold as covered' */
+  var OCC = /^([A-Z.^-]+?)\s*(\d{6})([CP])(\d{8})$/;
+  function isCall() {
+    if (instKind() !== 'OPTION') { return false; }
+    var r = st.inst && st.inst.right; if (r) { return String(r).toUpperCase().charAt(0) === 'C'; }
+    var m = OCC.exec(String(st.instrument_id || '')); return !!(m && m[3] === 'C');
+  }
+  function coveredOk() { return !st.mode && !st.hedge_pos && st.side === 'STO' && isCall(); }
+  function coveredWords() {
+    var m = OCC.exec(String(st.instrument_id || ''));
+    var under = (st.inst && st.inst.underlying_id) || (m ? m[1] : 'the underlying');
+    var mult = Number((st.inst && st.inst.multiplier) || 100) || 100;
+    var shares = st.qty > 0 ? T.fmt.qty(st.qty * mult) + ' ' + under : 'its ' + under + ' shares';
+    return st.covered ? 'sold as covered: FinSim places it only while ' + shares + ' are free in this account, and keeps them for the calls until they are closed'
+                      : 'not sold as covered: a plain call (tick to sell it as covered by ' + shares + ' free in this account)';
+  }
   /* OA-26: the unit of the quantity box */
   function unitLabel() { var k = instKind(); if (k === 'FX') { return String(st.instrument_id || '').slice(0, 3) + ' (base)'; } return UNIT[k] || 'shares'; }
   /* where a search row trades, for the account kind of this ticket: null = here */
@@ -218,7 +243,7 @@
     return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
              hedge_pos: null, hedge_for: null, fx_convert: false,
              qty: 0, order_type: 'MARKET', limit_px: '', stop_px: '',
-             trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', gtd_date: '', mode: null, mode_order: null, mode_tif0: null, hedge: null, hedge_cand: null, hedgeOpen: false,
+             trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', gtd_date: '', mode: null, mode_order: null, mode_tif0: null, hedge: null, hedge_cand: null, hedgeOpen: false, covered: false, covered_offer: false,
              preview: null, preview_body: null, previewing: false, pseq: 0, dirty: false, preview_err: null, submit_err: null, stale: null,
              submitting: false, result: null, result_kind: null, last_rid: null, timer: null, reprev: null, taTimer: null, tick: null, resolving: false };
   }
@@ -262,6 +287,8 @@
     ui.borrow = T.h('input', { type: 'checkbox', checked: true, disabled: true, 'aria-label': 'borrow' });
     ui.hedgeBtn = T.h('button', { class: 'btn small', id: 'ticket-hedge-btn', title: 'hedge panel (h)' }, 'Hedges (h)');
     ui.hedgeSum = T.h('span', { class: 'muted mono', id: 'ticket-hedge-sum' });
+    ui.covered = T.h('input', { type: 'checkbox', id: 'ticket-covered', 'aria-label': 'sold as covered' });
+    ui.coveredLabel = T.h('label', { for: 'ticket-covered', class: 'muted', id: 'ticket-covered-words' }, '');
     ui.fxConv = T.h('input', { type: 'checkbox', id: 'ticket-fx-convert', 'aria-label': 'convert USD as shown' });
     ui.fxConvLabel = T.h('label', { for: 'ticket-fx-convert', class: 'muted' }, 'convert USD as shown');
     ui.rows = {};
@@ -278,6 +305,7 @@
       row('tif', 'TIF', ui.tif, 'DAY: until the close of the session it trades in; GTC: up to 90 days; GTD: until the close of the date you pick; Next session: queued until the next regular session opens'),
       row('gtd', 'GTD date', ui.gtd, 'the order works until the close of this date (at most 90 days ahead)'),
       row('borrow', 'borrow', T.h('span', null, ui.borrow, ' ', T.h('span', { class: 'muted' }, 'implied: a locate and a borrow come first')), 'SELL SHORT opens the borrow in the same transaction (102 % collateral)'),
+      row('covered', 'covered', T.h('span', null, ui.covered, ' ', ui.coveredLabel), 'a call sold as covered claims shares held free in this account; untick to send it as a plain call'),
       row('fxconv', 'FX', T.h('span', null, ui.fxConv, ' ', ui.fxConvLabel), 'the order\'s currency is short in this account and Treasury: tick to buy it with USD at the fill, at the plan shown in the preview'),
       row('hedge', 'hedge', T.h('span', { class: 'row' }, ui.hedgeBtn, ui.hedgeSum))
     ]);
@@ -342,6 +370,14 @@
     if (f.leg && id && !instCache[id]) { cacheInst(id, legMeta(f.leg, id)); }          /* USX-35: the chain leg's own meta, no look-up */
     /* 0a. amend / replace a working order (OMS-03): the order's own terms, prefilled */
     if ((f.order_mode === 'amend' || f.order_mode === 'replace') && f.order && f.order.order_id) { enterOrderMode(f.order_mode, f.order); return; }
+    /* 0b. 1.0.7.2: a fresh order (the Smart Ticket's hand-off) - out of any amend / replace or hedge-this-position mode, and nothing of
+       the previous order (limit, stop, trail, time in force, GTD date, hedge pick, package, FX conversion, claim) rides along */
+    if (f.fresh) {
+      if (st.mode) { leaveOrderMode(); }
+      if (st.hedge_pos) { leavePositionMode(); }
+      resetOrder(); st.result = null; T.clear(ui.result); paintPreview();
+      st.hedgeOpen = false; st.hedge_for = null;
+    }
     if (st.mode && (id || f.side || f.close || f.qty != null)) { leaveOrderMode(); }
     /* 0. hedge this position (USX-12): no primary order at all; anything else leaves that mode */
     if (f.hedge === 'position' && id) { enterPositionMode(id, f); return; }
@@ -350,7 +386,7 @@
     if (newInst) { setInstrument(id, f.leg ? (instCache[id] || legMeta(f.leg, id)) : (f.kind && !instCache[id] ? { kind: String(f.kind) } : null), true); }
     else if (f.close) { resetOrder(); st.result = null; T.clear(ui.result); paintPreview(); }
     if (f.close) { st.hedgeOpen = false; }
-    st.hedge_for = f.hedge_for || (newInst || f.close ? null : st.hedge_for);
+    st.hedge_for = f.hedge_for || (newInst || f.close || f.fresh ? null : st.hedge_for);
     /* 2. the caller's fields */
     if (f.close) {
       var pq = num(f.position_qty);
@@ -368,12 +404,18 @@
     if (f.price != null && f.leg) { st.order_type = 'LIMIT'; st.limit_px = String(f.price); }
     if (f.limit_px != null) { st.limit_px = String(f.limit_px); }
     if (f.stop_px != null) { st.stop_px = String(f.stop_px); }
+    if (f.trail_pct != null && String(f.trail_pct) !== '') { st.trail_mode = 'pct'; st.trail_pct = String(f.trail_pct); st.trail_amt = ''; }
+    else if (f.trail_amt != null && String(f.trail_amt) !== '') { st.trail_mode = 'amt'; st.trail_amt = String(f.trail_amt); st.trail_pct = ''; }
     if (f.tif) { st.tif = f.tif; }
     if (f.gtd_date) { st.gtd_date = String(f.gtd_date).slice(0, 10); }
     if (f.hedge) { st.hedgeOpen = true; }
+    if (f.hedge && f.hedge_tab && hedge) { hedge.tab(String(f.hedge_tab)); }
     /* 3. the side for the instrument's kind (a Close takes the closing side; an unaccepted side is never replaced) */
     settleSide();
     if (f.close && !st.close_req) { st.side_err = 'Close: the position direction is unknown; choose the side'; }
+    /* 1.0.7.2: 'sold as covered' only for a call sold to open (anything else ignores it); a fresh order without it has none */
+    if (f.covered === true && coveredOk()) { st.covered = true; st.covered_offer = true; }
+    else if (f.fresh || f.close || newInst) { st.covered = false; st.covered_offer = false; }
     paintFields(); stateTicket();
     if (st.instrument_id) { fieldChanged(); }
     if (!id && !st.instrument_id) { try { ui.inst.focus(); } catch (e) { /* ignore */ } }
@@ -386,7 +428,7 @@
     st.mode = null; st.mode_order = null; st.mode_tif0 = null;
     st.side_req = null; st.close_req = null; st.side_err = null; st.fx_convert = false;
     st.preview = null; st.preview_body = null; st.preview_err = null; st.submit_err = null; st.stale = null; st.previewing = false; st.pseq++;
-    st.hedge = null; st.hedge_cand = null; st.package_spec = null;
+    st.hedge = null; st.hedge_cand = null; st.package_spec = null; st.covered = false; st.covered_offer = false;
     if (hedge && hedge.picked && hedge.picked()) { hedge.none(); }
   }
   /* ---- hedge this position (USX-12 / ORC-4): the panel in position mode; the order fields are not used ---- */
@@ -556,6 +598,7 @@
     ui.tif.addEventListener('change', function () { st.tif = ui.tif.value; paintFields(); fieldChanged(); });
     ui.gtd.addEventListener('change', function () { st.gtd_date = ui.gtd.value; fieldChanged(); });
     ui.fxConv.addEventListener('change', function () { st.fx_convert = !!ui.fxConv.checked; fieldChanged(); });
+    ui.covered.addEventListener('change', function () { st.covered = !!ui.covered.checked && coveredOk(); paintFields(); fieldChanged(); });
     ui.hedgeBtn.addEventListener('click', function () { toggleHedge(); });
     ui.previewBtn.addEventListener('click', function () { runPreview(true); });
     ui.submitBtn.addEventListener('click', function () { submit(); });
@@ -567,7 +610,7 @@
     var pos = st.hedge_pos;
     T.clear(ui.modeBox); ui.modeBox.hidden = !pos && !st.hedge_for && !st.mode;
     var hide = !!pos;
-    ['side', 'qty', 'type', 'limit', 'stop', 'trail', 'tif', 'gtd', 'borrow', 'fxconv', 'hedge'].forEach(function (k) { if (hide && ui.rows[k]) { ui.rows[k].forEach(function (el) { el.hidden = true; }); } });
+    ['side', 'qty', 'type', 'limit', 'stop', 'trail', 'tif', 'gtd', 'borrow', 'covered', 'fxconv', 'hedge'].forEach(function (k) { if (hide && ui.rows[k]) { ui.rows[k].forEach(function (el) { el.hidden = true; }); } });
     if (st.mode && ui.rows.hedge) { ui.rows.hedge.forEach(function (el) { el.hidden = true; }); }
     ui.previewBtn.hidden = hide; ui.submitBtn.hidden = hide; ui.freshEl.hidden = hide;
     if (pos) {
@@ -610,6 +653,9 @@
     function show(key, on) { ui.rows[key].forEach(function (el) { el.hidden = !on; }); }
     show('limit', t === 'LIMIT' || t === 'STOP_LIMIT'); show('stop', t === 'STOP' || t === 'STOP_LIMIT'); show('trail', t === 'TRAILING_STOP');
     show('borrow', st.side === 'SELL_SHORT');
+    if (st.covered && !coveredOk()) { st.covered = false; }          /* a claim is only ever on a call sold to open */
+    show('covered', !!st.covered_offer && coveredOk());
+    ui.covered.checked = !!st.covered; ui.coveredLabel.textContent = coveredWords();
     ui.limit.value = st.limit_px; ui.stop.value = st.stop_px; ui.trailMode.value = st.trail_mode; ui.trail.value = st.trail_mode === 'pct' ? st.trail_pct : st.trail_amt;
     ui.trail.placeholder = st.trail_mode === 'pct' ? 'percent (2 dp)' : 'price units';
     ui.tif.value = st.tif;
@@ -698,8 +744,9 @@
     if (st.hedge) { b.hedge = { candidate_id: st.hedge.candidate_id, ratio: st.hedge.ratio, edits: st.hedge.edits || {} }; }
     if (st.fx_convert) { b.fx_convert = true; }
     if (st.tif === 'GTD') { b.gtd_date = st.gtd_date; }
-    if (st.mode === 'amend' && st.mode_order) { b.amend_of = st.mode_order.order_id; delete b.hedge; }
-    if (st.mode === 'replace' && st.mode_order) { b.replace_of = st.mode_order.order_id; delete b.hedge; }
+    if (st.covered && coveredOk()) { b.covered = true; }               /* 1.0.7.2: a call sold as covered (INV-1); never in amend / replace */
+    if (st.mode === 'amend' && st.mode_order) { b.amend_of = st.mode_order.order_id; delete b.hedge; delete b.covered; }
+    if (st.mode === 'replace' && st.mode_order) { b.replace_of = st.mode_order.order_id; delete b.hedge; delete b.covered; }
     return b;
   }
   /* OMS-03: the body of PATCH /api/orders/{id} (amend) / POST /api/orders/{id}/replace from the previewed fields; an amend that keeps

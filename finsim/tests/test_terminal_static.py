@@ -6,12 +6,13 @@
   value, plus the s17.2 aliases;
 - index.html carries the mount roots the scripts expect (#bookswitcher, #history, ...) and no #news root (news was removed in 1.0.5);
 - the shell of FINSIM1_PLAN C1 / 15.7 / P1b: the routes (the Dashboard is the default and the fallback, #/news redirects, the new
-  pages, the old Settings > Data Status address), the 76-action key registry with the 1.0.6 default map (Q10) and its hiding rule,
+  pages, the old Settings > Data Status address), the 75-action key registry with the 1.0.6 default map (Q10) and its hiding rule,
   the optional pages listed in index.html, api.py and the fixture server alike, the sidebar in the directive's order with its keys,
   the meta description, no news string left in the shell's files;
-- 1.0.7.2 (r1072 CHANGE_PLAN 5): the Smart Ticket page (#/smart, Ctrl+F9; Ctrl+Shift+Enter submits through its confirm) - its file
-  listed alike, ASCII, registered and balanced, its route / NOT YET BUILT entry / handlers, its keys without a clash, the send loop as
-  the only place that posts an order, and the mass cancel of Pending Trades;
+- 1.0.7.2 (r1072 CHANGE_PLAN 5; simplified on the owner's decision of 2026-11-11, SIMPLIFY_PLAN s3): the Smart Ticket page (#/smart,
+  Ctrl+F9; it fills standard order tickets and sends nothing itself) - its file listed alike, ASCII, registered and balanced, its route /
+  NOT YET BUILT entry / handler, its key without a clash, the parse as its only POST, every gate of Open in ticket, the order ticket's
+  fresh prefill (trail and covered claim included), and the mass cancel of Pending Trades;
 - the fixture server serves every s15 route with its fixture (WP-13's fixtures may be absent -> reported as skipped),
   substitutes the time placeholders, honours scenarios, serves the static UI with no-store and stubs optional files;
 - no glossary (owner amendment 18:28); every page / component registers itself; brackets balance in every JS file
@@ -277,7 +278,7 @@ class StaticFilesTest(unittest.TestCase):
         acts = {m.group(1): (None if m.group(3) == "null" else m.group(3)[1:-1]) for m in re.finditer(r"act\('([a-z0-9_.]+)', '([A-Za-z ]+)', (null|'[^']*')", src)}
         acts.update({"nav.account_%d" % n: None for n in range(1, 10)})              # the two loops of keys.js
         acts.update({"ticket.hedge_%d" % n: str(n) for n in range(1, 6)})
-        self.assertEqual(76, len(acts))                                         # FINSIM1_PLAN C1: 68 - page.news + 7 page actions; 1.0.7.2: + page.smart, smart.submit
+        self.assertEqual(75, len(acts))                                         # FINSIM1_PLAN C1: 68 - page.news + 7 page actions; 1.0.7.2: + page.smart
         self.assertNotIn("page.news", acts)
         # the 1.0.6 default map (FINSIM1_PLAN C1 / Q10): the new navigation's pages on the keys the account pages held, F12 the Dashboard
         owner = {"F1": "nav.us_exchange", "F2": "nav.debt", "F3": "nav.credit", "F4": "nav.foreign_fx", "F5": "nav.private", "F6": "nav.prime_broker",
@@ -521,9 +522,11 @@ def _enclosing(fns, at: int) -> str:
 
 
 class SmartTicketShellTests(unittest.TestCase):
-    """1.0.7.2 (r1072 CHANGE_PLAN 5.1-5.7): the Smart Ticket page in the shell - listed alike, ASCII, registered, its route, keys and
-    handlers - and the two rules a file read can prove: the instruction goes to the server only when the owner asks for a reading, and an
-    order is posted only by the send loop, which only the confirm's "Send N orders" starts."""
+    """1.0.7.2 (r1072 CHANGE_PLAN 5.1-5.7; simplified on the owner's decision of 2026-11-11, SIMPLIFY_PLAN s3 and s9): the Smart Ticket page
+    in the shell - listed alike, ASCII, registered, its route, its key and handlers - and the rules a file read can prove: the instruction
+    goes to the server only when the owner asks for a reading; the page posts no order (its only POST is the parse, and it hands one
+    card's or one group's order to the order ticket as a NEW order); Open in ticket has every gate; the order ticket takes a fresh order,
+    a trail and the covered claim from a prefill."""
 
     def test_page_file_listed_alike_ascii_registered_and_balanced(self):
         from finsim.terminal import api
@@ -543,12 +546,17 @@ class SmartTicketShellTests(unittest.TestCase):
         raw.decode("ascii")                                                            # ASCII only
         src = raw.decode("ascii")
         self.assertIsNone(re.search(r"https?://", src), "the page loads or links nothing outside the app")
-        self.assertIn("T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms, aonMoved: aonMoved };", src)
+        self.assertIn("T.pages.smart = { render: render, unmount: unmount };", src)
         self.assertEqual((0, 0, 0), js_balance(src))
-        for helper in ("T.components.grid.mount(", "T.components.preview", "T.ui.modal(", "T.store.set(STORE", "T.uuid()", "T.poll.page('smart'"):
-            self.assertIn(helper, src, helper)
-        self.assertIn("var STORE = 'smart.draft';", src)                               # the draft: this browser only
+        # one card per order; the draft in this browser only, under its own key (the first build's 'smart.draft' is never read)
+        self.assertIn("ui.cards = T.h('div', { class: 'smart-grid', id: 'smart-cards' });", src)
+        self.assertIn("T.store.set(STORE", src)
+        self.assertIn("var STORE = 'smart.draft.v2';", src)
+        self.assertIsNone(re.search(r"T\.store\.(?:get|set)\('smart\.draft'", src))
         self.assertIn("var PARSE = '/api/smart-ticket/parse';", src)
+        # no send loop: no request id of its own, no dialog or confirm of its own, no preview panel, no leg grid, no send button
+        for gone in ("T.uuid()", "T.ui.modal(", "T.ui.confirm(", "T.components.preview", "T.components.grid.mount(", "smart-submit", "smart-send", "smart-confirm"):
+            self.assertNotIn(gone, src, gone)
         # trader wording: no refusal is led by its internal code; fictional names only in the examples
         self.assertNotIn(".code + ': '", src)
         examples = src[src.index("var EXAMPLES = ["):src.index("];", src.index("var EXAMPLES = ["))]
@@ -563,10 +571,9 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertIn("    [/^#\\/smart(?:\\?(.*))?$/, function (m) { return { page: 'smart', query: parseQuery(m[1]) }; }],", core)
         self.assertRegex(core, r"\n    smart: \['Smart Ticket', '(?:[^'\\]|\\.)+'\]")
         self.assertIn("'page.smart': goPage('#/smart'),", core)
-        # the submit key acts only on #/smart (the page's own submit, which opens its confirm); elsewhere it only says where it works
-        self.assertIn("'smart.submit': function () { var p = T.pages.smart; var r = T.router.current; if (r && r.page === 'smart' && p && p.submit) { p.submit(); }"
-                      " else { T.ui.toast('open the Smart Ticket first' + (K.paren ? K.paren('page.smart') : ''), '', 2500); } },", core)
-        # no global key runs while a dialog is open, so the key can never press the confirm's Send itself
+        # 1.0.7.2 simplified: no submit key and no handler for one - the page sends nothing itself
+        self.assertNotIn("smart.submit", core)
+        self.assertNotIn("T.pages.smart; var r", core)
         self.assertIn("if (e.repeat || _modals.length) { return; }", core)
         # the dock shows only on account routes: the ticket (and its Ctrl+Enter) never acts on #/smart
         self.assertIn("var dockOn = !!r.account && !r.closed && !closedRow(r.account) && T.store.get('dock', true);", core)
@@ -577,18 +584,19 @@ class SmartTicketShellTests(unittest.TestCase):
     def test_smart_keys_defaults_without_clash(self):
         from finsim.terminal import api
         src = read(os.path.join(STATIC, "keys.js"))
-        self.assertIn("76 actions", src)
-        self.assertIn("act('page.smart', 'Pages', 'Ctrl+F9', 'Smart Ticket: type what you want to trade (nothing is sent until you confirm)', { page: 'smart' });", src)
-        self.assertIn("act('smart.submit', 'Order ticket', 'Ctrl+Shift+Enter', 'Smart Ticket: submit the selected legs, after the confirm', { typing: true, page: 'smart' });", src)
+        self.assertIn("75 actions", src)
+        self.assertIn("act('page.smart', 'Pages', 'Ctrl+F9', 'Smart Ticket: type what you want to trade; it fills the order tickets', { page: 'smart' });", src)
+        self.assertNotIn("smart.submit", src)                                         # 1.0.7.2 simplified: Ctrl+Shift+Enter is gone
+        self.assertNotIn("Ctrl+Shift+Enter", src)
         acts = {m.group(1): (None if m.group(3) == "null" else m.group(3)[1:-1]) for m in re.finditer(r"act\('([a-z0-9_.]+)', '([A-Za-z ]+)', (null|'[^']*')", src)}
         acts.update({"nav.account_%d" % n: None for n in range(1, 10)})
         acts.update({"ticket.hedge_%d" % n: str(n) for n in range(1, 6)})
-        for aid, key in (("page.smart", "Ctrl+F9"), ("smart.submit", "Ctrl+Shift+Enter")):
-            self.assertEqual(key, acts[aid])
-            self.assertEqual(key, api.keybind_canonical(key))
-            self.assertNotIn(key, api.KEYBIND_REFUSED)
-            self.assertEqual("global", api.keybind_scope(aid))                       # D-g: the submit key's scope comes from its id
-            self.assertEqual([aid], [a for a, k in acts.items() if k == key])        # no other action holds it
+        self.assertEqual(75, len(acts))
+        self.assertEqual("Ctrl+F9", acts["page.smart"])
+        self.assertEqual("Ctrl+F9", api.keybind_canonical("Ctrl+F9"))
+        self.assertNotIn("Ctrl+F9", api.KEYBIND_REFUSED)
+        self.assertEqual("global", api.keybind_scope("page.smart"))
+        self.assertEqual(["page.smart"], [a for a, k in acts.items() if k == "Ctrl+F9"])   # no other action holds it
         self.assertIsNone(api.keybind_clash(acts))
         self.assertEqual("Ctrl+Enter", acts["ticket.submit"])                        # the ticket keeps its own submit key
 
@@ -604,62 +612,119 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertIn("if (e.key === 'Enter' && plain) { e.preventDefault(); parse(); return; }", src)
         self.assertIn("ui.parseBtn.addEventListener('click', function () { parse(); });", src)
         self.assertIn("ui.bar.addEventListener('input', function () { S.text = ui.bar.value; paintActions(S); });", src)
+        # an alternative applies only while the box holds exactly the text last read (else: press Enter to read it again, then pick)
+        self.assertEqual("choose", _enclosing(fns, src.index("if (read == null || ui.bar.value !== S.parsedFrom) {")))
 
-    def test_orders_are_posted_only_by_the_send_loop_after_the_confirm(self):
+    def test_the_smart_ticket_page_posts_no_order(self):
+        """SIMPLIFY_PLAN s3.1 item 9: the page's only request other than a GET is the parse; it names no order, preview, cancel, replace or
+        strategies route and no ``st:`` request id; T.ticket.open is reached only from one card's or one group's click (or a flag's own
+        action the owner clicked), always as a NEW order (``fresh: true``) on the account's page."""
         src = read(SMART)
         fns = _functions(src)
-        # exactly one order submit, inside post(); every other /api/orders path is the preview or the cancel batch
-        submit = "T.api.post('/api/orders' + bookQ(it.book), body, opts)"
-        self.assertEqual(1, src.count(submit))
-        self.assertEqual("post", _enclosing(fns, src.index(submit)))
-        others = sorted(set(re.findall(r"'/api/orders[^']*'", src)))
-        self.assertEqual(["'/api/orders'", "'/api/orders/'", "'/api/orders/cancel'", "'/api/orders/preview'"], others)
-        # fifth review: '/api/orders/' + id is only READ (a shares order's own state, for the cancel confirm's notes)
-        self.assertEqual(["look"], [_enclosing(fns, m.start()) for m in re.finditer(r"'/api/orders/' \+", src)])
-        self.assertEqual("shareOrderWorks", _enclosing(fns, src.index("function look(oid, n) {") - 1))    # look() is shareOrderWorks' own
-        self.assertIn("return T.api.get('/api/orders/' + encodeURIComponent(oid)).then(function (o) {", src)
-        # post() is called only by the send loop: a send, the moved-price Accept and the large-order Confirm
-        callers = sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])post\(S, it, ", src)})
-        self.assertEqual(["askConfirm", "askStale", "sendOne"], callers)
-        # the loop starts only from the confirm's "Send N orders" (Back focused: T.ui.modal would focus the primary button)
-        starts = [_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])sendAll\(S, list, sigs, pvids\)", src)]
-        self.assertEqual(["submit"], starts)
-        self.assertIn("{ label: label, cls: 'primary', id: 'smart-send', onClick: function (m, btn) { btn.disabled = true; m.close(); sendAll(S, list, sigs, pvids); } }", src)
-        # 1.0.7.2 second review: the preview each order was confirmed with (taken when the confirm opens) is the one its POST carries, so a
-        # price that moved against the owner since the confirm comes back PREVIEW_STALE and asks again - never a preview taken after the click
-        self.assertEqual("submit", _enclosing(fns, src.index("var pvids = list.map(confirmedPv);")))
-        self.assertEqual("sendAll", _enclosing(fns, src.index("list.forEach(function (it, i) { it.cpv = (pvids && pvids[i]) || null; });")))
-        self.assertEqual("bodyOf", _enclosing(fns, src.index("var pid = it.cpv || ")))
-        # what goes is exactly what was confirmed: nothing is edited or read while the confirm is open, and Send checks each item's terms
-        self.assertIn("var changed = list.some(function (it, i) { return S.items.indexOf(it) < 0 || it.sent || it.moved || !it.sel || it.sig !== sigs[i]; });", src)
-        self.assertIn("return !!(it && it.base && !it.sent && !it.moved && !S.sending && !S.confirming);", src)
-        self.assertIn("var back = h.el.querySelector('#smart-back');", src)
-        self.assertIn("back.focus()", src)
-        self.assertIn("sticky: true", src)
-        # strictly one at a time: the next item is taken only when the previous one answered
-        self.assertIn("sendOne(S, it).then(function (outcome) {", src)
-        self.assertIn("if (outcome === 'sent') { run.sent++; run.i++; next(S); }", src)
-        # the request id: st:<ticket12>:<L|C><n>:r<rev>; the ticket id is the page's (T.uuid without dashes, 12 hex), never the text's
-        self.assertIn("return 'st:' + S.ticket + ':' + it.key + ':r' + it.rev;", src)
-        self.assertIn("function newTicket() { return String(T.uuid()).replace(/-/g, '').toLowerCase().slice(0, 12); }", src)
-        self.assertIn("b.smart = { ticket: S.ticket, item: it.key, clause: clauseOf(it) };", src)
-        # an edit makes a new revision (never a reused id for other terms); a large order is confirmed only by the owner's click
-        self.assertIn("it.rev = r ? r.rev + 1 : 1;", src)
-        self.assertEqual(["askConfirm"], [_enclosing(fns, m.start()) for m in re.finditer(r"confirm_large: true", src)])
-        self.assertIn("{ label: 'Confirm and send', cls: 'primary', id: 'smart-confirm-large', value: 'confirm' }", src)
-        self.assertIn("var stop = h.el.querySelector('#smart-stop');", src)
-        # a single order reconciles a lost answer through T.api (status=all) - third review: only when the order under its id has its
-        # terms (else REQUEST_ID_REUSED); a combination looks up rid, rid:L1 and rid:H1 itself and records its own order, never a waiting leg
-        self.assertIn("opts.match = function (o, list) { var ok = sameTerms(it.req || body, list, rid); if (!ok) { lostHit = o; } return ok; };", src)
-        self.assertIn("return reconcileCombo(S, it, rid, body, lostHit ? null : e); }", src)
-        self.assertIn("var hit = by[rid] || by[rid + ':L1'] || by[rid + ':H1'] || null;", src)
-        self.assertIn("if (found && typeof opts.match === 'function' && !opts.match(found, list)) {", read(os.path.join(STATIC, "core.js")))
-        # the docked ticket opens only on the order's account page, never on #/smart
-        self.assertEqual(["openTicket"], [_enclosing(fns, m.start()) for m in re.finditer(r"T\.ticket\.open\(", src)])
+        self.assertEqual(["T.api.post(PARSE"], re.findall(r"T\.api\.post\(\w*", src))
+        for verb in ("T.api.patch", "T.api.put", "T.api.del", "T.api.mutate", "T.api.request", "fetch(", "XMLHttpRequest"):
+            self.assertNotIn(verb, src, verb)
+        self.assertEqual([], re.findall(r"/api/(?:orders|strategies|hedges)\b[^']*", src))
+        self.assertNotIn("'st:'", src)
+        self.assertIsNone(re.search(r"request_id|X-Request-Id", src, re.I))
+        # the hand-off: one T.ticket.open, in handTicket, always fresh (nothing of an order typed there before rides along)
+        self.assertEqual(["handTicket"], [_enclosing(fns, m.start()) for m in re.finditer(r"T\.ticket\.open\(", src)])
+        self.assertIn("var f = Object.assign({}, fields || {}, { fresh: true, account_id: acct });", src)
         self.assertIn("var off = T.state.on('route', function (route) { off(); if (route && route.account === acct) { T.ticket.open(f); } });", src)
-        # what this ticket sent is cancelled by its request-id prefix, one batch per book
-        self.assertIn("var prefix = 'st:' + S.ticket + ':';", src)
-        self.assertIn("T.api.post('/api/orders/cancel' + bookQ(bt.book), { order_ids: bt.ids, reason: reason }, { request_id: 'mc:' + hex12() })", src)
+        self.assertIn("T.router.go(T.router.account(acct, 'markets'));", src)
+
+        def callers(name):
+            return sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])%s\(" % name, src)})
+        self.assertEqual(["openCard", "openOwnTicket", "openStrategies"], callers("handTicket"))
+        self.assertEqual(["onClick"], callers("openCard"))
+        self.assertEqual(["onClick", "runAction"], callers("openStrategies"))
+        self.assertEqual(["runAction"], callers("openOwnTicket"))
+        self.assertEqual(["onClick"], callers("runAction"))
+        self.assertIn("page.addEventListener('click', onClick);", src)
+        # one card at a time: Open in ticket opens the card its button names, never a walk over the cards
+        self.assertIn("if (act === 'open') { if (c) { openCard(S, c); } return; }", src)
+        self.assertNotIn("S.cards", src[src.index("function openCard("):src.index("function openStrategies(")])
+
+    def test_open_in_ticket_has_every_gate(self):
+        """Open in ticket opens a card only when the reading is not in flight, the box holds the text last read, a restored draft was read
+        again, the instruction has no red flag and no unread word, the card and its group have no red flag, its order is complete and
+        the order ticket takes its kind; the button is disabled with the reason as its title, and the click checks the same gates again."""
+        src = read(SMART)
+        fns = _functions(src)
+        block = src[src.index("function readBlock(S) {"):src.index("function canEdit(S, c)")]
+        for s in ("if (S.parsing) { return 'still reading the text'; }",
+                  "if (!S.parsed) { return 'nothing read yet: type what you want to trade and press Enter'; }",
+                  "if (S.restored) { return 'restored from this browser: press Enter to read the text again first (orders may have been sent since)'; }",
+                  "if (ui && ui.bar.value !== S.parsedFrom) { return 'the text changed since it was read: press Enter to read it again'; }",
+                  "var why = readBlock(S); if (why) { return why; }",
+                  "var ib = instrBlocker(S); if (ib) { return 'the instruction has a red flag: ' + (ib.text || 'see the chips under the text'); }",
+                  "if ((S.parsed.unparsed || []).length) { return 'FinSim could not read the underlined words: change or remove them, then press Enter'; }",
+                  "var b = firstBlocker(c.leg.flags); if (b) { return b.text || 'a red flag'; }",
+                  "var gb = c.group ? firstBlocker(c.group.flags) : null; if (gb) { return 'its group has a red flag: ' + (gb.text || 'see the group'); }",
+                  "if (!c.leg.request) { return 'not complete: see its flags'; }",
+                  "var v = orderValidity(c, o); if (v) { return v; }",
+                  "if (!TICKET_TAKES[k]) { return 'the order ticket does not take '",
+                  "if (!o.account_id || !o.instrument_id) { return 'no account or instrument read'; }"):
+            self.assertIn(s, block, s)
+        self.assertEqual("openBlock", _enclosing(fns, src.index("var why = readBlock(S); if (why) { return why; }")))
+        # the button is disabled with the reason; the click checks again; the Strategies tab and a product's own ticket need the reading too
+        self.assertIn("data-act=\"open\" data-w=\"c' + c.i + '\"' + (why ? ' disabled' : '')", src)
+        self.assertIn("var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }", src)
+        self.assertEqual("openCard", _enclosing(fns, src.index("var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }")))
+        self.assertEqual(["openOwnTicket", "openStrategies"],
+                         sorted(_enclosing(fns, m.start()) for m in re.finditer(r"var why = readBlock\(S\); if \(why\) \{ say\(S, why, 'err'\); paint\(S\); return; \}", src)))
+        # the gates follow the box: typing repaints the cards whenever what the text allows changes
+        self.assertIn("if (readBlock(S) !== S.gate) { paintRead(S); paintCards(S); }", src)
+        # the card's "opened in the ticket" mark: set by the hand-off, dropped by an edit, kept on a new reading only for identical terms
+        self.assertIn("S.opened[c.key] = { at: Math.floor(T.clock.now()), sig: sigOf(o) };", src)
+        self.assertIn("delete S.opened[c.key];", src)
+        self.assertIn("var op = oldOpened[c.key]; if (op && op.sig === sigOf(now)) { opened[c.key] = op; }", src)
+
+    def test_the_ticket_takes_trail_and_covered_from_a_prefill(self):
+        """components/ticket.js (SIMPLIFY_PLAN s3.2): a prefill's trail_pct / trail_amt fill the trail (a percent sets the % mode); covered:
+        true marks a call sold to open 'sold as covered' (one ticked line) - for any other order it is ignored, and a new instrument, a
+        Close, a fresh order without it and an amend / replace drop it; the preview and the submit then carry covered: true."""
+        src = read(os.path.join(STATIC, "components", "ticket.js"))
+        self.assertEqual((0, 0, 0), js_balance(src))
+        for s in ("if (f.trail_pct != null && String(f.trail_pct) !== '') { st.trail_mode = 'pct'; st.trail_pct = String(f.trail_pct); st.trail_amt = ''; }",
+                  "else if (f.trail_amt != null && String(f.trail_amt) !== '') { st.trail_mode = 'amt'; st.trail_amt = String(f.trail_amt); st.trail_pct = ''; }",
+                  "function coveredOk() { return !st.mode && !st.hedge_pos && st.side === 'STO' && isCall(); }",
+                  "if (f.covered === true && coveredOk()) { st.covered = true; st.covered_offer = true; }",
+                  "else if (f.fresh || f.close || newInst) { st.covered = false; st.covered_offer = false; }",
+                  "if (st.covered && coveredOk()) { b.covered = true; }",
+                  "if (st.mode === 'amend' && st.mode_order) { b.amend_of = st.mode_order.order_id; delete b.hedge; delete b.covered; }",
+                  "if (st.mode === 'replace' && st.mode_order) { b.replace_of = st.mode_order.order_id; delete b.hedge; delete b.covered; }",
+                  "ui.covered = T.h('input', { type: 'checkbox', id: 'ticket-covered', 'aria-label': 'sold as covered' });",
+                  "show('covered', !!st.covered_offer && coveredOk());",
+                  "if (st.covered && !coveredOk()) { st.covered = false; }"):
+            self.assertIn(s, src, s)
+        # the claim is decided after the side settles (a call sold to open), the trail before
+        apply_ = src[src.index("  function apply(fields) {"):src.index("  function resetOrder() {")]
+        self.assertLess(apply_.index("if (f.trail_pct != null"), apply_.index("settleSide();"))
+        self.assertLess(apply_.index("settleSide();"), apply_.index("if (f.covered === true && coveredOk())"))
+
+    def test_a_fresh_prefill_starts_a_new_order(self):
+        """components/ticket.js: open({fresh: true, ...}) - the Smart Ticket's hand-off - leaves an amend / replace or a hedge-this-position
+        mode and calls resetOrder() BEFORE the fields are applied, so no limit, stop, trail, time in force, GTD date, hedge pick, package,
+        FX conversion or claim of the order typed there before rides along, even on the same instrument; hedge_tab (with hedge: true)
+        opens the hedge panel on that tab."""
+        src = read(os.path.join(STATIC, "components", "ticket.js"))
+        apply_ = src[src.index("  function apply(fields) {"):src.index("  function resetOrder() {")]
+        fresh = ("    if (f.fresh) {\n      if (st.mode) { leaveOrderMode(); }\n      if (st.hedge_pos) { leavePositionMode(); }\n"
+                 "      resetOrder(); st.result = null; T.clear(ui.result); paintPreview();\n      st.hedgeOpen = false; st.hedge_for = null;\n    }\n")
+        self.assertIn(fresh, apply_)
+        self.assertLess(apply_.index(fresh), apply_.index("/* 2. the caller's fields */"))
+        self.assertIn("st.hedge_for = f.hedge_for || (newInst || f.close || f.fresh ? null : st.hedge_for);", apply_)
+        self.assertIn("if (f.hedge && f.hedge_tab && hedge) { hedge.tab(String(f.hedge_tab)); }", apply_)
+        reset = src[src.index("  function resetOrder() {"):src.index("  /* ---- hedge this position")]
+        for s in ("st.qty = 0; st.order_type = 'MARKET'; st.limit_px = ''; st.stop_px = ''; st.trail_mode = 'amt'; st.trail_amt = ''; st.trail_pct = ''; st.tif = 'DAY'; st.gtd_date = '';",
+                  "st.side_req = null; st.close_req = null; st.side_err = null; st.fx_convert = false;",
+                  "st.hedge = null; st.hedge_cand = null; st.package_spec = null; st.covered = false; st.covered_offer = false;",
+                  "if (hedge && hedge.picked && hedge.picked()) { hedge.none(); }"):
+            self.assertIn(s, reset, s)
+        # the hedge panel takes the tab it is asked for (the Smart Ticket's "Strategies tab" of a group)
+        self.assertIn("tab: function (k) { if (k) { st.tab = k; paint(); if (k === 'strategies') { loadCatalogue(); } } return st.tab; },",
+                      read(os.path.join(STATIC, "components", "hedge.js")))
 
     def test_pending_mass_cancel(self):
         src = read(os.path.join(STATIC, "pages", "pending.js"))
@@ -698,74 +763,13 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertIn("var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];", inst)
         self.assertEqual((0, 0, 0), js_balance(inst))
 
-    def test_smart_all_or_none_check_and_cancel_paging(self):
-        """1.0.7.2 fourth review: an all-or-none combination goes only at the net cash its confirm listed (within the server's moved-price
-        rule) and within a preview's life on the server's clock, else it is not sent and stays staged; "Cancel what this ticket sent"
-        reads every page of the open orders (2000 a read) and keeps a primary with its legs in one batch."""
-        src = read(SMART)
-        fns = _functions(src)
-        self.assertEqual("submit", _enclosing(fns, src.index("list.forEach(function (it) { it.cbase = confirmedTotals(it); });")))
-        self.assertEqual("sendOne", _enclosing(fns, src.index("var why = aonMoved(it, fr.spec);")))
-        self.assertIn("return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null, opt: it.fill_mode === 'SEQUENTIAL' ?"
-                      " seqOptionsCash(it.spec) : null };", src)
-        self.assertIn("if (at0 > 0 && at1 > 0 && at1 - at0 > ttl) {", src)
-        self.assertIn("if (worse > 0 && (n0 === 0 || worse > Math.abs(n0) * pct)) {", src)
-        self.assertIn("it.result = { state: 'skipped', text: 'not sent: ' + why + '; it stays staged with its new figures - submit it again to confirm them' };", src)
-        self.assertIn("var OPEN_PAGE = 2000, OPEN_PAGES = 100;", src)
-        self.assertIn("{ status: 'open', limit: OPEN_PAGE, offset: k * OPEN_PAGE }", src)
-        self.assertEqual("cancelSent", _enclosing(fns, src.index("return openOrdersOf(a).then(function (rows) {")))
-        self.assertIn("var key = b + ' ' + (o.parent_order_id && placed[o.parent_order_id] ? o.parent_order_id : o.order_id);", src)
-        # the server's package preview carries its time and the moved-price rule
-        from finsim.terminal import api_products
-        with open(api_products.__file__, encoding="utf-8") as f:
-            ap = f.read()
-        self.assertIn('body["previewed_at"] = int(req.rt.clock.epoch())', ap)
-        self.assertIn('body["stale_rule"] = {"moved_pct": str(config.PRICE_MOVED_PCT), "ttl_s": int(config.PREVIEW_TTL_S)}', ap)
-
-    def test_smart_fifth_review(self):
-        """1.0.7.2 fifth review: an all-or-none combination is held to its confirm after the large-order question too (askConfirm takes a
-        fresh package preview and the same check as sendOne); a choice goes into the text in the bar only where its own words are unchanged
-        since the last read; a trailing stop is matched on its trail (its stop is the server's level), a trail percent as the server keeps
-        it; a lost answer whose order does not read as the item's is named, never "nothing was sent" with a new revision; the cancel
-        confirm words an unlisted hedge leg from its shares order's own state."""
-        src = read(SMART)
-        fns = _functions(src)
-        self.assertEqual(["askConfirm", "sendOne"], sorted(_enclosing(fns, m.start()) for m in re.finditer(r"var why = aonMoved\(it, fr\.spec\);", src)))
-        self.assertEqual("askConfirm", _enclosing(fns, src.index("if (!isAon(it)) { return post(S, it, again, rid); }")))
-        self.assertEqual("choose", _enclosing(fns, src.index("if (S.parsedFrom != null && bar !== S.parsedFrom) {")))
-        self.assertIn("say(S, 'the words of this order changed since they were read: press Enter to read the text again, then pick the alternative', 'err');", src)
-        self.assertIn("(type === 'TRAILING_STOP' || px(o.stop_px, r.stop_px))", src)
-        self.assertIn("pct(o.trail_pct, r.trail_pct)", src)
-        self.assertEqual("reconcileCombo", _enclosing(fns, src.index("if (hit && !err) {")))
-        self.assertNotIn("bumpRev", src[src.index("if (hit && !err) {"):src.index("if (hit) {", src.index("if (hit && !err) {"))])
-        self.assertEqual("cancelSent", _enclosing(fns, src.index("note = ' (its shares order has ended: cancelled now)';")))
-        self.assertIn("return shareOrderWorks(o.parent_order_id, openAll).then(function (live) { o.$shareLive = live; });", src)
-
-    def test_smart_seventh_review(self):
-        """1.0.7.2 seventh review: a choice picked after the text was changed is taken from a new reading of the text as it now reads (the
-        same flag at the same words, the same label), never put into words the server did not check it against; a sequential combination
-        carries the cash its options at market had in the preview its confirm listed (seq_confirmed), and a refusal to place it at a moved
-        price keeps it staged like an all-or-none one; a covered call or collar's request is sent as it was read (covered: true)."""
-        src = read(SMART)
-        fns = _functions(src)
-        self.assertEqual("choose", _enclosing(fns, src.index("S.redo = { seq: S.pseq + 1, code: f.code, at: at, label: String(ch.label || ''), was: short(ch.label || ch.clause, 60) };")))
-        self.assertNotIn("text = bar;", src[src.index("function choose("):src.index("function runAction(")])
-        self.assertEqual("redoChoice", _enclosing(fns, src.index("if (f.code !== rd.code || !Array.isArray(f.span) || Number(f.span[0]) !== rd.at) { return; }")))
-        self.assertIn("if (rd && rd.seq === seq) { redoChoice(S, rd); }", src)
-        self.assertIn("if (S.redo && S.pseq !== S.redo.seq) { S.redo = null; }", src)          # a reading that did not start keeps no pick for later
-        self.assertEqual("bodyOf", _enclosing(fns, src.index("b.seq_confirmed = { options_cash: it.cbase.opt, previewed_at: it.cbase.at };")))
-        self.assertIn("if (e && (e.code === 'AON_NOT_PLACED' || e.code === 'SEQ_NOT_PLACED')) {", src)
-        self.assertEqual("seqOptionsCash", _enclosing(fns, src.index("return (legs.reduce(function (s, l) { return s + l.cash_c; }, 0) / 100).toFixed(2);")))
-        self.assertEqual((0, 0, 0), js_balance(src))
-        from finsim.terminal import api_products, smart_ticket
-        self.assertIn("seq_confirmed", api_products.RESEND_KEYS)
-        self.assertEqual("blocker", smart_ticket.FLAG_SEVERITY["COVER_TAKEN"])
-
     def test_smart_css_uses_the_tokens_only(self):
         css = read(NEW_CSS)
         block = css[css.index("/* ---- the Smart Ticket (#/smart"):]
-        for cls in ("smart-bar", "smart-chip", "smart-unparsed", "smart-grid", "smart-confirm", "smart-status", "smart-warn", "smart-dialog"):
+        for cls in ("smart-bar", "smart-chip", "smart-unparsed", "smart-grid", "smart-group", "smart-card", "smart-opened", "smart-was", "smart-status", "smart-warn"):
             self.assertRegex(block, r"\.%s[\s,.{:>\[]" % re.escape(cls), cls)
+        for gone in ("smart-confirm", "smart-dialog"):                                 # 1.0.7.2 simplified: no confirm of its own
+            self.assertNotIn("." + gone, block)
         self.assertIsNone(re.search(r"#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(", block), "a new colour in the Smart Ticket's CSS")
         self.assertTrue(all(m.startswith(".smart-") for m in re.findall(r"(?m)^(\.[a-z-]+)", block)))
 

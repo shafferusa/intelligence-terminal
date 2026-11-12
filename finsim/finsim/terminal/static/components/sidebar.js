@@ -145,7 +145,7 @@
     }
     nav.appendChild(item('#/watchlists', 'Watchlists', { key: keyOf('page.watchlists') }));
     /* 1.0.7.2: the Smart Ticket closes the TRADING group (Ctrl+F9; NOT YET BUILT while its page file is not in the build) */
-    nav.appendChild(item('#/smart', 'Smart Ticket', { key: keyOf('page.smart'), prefix: '#/smart', title: 'Smart Ticket: type what you want to trade; nothing is sent until you confirm' }));
+    nav.appendChild(item('#/smart', 'Smart Ticket', { key: keyOf('page.smart'), prefix: '#/smart', title: 'Smart Ticket: type what you want to trade; FinSim fills the order tickets' }));
     /* the trade blotters, the accounts, cash & collateral, derivatives, history, settings */
     nav.appendChild(T.h('div', { class: 'nav-section' }, 'Fund'));
     nav.appendChild(item('#/pending', 'Pending Trades', { key: keyOf('page.pending'), prefix: '#/pending', badge: b.pending, badgeCls: 'count', badgeTitle: b.pendingTitle,
