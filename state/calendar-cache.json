@@ -1,46 +1,30 @@
 {
-  "fetched": "2026-11-11T06:49:03-05:00",
+  "fetched": "2026-11-12T06:45:27-05:00",
   "earnings_fetched": "2026-11-01",
   "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
   "events": [
     {
-      "ts_et": "2026-11-11T09:30",
-      "type": "market",
-      "name": "Veterans Day: stocks open, bond market closed (SIFMA), federal offices closed",
-      "importance": "Medium",
-      "reason": "No Treasury curve/EDGAR today",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-11T16:00",
-      "type": "earnings",
-      "name": "Corteva (amc), NIO",
-      "importance": "Low",
-      "reason": "Ag/EV",
-      "source": "finnhub"
-    },
-    {
-      "ts_et": "2026-11-11T21:35",
-      "type": "launch",
-      "name": "Falcon 9 USSF-627 (Vandenberg)",
-      "importance": "Low",
-      "reason": "NSSL",
-      "source": "thespacedevs"
-    },
-    {
       "ts_et": "2026-11-12T08:30",
       "type": "data",
-      "name": "Initial jobless claims",
+      "name": "Initial jobless claims (wk to Nov 7)",
       "importance": "Medium",
-      "reason": "Prior 189K; no consensus found",
+      "reason": "Consensus 194-195K; prior 189K",
       "source": "research"
     },
     {
       "ts_et": "2026-11-12T09:00",
       "type": "fed",
-      "name": "Cleveland Fed Hammack speaks",
-      "importance": "Medium",
-      "reason": "Post-CPI Fed tone",
+      "name": "Fed speakers: Hammack 9:00, Barr 10:00, Goolsbee 11:30, Daly 13:10, Schmid 13:30, Williams 18:30",
+      "importance": "High",
+      "reason": "Pre-December hike signals; list from one schedule",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-12T10:00",
+      "type": "data",
+      "name": "Existing home sales (Oct)",
+      "importance": "Low",
+      "reason": "Housing",
       "source": "research"
     },
     {
@@ -100,6 +84,14 @@
       "source": "thespacedevs"
     },
     {
+      "ts_et": "2026-11-17T00:00",
+      "type": "earnings",
+      "name": "Nvidia earnings (date per one source)",
+      "importance": "Critical",
+      "reason": "CEO crisis + AI bellwether",
+      "source": "research"
+    },
+    {
       "ts_et": "2026-11-18T00:00",
       "type": "ipo",
       "name": "Anthropic IPO pricing (ANT), trading Nov 19",
@@ -126,5 +118,5 @@
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
   "fomc_next": "2026-12-09",
-  "holiday_note": "2026-11-01: no NYSE holiday or early close Nov 2-6 (data/nyse-holidays.json). Clocks fell back Nov 1; times now EST."
+  "holiday_note": "2026-11-12: no NYSE holiday or early close this week (data/nyse-holidays.json). Bond market reopened after Veterans Day."
 }

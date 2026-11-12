@@ -7061,6 +7061,36 @@
       "probability": "60-75%",
       "basis": "Press consensus ~$18.1B; AI networking demand; Cisco's record of meeting guidance.",
       "status": "open"
+    },
+    {
+      "id": "2026-11-12-am-1",
+      "date": "2026-11-12",
+      "slot": "am",
+      "forecast": "Nvidia (NVDA) closes at or below $166.78 (at least 4% below its Nov 11 close of $173.73) on Thu Nov 12, 2026.",
+      "horizon": "2026-11-12",
+      "probability": "65-80%",
+      "basis": "Indicated about -7% premarket (after-hours -8.6%) on WSJ/CBS/CNBC reports that the board is preparing to remove CEO Jensen Huang; no board decision announced.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-12-am-2",
+      "date": "2026-11-12",
+      "slot": "am",
+      "forecast": "Nvidia announces a change of chief executive (permanent or interim) by Fri Nov 20, 2026.",
+      "horizon": "2026-11-20",
+      "probability": "45-65%",
+      "basis": "Multiple outlets report the board is preparing to oust Huang, has met on it and has worked with an outside firm on successors; no decision after the Nov 11 meeting; earnings due next week.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-12-am-3",
+      "date": "2026-11-12",
+      "slot": "am",
+      "forecast": "The Nasdaq Composite underperforms the Dow Jones Industrial Average on Thu Nov 12, 2026 (lower percentage change).",
+      "horizon": "2026-11-12",
+      "probability": "70-85%",
+      "basis": "At 6:28 AM NQ futures -0.83% vs YM +0.05%, with Nvidia's weight concentrated in the Nasdaq.",
+      "status": "open"
     }
   ]
 }
