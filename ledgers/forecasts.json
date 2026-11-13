@@ -7171,6 +7171,36 @@
       "probability": "25-45%",
       "basis": "No FAA license announced as of Nov 12; dual-catch needs modified license",
       "status": "open"
+    },
+    {
+      "id": "2026-11-13-pm-1",
+      "date": "2026-11-13",
+      "slot": "pm",
+      "forecast": "The 10-year Treasury par yield closes at or above 5.00% on Mon Nov 16, 2026 (Nov 13: 5.15%).",
+      "horizon": "2026-11-16",
+      "probability": "75-88%",
+      "basis": "Friday par close 5.15%; hawkish Fed chorus all week; 2Y +37bp on the week",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-13-pm-2",
+      "date": "2026-11-13",
+      "slot": "pm",
+      "forecast": "October retail sales (released Tue Nov 17, 2026) headline is 0.0% m/m or higher.",
+      "horizon": "2026-11-17",
+      "probability": "60-75%",
+      "basis": "Consensus +0.2% (Newsquawk), NRF Retail Monitor +0.2%; FXStreet expects flat",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-13-pm-3",
+      "date": "2026-11-13",
+      "slot": "pm",
+      "forecast": "Japan confirms yen-buying FX intervention by Fri Nov 20, 2026.",
+      "horizon": "2026-11-20",
+      "probability": "20-35%",
+      "basis": "USD/JPY 160.00 ECB fix; Katayama 'one-sided and rapid', coordinating with US Treasury; no official signal of imminent action",
+      "status": "open"
     }
   ]
 }
