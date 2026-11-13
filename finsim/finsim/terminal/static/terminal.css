@@ -437,6 +437,7 @@ table.kb-table tr.kb-changed td.key kbd { border-color: var(--accent); color: va
 .smart-flagbox.sev-blocker { border-left-color: var(--down); }
 .smart-flagbox.sev-check { border-left-color: var(--warn); }
 .smart-choices div { margin: 3px 0; overflow-wrap: anywhere; }
+.smart-flagbox .btn { white-space: normal; max-width: 100%; text-align: left; overflow-wrap: anywhere; }   /* simplify round 3: a long alternative wraps inside its card */
 .smart-card-foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 5px; }
 .smart-why { font-size: 10.5px; color: var(--fg3); }
 .smart-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 4px; font-size: 11px; }

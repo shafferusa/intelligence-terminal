@@ -79,6 +79,11 @@
  *   for the ticket).  A Submit's answer that comes after the ticket moved on to another order is never painted on it and never opens a
  *   dialog over it: a toast names the order it was for and says what happened (placed, refused, NOT placed: a large order to confirm
  *   or a moved price - open it again).  The large-order question and the moved-price line name their order.
+ * FinSim 1.0.7.2 simplify round 3: an answer for the order the ticket still shows that comes while the ticket is out of sight (the dock
+ *   hidden: the owner went back to the Smart Ticket; or another ticket in the dock) is painted on the ticket as always and also said
+ *   in a toast naming its order (placed, refused, NOT placed: a moved price, a lost answer), so the next order filled in never clears
+ *   it unseen.  A fresh hand-off writes its instrument into the symbol box (a symbol typed there and not resolved never stays beside
+ *   another order), and a look-up answered after another order was filled in is dropped.
  * Keys inside the ticket (focus inside the dock; typing fields take only the box actions preview / submit / clear) are the
  * registry's ticket actions (keys.js, Settings > Keyboard; defaults = the 1.0.3 keys): b s x c sides, m l k j r types,
  * = + - _ qty by lot (the numpad + / - one lot, Shift ten), h hedge panel, 1..5 pick a candidate / 0 none, Enter preview,
@@ -385,6 +390,9 @@
       resetOrder(); st.result = null; T.clear(ui.result); paintPreview();
       if (hedge && hedge.reset) { hedge.reset(); }        /* simplify round 2: nor a template picked on the Strategies tab, its parameters or package */
       st.hedgeOpen = false; st.hedge_for = null;
+      /* simplify round 3 (R-4): the symbol box names the order filled in, also on the same instrument - a symbol typed there and not
+         resolved never stays beside another order; its look-up still to come is dropped */
+      clearTimeout(st.taTimer); st.taTimer = null; ui.inst.value = id || st.instrument_id || ''; ui.dd.hidden = true;
     }
     if (st.mode && (id || f.side || f.close || f.qty != null)) { leaveOrderMode(); }
     /* 0. hedge this position (USX-12): no primary order at all; anything else leaves that mode */
@@ -541,8 +549,10 @@
     var txt = ui.inst.value.trim().toUpperCase(); if (!txt) { return; }
     if (txt === st.instrument_id) { runPreview(true); return; }
     st.resolving = true; paintStatus('resolving ' + txt + ' ...');
+    var gen = st.gen;                                 /* simplify round 3: a look-up answered after another order was filled in never replaces it */
     T.api.getReady('/api/instruments/resolve', { symbol: txt }, 10).then(function (r) {
       st.resolving = false;
+      if (gen !== st.gen) { return; }
       var inst = r && (r.instrument || r);
       var id = inst && (inst.instrument_id || inst.id);
       if (!id) { paintStatus('resolve: no instrument in the answer', 'err'); return; }
@@ -553,14 +563,16 @@
       runPreview(true);
     }, function (e) {
       st.resolving = false;
+      if (gen !== st.gen) { return; }
       /* the resolver knows Yahoo symbols; a CUSIP, a pair or a company name is in the master: the first search hit is used */
       T.api.get('/api/instruments', { q: txt, limit: 5 }).then(function (rows) {
+        if (gen !== st.gen) { return; }
         var list = Array.isArray(rows) ? rows : (rows && rows.rows) || [];
         var hit = list.filter(function (r) { return String(r.symbol || '').toUpperCase() === txt || String(r.instrument_id || '').toUpperCase() === txt || String(r.instrument_id || '').toUpperCase().indexOf(txt) >= 0; })[0];
         if (hit && handOff(hit.instrument_id, hit)) { return; }
         if (hit) { cacheInst(hit.instrument_id, hit); setInstrument(hit.instrument_id, hit); runPreview(true); return; }
         paintStatus('resolve ' + txt + ': ' + T.api.describe(e), 'err');
-      }, function () { paintStatus('resolve ' + txt + ': ' + T.api.describe(e), 'err'); });
+      }, function () { if (gen === st.gen) { paintStatus('resolve ' + txt + ': ' + T.api.describe(e), 'err'); } });
     });
   }
   function typeahead() {
@@ -912,6 +924,11 @@
     T.ui.toast('the answer for ' + words + ' came after the ticket moved on to another order: ' + msg, cls, 15000);
     ['orders', 'positions', 'account_detail', 'accounts', 'attention'].forEach(function (p) { T.poll.kick(p); });
   }
+  /* simplify round 3: an answer for the order the ticket still shows, while the ticket is out of sight (the dock hidden - the owner went
+     back to the Smart Ticket or to a page without an account - or another ticket in the dock): painted on the ticket as always AND said
+     in a toast naming its order, so it is never seen only by a hidden ticket that the next order filled in may clear */
+  function outOfSight() { return !(T.dock && T.dock.visible && T.dock.visible()) || !(ui && ui.root && ui.root.isConnected); }
+  function unseenAnswer(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while its ticket was out of sight: ' + msg, cls, 15000); } }
   function send(body, rid, kind) {
     var gen = st.gen, words = orderWords(kind);
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
@@ -927,6 +944,8 @@
           ((res && res.order && res.order.status) || (res && res.package && res.package.status) || '') + ' (see Pending Trades)', 'ok');
         return;
       }
+      unseenAnswer(outOfSight(), words, (res && res.replayed ? 'already submitted . ' : '') + 'order ' + ((res && res.order && res.order.order_id) || (res && res.package && res.package.package_id) || '') + ' ' +
+        ((res && res.order && res.order.status) || (res && res.package && res.package.status) || '') + ' (see Pending Trades)', 'ok');
       /* an amend / replace is done: the fields go back to an empty order of this instrument (a second Submit never repeats it) */
       if (kind === 'amend' || kind === 'replace') { resetOrder(); paintFields(); }
       st.submitting = false; st.result = res; st.result_kind = kind; st.preview = null; st.stale = null;
@@ -948,15 +967,19 @@
         return;
       }
       st.submitting = false;
+      var away = outOfSight();
       if (e && e.name === 'LostResponse') {
         st.result = { lost: true, message: e.message, request_id: rid }; st.result_kind = kind;
-        paintResult(); paintSubmit(); paintStatus('lost response: ' + e.message, 'err'); T.poll.kick('orders'); return;
+        paintResult(); paintSubmit(); paintStatus('lost response: ' + e.message, 'err'); T.poll.kick('orders');
+        unseenAnswer(away, words, 'its answer was lost (' + e.message + '): see Pending Trades', 'err'); return;
       }
       var d = detailsOf(e);
       if (e.code === 'PREVIEW_STALE') {
         if (d.preview && typeof d.preview === 'object' && d.preview.execution) { st.preview = d.preview; st.preview_body = JSON.stringify(previewBody()); st.dirty = false; }
         st.stale = { diff: d.diff || {}, rid: rid, kind: kind, body: body, fresh: d.preview || null };
-        paintPreview(); paintSubmit(); paintStatus('PREVIEW_STALE (' + words + '): ' + (e.message || ''), 'err'); return;
+        paintPreview(); paintSubmit(); paintStatus('PREVIEW_STALE (' + words + '): ' + (e.message || ''), 'err');
+        unseenAnswer(away, words, 'NOT placed: its price moved since its preview - its ticket shows the new terms to accept or cancel (another order filled in clears them)', 'err');
+        return;
       }
       if (e.code === 'CONFIRM_REQUIRED') {
         if (d.preview && typeof d.preview === 'object' && d.preview.execution) { st.preview = d.preview; st.preview_body = JSON.stringify(previewBody()); st.dirty = false; paintPreview(); }
@@ -979,6 +1002,7 @@
       }
       st.submit_err = e; paintPreview(); paintSubmit();
       paintStatus('refused: ' + T.api.describe(e), 'err');
+      unseenAnswer(away, words, 'refused: ' + T.api.describe(e), 'err');
       if (e.status === 409 && (e.code === 'QUOTE_STALE' || e.code === 'INSUFFICIENT_FUNDS')) { scheduleReprev(); }
     });
   }

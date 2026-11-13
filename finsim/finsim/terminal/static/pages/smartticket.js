@@ -34,8 +34,10 @@
  * - Alternatives replace the flag's words in the text as read, then the text is read again; they apply only while the box holds
  *   exactly the text last read (else: press Enter to read the text again, then pick).
  * - The draft (the text, its reading and its book, the edits, the notes of dropped edits, the "was" marks and the opened marks) is kept in
- *   this browser only (T.store 'smart.draft.v2');
- *   restored, it says when it was read and opens nothing until the text is read again.  New ticket clears it; nothing else does.
+ *   this browser only (T.store 'smart.draft.v2'), one per browser window (simplify round 3: in the window's sessionStorage; another
+ *   window never saves over it; a new window starts from a copy of the draft saved last, said);
+ *   restored, it says when it was read and opens nothing until the text is read again.  New ticket clears it (this window's); nothing
+ *   else does.
  * Never here: a send, submit or send-all button, a confirm of its own, a request id, a request to an order, preview, cancel, replace
  * or strategies route, a PATCH, PUT or DELETE.  The page's only POST is the parse, and T.ticket.open is called only by one card's or
  * one group's click.  The dock never opens here (no account route).  Nothing here computes a price or an amount.  ASCII only.
@@ -230,7 +232,23 @@
   }
   function canEdit(S, c) { return !!(c && c.leg.request && !S.parsing); }
 
-  /* ---------------------------------------------------------------- the draft (this browser only) ----------------- */
+  /* ---------------------------------------------------------------- the draft (this browser window only) ---------- */
+  /* simplify round 3: each browser window keeps its OWN draft, in its sessionStorage (its navigations and reloads keep it; a window
+     opened as a copy of this one starts with a copy), so another window showing the Smart Ticket never saves its draft over this
+     one's: no edit, note or "opened" mark of this window is dropped by another.  T.store STORE holds what the windows share: the
+     draft saved last in this browser (a new window starts from a copy of it, said) and the token of its drafts (gen: when it is
+     removed - site data cleared - every window's draft is dropped with it, and a window's draft from before is never read).
+     Where sessionStorage cannot be used (a page with no origin) the window's draft lives as long as the page. */
+  var WIN_KEY = 'finsim.smart.draft.window';
+  var winDraft = null;                                        /* this page's own copy, when sessionStorage cannot be used */
+  function shared() { var m = T.store.get(STORE, null); return m && m.v === 3 && typeof m.gen === 'string' && m.gen ? m : null; }
+  function ownGet() {
+    try { var v = window.sessionStorage.getItem(WIN_KEY); return v ? JSON.parse(v) : null; } catch (e) { return winDraft; }
+  }
+  function ownSet(d) {
+    winDraft = d;
+    try { window.sessionStorage.setItem(WIN_KEY, JSON.stringify(d)); } catch (e) { /* this page keeps it (winDraft) */ }
+  }
   /* the notes each card shows (the edits a reading dropped on it, its "was" marks), by card key: kept in the draft (simplify round 2) */
   function notesOf(S) {
     var out = {};
@@ -239,12 +257,19 @@
   }
   function saveState(S) {
     if (!S) { return; }
-    T.store.set(STORE, { v: 2, text: S.text, parsedFrom: S.parsedFrom, parsed: S.parsed, edits: S.edits, opened: S.opened, lost: S.lost, notes: notesOf(S),
-                         saved: Date.now() });
+    var m = shared() || { v: 3, gen: Date.now().toString(36) + Math.random().toString(36).slice(2, 10) };
+    var d = { v: 3, gen: m.gen, text: S.text, parsedFrom: S.parsedFrom, parsed: S.parsed, edits: S.edits, opened: S.opened, lost: S.lost, notes: notesOf(S),
+              saved: Date.now() };
+    ownSet(d);                                                /* this window's draft: the only one it restores */
+    m.last = d;
+    T.store.set(STORE, m);                                    /* the draft saved last in this browser: where a new window starts */
   }
   function restore(S) {
-    var d = T.store.get(STORE, null);
-    if (!d || d.v !== 2) { return false; }
+    var m = shared(); if (!m) { return false; }               /* nothing saved since this browser's drafts were cleared */
+    var d = ownGet();
+    S.copied = false;
+    if (!d || d.v !== 3 || d.gen !== m.gen) { d = m.last; S.copied = true; }      /* a new window: a copy of the draft saved last */
+    if (!d || d.v !== 3) { return false; }
     S.text = typeof d.text === 'string' ? d.text : ''; S.savedAt = d.saved || null;
     if (d.parsed && Array.isArray(d.parsed.legs) && typeof d.parsedFrom === 'string') {
       S.parsed = d.parsed; S.parsedFrom = d.parsedFrom; S.restored = true;
@@ -672,7 +697,7 @@
     var S = st; if (!S || S.dead) { return; }
     S.pseq++; S.parsing = false; S.parsed = null; S.parsedFrom = null; S.cards = []; S.edits = {}; S.opened = {}; S.lost = []; S.restored = false; S.expand = null;
     S.text = ''; ui.bar.value = '';
-    T.store.set(STORE, null);
+    saveState(S);                                             /* simplify round 3: this window's draft only; another window keeps its own */
     paint(S); say(S, 'a new ticket: the text, its reading and your edits are cleared');
     try { ui.bar.focus(); } catch (e) { /* focus is a convenience */ }
   }
@@ -680,7 +705,7 @@
     unmount();
     void route;
     var S = st = { dead: false, text: '', parsed: null, parsedFrom: null, cards: [], edits: {}, opened: {}, lost: [], pseq: 0, parsing: false, restored: false,
-                   expand: null, gate: null, savedAt: null };
+                   expand: null, gate: null, savedAt: null, copied: false };
     var page = T.h('div', { class: 'smart-page' }); el.appendChild(page);
     ui = { page: page };
     ui.newBtn = T.h('button', { class: 'btn', id: 'smart-new', title: 'clear the text, its reading and your edits', onclick: newTicketNow }, 'New ticket');
@@ -720,7 +745,11 @@
     ui.cards.addEventListener('change', onEdit);
     var restored = restore(S);
     ui.bar.value = S.text || '';
-    if (!T.modulesKnown() || T.hasModule('smart_ticket')) { say(S, restored && S.parsed ? 'restored from this browser' + (S.savedAt ? ' (saved ' + T.fmt.hm(Math.floor(S.savedAt / 1000)) + ' ET)' : '') + ': press Enter to read it again before opening an order' : ''); }
+    if (!T.modulesKnown() || T.hasModule('smart_ticket')) {
+      var when = S.savedAt ? 'saved ' + T.fmt.hm(Math.floor(S.savedAt / 1000)) + ' ET' : '';
+      say(S, restored && S.parsed ? 'restored from this browser' + (S.copied ? ' (a new window: a copy of the draft saved last' + (when ? ', ' + when : '') + ')' : (when ? ' (' + when + ')' : '')) +
+        ': press Enter to read it again before opening an order' : '');
+    }
     else { say(S, 'the Smart Ticket\'s reader is not in this build: nothing can be read', 'err'); }
     paint(S);
     try { ui.bar.focus({ preventScroll: true }); } catch (e) { /* focus is a convenience */ }

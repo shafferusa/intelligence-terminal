@@ -1225,6 +1225,13 @@ def hedge_cover_legs(services, conn, block, hedge, primary_qty: int) -> List[tup
     ``hedges.package`` sizes them (explicit ``legs`` as given; a candidate's legs, a ``ratio`` making each floor(primary qty x ratio)) -
     so the order preview runs INV-9's sequential check on them, as the order route does at Submit.  ``block``: the preview's own hedge
     candidates.  [] when there is nothing to check (no hedge, or a candidate not offered: ``_hedge_need`` says so)."""
+    return [(_leg_instrument(services, conn, l["instrument_id"].strip().upper()), l["side"], l["qty"]) for l in hedge_leg_orders(block, hedge, primary_qty)]
+
+
+def hedge_leg_orders(block, hedge, primary_qty: int) -> List[dict]:
+    """The orders a shares order's ``hedge`` will attach (``hedge_cover_legs``), as ``hedges.package`` hands them to
+    ``orders.create_hedge_children``: ``{instrument_id, side, qty, order_type, limit_px}`` (a candidate's legs carry no order type: a
+    MARKET order).  Read only."""
     if not isinstance(hedge, dict):
         return []
     ratio = None
@@ -1243,15 +1250,57 @@ def hedge_cover_legs(services, conn, block, hedge, primary_qty: int) -> List[tup
                 ratio = None
     out = []
     for l in raw:
-        iid = str(l.get("instrument_id") or "").strip().upper()
         try:
             q = int(l.get("qty") or 0)
         except (TypeError, ValueError):
             q = 0
         if ratio is not None:
             q = int((Decimal(int(primary_qty)) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
-        out.append((_leg_instrument(services, conn, iid), str(l.get("side") or "").upper(), q))
+        out.append({"instrument_id": str(l.get("instrument_id") or ""), "side": str(l.get("side") or "").upper(), "qty": q,
+                    "order_type": l.get("order_type") if isinstance(l.get("order_type"), str) else None, "limit_px": l.get("limit_px")})
     return out
+
+
+#: the sides whose working orders the position checks count against a later order of the same instrument (``_validate``: working sells,
+#: working covers)
+_COUNTED_SIDES = {"SELL": "sell", "STC": "sell", "BUY_TO_COVER": "cover", "BTC": "cover"}
+
+
+def hedge_legs_check(services, conn, vo: "ValidatedOrder", hedge, snapshot=None, now: Optional[int] = None) -> None:
+    """1.0.7.2 simplify round 3 (R-4: the labels true at Send): the order preview validates each leg a shares order's ``hedge`` will
+    attach exactly as ``orders.create_hedge_children`` validates it at Submit - ``validate`` with ``rest_ok`` and ``queue_unfunded`` (a leg
+    waits for its shares order: funding is checked at its fill), the leg's own order type and limit, the order's time in force - so a
+    leg the route refuses (400 OVERSELL beyond the shares free to sell, 400 SHORT_WHILE_LONG, ...) is the preview's blocker, never a
+    refusal after a clean preview.  At Submit the shares order and the legs before a leg are already written when it is validated: a
+    sale or a cover of the same instrument among them is counted with it here (the refusal then says so); the cover a call leg before
+    it would keep is not (no candidate the Hedges tab offers sells the shares of a call it sells; only explicit API legs could, and the
+    route refuses them at Submit: nothing placed).  A leg on an option not in the master yet (the route lists it from its chain first)
+    is checked by INV-9 only.  Raises the refusal; read only."""
+    legs = hedge_leg_orders(vo.preview.get("hedges"), hedge, int(vo.qty))
+    if not legs:
+        return
+    counted: Dict[Tuple[str, str], int] = {}
+    k0 = _COUNTED_SIDES.get(str(vo.side))
+    if k0:
+        counted[(vo.inst.instrument_id, k0)] = int(vo.qty)
+    for i, l in enumerate(legs):
+        iid, side, q = l["instrument_id"], l["side"], int(l["qty"])
+        k = _COUNTED_SIDES.get(side)
+        before = counted.get((iid, k), 0) if k else 0
+        if q > 0 and services.instruments.get(iid, conn) is None and parse_occ_like(iid):
+            continue                                           # listed from the chain at Submit (hedges.package): INV-9 has checked it
+        req = {"account_id": vo.account_id, "instrument_id": iid, "side": side, "qty": q + before, "order_type": l["order_type"] or "MARKET",
+               "limit_px": l["limit_px"], "tif": vo.tif}
+        try:
+            validate(services, req, snapshot=snapshot, conn=conn, now=now, rest_ok=True, queue_unfunded=True)
+        except RejectError as e:
+            with_ = f", with the {before:,} the order and its legs before it {'sell' if k == 'sell' else 'cover'} ({q + before:,} in all)" if before else ""
+            err = RejectError(e.code, f"hedge leg {i + 1} ({side} {q:,} {iid}{with_}): {e.message}",
+                              dict(e.details or {}, hedge_leg=i + 1, hedge_leg_order={"instrument_id": iid, "side": side, "qty": q}))
+            err.http = e.http                                  # 400 or 409, as the route answers it
+            raise err from e
+        if k:
+            counted[(iid, k)] = before + q
 
 
 def change_cover_check(services, conn, order_id: str, inst, new_remaining: int, old_remaining: int) -> None:
@@ -2012,6 +2061,8 @@ def preview(services, req: dict, *, snapshot=None, now: Optional[int] = None) ->
                 legs = hedge_cover_legs(services, c, pv.get("hedges"), req.get("hedge"), int(vo.qty))
                 if legs:
                     sequential_cover_check(services, c, vo.account_id, (vo.inst, vo.side, int(vo.qty)), legs)
+                    # simplify round 3 (R-4): each leg validated as create_hedge_children validates it at Submit (OVERSELL, SHORT_WHILE_LONG ...)
+                    hedge_legs_check(services, c, vo, req.get("hedge"), snapshot=snapshot, now=now)
     except RejectError as e:
         if e.code in ("NO_QUOTE", "QUOTE_STALE", "NO_BORROW"):
             _ask_for_quote(services, str(req.get("instrument_id") or ""))

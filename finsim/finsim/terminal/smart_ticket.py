@@ -4260,7 +4260,9 @@ class Resolver:
                 span, kept = cache[key]
                 f["span"] = [int(span[0]) - shift, int(span[1]) - shift]
                 if kept:
-                    f["choices"] = [{"label": ch["label"], "clause": ch["clause"]} for ch in kept]
+                    # simplify round 3: the check is shared by every flag with this key (the book copies of a clause repeated per book
+                    # read alike), its labels are not - each flag keeps its OWN label, worked out from its own order's holding
+                    f["choices"] = [{"label": chs0[ch["_i"]]["label"], "clause": ch["clause"]} for ch in kept]
                 else:
                     f.pop("choices", None)
 

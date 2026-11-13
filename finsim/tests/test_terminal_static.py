@@ -717,7 +717,10 @@ class SmartTicketShellTests(unittest.TestCase):
         fresh = ("    if (f.fresh) {\n      if (st.mode) { leaveOrderMode(); }\n      if (st.hedge_pos) { leavePositionMode(); }\n"
                  "      resetOrder(); st.result = null; T.clear(ui.result); paintPreview();\n"
                  "      if (hedge && hedge.reset) { hedge.reset(); }        /* simplify round 2: nor a template picked on the Strategies tab, its parameters or package */\n"
-                 "      st.hedgeOpen = false; st.hedge_for = null;\n    }\n")
+                 "      st.hedgeOpen = false; st.hedge_for = null;\n"
+                 "      /* simplify round 3 (R-4): the symbol box names the order filled in, also on the same instrument - a symbol typed there and not\n"
+                 "         resolved never stays beside another order; its look-up still to come is dropped */\n"
+                 "      clearTimeout(st.taTimer); st.taTimer = null; ui.inst.value = id || st.instrument_id || ''; ui.dd.hidden = true;\n    }\n")
         self.assertIn(fresh, apply_)
         # simplify round 2: the hedge panel's reset drops what was picked on either tab (the template, its parameters and package too)
         hsrc = read(os.path.join(STATIC, "components", "hedge.js"))

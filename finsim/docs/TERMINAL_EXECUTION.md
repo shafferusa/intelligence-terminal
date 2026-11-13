@@ -216,6 +216,13 @@ NAV falls by exactly the 1.00 commission.
   - Simplify round 2: an early exercise of a long call while the account is short its underlying is refused 409
     `UNDERLYING_SHORT` ("cover the short first"): the shares delivered would back no open borrow (before: 500 INTEGRITY,
     rolled back). A long put exercised while short or flat delivers its shares short with their own borrow, as before.
+  - Simplify round 3 (`orders_preview.hedge_legs_check`): the order preview of a package checks each hedge leg as
+    `orders.create_hedge_children` does at Submit, each sale counted after the order and its legs before it (the API's explicit
+    legs and the Hedges-tab picks alike): a sale leg beyond `free` (400 `OVERSELL`) or a short-sale leg while the name is held
+    long (400 `SHORT_WHILE_LONG`) is the preview's blocker, so Submit stays disabled with the reason. The Hedges tab's
+    `DELTA_HEDGE` for a call purchase sells shares held long only as the order route takes them: while fewer are held than it
+    sells, or more than are free, it is offered not available with the reason (sell the shares first; how many are free and
+    what keeps the rest), and picked anyway the preview's blocker and the Submit say 400 `NOT_AVAILABLE`, nothing placed.
   - INV-9: while calls on a name are sold as covered (`claimed`), every NEW call sold to open on that name - claimed or not,
     a single order, an all-or-none package's STO call legs, an amend or replace raising a plain call - is placed only while
     `free_for_calls` >= its contracts x multiplier (409 `SHARES_RESERVED`, the claimed calls named): the margin would

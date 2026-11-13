@@ -14,7 +14,9 @@ Conventions stated here
   under 100 shares gets no option candidate, disclosed); INDEX_OVERLAY n = round-half-up(notional × beta /
   (front-month price × multiplier)) with beta from the master (1.0 assumed and labelled when the master has none; NQ
   for Nasdaq-listed names, else ES); DELTA_HEDGE shares = −delta × contracts × 100 rounded half-up to the nearest
-  100 (delta from the Cboe row; none → the candidate says so).  Cost uses the chain ask for buys and bid for sells
+  100 (delta from the Cboe row; none → the candidate says so); a sale of the underlying is offered as the order route takes it
+  (simplify round 3): a SELL only of shares free to sell (``orders_preview.cover_state``), a SELL_SHORT only while none are
+  held long - else the candidate is ``available: false`` with the reason (OVERSELL / SHORT_WHILE_LONG at Submit).  Cost uses the chain ask for buys and bid for sells
   (× 100 × n); fees on the DEFAULT schedule per leg; protection level = K / S − 1; ``ratio`` = leg units / primary
   units (the children are sized to floor(primary filled × ratio)).
 - A leg without a usable NBBO (``bid > 0 and ask ≥ bid``) makes the candidate ``available: false`` with the reason —
@@ -553,8 +555,22 @@ def _option_candidates(services, account_id: str, inst, side: str, qty: int, cha
     if shares == 0:
         return [HedgeCandidate("DELTA_HEDGE", "Delta hedge (underlying shares)", [], None, None, None, {}, quality, chain.quote_time, editable, False,
                                "the position delta rounds to fewer than 50 shares", formula, rule=formula)]
+    off = ""
     with services.db.reader() as conn:
         held, _ = _position(conn, account_id, under_id)
+        if shares < 0 and held > 0:
+            # simplify round 3 (R-4): the sale is offered as it is sent - shares held long leave only through SELL, and only those free
+            # of working sales, the cover of calls and loans (the order route's OVERSELL / SHORT_WHILE_LONG, read as it reads them)
+            from .orders_preview import _state_words, cover_state
+            cst = cover_state(services, conn, account_id, under_id)
+            free = int(cst["free"])
+            if held < -shares:
+                off = (f"{under_id}: the hedge sells {-shares:,} and {held:,} are held long - a short sale is refused while shares are held"
+                       " (SHORT_WHILE_LONG): sell them first (SELL); once they have sold, a short sale with a borrow can follow"
+                       + (f" ({free:,} of them are free to sell: {_state_words(cst)})" if free < held else ""))
+            elif free < -shares:
+                off = (f"{under_id}: the hedge sells {-shares:,} and {free:,} are free to sell ({_state_words(cst)}) - a sale of the shares kept"
+                       " for calls, working sales or loans is refused (OVERSELL)")
     if shares > 0:
         leg_side, needs = "BUY", False
     elif held >= -shares:
@@ -569,7 +585,7 @@ def _option_candidates(services, account_id: str, inst, side: str, qty: int, cha
     cost = None if S is None else (S * abs(shares) * (1 if leg_side == "BUY" else -1)).quantize(CENT)
     c = HedgeCandidate("DELTA_HEDGE", f"Delta hedge: {leg_side} {abs(shares):,} {under_id}", [leg], cost, None, None if cost is None else (-cost - fee).quantize(CENT),
                        {"delta": str(Decimal(shares)), "delta_shares": str(Decimal(shares)), "note": "delta from the Cboe chain row; the hedge offsets the position's delta"},
-                       quality, chain.quote_time, editable, S is not None, "" if S is not None else f"{under_id} mark unavailable",
+                       quality, chain.quote_time, editable, S is not None and not off, off or ("" if S is not None else f"{under_id} mark unavailable"),
                        formula + ("; a short sale needs a borrow (WP-06)" if needs else ""), fee, rule=formula, ratio=ratio_of(abs(shares), qty))
     return [c]
 
