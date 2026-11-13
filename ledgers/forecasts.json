@@ -7121,6 +7121,56 @@
       "probability": "40-60%",
       "basis": "Regulatory approval still pending per NASASpaceflight/SpacePolicyOnline; first-day Starship attempts frequently slip",
       "status": "open"
+    },
+    {
+      "id": "2026-11-13-am-1",
+      "date": "2026-11-13",
+      "slot": "am",
+      "forecast": "October PPI headline rises 0.4% m/m or more",
+      "horizon": "2026-11-13",
+      "probability": "45-60%",
+      "basis": "Consensus +0.4%; hot Oct CPI (+0.35% headline, core +0.30%)",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-13-am-2",
+      "date": "2026-11-13",
+      "slot": "am",
+      "forecast": "10-year par yield closes Nov 13 at or above 5.10%",
+      "horizon": "2026-11-13",
+      "probability": "55-70%",
+      "basis": "Trading ~5.12-5.13% early (CNBC); PPI can reverse",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-13-am-3",
+      "date": "2026-11-13",
+      "slot": "am",
+      "forecast": "S&P 500 closes Nov 13 above 7,550",
+      "horizon": "2026-11-13",
+      "probability": "65-80%",
+      "basis": "Needs >0.6% fall from 7,592.40; futures +0.15% at 6:28 AM",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-13-am-4",
+      "date": "2026-11-13",
+      "slot": "am",
+      "forecast": "ULA Vulcan LV-01 launches on Nov 13",
+      "horizon": "2026-11-13",
+      "probability": "65-80%",
+      "basis": "Launch Library 'Go', 90% weather; return-to-flight scrub risk",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-13-am-5",
+      "date": "2026-11-13",
+      "slot": "am",
+      "forecast": "Starship Flight 15 launches by Nov 15",
+      "horizon": "2026-11-15",
+      "probability": "25-45%",
+      "basis": "No FAA license announced as of Nov 12; dual-catch needs modified license",
+      "status": "open"
     }
   ]
 }

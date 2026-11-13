@@ -1,6 +1,126 @@
 {
  "stories": [
   {
+   "id": "bond-rout-williams-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Par Nov 12 2Y 4.86/10Y 5.10/30Y 5.43; Fri early 10Y ~5.12-5.13, 30Y ~5.46 (CNBC); Williams: 'inflation is persistent', more hikes likely; FedWatch Dec 25bp 87-91%; PPI Oct cons +0.4/+0.3",
+   "status": "Developing",
+   "rationale": "Lead am Nov 13: long-end rout + Fed path",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "nvidia-interim-day2-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "NVDA +1.8% premarket after -4.34% $166.19; board 'full confidence' in Kress; Blanche: DOJ 'no conclusions'; earnings Tue Nov 17 ~4:20 PM",
+   "status": "Continuing",
+   "rationale": "AI bellwether leadership",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "bitcoin-below-70k-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "BTC $69,182 -5.2% 24h (CoinGecko), low ~$67,568 (single); total cap $2.32T -6.8%; ETH $1,956",
+   "status": "New",
+   "rationale": "Speculative risk-off vs equities",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "yen-160-touch-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "USDJPY briefly >160 first since Sept, 159.92 6:38 AM; Katayama 'respond appropriately'; DXY 103.23 near 52w high; EURUSD 1.1056 near 52w low",
+   "status": "Developing",
+   "rationale": "FX intervention risk",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "iran-centcom-prep-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Kan: CENTCOM told Israel/Gulf to prepare for renewed war; CENTCOM denies ('speculation'); WSJ Cooper briefed Trump; Trump: strikes 'without hesitation'; Brent $96.07",
+   "status": "Disputed",
+   "rationale": "Oil/geopolitics",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "msft-outage-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Microsoft 365/Outlook/Teams outage >12h, 74 countries (Downdetector), no sign of attack per Microsoft",
+   "status": "New",
+   "rationale": "Tech/infrastructure",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "ukraine-dublin-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Zelenskyy met Witkoff/Kushner in Dublin; another round set, no date; Ushakov downplays Europe role",
+   "status": "Developing",
+   "rationale": "War/diplomacy",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "breadth-weak-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "Nov 12 breadth 1,107 adv / 4,249 dec; 38.9% above 50-EMA; RUT -1.66%",
+   "status": "New",
+   "rationale": "Market internals",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "alaska-count-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "Peltola first-choice lead ~5,800 (49.1-46.8); counting ends Nov 18, cert Nov 25; AK gov Kreiss-Tomkins leads",
+   "status": "Developing",
+   "rationale": "US politics",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "pa-senate-dem-leaders-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "PA Senate Dems: Collett majority leader, Santarsiero whip, Hughes approps, Costa pro tem nominee (Jan vote); 26-24 D",
+   "status": "New",
+   "rationale": "Local PA",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "prt-bus-refresh-vote",
+   "first_seen": "2026-11-13",
+   "headline": "PRT Bus Line Refresh (+14/-20/~56 changed) final vote Nov 20 (single source); changes 2H 2027",
+   "status": "Developing",
+   "rationale": "Local transit",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
+   "id": "vulcan-starship-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Vulcan LV-01 12:54 PM Go, 90% weather; Starship Flight 15 5:45 PM, FAA license not announced; Electron 100th Sat 12:30 AM",
+   "status": "Developing",
+   "rationale": "Space",
+   "last_seen": "2026-11-13",
+   "last_report": "reports/2026/11/2026-11-13-am.html",
+   "updated": "2026-11-13-am"
+  },
+  {
    "id": "nvidia-huang-resigns-nov12",
    "first_seen": "2026-11-12",
    "headline": "Jensen Huang resigns as Nvidia CEO and director; CFO Colette Kress interim CEO; Harvey Jones first chair; NVDA -4.34% $166.19 after ~-14% intraday; AMD +5.86, AVGO +5.54",
@@ -474,123 +594,7 @@
    "last_seen": "2026-11-05",
    "last_report": "reports/2026/11/2026-11-05-am.html",
    "updated": "2026-11-05-am"
-  },
-  {
-   "id": "boe-hike-nov5",
-   "headline": "BoE +25bp to 4.00%, 8-1 (1 for +50bp), first hike in 3+ years; inflation to approach 5%",
-   "status": "Resolved",
-   "rationale": "Global central banks; forecast 2026-11-04-am-3 resolves",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "claims-productivity-nov5",
-   "headline": "Claims 189K vs ~196K (prior 195K rev), 4wk 194,750, continuing 1.718M; Q3 productivity +3.6% vs 2.7%, ULC -0.7% (2.4% y/y); Hammack favors gradual hikes",
-   "status": "New",
-   "rationale": "Macro data before payrolls",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "oil-hormuz-fires-nov5",
-   "headline": "IRGC: 2 tankers + tug caught fire (one mine) Nov 5; counts disputed; WTI $90.32 (+2.5%), Brent $97.95 (+3.5%) 2:12 PM; Qatar: feedback within 36h",
-   "status": "Materially changed",
-   "rationale": "Energy/geopolitics",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "vix-rates-nov5",
-   "headline": "VIX 27.15 (from 16.61), VIX9D 31.40, VIX3M 25.02 inverted; 10Y ~4.83 intraday (par 4.90 Nov 4); HY OAS 3.32 Nov 4; gold $4,112",
-   "status": "New",
-   "rationale": "Volatility/rates",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "house-leadership-nov5",
-   "headline": "Johnson won't seek leadership; Scalise vs Jordan vote reported next Tue; Jeffries Speaker bid; MS Colom lead ~1,100-1,800; AK Peltola +~626; funding deadline Dec 11",
-   "status": "Developing",
-   "rationale": "US politics",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "pa-senate-flip-nov5",
-   "headline": "PA Senate 26-24 D (flips SD-6/16/24/40, lost SD-36), House >=111 D; Shapiro 60.4-38.3; HD-40 Mihalek vs Lloyd too close",
-   "status": "Materially changed",
-   "rationale": "Local/PA",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "blue-origin-slip-nov5",
-   "headline": "New Glenn return to flight slips to Jan 2027 (Limp to staff; CNBC/Bloomberg/Reuters)",
-   "status": "New",
-   "rationale": "Space",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "pgh-budget-2027",
-   "headline": "Pittsburgh 2027 budget $728M operating, $145M capital, no tax hike, ~$26M reserves draw",
-   "status": "Continuing",
-   "rationale": "Local",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-am.html",
-   "updated": "2026-11-05-am"
-  },
-  {
-   "id": "midterms-results-nov4",
-   "headline": "AP calls Senate (late Nov 3) and House (early Nov 4) for Democrats; 7+ GOP Senate seats flipped (ME, NC, TX, OH, IA, KS, SC); AK uncalled (Sullivan 48.3, Peltola 47.5)",
-   "status": "Materially changed",
-   "first_seen": "2026-11-04",
-   "last_seen": "2026-11-04",
-   "last_report": "reports/2026/11/2026-11-04-am.html",
-   "scoring": "Lead: control of Congress; market reaction"
-  },
-  {
-   "id": "blue-sweep-tape-nov4",
-   "headline": "S&P +1.5% at 10:31 (7,684.74) after NQ futures -2.4% overnight; AAPL +6.5%, AMZN +7.1%, MSFT +6.1%; VST -14%, VRT -10.5%, CEG -8%, LMT -5%, DJT -10.6%; VIX 16.95",
-   "status": "New",
-   "first_seen": "2026-11-04",
-   "last_seen": "2026-11-04",
-   "last_report": "reports/2026/11/2026-11-04-am.html",
-   "scoring": "Lead market story: AI builder vs buyer split"
-  },
-  {
-   "id": "refunding-nov4",
-   "headline": "Refunding $125B (58/42/25), sizes unchanged Nov-Jan; 7Y to quarterly new issue from Mar 2027; buybacks up to $70B liquidity + $25B cash mgmt; 'at least' dropped from guidance; TGA peak ~$1.025T",
-   "status": "New",
-   "first_seen": "2026-11-04",
-   "last_seen": "2026-11-04",
-   "last_report": "reports/2026/11/2026-11-04-am.html",
-   "scoring": "Treasury primary-source item"
-  },
-  {
-   "id": "amd-reaction-nov4",
-   "headline": "AMD +1.7% at 10:31 after +6-7% premarket; SMCI +1.7%; ANET +9.7%; XYZ +14.8%; BKNG +9.5%; AMGN +1%",
-   "status": "Materially changed",
-   "first_seen": "2026-11-04",
-   "last_seen": "2026-11-04",
-   "last_report": "reports/2026/11/2026-11-04-am.html",
-   "scoring": "Earnings reaction"
   }
  ],
- "updated": "2026-11-12T21:45:51Z"
+ "updated": "2026-11-13T11:46:57Z"
 }
