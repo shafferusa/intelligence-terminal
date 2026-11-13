@@ -39,6 +39,7 @@
   function kp(id) { return T.keys && T.keys.paren ? T.keys.paren(id) : ''; }
   function rowKeysParen() { var b = kl('grid.buy'), s = kl('grid.sell'); return b || s ? ' (' + [b, s].filter(Boolean).join(' / ') + ' on a row)' : ''; }
   var DEBOUNCE_MS = 300, REPREVIEW_MS = 10000, PREVIEW_TTL_MS = 60000;
+  var PV_HINT = 'the preview appears here: price, yield, accrued, fee, settlement';
   var st = null;                                               /* the one ticket's state */
 
   function open(body, fields) {
@@ -46,6 +47,13 @@
     fields = fields || {};
     var sameAcct = st && st.account_id === fields.account_id && st.body === body && body.firstChild;
     if (!sameAcct) { build(body, fields.account_id); }
+    if (fields.fresh) {
+      /* 1.0.7.2 simplify round 4: a fresh hand-off (the Smart Ticket's "Open the bond ticket") starts a new trade - BUY unless it names
+         the side, the face empty unless it names one, the previous preview, result and status dropped: nothing of the trade the ticket
+         held rides along */
+      clearTimeout(st.deb); st.seq++; st.holdUntil = 0; st.ui.face.value = ''; setSide('BUY');
+      T.clear(st.ui.pv).appendChild(T.h('div', { class: 'hint' }, PV_HINT)); T.clear(st.ui.result); setStatus('', '');
+    }
     if (fields.instrument_id && fields.instrument_id !== st.instrument_id) { setInstrument(fields.instrument_id, null); }
     if (fields.side) { setSide(String(fields.side).toUpperCase() === 'SELL' ? 'SELL' : 'BUY'); }
     if (fields.qty != null || fields.face != null) { st.ui.face.value = String(fields.face != null ? fields.face : fields.qty); }
@@ -72,7 +80,7 @@
     var faceRow = T.h('div', { class: 'face' }, face, minus, plus);
     var lotNote = T.h('div', { class: 'hint' }, 'face in the bond\'s currency, a multiple of its lot');
     var form = T.form([T.field('bond', ta), T.field('side', sides), T.field('face', faceRow, 'the face (nominal) amount, not a number of bonds')]);
-    var pv = T.h('div', { class: 'pv' }, T.h('div', { class: 'hint' }, 'the preview appears here: price, yield, accrued, fee, settlement'));
+    var pv = T.h('div', { class: 'pv' }, T.h('div', { class: 'hint' }, PV_HINT));
     var status = T.h('div', { class: 'st', role: 'status' });
     var previewBtn = T.h('button', { class: 'btn' }, 'Preview');
     var submit = T.h('button', { class: 'btn primary', disabled: true, title: 'submit' + kp('ticket.submit') }, 'Submit');

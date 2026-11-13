@@ -414,27 +414,27 @@ def _working_sells(conn, account_id: str, instrument_id: str) -> int:
                                                                         + LEFT_IN_ALL_WHERE, (account_id, instrument_id)).fetchall())
 
 
-def _reserved(services, conn, account_id: str, instrument_id: str) -> int:
-    """1.0.7.2 INV-2 / INV-3: the shares covering calls sold or being sold, read from the positions and the working sell-to-open call
-    orders now, in whole contracts as the margin assigns them (``orders_preview.cover_state``: one reading with the order route)."""
-    from .orders_preview import cover_state
-    st = cover_state(services, conn, account_id, instrument_id)
-    return int(st["reserved"])          # simplify round 1: the calls a working sequential package will still sell included
-
-
 def free_to_lend(services, conn, account_id: str, instrument_id: str) -> dict:
     """What can be lent now: the position less shares on loan, shares committed to working sells, shares covering calls sold or being
-    sold (1.0.7.2: never lent) and shares bought but not yet settled (a lender delivers shares it has received)."""
+    sold (1.0.7.2: never lent), the shares counted for the short sales still working while the name is held (simplify round 4: as
+    ``orders_preview.cover_state`` counts them for a sale) and shares bought but not yet settled (a lender delivers shares it has
+    received)."""
     from .ledger import position
+    from .orders_preview import cover_state
     pos, _cost = position(conn, account_id, instrument_id)
     lent = lent_qty(conn, account_id, instrument_id)
     ws = _working_sells(conn, account_id, instrument_id)
-    res = _reserved(services, conn, account_id, instrument_id)
+    # 1.0.7.2 INV-2 / INV-3: the shares covering calls sold or being sold, read from the positions and the working sell-to-open call
+    # orders now, in whole contracts as the margin assigns them - one reading with the order route (simplify round 1: the calls a
+    # working sequential package will still sell included)
+    st = cover_state(services, conn, account_id, instrument_id)
+    res = int(st["reserved"])
+    wsh = int(st["working_shorts"]) if int(pos) > 0 else 0
     r = conn.execute("SELECT COALESCE(SUM(f.qty), 0) q, MAX(s.due_date) d FROM fills f JOIN settlements s ON s.fill_id=f.fill_id WHERE f.account_id=? AND f.instrument_id=?"
                      " AND f.side='BUY' AND s.status='PENDING'", (account_id, instrument_id)).fetchone()
     pending = int(r["q"] or 0)
-    return {"position": int(pos), "lent": lent, "working_sells": ws, "reserved": res, "unsettled": pending, "settles": r["d"],
-            "free": max(0, int(pos) - lent - ws - res - pending)}
+    return {"position": int(pos), "lent": lent, "working_sells": ws, "working_shorts": wsh, "reserved": res, "unsettled": pending, "settles": r["d"],
+            "free": max(0, int(pos) - lent - ws - wsh - res - pending)}
 
 
 def _tier_for(services, conn, inst) -> Tuple[str, str]:
@@ -485,7 +485,8 @@ def lend_preview(services, payload: dict, conn=None) -> dict:
         f = free_to_lend(services, c, aid, iid)
         if qty > f["free"]:
             raise ConflictError("NOT_ENOUGH_FREE", f"{aid} holds {f['position']:,} {inst.symbol}; {f['lent']:,} on loan, {f['working_sells']:,} in working sells,"
-                                f" {f['reserved']:,} covering calls sold or being sold, {f['unsettled']:,} bought and not yet settled"
+                                + (f" {f['working_shorts']:,} counted for short sales still working," if f.get("working_shorts") else "")
+                                + f" {f['reserved']:,} covering calls sold or being sold, {f['unsettled']:,} bought and not yet settled"
                                 + (f" (settles {f['settles']})" if f["unsettled"] else "") + f": {f['free']:,} can be lent", f)
         cps = getattr(services, "counterparties", None)
         if cps is None or not hasattr(cps, "lending_terms"):

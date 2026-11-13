@@ -289,7 +289,8 @@
         { key: 'account', label: 'account', cls: 'l', text: function (r) { return r.account_name || r.account_id; } },
         { key: 'position', label: 'position', text: function (r) { return T.fmt.qty(r.position); } },
         { key: 'lent', label: 'on loan', text: function (r) { return T.fmt.qty(r.lent); } },
-        { key: 'ws', label: 'working sells', text: function (r) { return T.fmt.qty(r.working_sells); } },
+        /* simplify round 4: the short sales still working while the shares are held are counted too (never lent), said beside the sells */
+        { key: 'ws', label: 'working sells', text: function (r) { return T.fmt.qty(r.working_sells) + (Number(r.working_shorts) ? ' (+' + T.fmt.qty(r.working_shorts) + ' short sales)' : ''); } },
         { key: 'res', label: 'covered calls', text: function (r) { return T.fmt.qty(r.reserved); } },
         { key: 'uns', label: 'unsettled', html: function (r) { return Number(r.unsettled) ? '<span title="bought, settles ' + T.esc(r.settles || '') + '">' + T.esc(T.fmt.qty(r.unsettled)) + '</span>' : '0'; } },
         { key: 'free', label: 'free to lend', html: function (r) { return '<b>' + T.esc(T.fmt.qty(r.free)) + '</b>'; } }

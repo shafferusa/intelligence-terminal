@@ -176,8 +176,13 @@ NAV falls by exactly the 1.00 commission.
   contracts still to release at its full quantity (`execution.leg_target`) x their multiplier, less the shares it still buys,
   taken from the shares left - so a buy write's own shares cover its later calls (INV-9's allowance) and nothing else may
   take them. With 150 held and 2 calls sold, 100 are reserved and 50 can be sold.
-  `free = held - working_sells - reserved_sold - reserved_working - reserved_waiting - lent` (what a sale, a loan or an
-  exercise may take; `reserved` is the three reservations together) and `free_for_calls = free - working_shorts` (what new calls may take as cover), never below 0. With
+  `free = held - working_sells - working_shorts - reserved_sold - reserved_working - reserved_waiting - lent` (what a sale, a
+  loan, an exercise or new calls as their cover may take; `reserved` is the three reservations together; `free_for_calls` is the
+  same count, kept for its readers), never below 0. Simplify round 4: `working_shorts` (a short sale placed while the account
+  was flat and still working after it bought the name) is counted in `free` itself, no longer only against new calls: a sale
+  of those shares is 400 `OVERSELL` naming the short sales ("a short sale is never booked against shares held, so cancel it
+  first"), a loan lends only what is left, and an early put exercise while shares of the name cover calls is 409
+  `SHARES_RESERVED` naming them (their fill: INV-4 below). With
   `claims=True` (the order route and the order preview; never the Smart Ticket's parse) it also lists `claimed`: the
   account's calls on the name sold as covered and still open (a working STO call order whose `order.submit` command carries
   `covered: true` - its own, its replace chain's first order's or its package's - and, per contract, the short contracts
@@ -197,14 +202,19 @@ NAV falls by exactly the 1.00 commission.
     or close them first (SHARES_RESERVED)"; "cover calls already sold (<OCC>): buy them back first"; "N ACME are kept for
     the calls the shares order O-... releases as it fills (its hedge legs): cancel it first"), and `lending_accruals.free_to_lend`
     lends only free shares. Simplify round 1: while any shares of the name are reserved, an early put exercise delivers only
-    `free` shares (net of working sales and lent shares too), else 409 `SHARES_RESERVED` naming the calls, the sales and the
+    `free` shares (net of working sales, working short sales and lent shares too), else 409 `SHARES_RESERVED` naming the calls, the sales and the
     contracts that may be exercised; and every exercise or assignment that delivers shares (`products/options._physical`, the
     expiry exercise included) cuts the working SELL orders to the shares left free (held - reserved - lent), newest first,
     each said - a sale resting on the rest never sells the cover afterwards. The order preview of a Hedges-tab package runs
     the order route's check of its call legs, and the strategies preview adds its SHARES_RESERVED blocker, so Submit stays
     disabled with the reason.
   - INV-4: a SELL_SHORT (new, amend, replace) while the account holds the name long is refused 400 `SHORT_WHILE_LONG`
-    ("sell them first"); the OVERSELL hint reads "sell N; once they have sold, SELL_SHORT M with a borrow".
+    ("sell them first"); the OVERSELL hint reads "sell N; once they have sold, SELL_SHORT M with a borrow". Simplify round 4,
+    at the fill too: `execution.apply_fill` never books a SELL_SHORT while the account holds the name long (one placed while it
+    was flat): the matcher suspends the resting order with reason `SHORT_WHILE_LONG` and ONE WARN `ORDER_SUSPENDED` item, and
+    resumed while the name is still held it is suspended again (sell the shares, then resume it, or cancel it). Before, a fill
+    larger than the holding was booked against it - the account net short under calls sold as covered - and one no larger was
+    rolled back by the integrity check, one ERROR `INTEGRITY` item per matcher pass.
   - INV-5: an amend or replace that raises the contracts of an STO call placed with `covered: true` (the claim read from its
     replace chain's first order) re-runs INV-1 for the added contracts, the order itself excluded: 409 `NOT_COVERED`,
     nothing changed.
@@ -231,8 +241,8 @@ NAV falls by exactly the 1.00 commission.
   Known limits, each said: the automatic exercise at expiry of a long put whose short call expires later still delivers the
   shares - when that takes the cover of calls sold as covered, one WARN attention item `COVER_DELIVERED` names the put and
   the calls (now naked); an as-of booking (the record of an execution done elsewhere) is never refused for cover; a short
-  sale placed while flat and still resting when the account buys the name keeps 1.0.7.1's fill rules, and `working_shorts`
-  keeps new calls off those shares. The Smart Ticket's earlier "your own legs" package (key CUSTOM, never deployed) is gone:
+  sale placed while flat and still working when the account buys the name is not cancelled for it: it is counted against
+  those shares (`working_shorts`, in `free`) and suspended at its price, never booked against them (INV-4). The Smart Ticket's earlier "your own legs" package (key CUSTOM, never deployed) is gone:
   `CUSTOM` is 400 `UNKNOWN_STRATEGY` again, as in 1.0.7.1; a CUSTOM package row written by the never-deployed candidate
   still loads, reads "your own legs (Smart Ticket)" and can be cancelled.
 - **Cancel many at once (`POST /api/orders/cancel[?book=]`, 1.0.7.2)**: explicit order ids only (1 to 500, each named

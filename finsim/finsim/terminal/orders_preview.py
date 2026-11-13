@@ -986,9 +986,15 @@ def cover_state(services, conn, account_id: str, underlying_id: str, exclude_ord
       reserves nothing of the shares held, while the shares it has bought ahead of its next call are kept for that call, and a package
       whose calls need more than it buys keeps the rest of their cover from the shares held: nothing sold, lent, exercised away or
       claimed for another call meanwhile can leave a call sold as covered naked when the legs are released.  ``reserved`` counts it.
-    - ``free`` = held - working sells - reserved - lent (never below 0): what a SALE, a loan or an early exercise may take;
-      ``free_for_calls`` = free - working short sales (never below 0): what NEW calls may take as their cover.
-    - ``calls``: the calls behind the reservations (``{instrument_id, order_id?, contracts, covered, shares}``), named in the refusals.
+    - ``free`` = held - working sells - working short sales - reserved - lent (never below 0): what a SALE, a loan, an early exercise
+      or NEW calls (as their cover) may take; ``free_for_calls`` is the same count (kept for its readers).  Simplify round 4: a short
+      sale still working while the name is held long (placed while the account was flat, the name bought since) is counted against
+      the shares held by EVERY route that lets them leave, not only by new calls - before, a sale or an early put exercise could take
+      the shares new calls had left it, and once fewer were held than it sells its fill netted the position below the cover of a call
+      sold as covered (``execution.apply_fill`` now never books a short sale while the name is held long: SHORT_WHILE_LONG, the
+      resting order suspended).
+    - ``calls``: the calls behind the reservations (``{instrument_id, order_id?, contracts, covered, shares}``), named in the refusals;
+      ``short_sales`` (simplify round 4): the order ids of the working short sales counted in ``working_shorts``, named there too.
     - ``claims`` (the order route and the preview; never the Smart Ticket's parse, which so never reads ``commands``): ``claimed``, the
       account's calls on the name sold as covered and still open - each working sell-to-open call order (the excluded one left out)
       whose placing command carried ``covered: true`` (``order_claimed``), and per contract the short contracts still open that such
@@ -1000,15 +1006,18 @@ def cover_state(services, conn, account_id: str, underlying_id: str, exclude_ord
     net = int(_position(conn, acct, uid)[0])
     held = max(0, net)
     sells = shorts = 0
+    short_ids: List[str] = []
     heads: Dict[str, Optional[int]] = {}
     lcache: Dict[str, Any] = {}
-    for r in conn.execute("SELECT * FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC','SELL_SHORT') AND " + LEFT_IN_ALL_WHERE,
-                          (acct, uid)).fetchall():
+    for r in conn.execute("SELECT * FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC','SELL_SHORT') AND " + LEFT_IN_ALL_WHERE
+                          + " ORDER BY order_id", (acct, uid)).fetchall():
         if ex is not None and r["order_id"] == ex:
             continue
         rem = left_in_all(conn, r, heads, lcache)
         if r["side"] == "SELL_SHORT":
             shorts += rem
+            if rem > 0:
+                short_ids.append(str(r["order_id"]))
         else:
             sells += rem
     lent = _lent_shares(services, conn, acct, uid) if held > 0 else 0
@@ -1066,10 +1075,12 @@ def cover_state(services, conn, account_id: str, underlying_id: str, exclude_ord
             take -= row["shares"]
             calls.append(row)
             waiting.append(row)
-    free = max(0, held - sells - reserved_sold - reserved_working - reserved_waiting - lent)
-    out = {"account_id": acct, "underlying_id": uid, "held": held, "working_sells": sells, "working_shorts": shorts, "lent": lent,
+    # simplify round 4 (R-2): the working short sales are counted for every route that lets the shares leave (a sale, a loan, an early
+    # exercise, new calls) - one reading of free; while none are held, nothing is free anyway
+    free = max(0, held - sells - shorts - reserved_sold - reserved_working - reserved_waiting - lent)
+    out = {"account_id": acct, "underlying_id": uid, "held": held, "working_sells": sells, "working_shorts": shorts, "short_sales": short_ids, "lent": lent,
            "reserved_sold": reserved_sold, "reserved_working": reserved_working, "reserved_waiting": reserved_waiting,
-           "reserved": reserved_sold + reserved_working + reserved_waiting, "free": free, "free_for_calls": max(0, free - shorts), "calls": calls,
+           "reserved": reserved_sold + reserved_working + reserved_waiting, "free": free, "free_for_calls": free, "calls": calls,
            "waiting": waiting}
     if claims:
         cache: Dict[str, bool] = {}
@@ -1389,7 +1400,8 @@ def hedge_growth_check(services, conn, order_id: str, new_remaining: int, old_re
         sym = sym_of(iid)
         raise RejectError("OVERSELL", f"{lead} would release its hedge leg{'s' if len(grown) > 1 else ''} {_calls_words([{'order_id': o} for o, _m, _n in grown])}"
                                       f" for {need:,} more {sym}, and {st['free']:,} {sym} are free in {acct} ({_state_words(st)}) - FinSim keeps the shares of"
-                                      " calls sold or being sold and of working sales: raise it less, or cancel it and place it again with its hedge",
+                                      " calls sold or being sold, of working sales and of working short sales: raise it less, or cancel it and place it again"
+                                      " with its hedge",
                           {"order_id": str(order_id), "legs": [o for o, _m, _n in grown], "need": need + own, "free": st["free"], "held": st["held"],
                            "working_sells": st["working_sells"], "reserved_shares": st["reserved"], "lent": st["lent"], "underlying_id": iid,
                            "calls": [c for c in st["calls"] if c["shares"]]})
@@ -1691,15 +1703,20 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
         # orders), in whole contracts as the margin assigns them - never leave by a sale; one reading with every other check (cover_state)
         st = cover_state(services, conn, account_id, iid, exclude_order_id=ctx_o["order_id"] if ctx_o is not None else None)
         free, reserved, lent = st["free"], st["reserved"], st["lent"]
+        # simplify round 4 (R-2): a short sale still working while the shares are held (placed while flat, the name bought since) is
+        # counted against them here too (cover_state's free), so a sale never takes the shares new calls had left it
+        shorts = int(st["working_shorts"]) if st["held"] > 0 else 0
         if qty > free:
-            raw = st["held"] - st["working_sells"] - reserved - lent
+            raw = st["held"] - st["working_sells"] - shorts - reserved - lent
             details = {"position": pos_qty, "working_sells": st["working_sells"], "reserved_shares": reserved, "reserved_sold": st["reserved_sold"],
                        "calls_working": st["reserved_working"], "calls_waiting": st.get("reserved_waiting", 0), "lent": lent, "qty": qty,
                        "calls": [c for c in st["calls"] if c["shares"]]}
+            if shorts:
+                details.update({"working_shorts": shorts, "short_sales": list(st.get("short_sales") or [])})
             if lent and qty <= raw + lent:     # C27: the shares are there but out on loan
                 raise RejectError("SHARES_ON_LOAN", f"SELL {qty:,} {inst.symbol}: {lent:,} of the position are lent out: recall {min(lent, qty - free):,} lent"
                                   f" shares first", details)
-            if reserved or lent:
+            if reserved or lent or shorts:
                 hint = f": sell {free:,}" if free else ""
             elif st["held"] > 0:
                 hint = (f": sell {free:,}; once they have sold, SELL_SHORT {qty - free:,} with a borrow" if free
@@ -1719,8 +1736,13 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
                          " releases as it fills (its hedge legs): cancel it first (SHARES_RESERVED)")
             if lent:
                 hint += f"; {lent:,} shares are lent out (recall them first)"
-            raise RejectError("OVERSELL", f"SELL {qty:,} {inst.symbol} but the long position net of working sells{' and shares covering calls' if reserved else ''}"
-                              f"{' and lent shares' if lent else ''} is {free:,}{hint}", details)
+            if shorts:
+                names = list(st.get("short_sales") or [])
+                hint += (f"; {shorts:,} {inst.symbol} are counted for the short sale{'s' if len(names) != 1 else ''} still working"
+                         f" ({_calls_words([{'order_id': o} for o in names])}): a short sale is never booked against shares held, so cancel"
+                         f" {'them' if len(names) != 1 else 'it'} first")
+            raise RejectError("OVERSELL", f"SELL {qty:,} {inst.symbol} but the long position net of working sells{' and working short sales' if shorts else ''}"
+                              f"{' and shares covering calls' if reserved else ''}{' and lent shares' if lent else ''} is {free:,}{hint}", details)
     elif side == "STC":
         free = pos_qty - working_sells
         if qty > free:

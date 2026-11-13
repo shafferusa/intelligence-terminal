@@ -570,7 +570,7 @@ def _option_candidates(services, account_id: str, inst, side: str, qty: int, cha
                        + (f" ({free:,} of them are free to sell: {_state_words(cst)})" if free < held else ""))
             elif free < -shares:
                 off = (f"{under_id}: the hedge sells {-shares:,} and {free:,} are free to sell ({_state_words(cst)}) - a sale of the shares kept"
-                       " for calls, working sales or loans is refused (OVERSELL)")
+                       " for calls, working sales, working short sales or loans is refused (OVERSELL)")
     if shares > 0:
         leg_side, needs = "BUY", False
     elif held >= -shares:

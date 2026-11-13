@@ -63,9 +63,9 @@ Conventions (sentence SMART_TICKET)
 - POSITION-AWARE SIDES.  "buy" / "sell" read the leg account's position and working orders, each order on the account as it is (no
   count across the orders of one instruction): an option bought while short is BTC, sold while long STC, sold while not held STO (SD-3,
   SIDE_INFERRED); shares bought while short are covered; a sale beyond the free quantity (``orders_preview.cover_state``: net of working
-  sells, of the shares covering calls sold or being sold - whole contracts, as the margin assigns them - and of lent shares) is
-  WOULD_OVERSELL with "sell the free N" only (the order route refuses a short sale while shares are held); a quantity between is
-  SIDE_SPLIT.  The explicit sides (short, cover, bto, sto, btc, stc and their long forms) are never changed; "short" or "sto" on shares
+  sells, of working short sales, of the shares covering calls sold or being sold - whole contracts, as the margin assigns them - and of
+  lent shares) is WOULD_OVERSELL with "sell the free N" only (the order route refuses a short sale while shares are held); a quantity
+  between is SIDE_SPLIT.  The explicit sides (short, cover, bto, sto, btc, stc and their long forms) are never changed; "short" or "sto" on shares
   held long is the blocker SHORT_WHILE_LONG (sell them first).  A position wholly in working closing orders is ALREADY_CLOSING (blocker;
   the explicit opening side offered), never silently an order that opens a new position.  "all" is the held quantity, "half"
   floor(held / 2) on the lot (QTY_FROM_HELD / QTY_ROUNDED check), and never on a side that would ADD to the position (ADDS_TO_POSITION
@@ -83,8 +83,8 @@ Conventions (sentence SMART_TICKET)
   TOKEN_AMBIGUOUS (iron, call or put condor); a strategy takes only buy or sell, typed or carried (MISSING_SIDE otherwise; its legs then
   have no side); a butterfly without call / put is calls (RIGHT_DEFAULT check); a calendar's near expiry is told from the far one as a
   date (the year inferred, a month alone through the cached chain), never by its spelling, and refused when a date cannot be read.  A
-  covered call or collar reads the signed holding and the shares free for NEW calls (``cover_state``'s ``free_for_calls``: also net of
-  working short sales): on shares held free the options only, the calls sold as covered (``covered: true``: the order route places them
+  covered call or collar reads the signed holding and the shares free for NEW calls (``cover_state``'s ``free_for_calls``, the same
+  count as ``free``): on shares held free the options only, the calls sold as covered (``covered: true``: the order route places them
   only while those shares are free and keeps them for the calls until they are closed); on shares held but not free SIDE_SPLIT; on a
   short NOTHING_HELD (a buy write and a collar that buys its shares too); none held, or "buy write", the shares bought and the calls sold
   as covered, sent after the shares have filled; a collar's put strike below its call strike (STRIKE_ORDER otherwise).  One price typed
@@ -2329,9 +2329,9 @@ class Resolver:
     def _cover_of(self, aid: str, uid: str) -> dict:
         """1.0.7.2: the shares of ``uid`` held in ``aid`` and the calls they cover, read by the server's one function
         (``orders_preview.cover_state``, without the claims: the parse never reads ``commands``) once per parse, so the reading and the
-        order route agree - ``free`` (what a sale may take: net of working sells, of the shares covering calls sold or being sold, in whole
-        contracts as the margin assigns them, and of lent shares) and ``free_for_calls`` (what NEW calls may take as cover: also net of
-        working short sales).  A SELECT on the parse's own connection: nothing is written."""
+        order route agree - ``free`` (what a sale, or NEW calls as their cover, may take: net of working sells, of working short sales -
+        simplify round 4 -, of the shares covering calls sold or being sold, in whole contracts as the margin assigns them, and of lent
+        shares; ``free_for_calls`` is the same count).  A SELECT on the parse's own connection: nothing is written."""
         key = (aid, uid)
         if key not in self._cover:
             from .orders_preview import cover_state
@@ -3258,6 +3258,10 @@ class Resolver:
             why.append(f"{int(pos['calls_working']):,} covering calls being sold (working orders)")
         if pos["lent"]:
             why.append(f"{pos['lent']:,} lent")
+        if pos.get("working_shorts"):
+            # simplify round 4: a short sale still working while the name is held is never booked against the shares held (the order
+            # route counts it against them: OVERSELL, cancel it first)
+            why.append(f"{int(pos['working_shorts']):,} taken by working short sales")
         flags.append(_flag("WOULD_OVERSELL", f"sell {q:,} {words} but the free quantity in {acct} is {free_long:,} (held {held:,}"
                            + ("; " + ", ".join(why) if why else "") + ")", leg["span"], choices or None))
         return None
@@ -3617,7 +3621,7 @@ class Resolver:
                     bw += " at " + _account_words_of(a)
                 choices.append({"label": f"buy write {q:,} (buy the shares)", "clause": bw})
             shares["flags"].append(_flag("SIDE_SPLIT", f"covered call on {q:,} {sym} but {free:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
-                                         + self._not_free_words(shares["position"], calls=True) + ": write calls on the free round lots, or buy the shares with the calls",
+                                         + self._not_free_words(shares["position"]) + ": write calls on the free round lots, or buy the shares with the calls",
                                          c["span"], choices or None))
         elif con is not None and q and not covered_by_held:
             shares["qty"] = self._qty(c, shares, con, shares["position"])
@@ -3764,19 +3768,19 @@ class Resolver:
         self._price_tif(c, shares, con, market_only=True)            # the shares ticket's time in force (no second refusal about it)
         for leg in [shares] + opts:
             leg["flags"].append(_flag("SIDE_SPLIT", f"collar {q:,} but {held:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
-                                      + self._not_free_words(shares["position"], calls=True) + ": collar the free round lots, or buy the shares as their own order",
+                                      + self._not_free_words(shares["position"]) + ": collar the free round lots, or buy the shares as their own order",
                                       leg["span"], choices))
         return [shares] + opts
 
     @staticmethod
-    def _not_free_words(pos: Optional[dict], calls: bool = False) -> str:
+    def _not_free_words(pos: Optional[dict]) -> str:
         """Why shares held are not free: " (300 in working sells, 100 covering calls already sold, 50 lent)", or "" (``cover_state``'s
-        counts).  ``calls``: the shares free for NEW calls, which working short sales take too."""
+        counts; simplify round 4: working short sales are counted against a sale as against NEW calls)."""
         pos = pos or {}
         why = []
         for n, words in ((pos.get("working_sells"), "in working sells"), (pos.get("reserved"), "covering calls already sold"),
                          (pos.get("calls_working"), "covering calls being sold (working orders)"), (pos.get("lent"), "lent"),
-                         (pos.get("working_shorts") if calls else 0, "taken by working short sales")):
+                         (pos.get("working_shorts"), "taken by working short sales")):
             if n:
                 why.append(f"{int(n):,} {words}")
         return f" ({', '.join(why)})" if why else ""
@@ -3937,7 +3941,7 @@ class Resolver:
             cls2 = self._cls(con)
             # a close of shares sells them: ``free`` is also net of the shares covering calls (``cover_state``), as a sale (``_side``)
             bz = pos if cls2 == "shares" and held > 0 else {}
-            extra = int(bz.get("reserved") or 0) + int(bz.get("calls_working") or 0)
+            extra = int(bz.get("reserved") or 0) + int(bz.get("calls_working") or 0) + int(bz.get("working_shorts") or 0)
             side = ({"option": "STC", "future": "SELL", "shares": "SELL"} if held > 0 else {"option": "BTC", "future": "BUY", "shares": "BUY_TO_COVER"})[cls2]
             lot = max(1, int(con.get("lot") or 1))
             q = free

@@ -1994,8 +1994,13 @@ class CoverReadingTests(unittest.TestCase):
         self.assertEqual([None, None], [l["request"] for l in out["legs"]])
         out = self.parse("A", "collar 100 ACME Dec 18 2026 220/260", "F")
         self.assertTrue(all("SIDE_SPLIT" in codes(l["flags"]) and l["request"] is None for l in out["legs"]), all_codes(out))
-        leg = self.parse("A", "sell 100 ACME", "F")["legs"][0]                  # a sale is not what the short sale takes: read as before
-        self.assertEqual(("SELL", 100), (leg["request"]["side"], leg["request"]["qty"]))
+        # simplify round 4: a sale takes no share the resting short sale is counted for (a short sale is never booked against shares
+        # held: the order route refuses the sale, OVERSELL, cancel the short sale first) - read as the route reads it, nothing to send
+        leg = self.parse("A", "sell 100 ACME", "F")["legs"][0]
+        f = flag(leg, "WOULD_OVERSELL")
+        self.assertIsNone(leg["request"])
+        self.assertIn("the free quantity in F1:US_EXCHANGE is 0 (held 100; 100 taken by working short sales)", f["text"])
+        self.assertEqual((100, 0), (leg["position"]["qty"], leg["position"]["free"]))     # the answer's position keys as before
 
     def test_the_parse_reads_no_command_and_stays_under_its_budget(self):
         import finsim.terminal.orders_preview as m_orders_preview

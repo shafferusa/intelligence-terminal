@@ -177,9 +177,10 @@
     var fld = basisField(f);
     return T.pxHtml(f.quote, { field: fld || undefined, basis: f.price_basis }) + (fld ? ' <span class="muted">' + T.esc(fld) + '</span>' : '');
   }
-  /* OCC fields of an option id (display only): {root, expiry, right, strike} */
+  /* OCC fields of an option id (display only): {root, expiry, right, strike}; FinSim's OCC grammar (instruments._OCC_RE: a root of 1 - 6
+     characters, a letter first - ACME1 of an adjusted contract) */
   function occ(id) {
-    var m = /^([A-Z.^-]+?)(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(String(id || ''));
+    var m = /^([A-Z][A-Z0-9.\-]{0,5})(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(String(id || ''));
     return m ? { root: m[1], expiry: '20' + m[2] + '-' + m[3] + '-' + m[4], right: m[5], strike: Number(m[6]) / 1000 } : null;
   }
   /* 15.7 item 7: a fill booked as of an earlier date carries the AS-OF badge, its entered time and batch; the full label is the title */

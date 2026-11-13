@@ -371,8 +371,14 @@
     var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }
     var o = effOf(S, c);
     var refused = T.accountRefusal(o.account_id); if (refused) { say(S, refused, 'err'); return; }
-    var f = { instrument_id: o.instrument_id, kind: instOf(c.leg).kind || undefined, side: o.side, qty: o.qty, order_type: o.order_type, tif: o.tif };
+    var ins = instOf(c.leg);
+    var f = { instrument_id: o.instrument_id, kind: ins.kind || undefined, side: o.side, qty: o.qty, order_type: o.order_type, tif: o.tif };
     ['limit_px', 'stop_px', 'trail_amt', 'trail_pct', 'gtd_date'].forEach(function (k) { if (o[k] != null) { f[k] = o[k]; } });
+    /* simplify round 4: the instrument's facts as the server read them (an option's right, underlying, expiry, strike; the lot), so the
+       ticket knows a call before its own look-up answers - a call sold as covered on any listed root keeps its claim on the first open */
+    if (ins.id && String(ins.id) === String(o.instrument_id)) {
+      ['right', 'underlying_id', 'expiry', 'strike', 'lot'].forEach(function (k) { if (ins[k] != null && ins[k] !== '') { f[k] = ins[k]; } });
+    }
     if (o.covered) { f.covered = true; }
     S.opened[c.key] = { at: Math.floor(T.clock.now()), sig: sigOf(o) };
     c.dropped = []; c.was = {};                               /* simplify round 2: opened with these terms - the owner has seen its notes */

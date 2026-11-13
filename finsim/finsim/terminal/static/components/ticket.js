@@ -129,22 +129,27 @@
   /* ---------------------------------------------------------------- helpers --------------------------------------- */
   function ensureCss() { if (cssDone) { return; } cssDone = true; var s = T.h('style', { id: 'ticket-css' }); s.textContent = CSS; document.head.appendChild(s); }
   function kindGroup(kind) { if (kind === 'OPTION') { return 'OPTION'; } if (kind === 'FUTURE') { return 'FUTURE'; } if (kind === 'FX') { return 'FX'; } if (kind === 'BOND') { return 'BOND'; } return 'CASH'; }
+  /* simplify round 4: an OCC option id in FinSim's own grammar (instruments._OCC_RE): a root of 1 - 6 characters, a letter first, then
+     letters, digits, '.' or '-' (ACME1 of an adjusted contract), the expiry yymmdd, C / P, the strike x 1000 in 8 digits */
+  var OCC = /^([A-Z][A-Z0-9.\-]{0,5})(\d{6})([CP])(\d{8})$/;
   function guessKind(id) {
     if (!id) { return null; }
-    if (/^[A-Z.^-]+\s\d{6}[CP]\d{8}$/.test(id) || /^[A-Z.^-]+\d{6}[CP]\d{8}$/.test(id)) { return 'OPTION'; }
+    if (OCC.test(String(id))) { return 'OPTION'; }
     if (/^[A-Z]{1,3}[FGHJKMNQUVXZ]\d{2}(\.[A-Z]{3})?$/.test(id)) { return 'FUTURE'; }
     if (/^[A-Z]{6}$/.test(id) || /=X$/.test(id)) { return 'FX'; }
     return null;
   }
   function instKind() { return (st.inst && st.inst.kind) || guessKind(st.instrument_id) || 'EQUITY'; }
   /* 1.0.7.2: a call option (the instrument's right, else its OCC id) and its underlying / multiplier, for 'sold as covered' */
-  var OCC = /^([A-Z.^-]+?)\s*(\d{6})([CP])(\d{8})$/;
   function isCall() {
     if (instKind() !== 'OPTION') { return false; }
     var r = st.inst && st.inst.right; if (r) { return String(r).toUpperCase().charAt(0) === 'C'; }
     var m = OCC.exec(String(st.instrument_id || '')); return !!(m && m[3] === 'C');
   }
   function coveredOk() { return !st.mode && !st.hedge_pos && st.side === 'STO' && isCall(); }
+  function coveredLost() {
+    return 'not sold as covered: ' + (st.instrument_id || 'this order') + ' is ' + (isCall() ? 'not sold to open' : 'not a call') + ' - the claim handed over is not kept (a plain order)';
+  }
   function coveredWords() {
     var m = OCC.exec(String(st.instrument_id || ''));
     var under = (st.inst && st.inst.underlying_id) || (m ? m[1] : 'the underlying');
@@ -209,7 +214,7 @@
   /* USX-35: the meta of a chain leg (no GET /api/instruments/<OCC> before the preview materialises the row) */
   function legMeta(leg, id) {
     leg = leg || {};
-    var m = /^([A-Z.^-]+?)(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(String(id || ''));
+    var m = /^([A-Z][A-Z0-9.\-]{0,5})(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(String(id || ''));      /* FinSim's OCC grammar (see OCC) */
     var right = leg.right || (m ? m[5] : null);
     var strike = leg.strike != null ? String(leg.strike) : (m ? String(Number(m[6]) / 1000) : null);
     var expiry = leg.expiry || (m ? '20' + m[2] + '-' + m[3] + '-' + m[4] : null);
@@ -219,6 +224,15 @@
                                                      quality: q.quality, source: q.source, quote_time: q.quote_time, as_of: q.as_of, fetched_at: q.fetched_at, delay_label: q.delay_label, provider: q.provider } : null;
     return { instrument_id: id, symbol: id, kind: 'OPTION', name: (under ? under + ' ' : '') + (expiry || '') + ' ' + (right || '') + (strike || ''), currency: 'USD', multiplier: '100', lot: 1,
              expiry: expiry, strike: strike, right: right, underlying_id: under, support: 'FULL', quote: quote, from_chain: true };
+  }
+  /* simplify round 4: the facts of the instrument a caller hands over with its kind (a Smart Ticket card: right, underlying, expiry,
+     strike, lot), read until the instrument's look-up answers - never cached, so the look-up still runs - so a call sold as covered on
+     any root FinSim lists (ACME1 ...) is read as a call on the first open, its claim kept */
+  function handedMeta(f) {
+    if (!f.kind) { return null; }
+    var m = { kind: String(f.kind) };
+    ['right', 'underlying_id', 'expiry', 'strike', 'lot'].forEach(function (k) { if (f[k] != null && f[k] !== '') { m[k] = f[k]; } });
+    return m;
   }
   function sidesFor() { return SIDES[kindGroup(instKind())] || SIDES.CASH; }
   function lot() { var l = st.inst && Number(st.inst.lot); return l && l > 0 ? l : 1; }
@@ -399,8 +413,14 @@
     if (f.hedge === 'position' && id) { enterPositionMode(id, f); return; }
     if (st.hedge_pos && (id || f.side || f.close || f.qty != null)) { leavePositionMode(); }
     /* 1. a new instrument resets the whole order; a Close on the same instrument resets it too (nothing carries over) */
-    if (newInst) { setInstrument(id, f.leg ? (instCache[id] || legMeta(f.leg, id)) : (f.kind && !instCache[id] ? { kind: String(f.kind) } : null), true); }
+    if (newInst) { setInstrument(id, f.leg ? (instCache[id] || legMeta(f.leg, id)) : (f.kind && !instCache[id] ? handedMeta(f) : null), true); }
     else if (f.close) { resetOrder(); st.result = null; T.clear(ui.result); paintPreview(); }
+    if (!newInst && id && id === st.instrument_id && !instCache[id] && f.kind) {
+      /* the same instrument, its look-up still to answer: the facts handed over fill only what the ticket does not know yet (a kind or a
+         fact it knows is never replaced) */
+      var hm = handedMeta(f) || {}; var cur = st.inst || {};
+      Object.keys(hm).forEach(function (k) { if (cur[k] == null) { cur[k] = hm[k]; } }); st.inst = cur;
+    }
     if (f.close) { st.hedgeOpen = false; }
     st.hedge_for = f.hedge_for || (newInst || f.close || f.fresh ? null : st.hedge_for);
     /* 2. the caller's fields */
@@ -432,7 +452,16 @@
     /* 1.0.7.2: 'sold as covered' only for a call sold to open (anything else ignores it); a fresh order without it has none */
     if (f.covered === true && coveredOk()) { st.covered = true; st.covered_offer = true; }
     else if (f.fresh || f.close || newInst) { st.covered = false; st.covered_offer = false; }
+    /* simplify round 4: a claim handed over on an option whose right is not known yet (its look-up to answer) waits for that answer
+       (st.covered_wait, this order's number); one that cannot be kept is said in a toast, never dropped unseen */
+    var lost = false;
+    if (f.covered === true || f.fresh || f.close || newInst) { st.covered_wait = null; }
+    if (f.covered === true && !coveredOk()) {
+      if (instKind() === 'OPTION' && !(st.inst && st.inst.right) && !instCache[st.instrument_id] && !OCC.test(String(st.instrument_id || ''))) { st.covered_wait = st.gen; }
+      else { lost = true; }
+    }
     paintFields(); stateTicket();
+    if (lost) { T.ui.toast(coveredLost(), 'err', 12000); }          /* a toast: the status line is the preview's */
     if (st.instrument_id) { fieldChanged(); }
     if (!id && !st.instrument_id) { try { ui.inst.focus(); } catch (e) { /* ignore */ } }
   }
@@ -533,16 +562,31 @@
     if (!deferPreview) { fieldChanged(); }
     if (!instCache[id]) {
       T.api.get('/api/instruments/' + encodeURIComponent(id), { account: st.account_id }).then(function (d) {
-        if (!d || d.pending) { return; }
+        if (!d || d.pending) {
+          if (st.instrument_id === id && st.covered_wait != null && st.covered_wait === st.gen) {    /* simplify round 4: never left waiting unsaid */
+            st.covered_wait = null; T.ui.toast('not sold as covered: ' + id + ' is not known yet - the claim handed over is not kept (a plain order)', 'err', 12000);
+          }
+          return;
+        }
         var m = d.instrument || d; if (d.quote && !m.quote) { m.quote = d.quote; } if (d.support && !m.support) { m.support = d.support; } if (d.session && !m.session) { m.session = d.session; }
         cacheInst(id, m);
         if (st.instrument_id !== id) { return; }
         var before = instKind(), sideBefore = st.side; st.inst = m;
         settleSide();                                  /* the real kind: a Close recomputes its closing side; an unaccepted side stays unset */
+        var waited = st.covered_wait != null && st.covered_wait === st.gen; st.covered_wait = null;
+        if (waited && coveredOk()) { st.covered = true; st.covered_offer = true; }       /* simplify round 4: the claim handed over, kept */
         paintFields(); paintInstMeta(); paintQuote(); stateTicket();
+        if (waited && !st.covered) { T.ui.toast(coveredLost(), 'err', 12000); }
+        if (waited) { fieldChanged(); }
         if (hedge) { hedge.update({ inst: m, side: st.side, qty: st.qty }); }
         if (before !== instKind() || sideBefore !== st.side) { fieldChanged(); }
-      }, function (e) { if (st.instrument_id === id) { paintStatus('instrument ' + id + ': ' + T.api.describe(e), 'err'); } });
+      }, function (e) {
+        if (st.instrument_id !== id) { return; }
+        paintStatus('instrument ' + id + ': ' + T.api.describe(e), 'err');
+        if (st.covered_wait != null && st.covered_wait === st.gen) {      /* simplify round 4: a claim that waited for this look-up, said */
+          st.covered_wait = null; T.ui.toast('not sold as covered: the look-up of ' + id + ' failed - the claim handed over is not kept (a plain order)', 'err', 12000);
+        }
+      });
     }
   }
   function resolveTyped() {

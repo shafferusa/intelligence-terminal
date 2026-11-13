@@ -5,7 +5,11 @@
  * GBP, JPY ... HKD, SGD, MXN, KRW ...; '<>' swaps them); the amount in either currency (the unit buttons say which, '1m' / '500k'
  * accepted); for a forward the tenor (ON spot-next, 1W, 1M, 2M, 3M, 6M, 9M, 1Y) or a broken value date.  Opened from a pair row
  * (b buys the pair's first currency, s sells it), from a forward row (tenor / date prefilled), from the account's empty dock, or
- * from any page with T.ticket.open({account_id, kind: 'FX', buy_ccy, sell_ccy, amount, mode, tenor, value_date}).
+ * from any page with T.ticket.open({account_id, kind: 'FX', buy_ccy, sell_ccy, amount, amount_ccy, mode, tenor, value_date}).
+ * FinSim 1.0.7.2 simplify round 4: open({fresh: true, ...}) (the Smart Ticket's "Open the FX desk") starts a NEW deal - spot at the
+ * default tenor unless the fields name a mode, a tenor or a value date, the amount in amount_ccy or else the pair's base, the amount
+ * box empty unless they name one, the previous preview, result and status dropped: nothing typed or picked in the desk before rides
+ * along.
  *
  * The preview (POST /api/fx/preview, debounced 300 ms, refreshed every 10 s while open) shows: the deal ('BUY EUR 1,000,000.00 /
  * SELL USD 1,085,020.00'), the mid with its freshness chip (a cross: its own print or the mid derived from the USD pairs, said),
@@ -39,6 +43,7 @@
   var TENORS = [['ON', 'ON (spot-next)'], ['1W', '1 week'], ['1M', '1 month'], ['2M', '2 months'], ['3M', '3 months'], ['6M', '6 months'], ['9M', '9 months'], ['1Y', '1 year'], ['BROKEN', 'broken date']];
   var DEFAULT_CCYS = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'NZD'];
   var DEBOUNCE_MS = 300, REPREVIEW_MS = 10000, PREVIEW_TTL_MS = 60000, CCY_TTL_MS = 60000;
+  var DEFAULT_TENOR = '3M', PV_HINT = 'the preview appears here: rate, spread, value date, both legs and how the sold currency is funded';
   /* the keys in force (keys.js registry, Settings > Keyboard; KB-R1-01): the desk previews with 'Preview the order' (Enter)
      and confirms with 'Submit the order' (Ctrl+Enter) */
   function kl(id) { return T.keys && T.keys.label ? T.keys.label(id) : ''; }
@@ -95,13 +100,13 @@
     var amt = T.h('div', { class: 'amt' }, amount, T.h('div', { class: 'units' }, unitBuy, unitSell));
     var tenor = T.h('select', { 'aria-label': 'tenor' });
     TENORS.forEach(function (t) { tenor.appendChild(T.h('option', { value: t[0] }, t[1])); });
-    tenor.value = '3M';
+    tenor.value = DEFAULT_TENOR;
     var vdate = T.h('input', { type: 'date', 'aria-label': 'value date', hidden: true, title: 'a broken value date: a business day after spot, up to the 1-year date' });
     var tenorRow = T.h('div', { class: 'ccys' }, tenor, vdate);
     var tenorField = T.field('value', tenorRow, 'the forward value date');
     var form = T.form([T.field('deal', modes), T.field('currencies', ccys), T.field('amount', amt, 'the amount in the currency of the highlighted button'), tenorField]);
     var unitNote = T.h('div', { class: 'hint' }, '');
-    var pv = T.h('div', { class: 'pv' }, T.h('div', { class: 'hint' }, 'the preview appears here: rate, spread, value date, both legs and how the sold currency is funded'));
+    var pv = T.h('div', { class: 'pv' }, T.h('div', { class: 'hint' }, PV_HINT));
     var status = T.h('div', { class: 'st', role: 'status' });
     var previewBtn = T.h('button', { class: 'btn' }, 'Preview');
     var confirm = T.h('button', { class: 'btn primary', disabled: true, title: 'book the deal' + kp('ticket.submit') }, 'Confirm');
@@ -184,10 +189,15 @@
     st.ui.unitBuy.classList.toggle('on', st.unit === st.buy); st.ui.unitSell.classList.toggle('on', st.unit === st.sell);
     st.ui.unitNote.textContent = 'amount in ' + st.unit + ' (' + (st.unit === st.buy ? 'what you receive' : 'what you deliver') + '); the other side follows from the deal rate';
   }
-  /* fields from a row / another page: a pair + side (b buys the base, s sells it), or buy / sell currencies */
+  /* fields from a row / another page: a pair + side (b buys the base, s sells it), or buy / sell currencies; fresh: a new deal (above) */
   function apply(f) {
     var pair = f.instrument_id && /^[A-Z]{6}$/.test(String(f.instrument_id)) ? String(f.instrument_id) : null;
     var buy = f.buy_ccy ? String(f.buy_ccy).toUpperCase() : null, sell = f.sell_ccy ? String(f.sell_ccy).toUpperCase() : null;
+    if (f.fresh) {
+      clearTimeout(st.deb); st.seq++; st.holdUntil = 0;          /* a preview answer for the previous deal is dropped */
+      setMode('SPOT'); st.ui.tenor.value = DEFAULT_TENOR; st.ui.vdate.value = ''; st.ui.amount.value = '';
+      T.clear(st.ui.pv).appendChild(T.h('div', { class: 'hint' }, PV_HINT)); T.clear(st.ui.result); setStatus('', '');
+    }
     if (pair && !buy && !sell) {
       var base = pair.slice(0, 3), quote = pair.slice(3);
       var selling = String(f.side || 'BUY').toUpperCase() === 'SELL';
@@ -204,6 +214,7 @@
       setCcys(buy || st.buy, sell || st.sell);
       if (unit === st.buy || unit === st.sell) { st.unit = unit; }
     }
+    if (f.fresh) { st.unit = pair && (pair.slice(0, 3) === st.buy || pair.slice(0, 3) === st.sell) ? pair.slice(0, 3) : st.buy; }   /* the pair's base */
     if (f.amount_ccy) { st.unit = String(f.amount_ccy).toUpperCase(); }
     if (f.amount != null || f.qty != null) { st.ui.amount.value = String(f.amount != null ? f.amount : f.qty); }
     paintUnits();

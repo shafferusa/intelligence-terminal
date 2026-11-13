@@ -834,7 +834,8 @@ def h_exercise(ctx: TxContext, payload: dict) -> dict:
         # 1.0.7.2 INV-2 / INV-3: an early put exercise never delivers the shares covering calls sold or being sold (whole contracts, as the
         # margin assigns them, read from the positions now).  Simplify round 1: while calls take the name's shares, it delivers only the
         # shares FREE - net of the working sales and the lent shares too (cover_state's ``free``, what a sale may take): a sale still
-        # working would otherwise sell the cover once the exercise has delivered the rest
+        # working would otherwise sell the cover once the exercise has delivered the rest.  Simplify round 4: net of the short sales still
+        # working too (placed while flat, the name bought since) - they would be netted against the shares the delivery leaves
         from ..orders_preview import SHARES_RESERVED, _calls_words, _per_contract, cover_state
         st = cover_state(services, conn, account_id, under.instrument_id)
         Q = int((Decimal(qty) * inst.multiplier).to_integral_value())
@@ -845,16 +846,21 @@ def h_exercise(ctx: TxContext, payload: dict) -> dict:
             sales = [r["order_id"] for r in conn.execute("SELECT order_id FROM orders WHERE account_id=? AND instrument_id=? AND side IN ('SELL','STC')"
                                                           " AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT') ORDER BY order_id",
                                                           (account_id, under.instrument_id)).fetchall()]
+            shorts = list(st.get("short_sales") or [])
             also = [w for n, w in ((st["working_sells"], f"{st['working_sells']:,} are in working sales ({_calls_words([{'order_id': s} for s in sales])})"),
+                                   (st["working_shorts"], f"{st['working_shorts']:,} are counted for the short sale{'s' if len(shorts) != 1 else ''} still working"
+                                                          f" ({_calls_words([{'order_id': s} for s in shorts])})"),
                                    (st["lent"], f"{st['lent']:,} are lent")) if n]
             raise ConflictError(SHARES_RESERVED, f"exercising {qty:,} {inst.symbol} would deliver {Q:,} {under.symbol}, and of the {st['held']:,} held {st['reserved']:,}"
                                                  f" cover calls sold or being sold ({_calls_words(calls)})" + ("; " + "; ".join(also) if also else "")
                                                  + f": {st['free']:,} are free - buy back or cancel those calls"
-                                                 + (" or cancel the sales" if st["working_sells"] else "") + " first"
+                                                 + (" or cancel the sales" if st["working_sells"] else "")
+                                                 + (" or the short sales" if st["working_shorts"] and st["working_sells"] else
+                                                    (" or cancel the short sales" if st["working_shorts"] else "")) + " first"
                                                  + (f", or exercise {can:,} contract{'s' if can != 1 else ''}" if can else ""),
                                 {"held": st["held"], "reserved_shares": st["reserved"], "reserved_sold": st["reserved_sold"], "calls_working": st["reserved_working"],
-                                 "calls_waiting": st.get("reserved_waiting", 0), "working_sells": st["working_sells"], "lent": st["lent"], "free": st["free"],
-                                 "deliver": Q, "calls": calls, "sales": sales})
+                                 "calls_waiting": st.get("reserved_waiting", 0), "working_sells": st["working_sells"], "working_shorts": st["working_shorts"],
+                                 "lent": st["lent"], "free": st["free"], "deliver": Q, "calls": calls, "sales": sales, "short_sales": shorts})
     S, quality, qt = _mark(ctx.marks, under.instrument_id)
     warnings: List[str] = []
     if S is None:

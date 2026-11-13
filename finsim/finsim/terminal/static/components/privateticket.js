@@ -27,6 +27,10 @@
  * still held are offered for SELL only (closing) and the preview shows the server's LISTED warning ("sell only").
  * Keys come from the registry (keys.js): ticket.preview / ticket.submit / ticket.clear.  ASCII only; nothing is computed here
  * but the price convenience.
+ * FinSim 1.0.7.2 simplify round 4: T.ticket.open({fresh: true, ...}) (the Smart Ticket's "Open the private-markets ticket") starts a
+ * NEW trade on a ticket already docked for the account - BUY unless it names the side, the quantity empty unless it names one, a
+ * SECONDARY at the mark with the default fee, settlement and lock-up, no discount, the previous preview and result dropped: nothing
+ * typed there before rides along.
  */
 (function () {
   'use strict';
@@ -306,6 +310,11 @@
     function prefill(f) {
       f = f || {};
       var id = f.company_id || f.instrument_id;
+      if (f.fresh) {                                           /* simplify round 4: a new trade (above) */
+        clearPreview(); side.value = 'BUY'; kind.value = 'SECONDARY'; qty.value = ''; price.value = ''; disc.value = '';
+        fee.value = pctFromFraction(d.fee_pct); settle.value = d.settle_days; lock.value = d.lockup_months;
+        if (!id) { paintMark(); }                              /* the price from the mark again (a company named repaints it below) */
+      }
       if (id) {
         var c = find(id);
         state.foreign = null;
@@ -335,14 +344,16 @@
 
   /* ---- the dock (C11 / C23): T.ticket.open(... kind 'PRIVATE' ...) -> open(dockBody, fields) ---------------------------------- */
   var dock = null;                                             /* {el, account_id, handle, pending, loading} */
-  function companyFields(fields) { return { company_id: fields.company_id || fields.instrument_id || null, side: fields.side || null, qty: fields.qty != null ? fields.qty : null }; }
+  function companyFields(fields) {
+    return { company_id: fields.company_id || fields.instrument_id || null, side: fields.side || null, qty: fields.qty != null ? fields.qty : null, fresh: !!fields.fresh };
+  }
   function open(body, fields) {
     fields = fields || {};
     var acct = fields.account_id;
     var same = dock && dock.el === body && dock.account_id === acct && body.firstChild;
     var want = companyFields(fields);
     if (same) {
-      if (dock.handle) { if (want.company_id || want.side || want.qty != null) { dock.handle.prefill(want); } }
+      if (dock.handle) { if (want.company_id || want.side || want.qty != null || want.fresh) { dock.handle.prefill(want); } }
       else { dock.pending = want; }
       return dock.handle;
     }
