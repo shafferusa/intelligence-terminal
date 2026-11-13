@@ -755,9 +755,12 @@ def apply_fill(ctx: TxContext, spec: FillSpec, services=None) -> FillResult:
             # 1.0.7.2 INV-4 at the fill (simplify round 4): a short sale is never booked against shares held long - one placed while the
             # account was flat can still be working when it has bought the name.  Before, its fill was rolled back by the ledger check
             # (500 INTEGRITY, an ERROR item on every pass) while no larger than the holding, and once larger it was booked, the position
-            # netted below the cover of calls sold as covered.  The matcher suspends the resting order with this reason and one item
+            # netted below the cover of calls sold as covered.  The matcher suspends the resting order with this reason and one item.
+            # Simplify round 5: the way out it gives is the one FinSim allows - while the short sale works (suspended included) the shares
+            # it is counted against cannot be sold (OVERSELL: "cancel it first"), and a resume while they are held suspends it again
             raise RejectError("SHORT_WHILE_LONG", f"SELL_SHORT {qty:,} {inst.symbol}: {spec.account_id} holds {pos_qty:,} {inst.symbol} long - a short sale is"
-                                                  " never booked against shares held: sell them first, then resume the short sale, or cancel it",
+                                                  " never booked against shares held: cancel it - while it works, the shares it is counted against"
+                                                  " cannot be sold - then sell them and place the short sale again",
                               {"position": pos_qty, "qty": qty, "order_id": spec.order_id})
         if short_gl is None:
             raise RejectError("NOT_IN_THIS_BUILD", f"{inst.kind} cannot be sold short in this build")

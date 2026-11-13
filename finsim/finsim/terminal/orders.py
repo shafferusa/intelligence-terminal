@@ -118,6 +118,8 @@ class NotBuilt(RejectError):
 
 FUNDING_CODES = FUNDS_CODES                     # ("INSUFFICIENT_FUNDS", "INSUFFICIENT_FUNDS_CCY")
 FUNDS_ITEM_CODES = (FUNDS_WAIT_ITEM, "ORDER_SUSPENDED")
+#: simplify round 5: fill refusals whose message says the way out FinSim allows (the suspension item adds no "resume it" of its own)
+SELF_ADVISED_CODES = ("SHORT_WHILE_LONG",)
 FUNDS_RESUME_BACKOFF_S = 60          # a resumed order that could not be funded at its fill waits 60 s, doubling per retry ...
 FUNDS_RESUME_BACKOFF_MAX_S = 1800    # ... up to 30 min, before the next automatic resume
 #: C15 / C12b: the fill passes ``fx_convert`` once execution.FillSpec carries the field (P04); before that the order needs its FX leg
@@ -430,7 +432,9 @@ def _suspend(ctx: TxContext, orow: OrderRow, e: RejectError, rec: Optional[Quote
             _funds_item(ctx, orow.account_id, oid, "WARN", f"{what}: {e.message}; {reason}: it resumes automatically when cash frees up (or resume / cancel it)",
                         {"code": e.code, "details": _jsonable(e.details)})
         return
-    msg = f"{what} suspended: {e.message}; fix the cause and resume it, or cancel it"
+    # simplify round 5: a refusal that says its own way out (SHORT_WHILE_LONG: "cancel it - ... - then sell them and place the short sale
+    # again") is never followed by the generic "resume it", which it rules out
+    msg = f"{what} suspended: {e.message}" + ("" if e.code in SELF_ADVISED_CODES else "; fix the cause and resume it, or cancel it")
     details = {"account_id": orow.account_id, "ref_type": "order", "ref_id": oid, "code": e.code, "details": _jsonable(e.details)}
     q = ",".join("?" for _ in FUNDS_ITEM_CODES)
     row = conn.execute(f"SELECT id FROM attention WHERE code IN ({q}) AND ref_type='order' AND ref_id=? AND resolved_ts IS NULL ORDER BY id DESC LIMIT 1",

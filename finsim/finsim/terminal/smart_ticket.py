@@ -59,7 +59,10 @@ Conventions (sentence SMART_TICKET)
   "Load the chain" (the preview refuses NOT_LISTED until the chain lists it: nothing is invented).  An expiry or strike that is not
   listed is NEVER snapped: it is a blocker with the nearest listed values as choices.  Futures by id, root + month (+ year) on the listing
   rule, or front / active through ``api_products.active_months``.  FX, bonds, private names and swaps open their own ticket
-  (KIND_OWN_TICKET with an action).
+  (KIND_OWN_TICKET with an action), which starts a new trade from the side, the amount and the account only: a typed term it cannot
+  take (a price other than market, a time in force, another account, a side other than buy / sell, 'all' / 'half' or a unit, a close,
+  covered call or collar) is the blocker OWN_TICKET_TERMS naming those words, with "without them" as its choice when they are only a
+  price and / or a time in force (simplify round 5: never dropped unsaid, never "read as a limit").
 - POSITION-AWARE SIDES.  "buy" / "sell" read the leg account's position and working orders, each order on the account as it is (no
   count across the orders of one instruction): an option bought while short is BTC, sold while long STC, sold while not held STO (SD-3,
   SIDE_INFERRED); shares bought while short are covered; a sale beyond the free quantity (``orders_preview.cover_state``: net of working
@@ -148,6 +151,8 @@ FLAG_SEVERITY = {
     # 1.0.7.2 simplification: a price on a group as a whole (separate tickets cannot carry a net price); words asking for one order of a
     # group; a short sale of shares the account holds long (the order route refuses it)
     "NET_PRICE": "blocker", "ONE_ORDER_ASKED": "blocker", "SHORT_WHILE_LONG": "blocker",
+    # simplify round 5: typed terms a product's own ticket does not take from the hand-off (a price, a time in force, another account ...)
+    "OWN_TICKET_TERMS": "blocker",
     "SIDE_INFERRED": "check", "SIDE_CARRIED": "check", "YEAR_INFERRED": "check", "EXPIRY_FROM_MONTH": "check", "TYPE_DEFAULT": "check",
     "PRICE_FROM_QUOTE": "check", "QTY_ROUNDED": "check", "BOOK_FROM_SCOPE": "check", "OTHER_BOOK": "check", "MULTI_BOOK": "check",
     "ACCOUNT_CHOICE": "check", "OPTION_UNVERIFIED": "check", "CHAIN_STALE": "check", "COVER_HINT": "check", "DUPLICATE_LEG": "check",
@@ -2127,6 +2132,11 @@ KIND_WORDS = {"EQUITY": "equity", "ETF": "ETF", "ADR": "ADR", "REIT": "REIT", "P
               "BOND": "bond", "PRIVATE": "private company", "SWAP": "swap", "INDEX": "index", "YIELD": "yield"}
 OWN_TICKET_LABEL = {"FX": "Open the FX desk", "BOND": "Open the bond ticket", "PRIVATE": "Open the private-markets ticket", "OTC": "Open the OTC desk"}
 OWN_TICKET_ROLE = {"FX": "FOREIGN_FX", "BOND": "DEBT", "PRIVATE": "PRIVATE"}
+#: simplify round 5: each own ticket in words, and how it deals (OWN_TICKET_TERMS: what the hand-off cannot carry is said)
+OWN_TICKET_NAME = {"FX": "the FX desk", "BOND": "the bond ticket", "PRIVATE": "the private-markets ticket", "OTC": "the OTC desk"}
+OWN_TICKET_DEALS = {"FX": "it deals at its own rate, spot unless you pick a forward there, when you confirm there",
+                    "BOND": "it deals at its own price, the mark and its half-spread, when you confirm there",
+                    "PRIVATE": "it takes the negotiated price you type there", "OTC": "you enter the terms there"}
 UNITS_OK = {"option": ("contracts", "x"), "future": ("contracts", "lots", "x"), "shares": ("shares", "x")}
 #: option strategies the order ticket's Strategies tab has a template for (call / put spreads, straddles, strangles, iron condor and its
 #: reverse, iron butterfly, call butterfly, call / put calendars): their group offers the action "Strategies tab"
@@ -3361,7 +3371,10 @@ class Resolver:
         leg["flags"].append(_flag("UNPARSED_TEXT", f"{_month_words(m)} {dd} is not a date", span))
         return None
 
-    def _own_flag(self, c: dict, leg: dict, con: dict, q: Optional[int]) -> None:
+    def _own_flag(self, c: dict, leg: dict, con: dict, q: Optional[int], named: Optional[dict] = None) -> None:
+        """KIND_OWN_TICKET with the action that opens the product's own ticket, prefilled with the side, the amount and the account; then
+        OWN_TICKET_TERMS for what the clause says that hand-off cannot carry (``_own_terms``).  ``named``: the account the clause names
+        (``_named_account``)."""
         tkind, sentence = con["_own"]
         inst = con["_inst"]
         lid = leg["lifetime_id"]
@@ -3383,6 +3396,72 @@ class Resolver:
         if acct:
             a = next(x for x in self._accounts(lid) if x["account_id"] == acct)
             leg["account_id"], leg["account_name"] = a["account_id"], a["name"]
+        self._own_terms(c, leg, tkind, acct, named)
+
+    def _own_terms(self, c: dict, leg: dict, tkind: str, acct: Optional[str], named: Optional[dict]) -> None:
+        """Simplify round 5 (R-3, R-4): the product's own ticket opens a NEW trade from the hand-off's side ("buy" / "sell"), amount and
+        account only (``_own_flag``; the page's "Open the FX desk" ...).  A typed term it cannot take - a price other than "market", a time
+        in force, an account other than the one it opens in, another side word, "all" / "half" or a unit, or a close, covered call or
+        collar - would be dropped by that hand-off, so it is the blocker OWN_TICKET_TERMS naming those words.  When they are only a price
+        and / or a time in force, its choice reads the clause again without them; an account named is never in a choice (the choice
+        guard writes back the account an order named, so "without 'at pb'" would keep it): the text says to remove it.  The page holds
+        the action while a red flag stands, so the ticket never opens a trade at other terms unsaid.  The leg never says it read a price
+        "as a limit": nothing carries one there."""
+        leg["flags"] = [f for f in leg["flags"] if f["code"] != "TYPE_FROM_AT"]
+        kind, v, qa, mods = c.get("kind"), c.get("verb") or {}, c.get("qty") or {}, c.get("mods") or {}
+        said: List[str] = []                          # the typed words the hand-off does not carry
+        drop: List[Tuple[int, int]] = []              # the spans of a price and a time in force (what a choice may remove)
+        rewrite = False                               # a side, an amount or a kind of order it cannot take: the order is written again
+        other = False                                 # an account named that is not the one it opens in
+
+        def words(span) -> str:
+            return "'" + " ".join(self.text[int(span[0]):int(span[1])].split()) + "'"
+        if kind != "order":
+            said.append(words(v["span"]) if v.get("span") else f"a {kind}")
+            rewrite = True
+        else:
+            side = v.get("side")
+            if side is not None and side not in ("buy", "sell"):
+                said.append(words(v["span"]) if v.get("span") else f"'{v.get('word') or SIDE_WORD.get(str(side), side)}' (the side of the order before)")
+                rewrite = True
+            if qa.get("kind") in ("all", "half"):
+                said.append(words(qa["span"]))
+                rewrite = True
+            unit = qa.get("unit")
+            if unit and not (tkind == "PRIVATE" and unit == "shares"):
+                said.append(words(qa.get("unit_span") or qa["span"]))
+                rewrite = True
+        p = mods.get("price")
+        if p is not None and p.get("type") != "MARKET" and p.get("span"):
+            said.append(words(p["span"]))
+            drop.append((int(p["span"][0]), int(p["span"][1])))
+        tf = mods.get("tif")
+        if tf is not None and tf.get("span"):
+            said.append(words(tf["span"]))
+            drop.append((int(tf["span"][0]), int(tf["span"][1])))
+        if named is not None and acct is not None and self._named_id(leg, named) != acct:
+            sp = named.get("span")
+            said.append(words(sp) if sp else f"the account '{named.get('text') or named.get('role')}'")
+            other = True
+        if not said:
+            return
+        listed = said[0] if len(said) == 1 else ", ".join(said[:-1]) + " and " + said[-1]
+        name = OWN_TICKET_NAME.get(tkind, "its own ticket") + (f" of {acct}" if acct else "")
+        text = (f"{name} opens a new trade from the side, the amount and the account only, so {listed} {'is' if len(said) == 1 else 'are'} not carried"
+                f" ({OWN_TICKET_DEALS.get(tkind, 'you enter the terms there')})"
+                + (": write the order as buy or sell with a number" if rewrite else (": remove " + ("it" if len(said) == 1 else "them") if other else "")))
+        choices = [{"label": "without " + listed, "clause": self._clause_edit(c, [(a, b, "") for a, b in drop])}] if drop and not (rewrite or other) else None
+        leg["flags"].append(_flag("OWN_TICKET_TERMS", text, leg["span"], choices))
+
+    def _named_id(self, leg: dict, named: dict) -> Optional[str]:
+        """The account an account phrase names in the leg's book, resolved as ``_account`` resolves it (an id as written; "at pb" the
+        book's first prime-broker account; a role its account), or None."""
+        if named.get("id"):
+            return str(named["id"])
+        accts = self._accounts(leg["lifetime_id"]) if leg.get("lifetime_id") else []
+        role = named.get("role")
+        a = next((x for x in accts if (x["kind"] == "PB" if role == "PB" else x["role"] == role)), None)
+        return a["account_id"] if a is not None else None
 
     # ---- request bodies ---------------------------------------------------------------------------------------------------------------------
     @staticmethod
@@ -3433,7 +3512,7 @@ class Resolver:
         qa = c.get("qty") or {}
         if con is not None and con.get("_own"):
             q = qa.get("value") if qa.get("kind") == "num" else None
-            self._own_flag(c, leg, con, q)
+            self._own_flag(c, leg, con, q, self._named_account(c, binfo, tree))
             leg["qty"] = q
             return leg
         typed = (c.get("verb") or {}).get("side")
@@ -3576,7 +3655,7 @@ class Resolver:
         shares = self._leg_base(ci, c, binfo, ia.get("symbol"))
         con = self._symbol_contract(ia["symbol"], shares, ia["span"]) if ia.get("kind") == "ticker" and shares["book"] is not None else None
         if con is not None and con.get("_own"):
-            self._own_flag(c, shares, con, q)
+            self._own_flag(c, shares, con, q, self._named_account(c, binfo, tree))
             con = None
         self._set_instrument(shares, con)
         # 1.0.7.2 review: "covered call" reads the shares held (as the collar does): calls written on shares the book holds are the calls
@@ -3679,7 +3758,7 @@ class Resolver:
         shares = self._leg_base(ci, c, binfo, ia.get("symbol"))
         con = self._symbol_contract(ia["symbol"], shares, ia["span"]) if ia.get("kind") == "ticker" and shares["book"] is not None else None
         if con is not None and con.get("_own"):
-            self._own_flag(c, shares, con, q)
+            self._own_flag(c, shares, con, q, self._named_account(c, binfo, tree))
             con = None
         self._set_instrument(shares, con)
         holders = self._holders(shares["lifetime_id"], con["id"]) if con is not None else None
@@ -3731,6 +3810,8 @@ class Resolver:
             legs = opts if (q is not None and con is not None and a is not None and held_qty > 0 and held >= q) else [shares] + opts
             if legs is not opts:
                 self._price_tif(c, shares, con, market_only=True)
+            else:
+                self._account_flags_to(shares, opts)
             for leg in legs:
                 leg["flags"].append(_flag("STRIKE_ORDER", f"a collar buys a put below the call it sells: the put strike first, then the call's ({ks[0]}/{ks[1]}"
                                           " is not)", c["span"], choice))
@@ -3747,6 +3828,7 @@ class Resolver:
                                           " protects shares held long", leg["span"]))
             return [shares] + opts
         if held_qty > 0 and held >= q:
+            self._account_flags_to(shares, opts)       # simplify round 5: the account the shares were read in is asked / offered on the options
             for leg in opts:
                 leg["flags"].append(_flag("SIDE_INFERRED", f"collar on {q:,} of the {held:,} {sym} held: the put and the call only, two tickets", leg["span"]))
             opts[1]["flags"].append(_flag("SIDE_INFERRED", f"sold as covered by the {sym} shares held free when read - another order you send first may take"
@@ -3771,6 +3853,18 @@ class Resolver:
                                       + self._not_free_words(shares["position"]) + ": collar the free round lots, or buy the shares as their own order",
                                       leg["span"], choices))
         return [shares] + opts
+
+    @staticmethod
+    def _account_flags_to(shares: dict, legs: List[dict]) -> None:
+        """Simplify round 5: options returned without their shares leg (a collar on shares held free, also when its strikes are refused) go
+        to the account the shares were read in, so each carries that reading's account flags and notes - ACCOUNT_CHOICE (holdings in
+        several accounts ask for the account; one holding account offers the others), ACCOUNT_NOT_IN_BOOK, NOT_TRADEABLE_HERE - as the
+        covered call's calls do: an account the owner did not name is never picked silently (before, the collar was read into the first
+        account that held the shares, sendable, where the covered call asks)."""
+        for leg in legs:
+            leg["flags"].extend(dict(f) for f in shares["flags"] if f["code"] in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK", "NOT_TRADEABLE_HERE")
+                                and f not in leg["flags"])
+            leg["inferred"].extend(x for x in shares["inferred"] if x.startswith(("R-ACCT", "account")) and x not in leg["inferred"])
 
     @staticmethod
     def _not_free_words(pos: Optional[dict]) -> str:
@@ -3899,7 +3993,7 @@ class Resolver:
                 return [base]
             if con.get("_own"):
                 self._set_instrument(base, con)
-                self._own_flag(c, base, con, None)
+                self._own_flag(c, base, con, None, named)
                 return [base]
             holders = self._holders(lid, con["id"])
             for aid in sorted(holders):

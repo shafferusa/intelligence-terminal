@@ -648,7 +648,9 @@ class SmartTicketShellTests(unittest.TestCase):
     def test_open_in_ticket_has_every_gate(self):
         """Open in ticket opens a card only when the reading is not in flight, the box holds the text last read, a restored draft was read
         again, the instruction has no red flag and no unread word, the card and its group have no red flag, its order is complete and
-        the order ticket takes its kind; the button is disabled with the reason as its title, and the click checks the same gates again."""
+        the order ticket takes its kind; the button is disabled with the reason as its title, and the click checks the same gates again.
+        Simplify round 5: a product's own ticket ("Open the FX desk" ...) is held by the same gates less the order ticket's own (ownBlock;
+        the instruction's gates shared in textBlock), and its click checks them again."""
         src = read(SMART)
         fns = _functions(src)
         block = src[src.index("function readBlock(S) {"):src.index("function canEdit(S, c)")]
@@ -666,13 +668,33 @@ class SmartTicketShellTests(unittest.TestCase):
                   "if (!TICKET_TAKES[k]) { return 'the order ticket does not take '",
                   "if (!o.account_id || !o.instrument_id) { return 'no account or instrument read'; }"):
             self.assertIn(s, block, s)
-        self.assertEqual("openBlock", _enclosing(fns, src.index("var why = readBlock(S); if (why) { return why; }")))
+        # the reading's gates (readBlock), then the instruction's (textBlock, shared with a product's own ticket), then the card's
+        self.assertEqual("textBlock", _enclosing(fns, src.index("var why = readBlock(S); if (why) { return why; }")))
+        for s in ("var ib = instrBlocker(S); if (ib) {", "if ((S.parsed.unparsed || []).length) {"):
+            self.assertEqual("textBlock", _enclosing(fns, src.index(s)), s)
+        self.assertEqual(["openBlock", "ownBlock"],
+                         [_enclosing(fns, m.start()) for m in re.finditer(r"var why = textBlock\(S\); if \(why\) \{ return why; \}", src)])
+        for s in ("var b = firstBlocker(c.leg.flags); if (b) { return b.text || 'a red flag'; }", "if (!c.leg.request) { return 'not complete: see its flags'; }",
+                  "var v = orderValidity(c, o); if (v) { return v; }"):
+            self.assertEqual("openBlock", _enclosing(fns, src.index(s)), s)
         # the button is disabled with the reason; the click checks again; the Strategies tab and a product's own ticket need the reading too
         self.assertIn("data-act=\"open\" data-w=\"c' + c.i + '\"' + (why ? ' disabled' : '')", src)
         self.assertIn("var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }", src)
         self.assertEqual("openCard", _enclosing(fns, src.index("var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }")))
-        self.assertEqual(["openOwnTicket", "openStrategies"],
+        self.assertEqual(["openStrategies"],
                          sorted(_enclosing(fns, m.start()) for m in re.finditer(r"var why = readBlock\(S\); if \(why\) \{ say\(S, why, 'err'\); paint\(S\); return; \}", src)))
+        # simplify round 5: a product's own ticket - the card's red flags but its own ticket's and "how many?", its group's; held, its
+        # button is disabled with the reason beside it, and the click checks again
+        own = src[src.index("function ownBlock(S, c) {"):src.index("function canEdit(S, c)")]
+        self.assertIn("var OWN_OPENS_ANYWAY = { KIND_OWN_TICKET: 1, MISSING_QTY: 1 };", src)
+        self.assertIn("var b = firstBlocker((c.leg.flags || []).filter(function (f) { return f && !OWN_OPENS_ANYWAY[f.code]; })); if (b) { return b.text || 'a red flag'; }", own)
+        self.assertIn("var gb = c.group ? firstBlocker(c.group.flags) : null; if (gb) { return 'its group has a red flag: ' + (gb.text || 'see the group'); }", own)
+        self.assertEqual("openOwnTicket", _enclosing(fns, src.index(
+            "var why = ownBlock(S, c); if (why) { say(S, (c ? '#' + c.n + ': ' : '') + why, 'err'); paint(S); return; }")))
+        self.assertEqual(["openOwnTicket", "panelHtml"], sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )ownBlock\(", src)}))
+        self.assertIn("var held = f.action.kind === 'open_ticket' ? ownBlock(S, w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null) : null;", src)
+        self.assertIn("(held ? ' disabled title=\"' + esc(held) + '\"' : '') + '>' + esc(f.action.label) + '</button>' +", src)
+        self.assertIn("(held ? ' <span class=\"smart-why\">' + esc(short(held, 110)) + '</span>' : '') + '</div>';", src)
         # the gates follow the box: typing repaints the cards whenever what the text allows changes
         self.assertIn("if (readBlock(S) !== S.gate) { paintRead(S); paintCards(S); }", src)
         # the card's "opened in the ticket" mark: set by the hand-off, dropped by an edit, kept on a new reading only for identical terms

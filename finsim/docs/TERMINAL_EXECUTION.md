@@ -212,9 +212,13 @@ NAV falls by exactly the 1.00 commission.
     ("sell them first"); the OVERSELL hint reads "sell N; once they have sold, SELL_SHORT M with a borrow". Simplify round 4,
     at the fill too: `execution.apply_fill` never books a SELL_SHORT while the account holds the name long (one placed while it
     was flat): the matcher suspends the resting order with reason `SHORT_WHILE_LONG` and ONE WARN `ORDER_SUSPENDED` item, and
-    resumed while the name is still held it is suspended again (sell the shares, then resume it, or cancel it). Before, a fill
-    larger than the holding was booked against it - the account net short under calls sold as covered - and one no larger was
-    rolled back by the integrity check, one ERROR `INTEGRITY` item per matcher pass.
+    resumed while the name is still held it is suspended again. Before, a fill larger than the holding was booked against it -
+    the account net short under calls sold as covered - and one no larger was rolled back by the integrity check, one ERROR
+    `INTEGRITY` item per matcher pass. Simplify round 5: the reason and its item say the one way out FinSim allows - "cancel it -
+    while it works, the shares it is counted against cannot be sold - then sell them and place the short sale again" - since
+    while the short sale works (suspended included) a sale of those shares is 400 `OVERSELL` ("cancel it first"); the item adds
+    no "resume it" of its own (`orders.SELF_ADVISED_CODES`). Before, both said "sell them first, then resume the short sale, or
+    cancel it", a sale FinSim refuses.
   - INV-5: an amend or replace that raises the contracts of an STO call placed with `covered: true` (the claim read from its
     replace chain's first order) re-runs INV-1 for the added contracts, the order itself excluded: 409 `NOT_COVERED`,
     nothing changed.

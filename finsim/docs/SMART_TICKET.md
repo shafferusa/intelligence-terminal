@@ -22,7 +22,7 @@ The Smart Ticket fills standard order tickets from what you type, in your own wo
 | in the Fund book: buy 100 ACME; buy 100 WIDG gtc | two orders in the Fund book | |
 | buy 100 ACME in the Personal and Fund books | one order in each book at the same quantity | no allocation (check) |
 | close ACME calls | one closing order per ACME call position held in the book | |
-| buy 1m EURUSD | no order: "Open the FX desk", prefilled | FX, bonds, OTC and private names keep their own ticket |
+| buy 1m EURUSD | no order: "Open the FX desk", prefilled | FX, bonds, OTC and private names keep their own ticket; a price, a time in force or another account typed for them is refused (OWN_TICKET_TERMS), never dropped |
 | buy 100 q | nothing: a one- or two-letter ticker needs capitals or $ | offered: buy 100 $Q |
 
 ## How the words are read
@@ -105,7 +105,7 @@ The Smart Ticket fills standard order tickets from what you type, in your own wo
 
 ## Several orders and strategies
 
-- Orders written together - a strategy, a roll, a collar, a covered call that buys its shares, parentheses - are a group: separate tickets shown together, with the order to send them in (purchases first, shares then options, then sales to close, sales to open, share sales and short sales). Each ticket goes and fills on its own: no all-or-none, no sequence.
+- Orders written together - a strategy, a roll, a collar, a covered call that buys its shares, parentheses - are a group: separate tickets shown together, with the order to send them in (purchases first, shares then options, then sales to close, sales to open, share sales and short sales), worked out from the sides the cards hold now: a side changed in place moves its card in that order. Each ticket goes and fills on its own: no all-or-none, no sequence.
 - For one all-or-none order of options, an option strategy the order ticket's Strategies tab has a template for offers "Strategies tab": it opens the order ticket of the group's account on that name with its Strategies tab, where you build it.
 - Words asking for one order ("as a package", "all or none" ...) are refused (ONE_ORDER_ASKED), with "as separate tickets" offered; no card of that group opens until then.
 - A price typed on a strategy, a roll, a collar or a covered call that buys its shares is a net price the tickets cannot carry: refused (NET_PRICE, "without the price" offered), never dropped. A leg's own limit is that ticket's.
@@ -121,7 +121,7 @@ Each leg and combination carries flags.
 
 | Severity | Codes |
 |---|---|
-| blocker | UNPARSED_TEXT, MISSING_SIDE, MISSING_QTY, MISSING_INSTRUMENT, MISSING_PRICE, DUPLICATE_FIELD, TOKEN_AMBIGUOUS, QTY_NOT_WHOLE, QTY_LOT, UNIT_KIND_MISMATCH, SYMBOL_UNKNOWN, SYMBOL_AMBIGUOUS, KIND_OWN_TICKET, NOT_TRADEABLE_HERE, EXPIRY_NOT_LISTED, EXPIRY_MONTH_ONLY, STRIKE_NOT_LISTED, ROOT_CHOICE, STRIKE_ORDER, SIDE_SPLIT, WOULD_OVERSELL, NOTHING_HELD, NOTHING_TO_ROLL, ACCOUNT_NOT_IN_BOOK, TOO_MANY_LEGS, ALREADY_CLOSING, ADDS_TO_POSITION, PRICE_AMBIGUOUS, NET_PRICE, ONE_ORDER_ASKED, SHORT_WHILE_LONG, ACCOUNT_CHOICE (holdings split, or held in another account than the one named) |
+| blocker | UNPARSED_TEXT, MISSING_SIDE, MISSING_QTY, MISSING_INSTRUMENT, MISSING_PRICE, DUPLICATE_FIELD, TOKEN_AMBIGUOUS, QTY_NOT_WHOLE, QTY_LOT, UNIT_KIND_MISMATCH, SYMBOL_UNKNOWN, SYMBOL_AMBIGUOUS, KIND_OWN_TICKET, NOT_TRADEABLE_HERE, EXPIRY_NOT_LISTED, EXPIRY_MONTH_ONLY, STRIKE_NOT_LISTED, ROOT_CHOICE, STRIKE_ORDER, SIDE_SPLIT, WOULD_OVERSELL, NOTHING_HELD, NOTHING_TO_ROLL, ACCOUNT_NOT_IN_BOOK, TOO_MANY_LEGS, ALREADY_CLOSING, ADDS_TO_POSITION, PRICE_AMBIGUOUS, NET_PRICE, ONE_ORDER_ASKED, SHORT_WHILE_LONG, OWN_TICKET_TERMS, ACCOUNT_CHOICE (holdings split, or held in another account than the one named) |
 | check | SIDE_INFERRED, SIDE_CARRIED, YEAR_INFERRED, EXPIRY_FROM_MONTH, TYPE_DEFAULT, PRICE_FROM_QUOTE, QTY_ROUNDED, QTY_FROM_HELD, RIGHT_DEFAULT, BOOK_FROM_SCOPE (end of the text, or carried with the side), BOOK_CONFLICT, OTHER_BOOK, MULTI_BOOK, ACCOUNT_CHOICE, OPTION_UNVERIFIED, CHAIN_STALE, COVER_HINT, DUPLICATE_LEG, SEPARATE_TICKETS |
 | information | TIF_DEFAULT, BOOK_SELECTED, BOOK_FROM_SCOPE (opening phrase), TYPE_FROM_AT, STRATEGY_EXPANDED, STRATEGY_SIDE_CONVENTION |
 
@@ -139,7 +139,7 @@ Gone with the simplification (never deployed): LIMIT_IN_AON, COMBO_INVALID, COVE
 - **Groups and copies.** A choice offered on one group reads every other order outside that group as before, another book's copy of the same clause included.
 - **Written once.** A choice that writes an order out again ("as separate tickets", "read as: ...") writes the account of a book phrase once ("in the Institutional book at pb ms"), and is not offered when its words would read a field twice. "as separate tickets" also drops a group word typed inside the parentheses ("(..., sell 1 ACME Dec 18 2026 250 call as a package)"); the parentheses stay and only group the cards.
 - **A calendar's expiry** is offered as words ("Dec 18 2026"), never as the other leg's own expiry.
-- **Actions.** An action runs an existing step and then reads the text again: "Look it up", "Load the chain", or the product's own ticket; "Strategies tab" opens the order ticket's Strategies tab for one all-or-none order of options.
+- **Actions.** An action runs an existing step and then reads the text again: "Look it up", "Load the chain", or the product's own ticket; "Strategies tab" opens the order ticket's Strategies tab for one all-or-none order of options. The product's own ticket ("Open the FX desk", "Open the bond ticket" ...) opens only when Open in ticket would, less the order ticket's own gates: the reading not in flight, the text box holding the text last read, no red flag and no unread word in the instruction, no red flag on the card but the one naming its own ticket (and "how many?" when no amount was typed: that ticket opens with its amount box empty and asks for it), none on its group; held, its button is disabled with the reason beside it.
 
 ## The cards and Open in ticket
 
@@ -173,7 +173,7 @@ POST /api/smart-ticket/parse[?book=P]
 - No all-or-none order from the Smart Ticket: words asking for one order are refused; build one all-or-none order of options in the order ticket's Strategies tab (its templates take strikes and expiries as rules, not the contracts you typed).
 - While calls sold as covered are open on a name, a further call sold to open on it - alone or as a spread's short leg - needs free shares: FinSim's margin would otherwise give it their cover (the ticket's preview says so).
 - Each order is read on the account as it is: the orders of one instruction do not count against each other, and a ticket you send first may take shares a later card was read with (its own preview then refuses it).
-- FX, bonds, OTC and private names open their own ticket. Opened from a card, the FX desk, the bond ticket and the private-markets ticket start a new deal: nothing typed or picked there before (an amount, a forward or its tenor, a face, a price) rides along, and the FX desk opens a spot deal with the amount in the pair's base currency (empty when the card names none).
+- FX, bonds, OTC and private names open their own ticket. Opened from a card, the FX desk, the bond ticket and the private-markets ticket start a new deal: nothing typed or picked there before (an amount, a forward or its tenor, a face, a price) rides along, and the FX desk opens a spot deal with the amount in the pair's base currency (empty when the card names none). The card hands over the side (buy or sell), the amount and the account only: the desk deals at its own rate, the bond ticket at the mark and its half-spread, and the private-markets ticket takes the negotiated price typed there. So a term typed for them that the hand-off cannot carry - a price other than market, a time in force, an account other than the one it opens in, another side word (short, cover, bto ...), "all" or "half", a unit, a close, a covered call or a collar - is the red flag OWN_TICKET_TERMS naming those words, never dropped unsaid and never "read as a limit". A price or a time in force alone offers "without" those words; an account named is to be removed by you; the others ask for the order written as buy or sell with a number.
 - Several books mean the same quantity in each, with no allocation.
 - A month without a day ("Dec 2026") needs the cached chain, and resolves only when one expiry is listed that month.
 - An option leg of a strategy that has two roots must be typed as OCC symbols in parentheses; no choice is offered there.

@@ -210,7 +210,9 @@ class ShortSaleWorkingWhileHeldTests(_ShortBase):
         self.acme_print("120.00")
         r = self.row(short)
         self.assertEqual(("SUSPENDED", 0), (r["status"], int(r["filled_qty"])), r)
-        self.assertIn("a short sale is never booked against shares held: sell them first, then resume the short sale, or cancel it", r["reason"])
+        # simplify round 5: the way out it says is the one FinSim allows (test_terminal_simplify_r5.ShortSaleAdviceTests)
+        self.assertIn("a short sale is never booked against shares held: cancel it - while it works, the shares it is counted against cannot be sold"
+                      " - then sell them and place the short sale again", r["reason"])
         self.assertEqual([("WARN", "ORDER_SUSPENDED", short)], self.open_items())     # one item - no ERROR INTEGRITY, no item per pass
         self.acme_print("120.00")
         self.assertEqual([("WARN", "ORDER_SUSPENDED", short)], self.open_items())

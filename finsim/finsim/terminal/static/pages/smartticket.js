@@ -10,7 +10,8 @@
  *   selected one is said), the instrument in words, side, quantity, type, limit, stop or trail, time in force, GTD date, "sold as
  *   covered" (a covered call's claim), and its flags with their alternatives and actions (look it up, load the chain, the product's own
  *   ticket).  Orders written together (a strategy, a covered call that buys its shares, a collar, a roll, a group word, parentheses)
- *   sit under their group: its words, its check or its red flag, and the order to send them in; an option strategy the order ticket's
+ *   sit under their group: its words, its check or its red flag, and the order to send them in (simplify round 5: worked out from the
+ *   sides the cards hold now, by the server's rank - an in-place side edit moves it); an option strategy the order ticket's
  *   Strategies tab has a template for offers "Strategies tab" (one all-or-none order is built there, by the owner).
  * - In-place edits change that card only (no new reading): side among its kind's sides, quantity, type, prices, trail, time in force,
  *   GTD date, the covered tick (unticked: a plain call).  A new reading matches each card with the card the owner last saw: first one
@@ -31,6 +32,11 @@
  *   red flag, its order is complete and the order ticket takes its kind.  The owner previews and sends it there, exactly as an order
  *   typed there (its own preview, Submit, moved-price and large-order questions and lost-answer handling).  The card then says "opened
  *   in the ticket at HH:MM": the page never reads orders, so it never says that an order was sent.
+ * - A product's own ticket (the card's "Open the FX desk", "Open the bond ticket" ...: a new trade there, prefilled with the side, the
+ *   amount and the account) opens on the same gates less the order ticket's own (simplify round 5): the reading holds, the instruction
+ *   has no red flag and no unread word, the card has no red flag but the one naming its own ticket (and "how many?" when no amount was
+ *   typed: that ticket asks for it), its group none; a typed term that ticket cannot take is the card's red flag OWN_TICKET_TERMS.
+ *   Held, the button is disabled with the reason beside it.
  * - Alternatives replace the flag's words in the text as read, then the text is read again; they apply only while the box holds
  *   exactly the text last read (else: press Enter to read the text again, then pick).
  * - The draft (the text, its reading and its book, the edits, the notes of dropped edits, the "was" marks and the opened marks) is kept in
@@ -215,11 +221,16 @@
     if (ui && ui.bar.value !== S.parsedFrom) { return 'the text changed since it was read: press Enter to read it again'; }
     return null;
   }
-  /* why a card cannot open in the ticket now (null: it can) - every gate of 7b634e2's submit, kept */
-  function openBlock(S, c) {
+  /* the reading as a whole: it holds, and the instruction has no red flag and no unread word (null: no card is held by it) */
+  function textBlock(S) {
     var why = readBlock(S); if (why) { return why; }
     var ib = instrBlocker(S); if (ib) { return 'the instruction has a red flag: ' + (ib.text || 'see the chips under the text'); }
     if ((S.parsed.unparsed || []).length) { return 'FinSim could not read the underlined words: change or remove them, then press Enter'; }
+    return null;
+  }
+  /* why a card cannot open in the ticket now (null: it can) - every gate of 7b634e2's submit, kept */
+  function openBlock(S, c) {
+    var why = textBlock(S); if (why) { return why; }
     var b = firstBlocker(c.leg.flags); if (b) { return b.text || 'a red flag'; }
     var gb = c.group ? firstBlocker(c.group.flags) : null; if (gb) { return 'its group has a red flag: ' + (gb.text || 'see the group'); }
     if (!c.leg.request) { return 'not complete: see its flags'; }
@@ -229,6 +240,30 @@
     if (!TICKET_TAKES[k]) { return 'the order ticket does not take ' + (k ? k.toLowerCase() : 'this kind of') + ' orders: use its own ticket'; }
     if (!o.account_id || !o.instrument_id) { return 'no account or instrument read'; }
     return null;
+  }
+  /* simplify round 5: why a card's "Open the FX desk" (bond, private-markets ...) cannot open the product's own ticket now (null: it
+     can) - the gates of Open in ticket less the order ticket's own: the reading holds, the instruction has no red flag and no unread
+     word, the card has no red flag but the one that names its own ticket and MISSING_QTY (no amount typed: that ticket opens with its
+     amount box empty and asks for it there - nothing typed is dropped; a typed term it cannot take is a red flag of its own:
+     OWN_TICKET_TERMS) and its group has none (words asking for one order hold every order of the group) */
+  var OWN_OPENS_ANYWAY = { KIND_OWN_TICKET: 1, MISSING_QTY: 1 };
+  function ownBlock(S, c) {
+    var why = textBlock(S); if (why) { return why; }
+    if (!c) { return 'open it from its order\'s card'; }
+    var b = firstBlocker((c.leg.flags || []).filter(function (f) { return f && !OWN_OPENS_ANYWAY[f.code]; })); if (b) { return b.text || 'a red flag'; }
+    var gb = c.group ? firstBlocker(c.group.flags) : null; if (gb) { return 'its group has a red flag: ' + (gb.text || 'see the group'); }
+    return null;
+  }
+  /* simplify round 5: the order to send a group's tickets in, from the sides its cards hold NOW (an in-place side edit moves it), by
+     the server's rank (smart_ticket._send_rank): purchases first (shares, then options), then sales to close, sales to open, share
+     sales and short sales, an order with no side last; ties in the order written */
+  var SEND_RANK = { BUY: 0, BUY_TO_COVER: 0, BTO: 1, BTC: 1, STC: 2, STO: 3, SELL: 4, SELL_SHORT: 4 };
+  function sendOrder(S, g) {
+    var id = String(g && g.id);
+    return (S.cards || []).filter(function (x) { return x.group && String(x.group.id) === id; }).map(function (x) {
+      var side = effOf(S, x).side;
+      return { n: Number(x.n), r: Object.prototype.hasOwnProperty.call(SEND_RANK, side) ? SEND_RANK[side] : 5 };
+    }).sort(function (a, b) { return (a.r - b.r) || (a.n - b.n); }).map(function (x) { return x.n; });
   }
   function canEdit(S, c) { return !!(c && c.leg.request && !S.parsing); }
 
@@ -395,9 +430,10 @@
     S.text = ui.bar.value; saveState(S);
     handTicket(S, acct, { instrument_id: und, hedge: true, hedge_tab: 'strategies' });
   }
-  /* the product's own ticket (a bond, an FX pair, a swap ...), prefilled with what was read */
+  /* the product's own ticket (a bond, an FX pair, a swap ...), prefilled with what was read - only on a reading Open in ticket would
+     open (ownBlock, simplify round 5: before, unread words, a red flag of the card, of its group or of the instruction never held it) */
   function openOwnTicket(S, c, fields) {
-    var why = readBlock(S); if (why) { say(S, why, 'err'); paint(S); return; }
+    var why = ownBlock(S, c); if (why) { say(S, (c ? '#' + c.n + ': ' : '') + why, 'err'); paint(S); return; }
     var acct = fields.account_id || (c && c.leg.account_id) || null;
     if (!acct) { say(S, 'this order has no account yet: open the account page and use its ticket', 'err'); return; }
     var refused = T.accountRefusal(acct); if (refused) { say(S, refused, 'err'); return; }
@@ -498,7 +534,11 @@
       h += '</div>';
     }
     if (f.action && f.action.label) {
-      h += '<div><button type="button" class="btn small" data-act="action" data-w="' + esc(w) + '" data-f="' + esc(x.f) + '">' + esc(f.action.label) + '</button></div>';
+      /* simplify round 5: the product's own ticket is held as Open in ticket is (ownBlock), the reason beside the button */
+      var held = f.action.kind === 'open_ticket' ? ownBlock(S, w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null) : null;
+      h += '<div><button type="button" class="btn small" data-act="action" data-w="' + esc(w) + '" data-f="' + esc(x.f) + '"' +
+        (held ? ' disabled title="' + esc(held) + '"' : '') + '>' + esc(f.action.label) + '</button>' +
+        (held ? ' <span class="smart-why">' + esc(short(held, 110)) + '</span>' : '') + '</div>';
     }
     return h + (extra || '') + '</div>';
   }
@@ -557,14 +597,15 @@
     var acct = leg.account_name || (leg.account_id ? T.accountName(leg.account_id) : 'no account');
     var opened = S.opened[c.key]; var edited = !!S.edits[c.key];
     var blocked = !!firstBlocker(leg.flags);
-    var pos = c.group && Array.isArray(c.group.order) ? c.group.order.map(Number).indexOf(c.n) : -1;
+    var order = c.group ? sendOrder(S, c.group) : [];          /* simplify round 5: from the sides the cards hold now */
+    var pos = order.indexOf(Number(c.n));
     var h = '<div class="smart-card' + (blocked ? ' smart-card-blocked' : '') + (opened ? ' smart-card-opened' : '') + '" data-i="' + c.i + '">';
     h += '<div class="smart-card-head"><span class="smart-num">#' + esc(c.n) + '</span> ' +
       (o.side ? '<b class="side-' + esc(o.side) + '" title="' + esc(SIDE_TITLE[o.side] || '') + '">' + esc(SIDE_WORDS[o.side] || o.side) + '</b> ' : '') +
       (o.qty != null ? esc(T.fmt.qty(o.qty)) + ' ' : '') + '<span class="smart-inst">' + esc(i.words || i.symbol || i.id || '?') + '</span>' +
       (i.listed === false && i.id ? ' <span class="muted" title="not confirmed listed: the ticket\'s preview checks it">(unverified)</span>' : '') +
       (c.group ? ' <span class="smart-tag" title="written together with other orders: separate tickets, each goes and fills on its own">' + esc(c.group.id) +
-        (pos >= 0 ? ' . send ' + (pos + 1) + ' of ' + c.group.order.length : '') + '</span>' : '') +
+        (pos >= 0 ? ' . send ' + (pos + 1) + ' of ' + order.length : '') + '</span>' : '') +
       (edited ? ' <span class="smart-tag" title="changed on this card (no new reading)">edited</span>' : '') +
       (opened ? ' <span class="smart-opened" title="handed to the order ticket with these terms; whether it was sent is in Pending Trades">opened in the ticket at ' + esc(T.fmt.hm(opened.at)) + '</span>' : '') + '</div>';
     h += '<div class="smart-where' + (other ? ' smart-other' : '') + '" title="' + esc((leg.account_id || '') + (other ? ' - not the selected book' : '')) + '">' +
@@ -589,7 +630,7 @@
   }
   function groupHtml(S, g, cards) {
     var w = 'g' + g.id; var tab = strategiesActionOf(g); var why = tab ? readBlock(S) : null;
-    var order = (Array.isArray(g.order) ? g.order : []).map(function (n) { return '#' + n; }).join(', then ');
+    var order = sendOrder(S, g).map(function (n) { return '#' + n; }).join(', then ');   /* simplify round 5: the sides held now */
     var h = '<div class="smart-group" data-g="' + esc(g.id) + '"><div class="smart-group-head"><b>' + esc(g.id) + '</b> ' +
       esc((g.strategy ? 'the ' + g.strategy : 'orders written together') + ': "' + short(g.clause || '', 90) + '" . ' + plural(cards.length, 'separate ticket') +
           (order ? ' . send them in this order: ' + order : '')) + '</div>';
