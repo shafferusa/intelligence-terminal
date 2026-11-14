@@ -1,6 +1,126 @@
 {
  "stories": [
   {
+   "id": "electron-100-vulcan-nov14",
+   "first_seen": "2026-11-14",
+   "headline": "Electron 100th launch success (iQPS, company release); Vulcan LV-01 retry 12:32 PM ET Nov 14 (40 Amazon Leo)",
+   "status": "Developing",
+   "rationale": "Result for Monday",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "scotus-asylum-nov13",
+   "first_seen": "2026-11-14",
+   "headline": "SCOTUS grants administration appeal on border asylum restrictions (lower courts ruled against); no argument date",
+   "status": "New",
+   "rationale": "Weekend news; legal stage: cert granted",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "apec-trilateral-nov19",
+   "first_seen": "2026-11-14",
+   "headline": "White House: Trump-Xi-Putin trilateral Nov 19 Shenzhen (nuclear arms); Trump-Xi bilateral + lunch; no agreement expected",
+   "status": "New",
+   "rationale": "Week-ahead catalyst for chips/trade",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "hormuz-mines-nov14",
+   "first_seen": "2026-11-14",
+   "headline": "IRGC claims 2 more tankers hit mines Nov 14 (5 in <24h), unconfirmed/unnamed; Rubio: no further military action needed; blockade continues; Brent wk -2.5% to $95.84",
+   "status": "Developing",
+   "rationale": "Weekend news; oil risk",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "faa-ground-stop-nov13",
+   "first_seen": "2026-11-14",
+   "headline": "FAA nationwide ground stop ~3-8:15 PM ET Nov 13 on ARTCC telecom failure; >10,000 flights disrupted; first since Jan 2023; cause under investigation",
+   "status": "New",
+   "rationale": "Weekend news; infrastructure; watch root cause",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "schumer-van-hollen-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Van Hollen vs Schumer for Dem leader; closed vote reported Dec 1; Schumer \"I have the votes\"",
+   "status": "Developing",
+   "rationale": "Keep on watchlist",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "bond-rout-williams-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Week Nov 6-13: 2Y 4.51->4.88 (+37), 10Y 4.86->5.15 (+29), 30Y +21; 10Y real 2.63->2.91, breakeven flat 2.24; three tailing auctions",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist: real yields, 10Y >=5% call",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "bitcoin-below-70k-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "BTC $66,435 Sat ~9:30 AM ET (-4.1% 24h), ETH $1,871; total cap $2.26T; liquidations ~$1.3-1.4B; IBIT -9.2% wk",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist; sixth weekly loss pending Sunday close",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "yen-160-touch-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "USD/JPY 160.00 ECB fix Nov 13; DXY 103.41 52w high; intervention call 20-35% by Nov 20",
+   "status": "Developing",
+   "rationale": "Keep on watchlist",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "nvidia-huang-resigns-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "Week: NVDA -12.75% to $162.85 (52w low); Huang resigned Nov 12, Kress interim, Jones chair; Reuters (single) second relationship; Senate Banking asks Huang/Lutnick Dec 3; earnings Tue Nov 17 (cons ~$109.2B/$2.48)",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist: CEO search, export controls, earnings",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "anthropic-ipo-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "Anthropic IPO $70-78, 825M shares, Nasdaq ANT; pricing expected Nov 18, trading Nov 19; above-range call 55-70%; private until listing",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
+   "id": "starship-ift15-nov13",
+   "headline": "Starship Flight 15 launched ~5:47 PM ET Nov 13; reached orbit, deployed 26 Starlink V3; Booster 22 aborted tower catch, Gulf splashdown; first Ship catch attempt ~4:15 PM ET Nov 14",
+   "status": "Materially changed",
+   "rationale": "Weekend lead news item; ship catch result pending for Monday",
+   "first_seen": "2026-11-10",
+   "last_seen": "2026-11-14",
+   "last_report": "reports/2026/11/2026-11-14-sat.html",
+   "updated": "2026-11-14-sat"
+  },
+  {
    "id": "peoples-gas-rate-case",
    "first_seen": "2026-11-13",
    "headline": "PUC decision due Dec 26 on Peoples Gas $163.2M request (R-2026-3060855): avg residential $122.20 -> $138.23 (+13.1%) as filed; Duquesne Light default price 14.14c resets Dec 1",
@@ -41,16 +161,6 @@
    "updated": "2026-11-13-pm"
   },
   {
-   "id": "schumer-van-hollen-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Van Hollen challenges Schumer for Dem leader; Schumer 'I have the votes'; Sanders backs Van Hollen; secret ballot December",
-   "status": "New",
-   "rationale": "Senate leadership, majority 55 in Jan",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
    "id": "cisco-amat-react-nov13",
    "first_seen": "2026-11-13",
    "headline": "CSCO -6.24% $95.64 despite beat/raise; AMAT -2.74% $370.50; Summit cuts AMAT to Hold; Modine +28-31% on Samsung talks reports",
@@ -81,41 +191,11 @@
    "updated": "2026-11-13-pm"
   },
   {
-   "id": "bond-rout-williams-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Par Nov 13 2Y 4.88/10Y 5.15/30Y 5.47; week 2Y +37bp, 10Y +29bp; Daly/Goolsbee hawkish (FXStreet single); Bessent urges Fed not to overreact",
-   "status": "Materially changed",
-   "rationale": "Lead am Nov 13: long-end rout + Fed path",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
    "id": "nvidia-interim-day2-nov13",
    "first_seen": "2026-11-13",
    "headline": "NVDA -2.01% $162.85 (Finnhub) after +1.8% premarket; board has no search firm (CNBC); Bessent backs Megaspeed blacklist, Commerce 'has the pen'; earnings Tue Nov 17 amc",
    "status": "Materially changed",
    "rationale": "AI bellwether leadership",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "bitcoin-below-70k-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "BTC $68,178 -4.58% 24h ~4:45 PM (CoinGecko); ETH $1,925.63; total cap $2.33T -5.9%; liquidations $1.2-1.6B (press)",
-   "status": "Continuing",
-   "rationale": "Speculative risk-off vs equities",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "yen-160-touch-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "ECB fix USDJPY 160.00; intraday 160.03 (single); Katayama 'one-sided and rapid', coordinating with US Treasury; no intervention",
-   "status": "Developing",
-   "rationale": "FX intervention risk",
    "last_seen": "2026-11-13",
    "last_report": "reports/2026/11/2026-11-13-pm.html",
    "updated": "2026-11-13-pm"
@@ -199,16 +279,6 @@
    "last_seen": "2026-11-13",
    "last_report": "reports/2026/11/2026-11-13-pm.html",
    "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "nvidia-huang-resigns-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Jensen Huang resigns as Nvidia CEO and director; CFO Colette Kress interim CEO; Harvey Jones first chair; NVDA -4.34% $166.19 after ~-14% intraday; AMD +5.86, AVGO +5.54",
-   "status": "Materially changed",
-   "rationale": "Lead pm Nov 12: leadership change at largest index weight, week before earnings",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
   },
   {
    "id": "ust-30y-auction-tail-nov12",
@@ -316,16 +386,6 @@
    "headline": "IRGC claims mines disabled two VLCCs (>4M bbl) in Hormuz Wed night, unconfirmed; Trump to CNN return to full war 'highly unlikely'; Brent $92.32",
    "status": "Developing",
    "rationale": "Oil/geopolitics",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "anthropic-ipo-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Anthropic IPO oversubscribed (Bloomberg), pricing above $70-78 weighed (FT); ~$64.4B at top + $26B partner placement; price Nov 18, trade Nov 19 ANT",
-   "status": "Continuing",
-   "rationale": "Largest AI listing",
    "last_seen": "2026-11-12",
    "last_report": "reports/2026/11/2026-11-12-am.html",
    "updated": "2026-11-12-pm"
@@ -536,65 +596,7 @@
    "last_seen": "2026-11-10",
    "last_report": "reports/2026/11/2026-11-10-pm.html",
    "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "ukraine-abudhabi-nov10b",
-   "headline": "Russia-Ukraine direct talks Abu Dhabi day 1 'constructive' (Zelenskyy); security guarantees central; Oleshky local truce; Dnipro station strike 15 killed",
-   "status": "Developing",
-   "rationale": "World",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "starship-ift15-nov13",
-   "headline": "Starship Flight 15 targeted Fri Nov 13 5:45-7:00 PM ET pending FAA; first Ship tower catch attempt; NASA CLPS 2 eight awardees $10B ceiling incl SpaceX; SPCX 143.09",
-   "status": "New",
-   "rationale": "Space",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "pa-trifecta-agenda-nov6",
-   "headline": "Shapiro/Dem leaders: trifecta priorities minimum wage ($7.25) and durable transit funding; ~$400M PTTF shift again (Inquirer)",
-   "status": "Developing",
-   "rationale": "Local PA",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "bridgeville-budget-2027",
-   "headline": "Bridgeville proposed 2027 budget + Ordinance 1039 (millage) posted; council adoption vote Dec 14, 7 PM",
-   "status": "New",
-   "rationale": "Local",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "ai-selloff-close-nov5",
-   "headline": "Close: S&P -4.36% 7,353.73 (worst since Apr 2025), Nasdaq -5.52% 24,315.00 (correction), Dow -1,833 (-3.44%) 51,523.06, RUT -4.45%, SOX -12.25% 9,011.14 (worst since Mar 2020 per NBC); MU -17.5, AMD -17.3, MRVL -16.4, ARM -13.1, NVDA -9.3; all 11 sectors down; RSP -2.9 vs SPY -4.4",
-   "status": "Materially changed",
-   "rationale": "Lead: largest market move of the cycle; deepened after 2:20 PM press",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-pm.html",
-   "updated": "2026-11-05-pm"
-  },
-  {
-   "id": "rates-haven-nov5",
-   "headline": "Par 2Y 4.46 (-12), 10Y 4.84 (-6), 30Y 5.25 (-3); 2s10s 38bp; gold ~$4,100; Barkin, Hammack back gradual hikes; Dec hike odds ~66-80% conflicting",
-   "status": "New",
-   "rationale": "Fed path repricing on equity stress",
-   "first_seen": "2026-11-05",
-   "last_seen": "2026-11-05",
-   "last_report": "reports/2026/11/2026-11-05-pm.html",
-   "updated": "2026-11-05-pm"
   }
  ],
- "updated": "2026-11-13-pm"
+ "updated": "2026-11-14-sat"
 }

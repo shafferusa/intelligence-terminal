@@ -4766,7 +4766,10 @@
       "basis": "The Atlantic and Axios report strike options being prepared with no decision; talks stalled and Trump rejected Iran's latest proposal; option preparation is routine and often unused.",
       "date": "2026-10-08",
       "slot": "am",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Yes. US forces struck Iranian air-defence targets on Qeshm Island on Nov 2, described by officials as defensive; Trump confirmed them.",
+      "graded": "2026-11-14",
+      "lesson": "Defensive strikes on Iranian soil still count as strikes on Iranian territory; the 20-40% understated how readily limited strikes recur during a blockade."
     },
     {
       "id": "2026-10-08-am-4",
@@ -6490,7 +6493,10 @@
       "horizon": "2026-11-02",
       "probability": "45-60%",
       "basis": "Near coin flip after a 1.8% fall; oversold chips vs weekend OPEC+/Iran risk and Apple earnings",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. S&P 500 closed Nov 2 at 7,541.40, below 7,580.07 (Yahoo EOD).",
+      "graded": "2026-11-14",
+      "lesson": "Near coin flip that leaned the wrong way."
     },
     {
       "id": "2026-10-30-pm-2",
@@ -6500,7 +6506,10 @@
       "horizon": "2026-11-06",
       "probability": "65-80%",
       "basis": "4.94% on Oct 30 after a 35bp October fall; soft labour data and risk-off tape; hot payrolls the main risk",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. 10-year par yield 4.86% on Nov 6 (Treasury).",
+      "graded": "2026-11-14",
+      "lesson": "Hot payrolls lifted yields only 2 bp that day; the big repricing came after CPI the next week."
     },
     {
       "id": "2026-10-30-pm-3",
@@ -6510,7 +6519,10 @@
       "horizon": "2026-11-01",
       "probability": "55-70%",
       "basis": "Trade report (Oilprice.com) that the group is preparing to stop raising targets; prices already above $100",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. OPEC+ kept December targets unchanged on Nov 1.",
+      "graded": "2026-11-14",
+      "lesson": "Trade-press previews of OPEC+ holds were reliable here."
     },
     {
       "id": "2026-10-31-sat-1",
@@ -6520,7 +6532,10 @@
       "horizon": "2026-11-07",
       "probability": "15-30%",
       "basis": "White House ruled out strikes only before Nov 3; options briefed (WSJ, CNN); Iran has not replied to the Vance letter; Qatari mediation still active.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Yes. Trump confirmed US strikes on an Iranian air-defence system near Hormuz on Fri Nov 6 (Iranian media reported explosions on Qeshm Island).",
+      "graded": "2026-11-14",
+      "lesson": "We underweighted repeat limited strikes once the election passed; a 15-30% tail happened."
     },
     {
       "id": "2026-10-31-sat-2",
@@ -6530,7 +6545,10 @@
       "horizon": "2026-11-06",
       "probability": "15-25%",
       "basis": "VIX 19.42 with VIX9D level with spot; election, Iran, jobs report and chip earnings inside the window; contango intact to VIX3M.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Yes. VIX closed 28.18 on Nov 5 (Cboe via Yahoo/FRED).",
+      "graded": "2026-11-14",
+      "lesson": "Event-dense weeks deserve fatter volatility tails; 15-25% was too low with chip earnings and an election in the window."
     },
     {
       "id": "2026-10-31-sat-3",
@@ -6540,7 +6558,10 @@
       "horizon": "2026-11-06",
       "probability": "45-60%",
       "basis": "Oversold tech after a 1.8% fall and favourable midterm-year November seasonality vs election, Iran and jobs-report risk.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. S&P 500 closed Nov 6 at 7,376.86, below 7,580.07.",
+      "graded": "2026-11-14",
+      "lesson": "The AI-trade crack on Nov 5 overwhelmed seasonality."
     },
     {
       "id": "2026-10-31-sat-4",
@@ -6550,7 +6571,10 @@
       "horizon": "2026-11-06",
       "probability": "10-20%",
       "basis": "Jan Brent settled $113.43 Oct 30; needs a confirmed hit in the main channel or US strikes; OPEC+ expected to hold targets.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. Brent stayed below $105 Nov 2-6 (Yahoo front-month).",
+      "graded": "2026-11-14",
+      "lesson": "Deal headlines, not supply, drove oil that week."
     },
     {
       "id": "2026-11-01-sun-1",
@@ -6560,7 +6584,10 @@
       "horizon": "2026-11-05",
       "probability": "35-55%",
       "basis": "Several toss-ups incl. slow-counting Alaska (ranked choice) and mail-heavy states; pending DOJ certification suit in Alaska; early-closing states (OH, NC, ME) could settle it",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Senate control was projected late on Nov 3 (Democrats), well before the Nov 5 deadline, so the \"not projected\" event did not happen.",
+      "graded": "2026-11-14",
+      "lesson": "Early-closing states settled control faster than feared."
     },
     {
       "id": "2026-11-01-sun-2",
@@ -6570,7 +6597,10 @@
       "horizon": "2026-11-07",
       "probability": "15-30%",
       "basis": "White House ruled out strikes only before Nov 3; Rubio 'no decision'; Trump says one or two targets remain; Iran's two-day Hormuz plan unanswered; Qatari mediation active",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Yes. US strikes near Hormuz on Fri Nov 6, confirmed by Trump.",
+      "graded": "2026-11-14",
+      "lesson": "Same miss as the Saturday call; limited strikes were more likely than our range."
     },
     {
       "id": "2026-11-01-sun-3",
@@ -6580,7 +6610,10 @@
       "horizon": "2026-11-06",
       "probability": "10-20%",
       "basis": "Sept +29K; forecasts ~45-55K; initial claims low at 194K (week of Oct 24); real wages falling",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. October payrolls rose 165,000 (BLS first print).",
+      "graded": "2026-11-14",
+      "lesson": "Low claims were the better guide than falling real wages."
     },
     {
       "id": "2026-11-01-sun-4",
@@ -6590,7 +6623,10 @@
       "horizon": "2026-11-06",
       "probability": "20-35%",
       "basis": "Intel's PC/memory-cost warning; AMD data-centre demand and Broadcom/Micron resilience argue against",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. AMD guided ~$17.0B, well above consensus; Qualcomm guided softer, so both-below did not happen.",
+      "graded": "2026-11-14",
+      "lesson": "Requiring two misses kept the probability appropriately low."
     },
     {
       "id": "2026-11-01-sun-5",
@@ -6600,7 +6636,10 @@
       "horizon": "2026-11-04",
       "probability": "5-15%",
       "basis": "Explicit Treasury guidance; dealers expect first increase in early 2027 (MNI, dealer survey)",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. Treasury kept coupon sizes at $125B for the refunding ($58B/$42B/$25B).",
+      "graded": "2026-11-14",
+      "lesson": "Explicit forward guidance from Treasury is reliable over a quarter."
     },
     {
       "id": "2026-11-01-sun-6",
@@ -6610,7 +6649,10 @@
       "horizon": "2026-11-06",
       "probability": "45-55%",
       "basis": "Orderly election, mixed chip results, payrolls 0-100K; VIX 19.42 implies weekly 1-sd move of ~2.7%",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. S&P 500 closed Nov 6 at 7,376.86, 2.68% below 7,580.07, outside the base band.",
+      "graded": "2026-11-14",
+      "lesson": "The base case was too narrow for a week with a 4.4% single-day drop risk; VIX implied ~2.7% so the band sat inside one standard deviation."
     },
     {
       "id": "2026-11-01-sun-7",
@@ -6620,7 +6662,10 @@
       "horizon": "2026-11-06",
       "probability": "18-28%",
       "basis": "Quick uncontested result, reassuring Apple/AMD, soft-but-positive jobs, Hormuz progress",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. The bull case (above 7,732) did not happen.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-01-sun-8",
@@ -6630,7 +6675,10 @@
       "horizon": "2026-11-06",
       "probability": "18-28%",
       "basis": "Chip warning spreads, negative payrolls or disputed Senate count",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Yes. The bear case (7,201-7,428) is where the week ended (7,376.86); we gave it 18-28%.",
+      "graded": "2026-11-14",
+      "lesson": "The trigger was a chip-trade unwind we had listed but not weighted."
     },
     {
       "id": "2026-11-01-sun-9",
@@ -6640,7 +6688,10 @@
       "horizon": "2026-11-06",
       "probability": "3-8%",
       "basis": "Requires US strikes hitting Gulf energy/tanker traffic with oil >$125 plus weak jobs or contested election",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. The shock case (below 7,201) did not happen; the Nov 5 low close was 7,353.73.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-02-am-1",
@@ -6650,7 +6701,10 @@
       "horizon": "2026-11-02",
       "probability": "60-72%",
       "basis": "NQ futures +0.8% at 06:30 ET; overseas chip stocks mixed (Kospi +2.2%, Taiwan -0.7%) rather than falling.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. Nasdaq closed Nov 2 at 25,164.31, below 25,437.00.",
+      "graded": "2026-11-14",
+      "lesson": "Futures strength at 6:30 AM did not survive Apple and chip weakness."
     },
     {
       "id": "2026-11-02-am-2",
@@ -6660,7 +6714,10 @@
       "horizon": "2026-11-02",
       "probability": "60-75%",
       "basis": "WTI ~$99.4 at 06:30 ET, down 4.6% on reports Trump wants more time for Iran diplomacy; catalyst diplomatic, not physical.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. WTI settled ~$96.46 on Nov 2.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-02-am-3",
@@ -6670,7 +6727,10 @@
       "horizon": "2026-11-02",
       "probability": "55-70%",
       "basis": "September 54.5; one preview (Continuum) expects ~54.5; no wire consensus found.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. ISM manufacturing printed 55.5.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-02-am-4",
@@ -6680,7 +6740,10 @@
       "horizon": "2026-11-03",
       "probability": "75-88%",
       "basis": "ASX rate tracker ~80% priced (Oct 29); Q3 CPI 4.3%; major banks reportedly forecast a hike.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. The RBA raised to 4.85% (6-3 vote).",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-02-pm-1",
@@ -6690,7 +6753,10 @@
       "horizon": "2026-11-03",
       "probability": "55-70%",
       "basis": "WTI settled ~$96.46 Nov 2 (-7.4%, as reported); Trump said no strikes before the vote; Iran-US indirect talks continuing.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. WTI settled $96.09 on Nov 3.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-02-pm-2",
@@ -6700,7 +6766,10 @@
       "horizon": "2026-11-03",
       "probability": "55-70%",
       "basis": "VIX 21.15 Nov 2 with VIX9D (22.46) above VIX3M (21.60); election results arrive after the close.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. VIX closed 20.83 on Nov 3.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-02-pm-3",
@@ -6710,7 +6779,10 @@
       "horizon": "2026-11-04",
       "probability": "70-85%",
       "basis": "ZK proof complete for 10 assets; company says remaining computation takes 40-50 hours; slipped once already.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Unverified. Binance completed a zero-knowledge proof for its Oct 31 snapshot (10 assets) on Nov 2; we found no confirmation that the broader Nov 4 snapshot proof was published by the deadline.",
+      "graded": "2026-11-14",
+      "lesson": "Company-set timelines need a clear public marker; we could not grade this cleanly."
     },
     {
       "id": "2026-11-03-am-1",
@@ -6720,7 +6792,10 @@
       "horizon": "2026-11-03",
       "probability": "75-88%",
       "basis": "Premarket indications -3.8% to -4.5% after Dec-qtr gross-margin guide of 45-46% below estimates; no offsetting news.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Apple closed Nov 3 at $331.90.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-03-am-2",
@@ -6730,7 +6805,10 @@
       "horizon": "2026-11-03",
       "probability": "60-72%",
       "basis": "WTI ~$98.40 (+2.0%) at ~6:30 AM ET, about eight hours before settlement, after US 'defensive' strikes near Hormuz.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. WTI settled $96.09, 37 cents below $96.46.",
+      "graded": "2026-11-14",
+      "lesson": "Morning strike-driven oil spikes faded by the settlement; eight hours is a long time in this market."
     },
     {
       "id": "2026-11-03-am-3",
@@ -6740,7 +6818,10 @@
       "horizon": "2026-11-03",
       "probability": "75-88%",
       "basis": "Consensus ~$13.1B sits above the midpoint of company guidance of $13.0B +/- $0.3B.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. AMD beat on revenue.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-03-am-4",
@@ -6750,7 +6831,10 @@
       "horizon": "2026-11-03",
       "probability": "60-75%",
       "basis": "August was 7.08M; typical monthly moves are a few hundred thousand; no consensus found.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. September JOLTS openings were 7.5 million, above the 6.8-7.4M band.",
+      "graded": "2026-11-14",
+      "lesson": "Without a consensus, a band around the prior month was too tight."
     },
     {
       "id": "2026-11-03-am-5",
@@ -6760,7 +6844,10 @@
       "horizon": "2026-11-03",
       "probability": "50-60%",
       "basis": "ES -0.13% at 6:30 AM; options imply ~0.86% move (Saxo, single source); event risk lands after the close.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 3 at 7,568.92, +0.36%.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-03-am-6",
@@ -6770,7 +6857,10 @@
       "horizon": "2026-11-03",
       "probability": "25-35%",
       "basis": "Apple weight and chip weakness; VIX9D above VIX.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. The downside case did not happen.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-03-am-7",
@@ -6780,7 +6870,10 @@
       "horizon": "2026-11-03",
       "probability": "10-20%",
       "basis": "Would need lower oil and softer data pulling yields down.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No. The upside case did not happen.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-03-pm-1",
@@ -6790,7 +6883,10 @@
       "horizon": "2026-11-04",
       "probability": "65-80%",
       "basis": "After-hours trading 6-7% higher on a Q3 beat and Q4 guide (~$17.0B) well above ~$16.2B consensus; slight gross-margin guide miss.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. AMD closed Nov 4 at $488.78.",
+      "graded": "2026-11-14",
+      "lesson": "After-hours gains of 6-7% shrank to 1% by the close."
     },
     {
       "id": "2026-11-03-pm-2",
@@ -6800,7 +6896,10 @@
       "horizon": "2026-11-04",
       "probability": "60-75%",
       "basis": "Tuesday settle $96.09; talks continuing via Qatar/Pakistan, no deal and no breakdown; post-election strike risk is the main upside tail.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. WTI settled $88.12 on Nov 4.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-03-pm-3",
@@ -6810,7 +6909,10 @@
       "horizon": "2026-11-04",
       "probability": "80-90%",
       "basis": "Treasury's standing 'at least the next several quarters' guidance and dealer expectations reported by Reuters.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Refunding sizes held at $58B, $42B and $25B.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-am-1",
@@ -6820,7 +6922,10 @@
       "horizon": "2026-11-04",
       "probability": "65-80%",
       "basis": "Index +1.5% at 10:31 ET; VIX down ~4 points; broad sector participation.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 4 at 7,688.62.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-am-2",
@@ -6830,7 +6935,10 @@
       "horizon": "2026-11-04",
       "probability": "55-70%",
       "basis": "VST -14% at 10:31 ET on data-center policy fears plus pre-earnings target cuts; broad market recovering.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Vistra fell 12-14% on Nov 4, below $128.42.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-am-3",
@@ -6840,7 +6948,10 @@
       "horizon": "2026-11-05",
       "probability": "80-90%",
       "basis": "Three hike votes in September; UK CPI 3.5%; Bloomberg describes a hike as almost certain.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. The Bank of England raised Bank Rate to 4.00% on Nov 5.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-am-4",
@@ -6850,7 +6961,10 @@
       "horizon": "2026-11-11",
       "probability": "60-75%",
       "basis": "Sullivan 48.3 vs Peltola 47.5 late Nov 3; ranked-choice and absentee counting can take up to 15 days.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Alaska remained uncalled on Nov 11; ranked-choice tabulation is Nov 18.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-pm-1",
@@ -6860,7 +6974,10 @@
       "horizon": "2026-11-05",
       "probability": "60-75%",
       "basis": "Settled $88.12 Nov 4 after -8.3%; no after-hours reversal seen; risk is a new Hormuz incident",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. WTI settled ~$90.52 on Nov 5.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-pm-2",
@@ -6870,7 +6987,10 @@
       "horizon": "2026-11-06",
       "probability": "70-85%",
       "basis": "43-vote margin at ~95.6% tabulated overnight; affidavit/absentee ballots outstanding; no automatic recount",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. The AP called Mississippi for Scott Colom only on Nov 11-12.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-04-pm-3",
@@ -6880,7 +7000,10 @@
       "horizon": "2026-11-06",
       "probability": "55-70%",
       "basis": "Consensus 59-65K, forecaster range 45-100K; ADP +86K",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. Payrolls rose 165,000, far above the +25K to +100K band.",
+      "graded": "2026-11-14",
+      "lesson": "Consensus clustering is not a distribution; ADP and claims hinted at upside we discounted."
     },
     {
       "id": "2026-11-05-am-1",
@@ -6890,7 +7013,10 @@
       "horizon": "2026-11-05",
       "probability": "70-85%",
       "basis": "7,387 at 2:22 PM ET with under two hours left; VIX curve inverted; day high 7,681",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 5 at 7,353.73.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-05-am-2",
@@ -6900,7 +7026,10 @@
       "horizon": "2026-11-05",
       "probability": "60-75%",
       "basis": "27.15 at 2:07 PM ET, session high 28.09, from 16.61 Nov 4",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. VIX closed 28.18 on Nov 5.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-05-am-3",
@@ -6910,7 +7039,10 @@
       "horizon": "2026-11-05",
       "probability": "75-85%",
       "basis": "Yahoo 10Y reference ~4.83% at 2:07 PM ET; risk-off bid",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. 10-year par 4.84% on Nov 5.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-05-am-4",
@@ -6920,7 +7052,10 @@
       "horizon": "2026-11-06",
       "probability": "75-90%",
       "basis": "9,261 at 2:22 PM Nov 5 (-9.8%); would need ~11% gain",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. SOX closed Nov 6 at 9,390.25.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-05-pm-1",
@@ -6930,7 +7065,10 @@
       "horizon": "2026-11-06",
       "probability": "45-60%",
       "basis": "Partial rebounds commonly follow 4%+ single-day drops, offset by payroll-day risk and an inverted VIX curve.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 6 at 7,376.86, +0.31%.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-05-pm-2",
@@ -6940,7 +7078,10 @@
       "horizon": "2026-11-06",
       "probability": "65-80%",
       "basis": "VIX closed 28.18 with 9-day at 32.66; a 6+ point one-day drop is uncommon.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. VIX closed 25.64 on Nov 6.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-05-pm-3",
@@ -6950,7 +7091,10 @@
       "horizon": "2026-11-06",
       "probability": "65-80%",
       "basis": "Thursday settle ~$90.52 (Rigzone) after renewed Hormuz tanker incidents; deal headlines are the downside risk.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. WTI front month ~$90.83 on Nov 6 (Yahoo).",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-10-pm-1",
@@ -6960,7 +7104,10 @@
       "horizon": "2026-11-12",
       "probability": "70-85%",
       "basis": "Par 30Y closed 5.35% on Nov 10; bond market closed Nov 11 leaves no session to rally; hot CPI and Fed hike pricing.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. The 30-year cleared at 5.441% (TreasuryDirect).",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-10-pm-2",
@@ -6970,7 +7117,10 @@
       "horizon": "2026-11-11",
       "probability": "70-85%",
       "basis": "VIX closed 19.46 on Nov 10 with term structure back in contango (9D 18.54 < VIX < 3M 20.64).",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. VIX closed 17.49 on Nov 11.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-10-pm-3",
@@ -6980,7 +7130,10 @@
       "horizon": "2026-11-11",
       "probability": "75-88%",
       "basis": "Brent settled $91.49 Nov 10 (CNBC) with the US strike pause on Iran in place; Brent moved >$3 in a day only on major escalation in recent weeks.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Brent settled ~$92.76 on Nov 11.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-10-pm-4",
@@ -7000,7 +7153,10 @@
       "horizon": "2026-11-11",
       "probability": "65-80%",
       "basis": "ES futures +0.89% at 06:28 ET on CoreWeave beat; tech-led; VIX in contango.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 11 at 7,619.38.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-11-am-2",
@@ -7010,7 +7166,10 @@
       "horizon": "2026-11-11",
       "probability": "60-75%",
       "basis": "Premarket +13-15% (CNBC, Benzinga, Investing.com) after Q3 beat and raised 2026 guide; high-volatility names often give back part of a premarket gap.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. CoreWeave closed Nov 11 at $60.77.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-11-am-3",
@@ -7020,7 +7179,10 @@
       "horizon": "2026-11-11",
       "probability": "70-85%",
       "basis": "Premarket ~+5% (~$177, CNBC/TipRanks); no new negative disclosure overnight; Nasdaq futures +1.9%.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Nvidia closed Nov 11 at $173.73.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-11-am-4",
@@ -7030,7 +7192,10 @@
       "horizon": "2026-11-13",
       "probability": "55-70%",
       "basis": "Reported consensus +0.4% (ZeroHedge, Kiplinger); range of estimates 0.2-0.4% (Goldman 0.3, Deutsche 0.2).",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. October PPI rose 0.3%.",
+      "graded": "2026-11-14",
+      "lesson": "Right on the threshold; the 0.4% consensus was a tenth high."
     },
     {
       "id": "2026-11-11-pm-1",
@@ -7040,7 +7205,10 @@
       "horizon": "2026-11-12",
       "probability": "75-88%",
       "basis": "Today's +1.31% broad chip-led rally; a >1.6% drop needs a poor 30-year auction or claims shock.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 12 at 7,592.40.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-11-pm-2",
@@ -7050,7 +7218,10 @@
       "horizon": "2026-11-12",
       "probability": "65-80%",
       "basis": "Prior 189K near cycle low; three-month trend stable; Oct payrolls +165K.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Initial claims were 200,000.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-11-pm-3",
@@ -7060,7 +7231,10 @@
       "horizon": "2026-11-12",
       "probability": "60-75%",
       "basis": "Press consensus ~$18.1B; AI networking demand; Cisco's record of meeting guidance.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Cisco revenue was $18.52B.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-12-am-1",
@@ -7070,7 +7244,10 @@
       "horizon": "2026-11-12",
       "probability": "65-80%",
       "basis": "Indicated about -7% premarket (after-hours -8.6%) on WSJ/CBS/CNBC reports that the board is preparing to remove CEO Jensen Huang; no board decision announced.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Nvidia closed Nov 12 at $166.19 (-4.34%).",
+      "graded": "2026-11-14",
+      "lesson": "Correct, but only because the stock recovered from -14%; the call understated the intraday tail."
     },
     {
       "id": "2026-11-12-am-2",
@@ -7090,7 +7267,10 @@
       "horizon": "2026-11-12",
       "probability": "70-85%",
       "basis": "At 6:28 AM NQ futures -0.83% vs YM +0.05%, with Nvidia's weight concentrated in the Nasdaq.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes, narrowly. Nasdaq -0.39% vs Dow -0.36% on Nov 12.",
+      "graded": "2026-11-14",
+      "lesson": "Margin of 3 bp: treat as luck as much as skill."
     },
     {
       "id": "2026-11-12-pm-1",
@@ -7100,7 +7280,10 @@
       "horizon": "2026-11-13",
       "probability": "75-88%",
       "basis": "Nov 12 par close 5.10%; hawkish Fed chorus; Oct PPI consensus +0.4%/+0.3% core not soft; would need a 10bp+ rally in one session",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. 10-year par 5.15% on Nov 13.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-12-pm-2",
@@ -7110,7 +7293,10 @@
       "horizon": "2026-11-13",
       "probability": "70-85%",
       "basis": "Nov 12 close 18.70 with upward-sloping term structure (VIX9D 17.51 < VIX3M 20.06); credit calm",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. VIX closed 19.30 on Nov 13 (Cboe via Yahoo).",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-12-pm-3",
@@ -7120,7 +7306,10 @@
       "horizon": "2026-11-13",
       "probability": "40-60%",
       "basis": "Regulatory approval still pending per NASASpaceflight/SpacePolicyOnline; first-day Starship attempts frequently slip",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. Starship Flight 15 lifted off at about 5:47 PM ET Nov 13 (CNBC, Space.com).",
+      "graded": "2026-11-14",
+      "lesson": "The launch license came through in time; first-day attempts do not always slip."
     },
     {
       "id": "2026-11-13-am-1",
@@ -7130,7 +7319,10 @@
       "horizon": "2026-11-13",
       "probability": "45-60%",
       "basis": "Consensus +0.4%; hot Oct CPI (+0.35% headline, core +0.30%)",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. October PPI rose 0.3%.",
+      "graded": "2026-11-14",
+      "lesson": "We leaned on consensus; trade-margin compression held the headline down."
     },
     {
       "id": "2026-11-13-am-2",
@@ -7140,7 +7332,10 @@
       "horizon": "2026-11-13",
       "probability": "55-70%",
       "basis": "Trading ~5.12-5.13% early (CNBC); PPI can reverse",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. 10-year par 5.15%.",
+      "graded": "2026-11-14",
+      "lesson": "No lesson beyond the outcome."
     },
     {
       "id": "2026-11-13-am-3",
@@ -7150,7 +7345,10 @@
       "horizon": "2026-11-13",
       "probability": "65-80%",
       "basis": "Needs >0.6% fall from 7,592.40; futures +0.15% at 6:28 AM",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Yes. S&P 500 closed Nov 13 at 7,561.67.",
+      "graded": "2026-11-14",
+      "lesson": "Correct by about 12 points after a 140 bp intraday swing."
     },
     {
       "id": "2026-11-13-am-4",
@@ -7160,7 +7358,10 @@
       "horizon": "2026-11-13",
       "probability": "65-80%",
       "basis": "Launch Library 'Go', 90% weather; return-to-flight scrub risk",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No. Vulcan scrubbed at 8:41 AM after a power interruption at a nitrogen supplier; retargeted for Saturday.",
+      "graded": "2026-11-14",
+      "lesson": "Ground-support failures are a scrub risk independent of weather and vehicle readiness."
     },
     {
       "id": "2026-11-13-am-5",
@@ -7200,6 +7401,46 @@
       "horizon": "2026-11-20",
       "probability": "20-35%",
       "basis": "USD/JPY 160.00 ECB fix; Katayama 'one-sided and rapid', coordinating with US Treasury; no official signal of imminent action",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-14-sat-1",
+      "date": "2026-11-14",
+      "slot": "sat",
+      "forecast": "Japan confirms yen-buying intervention by Fri Nov 20, 2026.",
+      "horizon": "2026-11-20",
+      "probability": "20-35%",
+      "basis": "USD/JPY 160.00 at the Nov 13 ECB fix; Katayama 'one-sided and rapid' and coordinating with US Treasury; no signal of imminent action",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-14-sat-2",
+      "date": "2026-11-14",
+      "slot": "sat",
+      "forecast": "10-year Treasury par yield closes at or above 5.00% on Fri Nov 20, 2026.",
+      "horizon": "2026-11-20",
+      "probability": "70-85%",
+      "basis": "5.15% on Nov 13 after a 29bp weekly rise and a hawkish Fed chorus; needs a 15bp+ rally on weak retail sales or dovish minutes",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-14-sat-3",
+      "date": "2026-11-14",
+      "slot": "sat",
+      "forecast": "Nvidia reports fiscal Q3 revenue of $109.0 billion or more (Tue Nov 17, 2026).",
+      "horizon": "2026-11-17",
+      "probability": "65-80%",
+      "basis": "Consensus ~$109.2B (LSEG via IG), company guide $108B +/-2%; recent quarters beat revenue consensus (Q2 $96.2B vs $92.2B)",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-14-sat-4",
+      "date": "2026-11-14",
+      "slot": "sat",
+      "forecast": "Anthropic prices its IPO above $78 a share (top of the $70-78 range) by Fri Nov 20, 2026.",
+      "horizon": "2026-11-20",
+      "probability": "55-70%",
+      "basis": "Bloomberg: book multiple times oversubscribed; FT/Capital Brief: underwriters weighing above-range pricing; risk of market turbulence or delay",
       "status": "open"
     }
   ]
