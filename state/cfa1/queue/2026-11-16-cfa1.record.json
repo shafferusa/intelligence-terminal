@@ -3,57 +3,35 @@
  "date": "2026-11-16",
  "kind": "study",
  "modules": ["PRE-ECON-LM03"],
- "concepts": [
-  "BA II Plus one-time setup: DEC 4, AOS, P/Y = C/Y = 1, END; the two checks",
+ "refresher_modules": ["PRE-ECON-LM01"],
+ "cited_modules": [],
+ "workbook": "updated",
+ "topics": [
   "output = income = expenditure",
-  "value added versus summing every sale",
-  "nominal versus real GDP and the deflator",
-  "GDP, national income, personal and personal disposable income",
-  "saving, investment, fiscal and trade balance identity",
-  "why AD slopes down (wealth, interest-rate and real exchange-rate effects)",
-  "SRAS slopes up, LRAS vertical at potential",
+  "GDP counts final goods and services; value added avoids double counting",
+  "nominal versus real GDP and the GDP deflator",
+  "the saving identity S = I + (G − T) + (X − M) is accounting, not cause",
+  "why AD slopes down: wealth, interest-rate and exchange-rate effects",
+  "SRAS slopes up, LRAS vertical at potential GDP",
   "recessionary and inflationary gaps; stagflation from supply shocks",
-  "production function, diminishing returns, TFP as the lasting driver",
-  "sustainable growth = trend hours growth + trend labour-productivity growth"
+  "production function, diminishing returns, TFP as the lasting source of growth",
+  "sustainable growth ≈ trend hours growth + trend productivity growth",
+  "one-time BA II Plus setup: DEC 4, AOS, P/Y = C/Y = 1, END, clearing, signs, two checks"
  ],
- "vocab": ["GDP", "value added", "GDP deflator", "MPC / MPS", "potential GDP", "recessionary gap",
-  "inflationary gap", "stagflation", "total factor productivity", "capital deepening", "labour productivity",
-  "national income"],
- "formulas": [
-  "GDP = C + I + G + (X − M)",
-  "Real GDP = nominal ÷ (deflator ÷ 100)",
-  "S = I + (G − T) + (X − M)",
-  "MPS = 1 − MPC",
-  "%ΔY ≈ %ΔA + W_L·%ΔL + W_C·%ΔK (W_L ≈ 0.7, W_C ≈ 0.3)",
-  "%ΔULC ≈ %Δwages − %Δproductivity",
-  "potential growth ≈ trend hours growth + trend labour-productivity growth"
+ "refresher_topics": [
+  "elasticity as a ratio of percentage changes; it varies along a straight line",
+  "elasticity and total spending",
+  "income and cross-price elasticity signs",
+  "MR = MC; MR = P for a price taker; diminishing marginal returns raise MC"
  ],
- "recall": [
-  {"q": "Why does GDP count only final goods and services, and what does value added do?",
-   "a": "Summing every sale counts each input again at every later stage. Count final sales, or each stage's sales minus its input purchases (value added). Used goods and transfers are left out.",
-   "ref": "printed pp.71–73"},
-  {"q": "Nominal GDP is 1,320 and the GDP deflator is 110. What is real GDP?",
-   "a": "1,320 ÷ 1.10 = 1,200. Divide by deflator ÷ 100; taking 10% off (1,188) is wrong.",
-   "ref": "printed p.75"},
-  {"q": "Private saving is 600, investment 450 and the government deficit (G − T) 200. What is the trade balance, and what does it mean?",
-   "a": "X − M = S − I − (G − T) = 600 − 450 − 200 = −50: a trade deficit, funded by borrowing 50 from abroad. It is an identity and says nothing about cause.",
-   "ref": "printed p.80"},
-  {"q": "An oil shock shifts SRAS left. What happens to output and the price level in the short run, and why can't a demand shift do the same?",
-   "a": "Output falls and prices rise (stagflation). A demand shift moves output and prices the same way; only a supply shift moves them in opposite directions.",
-   "ref": "printed pp.102–109"},
-  {"q": "TFP grows 0.5%, labour 0.8% and capital 2.5%, with income shares of 0.7 for labour and 0.3 for capital. What is potential GDP growth, and which part can last?",
-   "a": "0.5 + 0.7 × 0.8 + 0.3 × 2.5 = 0.5 + 0.56 + 0.75 = 1.81%. Only TFP growth lasts: more capital per worker runs into diminishing returns.",
-   "ref": "printed pp.112–113"},
-  {"q": "How do you get from GDP to national income, and from personal income to personal disposable income?",
-   "a": "National income = GDP − capital consumption allowance (depreciation) − statistical discrepancy. Personal disposable income = personal income − personal taxes.",
-   "ref": "printed p.79; Summary pp.124–125"},
-  {"q": "Your two calculator checks: what should 3 + 2 × 4 = show, and what FV should 2ND CLR TVM, 5 N, 8 I/Y, 1000 +|− PV, 0 PMT, CPT FV give? What do 20.0000 and 1,033.7808 mean?",
-   "a": "11.0000 and 1,469.3281. 20.0000 means chain mode is still on (set AOS); 1,033.7808 means P/Y is 12 (set P/Y = 1).",
-   "ref": "Lesson 1 setup; TI BA II PLUS guidebook pp.4–5, 20–21"}
- ],
- "assigned": {"reading": "printed pp.67–128 (PDF 75–136)",
-  "problems": "printed pp.129–133, solutions pp.134–136",
-  "practice": ["Q4", "Q7", "Q10", "Q13", "Q15", "Q21", "Q25", "Q28"]},
+ "references": {
+  "book": "CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics",
+  "module": 3,
+  "title": "Aggregate Output, Prices, and Economic Growth",
+  "printed": "67–136",
+  "pdf": "75–144",
+  "exhibits_named": [7, 8, 10, 14, 16, 17, 18, 19, 20, 21]
+ },
  "plan_changes": null,
- "run_note": "Lesson 1, written in advance: the one-time BA II Plus setup, then Prerequisite Economics Module 3 (printed pp.67–136). No replies applied."
+ "run_note": "Lesson 1, written in advance: refresher, Prerequisite Economics Module 3 (printed pp.67–136), one-time BA II Plus setup."
 }

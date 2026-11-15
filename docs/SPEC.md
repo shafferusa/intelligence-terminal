@@ -253,31 +253,45 @@ something similar for me"*); its files stay as they are.
   Learning Brief (same trigger, repurposed and renamed "CFA Morning Lesson"; model Opus 5.5; the old
   configuration is backed up on Logan's PC). Procedure: `prompts/cfa-morning.md`. Slot `cfa1`; page
   `site/reports/YYYY/MM/YYYY-MM-DD-cfa1.html`; Telegram through the usual index push.
-- **Each lesson, in order:** closed-book recall of yesterday's assignment (principles, vocabulary,
-  formulas, mistakes; answers folded below), corrections from Logan's last reply, spaced review of
-  older concepts (2, 6, 13, 27 and 55 days back), then tonight's assignment: the principles in plain
-  language with the cash flows, incentives and risks; a simple worked example (labelled hypothetical);
-  vocabulary; formulas with units, assumptions and intuition; traps; what to understand versus
-  memorize; the exact books, sections and verified printed/PDF pages with a close-read / standard /
-  skim call and the reason for each; and a checklist of tonight's reading and practice. 800–1,100
-  words (shorter on buffer days). Lesson 1 adds the BA II Plus setup.
+- **Simplified the same day (2026-11-15, Logan's request).** Each lesson is a morning reading in
+  two parts, 500–800 words when practical (references and Lesson 1's one-time BA II Plus setup not
+  counted; up to 1,000, or 1,300 with a stated reason, when an essential explanation needs it):
+  (1) a refresher on his most recent completed studying (principles, vocabulary, formulas,
+  memorization reminders, and a "Clearing up" note where his notes show confusion); (2) a
+  self-contained teaching of today's essential material from the assigned official sections
+  (principles before terms before equations, why relationships hold, cash flows, incentives,
+  assumptions and exceptions, every formula variable with its units, a brief everyday picture);
+  then the references: book, module, sections, printed and PDF pages, and the exhibits and passages
+  worth opening. No quizzes, problem sets or homework. The earlier recall/spaced-review/checklist
+  format and reply-driven progress are retired.
 - **The Daily Study Plan** is `state/cfa1/plan.json` (built from the 2027 curriculum map in
-  `curriculum/cfa1/modules.json`). First pass of all ten Level I topics plus the prerequisite
-  Economics and FSA readings by 2027-04-19; 2027-04-20 to 05-14 is protected for review and mocks.
-  Logan authorized revising the plan without asking when workload, dependencies or results justify
-  it: every revision first snapshots the prior plan to `state/cfa1/plan-history/vN.json`, never drops
-  a module or moves study into the review window, keeps completed work, passes
-  `cfa1.py check-plan`, and is explained in the next lesson. If the plan cannot fit, the lesson says so.
-- **Progress comes only from Logan.** He replies to the bot with a message starting "CFA" (for
-  example "CFA: M3 done, 2h10, 6/8, missed Q7 Q21"); the `sie-inbox` Action stores it in
-  `state/cfa1/inbox.jsonl` and acknowledges it. It polls every 15 minutes in principle (GitHub runs
-  this repo's schedules hours late) and after every push to main, so a reply can reach the lesson a
-  day late but is never lost. The routine applies replies with `cfa1.py feedback`.
-  A generated lesson or a passed date never marks anything studied, and a missed question is logged
-  as the topic it tests, never as a guessed mistake.
+  `curriculum/cfa1/modules.json`); since v3 it follows Logan's workbook schedule day for day. First
+  pass by 2027-04-19; 2027-04-20 to 05-14 is protected for review and mocks. Logan authorized moving
+  overloaded work without asking, using buffers: every revision first snapshots the prior plan to
+  `state/cfa1/plan-history/vN.json`, never drops a module or moves study into the review window,
+  keeps completed work, passes `cfa1.py check-plan`, and is explained in that morning's reading.
+- **Progress comes from Logan's study workbook** (`CFA_Level_I_Master_Study_Plan.xlsx` on his PC),
+  the primary record. Its Daily Plan column "Nightly notes - write freely" takes unstructured notes.
+  A Windows scheduled task on his PC ("CFA1 workbook sync", `workbook_sync.py` in his local
+  Morning_Lessons folder: every 10 minutes while he is logged on and at 4:30 AM with wake) extracts
+  the workbook's values, encrypts them with a key kept only on his PC and in the routine's
+  configuration (`CFA1_WORKBOOK_KEY`), and pushes `state/cfa1/workbook.enc` when it changes
+  (`.github/scripts/cfa1_box.py`: HMAC-SHA256 counter-mode keystream, encrypt-then-MAC). Each run,
+  `cfa1.py today` decrypts it into `/tmp/cfa1/` only, reports what the status fields confirm
+  (sessions, checklist counts, conflicts between notes and statuses, whether anything changed since
+  the last lesson), and the reading says plainly when the workbook is unavailable or unchanged.
+  Mentioning a topic is not mastery; a lesson sent or a date passed never marks anything studied.
+  Telegram "CFA" replies (`state/cfa1/inbox.jsonl`) are optional extra notes.
+- **Privacy.** His notes never reach the repository or the site: `state/cfa1/progress.json` and the
+  lesson records carry statuses and topics only, and `finish` refuses a page or record that repeats
+  eight consecutive words from his notes or contains the key. The run's final session message (private
+  to his account) quotes the notes it read and what it concluded.
 - **Every page is checked before it is recorded.** `cfa1.py finish` stamps what a script knows
   exactly (dateline, title element, reading time, timestamp, Previous link), then refuses a page
-  that still holds template text or whose headline, lesson number or days-to-exam disagree.
+  that still holds template text, lacks either part or the references, cites a page outside the
+  modules its record names or an exhibit not in `curriculum/cfa1/exhibits.json` (1,361 exhibit
+  captions located from the PDFs' text layer), or whose headline, lesson number or days-to-exam
+  disagree.
 - **Sources.** The books are "for candidate use only. Not for distribution", so the full verified
   reading notes stay on Logan's PC. The repo carries only compact, paraphrased module briefs
   (`curriculum/cfa1/briefs/`) and the lessons: no exhibit data, book example numbers, question text or
@@ -286,7 +300,7 @@ something similar for me"*); its files stay as they are.
   plan marked pending, and lessons never claim they were read (`state/cfa1/blockers.json`).
 - **Writes:** `site/reports/`, `site/reports/index.json`, `state/cfa1/`, `state/last-run.json` and
   the run log, one commit per run, like every routine. `state/cfa1/inbox.jsonl` is written only by
-  the `sie-inbox` Action.
+  the `sie-inbox` Action, and `state/cfa1/workbook.enc` only by the sync task on Logan's PC.
 
 ## 1. Mission
 

@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <!--
-  CFA Morning Lesson (slot cfa1). Lesson 1, written in advance and queued for
-  Monday 2026-11-16. The morning routine publishes it to
-  site/reports/2026/11/2026-11-16-cfa1.html, sets generated_at and the
-  previous-report link, and may revise the recall section from replies that
-  arrive before then. Every number on the page is recomputed by the lesson's
-  verify script; every keystroke follows the TI BA II PLUS guidebook.
+  CFA Morning Lesson 1 (2026-11-16), written in advance from the module briefs.
+  At run time the routine writes the Where-you-are facts from the workbook (the
+  WORKBOOK FACTS line; finish refuses the page until it is replaced), adds a
+  Clearing-up box to Part 1 if the notes show confusion, and swaps Part 1 for
+  the Module 2 refresher with cfa1.py use-refresher when the workbook shows
+  Module 2 finished. Everything else is checked and stays as written. The
+  calculator setup between the CALC markers is the one-time exception to the
+  no-calculation rule; it cites TI's guidebook, so the page check skips it.
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow, noarchive">
-  <title>Set up your calculator, then learn how an economy keeps score — CFA Morning Lesson, Mon, Nov 16, 2026 · Logan’s Daily Newspaper</title>
+  <title>How an economy keeps score — CFA Morning Lesson, Mon, Nov 16, 2026 · Logan’s Daily Newspaper</title>
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
   <link rel="manifest" href="../../../manifest.webmanifest">
@@ -36,15 +38,15 @@
   {
     "date": "2026-11-16",
     "slot": "cfa1",
-    "title": "Set up your calculator, then learn how an economy keeps score",
+    "title": "How an economy keeps score",
     "path": "reports/2026/11/2026-11-16-cfa1.html",
-    "summary": "Lesson 1: a one-time BA II Plus setup with checks, then tonight's Prerequisite Economics Module 3 on GDP, aggregate demand and supply, and growth.",
+    "summary": "Lesson 1: a refresher on your latest finished module, then Prerequisite Economics Module 3 on GDP, aggregate demand and supply, and growth, plus a one-time BA II Plus setup.",
     "headlines": [
-      "Lesson 1 · Prerequisite Economics: tonight Module 3, output, prices and growth (printed pp.67–136)",
-      "First, set up the BA II Plus once: DEC 4, AOS, P/Y = C/Y = 1, END, then two checks",
-      "Practice: book Q4, 7, 10, 13, 15, 21, 25, 28 · reply “CFA: …” with your time and score"
+      "Lesson 1 · Prerequisite Economics: Aggregate Output, Prices, and Economic Growth (printed pp.67–136)",
+      "Refresher: elasticity, and where a firm stops producing",
+      "What is produced is bought, and the money becomes someone’s income: one flow, counted three ways"
     ],
-    "reading_minutes": 9,
+    "reading_minutes": 7,
     "generated_at": "2026-11-16T04:50:00-05:00",
     "timezone": "America/New_York"
   }
@@ -62,13 +64,13 @@
 <!--REPORT:START-->
     <header class="paper-head">
       <p class="paper-edition">CFA Morning Lesson &middot; Level I</p>
-      <h1>Set up your calculator, then learn how an economy keeps score</h1>
+      <h1>How an economy keeps score</h1>
       <p class="paper-dateline">
-        Monday, November 16, 2026 <span class="sep">&middot;</span> 9 min read
+        Monday, November 16, 2026 <span class="sep">&middot;</span> 7 min read
       </p>
       <p class="paper-standfirst">
-        Longer than usual because of a one-time calculator setup. Then the principles behind tonight&rsquo;s
-        reading, what to read closely, what to skim, and the eight problems to do.
+        A short refresher on what you last finished, then the ideas behind tonight&rsquo;s module: how output is
+        measured, why it swings around its potential, and what makes that potential grow.
       </p>
     </header>
 
@@ -80,38 +82,131 @@
     <article class="lesson-body">
 
       <div class="sie-plan">
-        <b>Tonight</b>
+        <b>Where you are</b>
         <ul>
-          <li>CFA Program Curriculum 2027, Prerequisite Reading: Economics (Volume 1), Learning Module 3, &ldquo;Aggregate Output, Prices, and Economic Growth&rdquo;: printed pp.67&ndash;128 (PDF 75&ndash;136).</li>
-          <li>Problems printed pp.129&ndash;133, solutions 134&ndash;136 (PDF 137&ndash;144). About 2 hours, plus 10 minutes of calculator setup.</li>
+          <li>WORKBOOK FACTS: written at run time from the synced workbook.</li>
+          <li>Tonight: Learning Module 3, printed pp.67&ndash;136 (PDF 75&ndash;144), planned at 2 hours. It is long: if time runs out, stop at a section break and note where. The rest can move to Wednesday, when Module 5 is short, or to Friday&rsquo;s buffer.</li>
         </ul>
       </div>
 
-      <h3>1 &middot; Recall first, closed book</h3>
-      <p>Module 1 is logged as done. Module 2 was set for last night but isn&rsquo;t logged; skip 3 and 4 if you didn&rsquo;t get to it.</p>
-      <ol>
-        <li>Coffee&rsquo;s price rises 10% and the quantity of tea demanded rises 4%. What is the cross-price elasticity, and what does its sign say?</li>
-        <li>Price elasticity of demand is &minus;0.5 and the price rises. Does total spending rise or fall?</li>
-        <li>A price taker sells at 16 with MC = 4 + 2Q. What is its output, and by what rule?</li>
-        <li>Why does economic profit vanish in the long run under perfect competition, but can last for a monopolist?</li>
-      </ol>
-      <details class="check">
-        <summary><span class="check-label">Answers</span> open after you have tried</summary>
-        <ol>
-          <li><b>+0.4</b> (4% &divide; 10%). Positive means substitutes. Printed pp.11&ndash;13.</li>
-          <li><b>Rises.</b> Inelastic (|&minus;0.5| &lt; 1): quantity falls proportionally less than price rises. Summary, p.28.</li>
-          <li><b>Q = 6.</b> Profit peaks where MR = MC, and a price taker&rsquo;s MR = P: 16 = 4 + 2Q. Pp.48&ndash;49.</li>
-          <li>Entry pushes price down to P = MC = minimum average cost (p.51). Barriers to entry protect a monopolist&rsquo;s profit (p.60).</li>
-        </ol>
-      </details>
+<!--PART1:START-->
+      <h3>1 &middot; Refresher: elasticity, and where a firm stops producing</h3>
+      <p><b>Elasticity compares percentages, not units.</b> It measures how strongly buyers respond: the percentage
+      change in quantity divided by the percentage change in what caused it, so it has no units. On a straight-line
+      demand curve the slope is constant but elasticity is not: buyers are very responsive near the top, where price is
+      high, and much less near the bottom (pp.7&ndash;8).</p>
+      <p><b>Spending follows elasticity.</b> If demand is elastic, a price cut raises total spending; if inelastic, it
+      lowers it (Summary, p.28). Signs classify goods: income elasticity is positive for normal goods and negative for
+      inferior ones; cross-price elasticity is positive for substitutes and negative for complements (pp.11&ndash;13).</p>
+      <p><b>A firm stops where the last unit stops paying.</b> Profit peaks where marginal revenue equals marginal cost,
+      and a price taker&rsquo;s marginal revenue is the market price. Marginal cost eventually climbs because each added
+      worker adds less output than the last, so an extra unit costs the wage divided by a shrinking marginal product
+      (pp.17&ndash;24).</p>
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>E = %&Delta;Q &divide; %&Delta;P = (&Delta;Q/&Delta;P)(P/Q)</li>
+          <li>|E| &gt; 1: a price cut raises spending &middot; |E| &lt; 1: lowers it &middot; |E| = 1: no change</li>
+          <li>Profit peaks at MR = MC; for a price taker MR = P</li>
+          <li>MC crosses average variable and average total cost at their minimums</li>
+        </ul>
+      </div>
+<!--PART1:END-->
 
-      <h3>2 &middot; Set up your BA II Plus (once)</h3>
-      <p>The calculator keeps its settings and stored values through power-off, so one bad setting spoils every later
-      answer. A reset leaves you on 2 decimals and <i>chain</i> mode, which works strictly left to right. Fix both, confirm
-      the payment settings, then leave them alone.</p>
+      <h3>2 &middot; Today: how an economy keeps score</h3>
+      <p>Module 3 asks how big an economy&rsquo;s output is, why it swings around the level the economy can sustain,
+      and what makes that level grow.</p>
+      <p><b>One flow, counted three ways.</b> Whatever is produced is bought, and the money paid becomes someone&rsquo;s
+      wages, rent, interest or profit, so output, spending and income are one total (p.69). <b>GDP</b> is the market
+      value of the final goods and services produced in a country in a period. &ldquo;Final&rdquo; prevents double
+      counting: a loaf&rsquo;s price already includes the flour. Summing each producer&rsquo;s <b>value added</b>, its
+      sales minus its purchases from other firms, gives the same total (pp.71&ndash;73). Transfers such as pensions,
+      and resales of used goods, produce nothing new, so they are left out.</p>
+      <p><b>Nominal and real.</b> Nominal GDP can rise on prices alone; real GDP values output at a base year&rsquo;s
+      prices. The <b>GDP deflator</b> is nominal over real, times 100, and its rise is inflation across all domestic
+      output, not a consumer basket (pp.74&ndash;77).</p>
+      <p><b>Saving has to go somewhere.</b> Income is spent, saved or taxed, and spending is consumption, investment,
+      government purchases and net exports. Cancel consumption and private saving has three uses: investment, a
+      government deficit, or lending abroad (p.80). This is accounting after the fact; it does not say which piece
+      adjusts.</p>
+      <p><b>Demand and supply for the whole economy.</b> Aggregate demand slopes down: at a lower price level money buys
+      more, interest rates fall and home goods get cheaper abroad (pp.83&ndash;85). Short-run supply slopes up because
+      wages adjust slowly, so higher prices widen margins for a while. Long-run supply is vertical at <b>potential
+      GDP</b>, set by labour, capital and technology rather than the price level (pp.87&ndash;88). A demand shift moves
+      output and prices the same way, opening a <b>recessionary gap</b> below potential or an <b>inflationary gap</b>
+      above it. A supply shock such as dearer oil moves them opposite ways: <b>stagflation</b> (pp.102&ndash;109).</p>
+      <div class="worked">
+        <b>Everyday picture</b>
+        <p>A bakery&rsquo;s ovens set its normal weekly output, its potential. A rush of orders allows overtime for a
+        while, until overtime pay catches up. A flour shortage brings fewer loaves and higher prices at once, which more
+        customers cannot fix.</p>
+      </div>
+      <p><b>Growth: only productivity lasts.</b> Each extra machine per worker adds less than the last, so lasting growth
+      per person comes from <b>total factor productivity</b>, the growth that labour and capital do not explain
+      (pp.112&ndash;113). Sustainable growth is estimated as trend growth in hours worked plus trend growth in output per
+      hour (p.121).</p>
+      <div class="formula">
+        <p class="expr">GDP = C + I + G + (X &minus; M)</p>
+        <dl>
+          <dt>C, I, G</dt><dd>consumption; investment in new capital and inventories; government purchases, not transfers. Currency per year (p.77)</dd>
+          <dt>X &minus; M</dt><dd>net exports</dd>
+          <dt>Deflator</dt><dd>nominal &divide; real GDP &times; 100; the base year is 100 (p.75)</dd>
+          <dt>W<sub>L</sub>, W<sub>C</sub></dt><dd>labour&rsquo;s and capital&rsquo;s income shares, about 0.7 and 0.3, weighting input growth (p.113)</dd>
+        </dl>
+      </div>
+      <div class="sie-block traps">
+        <b>Assumptions and exceptions</b>
+        <ul>
+          <li>A change in the price level moves along AD or SRAS; anything else shifts the curve.</li>
+          <li>Higher wages shift short-run supply left but leave long-run supply alone; only capacity moves it.</li>
+          <li>A stronger currency shifts AD left (dearer exports) but SRAS right (cheaper imported inputs).</li>
+        </ul>
+      </div>
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Output = income = expenditure</li>
+          <li>Real GDP = nominal &divide; (deflator &divide; 100)</li>
+          <li>S = I + (G &minus; T) + (X &minus; M)</li>
+          <li>%&Delta;Y &asymp; %&Delta;A + W<sub>L</sub>%&Delta;L + W<sub>C</sub>%&Delta;K</li>
+          <li>Demand shift: output and prices move together &middot; supply shift: opposite</li>
+        </ul>
+      </div>
+
+      <h3>References</h3>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics, Learning Module 3: Aggregate Output, Prices, and Economic Growth (printed pages, PDF pages)</caption>
+          <thead><tr><th>Section</th><th>Printed</th><th>PDF</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Learning outcomes, introduction</td><td>67&ndash;68</td><td>75&ndash;76</td></tr>
+            <tr><td class="txt">Aggregate output and income: GDP, its components, saving and the balances</td><td>69&ndash;81</td><td>77&ndash;89</td></tr>
+            <tr><td class="txt">Aggregate demand and supply, their shifts</td><td>82&ndash;101</td><td>90&ndash;109</td></tr>
+            <tr><td class="txt">Equilibrium GDP and prices: gaps, stagflation</td><td>102&ndash;109</td><td>110&ndash;117</td></tr>
+            <tr><td class="txt">Economic growth and sustainability</td><td>110&ndash;123</td><td>118&ndash;131</td></tr>
+            <tr><td class="txt">Summary</td><td>124&ndash;127</td><td>132&ndash;135</td></tr>
+            <tr><td class="txt">Practice problems and solutions</td><td>129&ndash;136</td><td>137&ndash;144</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="recap">
+        <b>Worth opening separately</b>
+        <ul>
+          <li>Exhibits 8 and 10, the AD and AS curves (printed pp.84, 87; PDF 92, 95), and Exhibits 17, 18, 20 and 21, equilibrium, the two gaps and stagflation (printed pp.102&ndash;108; PDF 110&ndash;116): the diagrams carry this module.</li>
+          <li>Exhibits 14 and 16, what shifts AD and AS (printed pp.94, 99&ndash;100; PDF 102, 107&ndash;108): worth knowing row by row.</li>
+          <li>Summary, printed pp.124&ndash;125 (PDF 132&ndash;133): where national, personal and personal disposable income are spelled out.</li>
+          <li>Book slips: Exhibit 7&rsquo;s text and table disagree (p.81, PDF 89), so trust only its ranking; Example 9&rsquo;s solution (pp.105&ndash;106, PDF 113&ndash;114) cites the wrong exhibit, as its export figures are in Exhibit 19.</li>
+        </ul>
+      </div>
+
+<!--CALC:START-->
+      <h3>Once only: set up your BA II Plus</h3>
+      <p>The calculator keeps its settings and stored values through power-off, so one wrong setting spoils every later
+      answer. A reset leaves it on 2 decimals and <i>chain</i> mode, which works strictly left to right. Fix both, check
+      the payment settings, then leave them alone. Pages are from TI&rsquo;s BA II PLUS guidebook.</p>
 
       <div class="calc">
-        <p class="calc-task"><b>Setup, in order.</b> Pages are from TI&rsquo;s BA II PLUS guidebook.</p>
+        <p class="calc-task"><b>Setup, in order.</b></p>
         <ol class="calc-steps">
           <li>
             <p class="calc-what">Reset (pp.5&ndash;6, 20)</p>
@@ -154,7 +249,7 @@
       because no rate balances money that only flows one way. END/BGN does not affect the cash-flow worksheet (p.44).</p>
 
       <div class="calc">
-        <p class="calc-task"><b>Two checks.</b> Now, and before each study session.</p>
+        <p class="calc-task"><b>Two checks.</b> Now, and whenever the calculator has been reset.</p>
         <ol class="calc-steps">
           <li>
             <p class="calc-what">Order of operations</p>
@@ -167,136 +262,25 @@
             <p class="calc-see"><samp>FV = 1,469.3281</samp> (1,000 &times; 1.08<sup>5</sup>). <samp>1,033.7808</samp> means P/Y is 12; <samp>&minus;1,469.3281</samp> means PV was left positive.</p>
           </li>
         </ol>
-        <p class="calc-answer">Optional: three end-of-year payments of 100 at 10% are worth 248.6852 today in END and 273.5537 in BGN, 10% more because each payment arrives a period sooner. Switch back to END afterwards.</p>
+        <p class="calc-answer">Why END matters: three end-of-year payments of 100 at 10% are worth 248.6852 today in END and 273.5537 in BGN, 10% more, because each payment arrives a period sooner.</p>
       </div>
       <p><b>Keep or change?</b> Keep DEC 4, AOS, P/Y = C/Y = 1 and END. Switch to BGN only for payments at the start of
       each period (rent, leases, premiums), then switch back. For monthly problems, leave P/Y alone and convert yourself:
       N = years &times; 12, I/Y = annual rate &divide; 12.</p>
-
-      <h3>3 &middot; Tonight&rsquo;s principles: how an economy keeps score</h3>
-      <p>Module 3 asks how big output is, why it swings around its potential, and what makes potential grow.</p>
-      <p><b>One flow, counted three ways.</b> Every dollar spent on final output is someone&rsquo;s income, so output =
-      income = expenditure. GDP counts final goods and services produced in the period, at market value. Count either the
-      value added at each stage or the final price, never both. Transfers and capital gains produce nothing, so they are
-      left out. Real GDP removes price changes: nominal 1,100 with a deflator of 105 is real 1,100 &divide; 1.05 = 1,047.6.</p>
-      <p><b>Follow the saving.</b> Income is consumed, saved or taxed (C + S + T), and spending is C + I + G + (X &minus; M).
-      Cancel C and private saving has exactly three uses: investment, funding a government deficit, or lending abroad (p.80).</p>
-      <div class="worked">
-        <b>Worked example (hypothetical, $ billions)</b>
-        <ol>
-          <li>S = 500, I = 420, G = 700, T = 600, so the government deficit G &minus; T = 100.</li>
-          <li>X &minus; M = S &minus; I &minus; (G &minus; T) = 500 &minus; 420 &minus; 100 = <b>&minus;20</b>: a trade deficit, financed by borrowing 20 from abroad.</li>
-          <li>Widen the deficit to 150 with S and I unchanged: X &minus; M = &minus;70. What domestic savers can&rsquo;t fund, foreigners do.</li>
-        </ol>
-      </div>
-      <p><b>AD&ndash;AS: who moves output and prices.</b> AD slopes down because a lower price level raises real wealth,
-      lowers interest rates and cheapens exports (pp.83&ndash;85). SRAS slopes up because wages are sticky, and LRAS is
-      vertical at potential GDP because in the long run all prices adjust (pp.87&ndash;88). An AD shift moves output and
-      prices the <i>same</i> way, opening a gap. SRAS shifting left, as in an oil shock, moves them <i>opposite</i> ways:
-      stagflation. LRAS moves only when capacity changes: labour, capital, technology, natural resources (Exhibit 16,
-      pp.99&ndash;100).</p>
-      <p><b>Growth: only productivity lasts.</b> In Y = A&middot;F(L, K), each extra machine per worker adds less than the
-      last (diminishing marginal productivity), so capital deepening stalls. Lasting growth per person needs total factor
-      productivity (A), measured as what is left after labour and capital (pp.112&ndash;113). With TFP growth of 1%, labour
-      1% and capital 3%, growth &asymp; 1 + 0.7 &times; 1 + 0.3 &times; 3 = 2.6%.</p>
-
-      <div class="formula">
-        <p class="expr">S = I + (G &minus; T) + (X &minus; M)</p>
-        <dl>
-          <dt>GDP</dt><dd>C + I + G + (X &minus; M), in currency per year: a flow (p.77)</dd>
-          <dt>Deflator</dt><dd>nominal &divide; real GDP &times; 100, an index with the base year at 100 (p.75)</dd>
-          <dt>%&Delta;ULC</dt><dd>&asymp; %&Delta;wages &minus; %&Delta;productivity; rising unit labour cost shifts SRAS left (p.96)</dd>
-          <dt>%&Delta;Y</dt><dd>&asymp; %&Delta;A + W<sub>L</sub>%&Delta;L + W<sub>C</sub>%&Delta;K, with shares W<sub>L</sub> &asymp; 0.7 and W<sub>C</sub> &asymp; 0.3 (p.113)</dd>
-          <dt>Potential growth</dt><dd>&asymp; growth in hours worked + growth in labour productivity (p.121)</dd>
-        </dl>
-      </div>
-      <p>The saving equation and GDP are identities: true by definition, and silent about cause.</p>
-
-      <div class="key-terms">
-        <dl>
-          <dt>MPC / MPS</dt><dd>share of an extra dollar consumed / saved; MPS = 1 &minus; MPC (p.80)</dd>
-          <dt>Potential GDP</dt><dd>output with labour and capital fully employed; estimated, never observed (pp.111&ndash;112)</dd>
-          <dt>Recessionary / inflationary gap</dt><dd>short-run output below / above potential (pp.103, 106)</dd>
-          <dt>Stagflation</dt><dd>high inflation with weak growth (p.108)</dd>
-          <dt>Labour productivity</dt><dd>real GDP per hour worked (p.119)</dd>
-          <dt>National income</dt><dd>GDP minus depreciation (the capital consumption allowance) and a statistical discrepancy (p.124)</dd>
-        </dl>
-      </div>
-
-      <div class="sie-block memorize">
-        <b>Memorize</b>
-        <ul>
-          <li>GDP = C + I + G + (X &minus; M)</li>
-          <li>Real GDP = nominal &divide; (deflator &divide; 100)</li>
-          <li>S = I + (G &minus; T) + (X &minus; M)</li>
-          <li>MPS = 1 &minus; MPC</li>
-          <li>%&Delta;Y &asymp; %&Delta;A + 0.7 %&Delta;L + 0.3 %&Delta;K</li>
-          <li>AD shift: Y and P same way &middot; SRAS shift: opposite</li>
-        </ul>
-      </div>
-
-      <div class="sie-block traps">
-        <b>Exam traps</b>
-        <ul>
-          <li>Transfers are not in G. GDP &ldquo;investment&rdquo; means new capital goods and inventories, never buying securities.</li>
-          <li>A change in the price level moves you <i>along</i> AD or SRAS; anything else shifts the curve.</li>
-          <li>A currency depreciation shifts AD right (cheaper exports) and SRAS left (dearer imported inputs): both raise prices (Exhibits 14 and 16).</li>
-          <li>Stagflation comes from supply. A demand shock can&rsquo;t raise prices while cutting output.</li>
-        </ul>
-      </div>
-
-      <h3>4 &middot; Tonight&rsquo;s reading plan</h3>
-      <p>Read new mechanisms closely. Skim the country stories and lists that repeat them, and take no notes on skimmed pages.</p>
-      <div class="table-wrap">
-        <table class="data-table">
-          <caption>Module 3, in book order (printed / PDF pages)</caption>
-          <thead><tr><th>Section</th><th>Printed</th><th>PDF</th><th>How</th></tr></thead>
-          <tbody>
-            <tr><td class="txt">Learning outcomes, introduction</td><td>67&ndash;68</td><td>75&ndash;76</td><td class="txt">Skim</td></tr>
-            <tr><td class="txt">GDP, value added, nominal vs real (Ex. 1&ndash;2)</td><td>69&ndash;76</td><td>77&ndash;84</td><td class="txt">Close on the deflator maths</td></tr>
-            <tr><td class="txt">Components of GDP</td><td>77&ndash;78</td><td>85&ndash;86</td><td class="txt">Standard</td></tr>
-            <tr><td class="txt">Saving, investment, fiscal and trade balances</td><td>79&ndash;82</td><td>87&ndash;90</td><td class="txt">Close</td></tr>
-            <tr><td class="txt">AD and AS curves</td><td>83&ndash;88</td><td>91&ndash;96</td><td class="txt">Close</td></tr>
-            <tr><td class="txt">Shifts in AD, SRAS, LRAS (Ex. 4&ndash;8)</td><td>88&ndash;101</td><td>96&ndash;109</td><td class="txt">Close on Exhibits 14, 16; skim country examples</td></tr>
-            <tr><td class="txt">Equilibrium, gaps, stagflation (Ex. 9&ndash;10)</td><td>102&ndash;110</td><td>110&ndash;118</td><td class="txt">Close</td></tr>
-            <tr><td class="txt">Growth: production function</td><td>110&ndash;113</td><td>118&ndash;121</td><td class="txt">Close</td></tr>
-            <tr><td class="txt">Sources of growth (Ex. 11)</td><td>114&ndash;119</td><td>122&ndash;127</td><td class="txt">Standard: know the list; skim the detail</td></tr>
-            <tr><td class="txt">Measuring sustainable growth (Ex. 12&ndash;14)</td><td>119&ndash;123</td><td>127&ndash;131</td><td class="txt">Close</td></tr>
-            <tr><td class="txt">Summary</td><td>124&ndash;127</td><td>132&ndash;135</td><td class="txt">Close on 124&ndash;125; rest as a checklist</td></tr>
-            <tr><td class="txt">References</td><td>128</td><td>136</td><td class="txt">Skip</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p><b>Why part of the Summary is close reading.</b> National, personal and personal disposable income are a learning
-      outcome defined only on pp.124&ndash;125.</p>
-      <p><b>Two slips in the book.</b> Exhibit 7&rsquo;s text (p.81) gives Germany a different share from the one in
-      its own table; use the table. Example 9&rsquo;s solution (p.106) cites &ldquo;Exhibit 20&rdquo; but means
-      the export table, Exhibit 19.</p>
-      <p><b>Stop rule.</b> If two hours run out before Growth (p.110), stop and tell me. The rest moves to Wednesday, when
-      Module 5 is only 17 pages, or to Friday&rsquo;s buffer. The portal lessons for this module repeat the book sections, so
-      use one or the other. Glossary and Flashcards are optional tonight.</p>
-
-      <div class="recap">
-        <b>Tonight&rsquo;s checklist</b>
-        <ul>
-          <li>Calculator setup, then both checks: 11.0000 and 1,469.3281.</li>
-          <li>Read the Close sections; skim the rest as marked.</li>
-          <li>Problems, pp.129&ndash;133: Q4, 7, 10, 13, 15, 21, 25, 28. Check them against pp.134&ndash;136 and write a one-line rule for each miss.</li>
-          <li>Reply to the bot, e.g. <samp>CFA: M3 done, 2h10, 6/8, missed Q7 Q21</samp>. Your reply, not this page, marks the module done.</li>
-        </ul>
-      </div>
+<!--CALC:END-->
 
     </article>
 
     <footer class="colophon">
       <h2>Colophon</h2>
-      <p><strong>Sources.</strong> CFA Institute, CFA Program Curriculum 2027, Prerequisite Reading: Economics, Learning
-      Modules 1&ndash;3; page numbers are the book&rsquo;s printed pages, with PDF pages where shown. Texas Instruments,
-      BA II PLUS Calculator Guidebook (2024), pp.4&ndash;6, 11, 14, 20&ndash;21, 37, 44 and 79. Worked examples are
-      original and hypothetical.</p>
+      <p><strong>Sources.</strong> CFA Institute, CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics,
+      Learning Modules 1&ndash;3. Printed pages are the book&rsquo;s own page numbers; PDF pages are the file&rsquo;s page
+      count. Texas Instruments, BA II PLUS Calculator Guidebook (2024), pp.4&ndash;6, 11, 14, 20&ndash;21, 37, 44 and 79.
+      The explanations are original; the bakery is hypothetical.</p>
+      <p><strong>Progress.</strong> Read from your study workbook&rsquo;s status fields. Your notes are read but never
+      published, and a lesson being sent never counts as studying.</p>
       <p><strong>Corrections.</strong> None.</p>
-      <p><strong>Method.</strong> Written in advance from notes on the full module, with every number recomputed. Progress
-      is recorded only from your replies, never from a lesson being sent. <a href="../../../status.html">System status</a>.</p>
+      <p><a href="../../../status.html">System status</a>.</p>
     </footer>
 
     <nav class="report-nav" aria-label="Report navigation">
@@ -309,19 +293,5 @@
   </main>
 
   <script src="../../../assets/report.js" defer></script>
-  <script>
-    /* Print support: expand every collapsed details element before printing. */
-    (function () {
-      var touched = [];
-      window.addEventListener("beforeprint", function () {
-        touched = [];
-        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
-      });
-      window.addEventListener("afterprint", function () {
-        touched.forEach(function (d) { d.removeAttribute("open"); });
-        touched = [];
-      });
-    })();
-  </script>
 </body>
 </html>

@@ -25,10 +25,11 @@ on a chained git commit. Details: `prompts/shared-rules.md` §0b.
 3. Your run procedure — one of:
    - `prompts/cfa-morning.md` — **CFA Morning Lesson** (slot `cfa1`, SPEC §0f), every day at
      4:50 AM ET on the trigger that used to run the Learning Brief (repurposed 2026-11-15; first
-     lesson 2026-11-16, exam 2027-05-15). Opens with closed-book recall of yesterday's CFA Level I
-     study, corrections and spaced review, then teaches tonight's reading from the plan in
-     `state/cfa1/plan.json` and the briefs in `curriculum/cfa1/briefs/`. Progress is recorded only
-     from Logan's "CFA …" Telegram replies (`state/cfa1/inbox.jsonl`). No news.
+     lesson 2026-11-16, exam 2027-05-15). A two-part morning reading: a refresher on his latest
+     completed CFA Level I study, then a self-contained teaching of today's assigned sections
+     (plan `state/cfa1/plan.json`, briefs `curriculum/cfa1/briefs/`), with verified references.
+     Progress comes from his study workbook, synced encrypted to `state/cfa1/workbook.enc` by a
+     task on his PC; his notes stay private. No quizzes, no news.
    - `prompts/learning.md` — **Learning Brief — PAUSED since 2026-11-06** (SPEC §0e); since
      2026-11-15 no trigger runs it (its trigger now runs the CFA Morning Lesson). While
      `state/learning.json` has `"paused": true` the run exits at once, writing nothing. When live:
@@ -100,10 +101,11 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   `sie/quizzes/day-NN.json` (SIE answer keys), `sie/inbox.jsonl` (Logan's Telegram replies —
   written ONLY by the `sie-inbox` Action; routines read it, never write it). `curriculum.json` is retired — do not read or write it.
   `cfa1/` — the CFA Morning Lesson: `plan.json` (the Daily Study Plan; every revision keeps the
-  prior version in `plan-history/`), `progress.json`, `lessons.json`, `misconceptions.json`,
-  `blockers.json`, `control.json` (pause), `queue/` (lessons written in advance),
-  `inbox-cursor.json`, and `inbox.jsonl` (Logan's "CFA …" replies — written ONLY by the
-  `sie-inbox` Action; the routine reads it, never writes it).
+  prior version in `plan-history/`), `progress.json` (statuses copied from his workbook),
+  `lessons.json`, `blockers.json`, `control.json` (pause), `queue/` (lessons written in advance),
+  `workbook.enc` (his study workbook, encrypted — written ONLY by the sync task on his PC; never
+  decrypt it into the repo), `inbox-cursor.json`, and `inbox.jsonl` (optional "CFA …" Telegram
+  notes — written ONLY by the `sie-inbox` Action). `misconceptions.json` is retired.
 - `ledgers/` — `corrections.json`, `forecasts.json` (append-only accountability),
   `book-notes.jsonl` (one labelled claim per Learning Brief, raw material for Logan's book).
 - `registry/` — `entities.json` (public/private status; never hardcode — verify via EDGAR).

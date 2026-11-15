@@ -1,14 +1,21 @@
 {
+ "note": "Statuses only, copied from Logan's study workbook when a lesson is recorded. His notes stay private (they travel encrypted in workbook.enc and are never written here).",
  "updated": "2026-11-15",
- "note": "Recorded only from Logan's replies (state/cfa1/inbox.jsonl) or explicit records; a lesson being sent is never evidence of study.",
  "modules": {
   "PRE-ECON-LM01": {
-   "status": "done",
-   "understanding": "unknown",
-   "evidence": "Master Study Plan workbook: Daily Plan row 2026-11-14 status 'Done'",
-   "source": "workbook snapshot 2026-11-15",
-   "updated": "2026-11-15"
+   "state": "done",
+   "items": 13,
+   "done": 13
   }
  },
- "sessions": []
+ "sessions": [
+  {
+   "date": "2026-11-14",
+   "status": "Done"
+  },
+  {
+   "date": "2026-11-15",
+   "status": "Not started"
+  }
+ ]
 }

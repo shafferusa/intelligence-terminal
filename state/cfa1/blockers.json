@@ -17,9 +17,11 @@
   {
    "id": "master-plan-location",
    "opened": "2026-11-15",
-   "status": "open",
+   "status": "resolved",
    "what": "CFA_Level_I_Master_Study_Plan.xlsx lives in Downloads, outside the CFA folder; the plan was built from a 2026-11-15 snapshot of it.",
-   "impact": "Edits made to the workbook after 2026-11-15 are not seen by the routine. Report progress by replying 'CFA: ...' instead."
+   "impact": "Edits made to the workbook after 2026-11-15 are not seen by the routine. Report progress by replying 'CFA: ...' instead.",
+   "resolved": "2026-11-15",
+   "resolution": "The workbook in Downloads is now the primary progress record: a scheduled task on Logan's PC sends it encrypted to state/cfa1/workbook.enc whenever he saves it, and each morning run reads that copy."
   },
   {
    "id": "notes-private",

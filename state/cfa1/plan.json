@@ -1,6 +1,6 @@
 {
  "system": "cfa1",
- "version": 2,
+ "version": 3,
  "created": "2026-11-15",
  "revised": "2026-11-15",
  "start": "2026-11-16",
@@ -27,6 +27,12 @@
    "date": "2026-11-15",
    "summary": "Version 2 (2026-11-15, before Lesson 1): workload levelling from the full reading of the books. The verified reading notes estimate each module's reading and practice time; five evenings came out well above their planned hours, each next to a lighter evening. Sections (with their portal items) moved between neighbouring days only: Cash Flow Statements joins Balance Sheets on Tue Nov 24 so Inventories gets two evenings (read Wed Nov 25, practise Thu Nov 26); Key Statistical Distributions moves to Tue Dec 8 and the Central Limit Theorem to Wed Dec 9, easing Thu Dec 10; the equity DCF and multiples modules shift half a day earlier from Sun Jan 24 to Tue Jan 26, easing Mon Jan 25 and Wed Jan 27. No module dropped, no study day added, no date after Apr 19 touched. The Nov 16 overload (Module 3, about 4 h estimated) is handled by Lesson 1's stop rule instead. Also in v2: reading priorities for every module filled in from the completed, verified reading of all ten volumes (learning-outcome pages marked SKIM). With all modules estimated, the first pass needs about 201 hours of efficient reading and practice against 319 planned on the same 126 study days, so it fits by Apr 19 with the review window untouched.",
    "snapshot": "state/cfa1/plan-history/v1.json"
+  },
+  {
+   "version": 3,
+   "date": "2026-11-15",
+   "summary": "Version 3 (2026-11-15): Logan's study workbook (CFA_Level_I_Master_Study_Plan.xlsx) is now the primary progress record, so the lessons follow its Daily Plan exactly. The v2 levelling of Nov 24-26, Dec 8-10 and Jan 24-27 is undone: those ten days are back to the workbook's own assignments, with v2's reading priorities kept. Overload is now judged from his nightly notes and handled with the buffers, and every change is explained in that morning's reading.",
+   "snapshot": "state/cfa1/plan-history/v2.json"
   }
  ],
  "days": [
@@ -1454,11 +1460,11 @@
    "kind": "study",
    "phase": "Prerequisite overview",
    "course": "FSA prerequisite",
-   "assignment": "Module 3: Balance Sheets; Module 4: Cash Flow Statements",
+   "assignment": "Module 3: Balance Sheets",
    "core_hours": 3,
    "psm_hours": 0,
    "questions_target": 8,
-   "content_pages": 46,
+   "content_pages": 28,
    "reading": [
     {
      "module": "PRE-FSA-LM03",
@@ -1481,7 +1487,7 @@
         72
        ],
        "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
+       "why": ""
       },
       {
        "title": "Introduction and Components of the Balance Sheet",
@@ -1614,7 +1620,46 @@
        "why": "checks"
       }
      ]
-    },
+    }
+   ],
+   "online_only": [
+    "Glossary: Balance Sheets",
+    "Flashcards: Balance Sheets"
+   ],
+   "psm_items": [],
+   "les_ids": [
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+   ],
+   "workbook_status": "Not started",
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
+  },
+  {
+   "date": "2026-11-25",
+   "dow": "Wed",
+   "lesson": 10,
+   "kind": "study",
+   "phase": "Prerequisite overview",
+   "course": "FSA prerequisite",
+   "assignment": "Module 4: Cash Flow Statements",
+   "core_hours": 3,
+   "psm_hours": 0,
+   "questions_target": 8,
+   "content_pages": 18,
+   "reading": [
     {
      "module": "PRE-FSA-LM04",
      "book": "PRE-FSA",
@@ -1636,7 +1681,7 @@
         104
        ],
        "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
+       "why": ""
       },
       {
        "title": "Introduction",
@@ -1742,28 +1787,11 @@
     }
    ],
    "online_only": [
-    "Glossary: Balance Sheets",
-    "Flashcards: Balance Sheets",
     "Glossary: Cash Flow Statements",
     "Flashcards: Cash Flow Statements"
    ],
    "psm_items": [],
    "les_ids": [
-    105,
-    106,
-    107,
-    108,
-    109,
-    110,
-    111,
-    112,
-    113,
-    114,
-    115,
-    116,
-    117,
-    118,
-    119,
     120,
     121,
     122,
@@ -1778,20 +1806,20 @@
     131
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Cash Flow Statements (about 50 min of reading and practice in the reading notes) joins Balance Sheets (about 75 min) so that Inventories, the heaviest prerequisite FSA module (about 4.5 h), gets two evenings."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
-   "date": "2026-11-25",
-   "dow": "Wed",
-   "lesson": 10,
+   "date": "2026-11-26",
+   "dow": "Thu",
+   "lesson": 11,
    "kind": "study",
    "phase": "Prerequisite overview",
    "course": "FSA prerequisite",
-   "assignment": "Module 5: Inventories (Learning outcomes (module opening page) to Summary)",
+   "assignment": "Module 5: Inventories",
    "core_hours": 3,
    "psm_hours": 0,
    "questions_target": 8,
-   "content_pages": 47,
+   "content_pages": 61,
    "reading": [
     {
      "module": "PRE-FSA-LM05",
@@ -1800,10 +1828,10 @@
      "course": "FSA prerequisite",
      "module_num": 5,
      "title": "Inventories",
-     "printed": "115–159",
+     "printed": "115–182",
      "pdf": [
       123,
-      167
+      190
      ],
      "sections": [
       {
@@ -1814,7 +1842,7 @@
         124
        ],
        "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
+       "why": ""
       },
       {
        "title": "Introduction",
@@ -1924,7 +1952,7 @@
         154
        ],
        "priority": "STANDARD",
-       "why": "Intro framing, carries LOs on presentation/disclosure"
+       "why": ""
       },
       {
        "title": "Illustrations of Inventory Analysis: Adjusting LIFO to FIFO",
@@ -1934,7 +1962,7 @@
         158
        ],
        "priority": "CLOSE",
-       "why": "Cross-company ratio comparison and inventory signals (Example 9)"
+       "why": ""
       },
       {
        "title": "Illustrations of Inventory Analysis: Impacts of Writedowns",
@@ -1944,7 +1972,7 @@
         164
        ],
        "priority": "CLOSE",
-       "why": "Write-down ratio effects and method-change directions (Example 10)"
+       "why": ""
       },
       {
        "title": "Summary",
@@ -1954,12 +1982,35 @@
         167
        ],
        "priority": "SKIM",
-       "why": "Recap of whole LM5, repeats earlier sections"
+       "why": ""
+      },
+      {
+       "title": "Practice Problems",
+       "printed": "160–175",
+       "pdf": [
+        168,
+        183
+       ],
+       "priority": "CLOSE",
+       "why": ""
+      },
+      {
+       "title": "Solutions",
+       "printed": "176–182",
+       "pdf": [
+        184,
+        190
+       ],
+       "priority": "STANDARD",
+       "why": ""
       }
      ]
     }
    ],
-   "online_only": [],
+   "online_only": [
+    "Glossary: Inventories",
+    "Flashcards: Inventories"
+   ],
    "psm_items": [],
    "les_ids": [
     132,
@@ -1976,73 +2027,14 @@
     143,
     144,
     145,
-    146
-   ],
-   "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Cash Flow Statements (about 50 min of reading and practice in the reading notes) joins Balance Sheets (about 75 min) so that Inventories, the heaviest prerequisite FSA module (about 4.5 h), gets two evenings. Inventories is split: read it Wednesday (about 2.5 h), work its two-part practice set and flashcards Thursday (about 2 h)."
-  },
-  {
-   "date": "2026-11-26",
-   "dow": "Thu",
-   "lesson": 11,
-   "kind": "study",
-   "phase": "Prerequisite overview",
-   "course": "FSA prerequisite",
-   "assignment": "Module 5: Inventories (end-of-module practice)",
-   "core_hours": 3,
-   "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 14,
-   "reading": [
-    {
-     "module": "PRE-FSA-LM05",
-     "book": "PRE-FSA",
-     "book_title": "CFA Program Curriculum 2027, Prerequisite Reading, Volume 2: Financial Statement Analysis",
-     "course": "FSA prerequisite",
-     "module_num": 5,
-     "title": "Inventories",
-     "printed": "160–182",
-     "pdf": [
-      168,
-      190
-     ],
-     "sections": [
-      {
-       "title": "Practice Problems",
-       "printed": "160–175",
-       "pdf": [
-        168,
-        183
-       ],
-       "priority": "CLOSE",
-       "why": "50 questions carrying most calculation practice"
-      },
-      {
-       "title": "Solutions",
-       "printed": "176–182",
-       "pdf": [
-        184,
-        190
-       ],
-       "priority": "STANDARD",
-       "why": "Read after attempting; contains conversion formulas and caveats"
-      }
-     ]
-    }
-   ],
-   "online_only": [
-    "Glossary: Inventories",
-    "Flashcards: Inventories"
-   ],
-   "psm_items": [],
-   "les_ids": [
+    146,
     147,
     148,
     149,
     150
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Inventories is split: read it Wednesday (about 2.5 h), work its two-part practice set and flashcards Thursday (about 2 h)."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
    "date": "2026-11-27",
@@ -3305,11 +3297,11 @@
    "kind": "study",
    "phase": "Main topic",
    "course": "Quantitative Methods",
-   "assignment": "Module 5: Statistical Characteristics of Asset Returns (Summary: Statistical Characteristics of Asset Returns to Solutions); Module 6: Statistical Distributions for Financial Asset Prices and Returns (Learning outcomes (module opening page) to Key Statistical Distributions in Finance)",
+   "assignment": "Module 5: Statistical Characteristics of Asset Returns; Module 6: Statistical Distributions for Financial Asset Prices and Returns | 5.06 | Summary: Statistical Characteristics of Asset Returns through 6.02 | Random Variables and Unconditional Expectations",
    "core_hours": 2,
    "psm_hours": 0,
    "questions_target": 15,
-   "content_pages": 38,
+   "content_pages": 21,
    "reading": [
     {
      "module": "V1-LM05",
@@ -3332,7 +3324,7 @@
         250
        ],
        "priority": "SKIM",
-       "why": "Repeat of body"
+       "why": ""
       },
       {
        "title": "Practice Problems",
@@ -3342,7 +3334,7 @@
         254
        ],
        "priority": "CLOSE",
-       "why": "Quantile/bin counting and formula traps"
+       "why": ""
       },
       {
        "title": "Solutions",
@@ -3352,7 +3344,7 @@
         258
        ],
        "priority": "STANDARD",
-       "why": "Check answers"
+       "why": ""
       }
      ]
     },
@@ -3363,10 +3355,10 @@
      "course": "Quantitative Methods",
      "module_num": 6,
      "title": "Statistical Distributions for Financial Asset Prices and Returns",
-     "printed": "249–281",
+     "printed": "249–264",
      "pdf": [
       259,
-      291
+      274
      ],
      "sections": [
       {
@@ -3377,7 +3369,7 @@
         259
        ],
        "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
+       "why": ""
       },
       {
        "title": "Introduction: Statistical Distributions for Financial Asset Prices and Returns",
@@ -3387,7 +3379,7 @@
         262
        ],
        "priority": "SKIM",
-       "why": "Pre-test previews; answers repeat later material"
+       "why": ""
       },
       {
        "title": "Random Variables and Unconditional Expectations",
@@ -3397,17 +3389,7 @@
         274
        ],
        "priority": "CLOSE",
-       "why": "LO1 core calculations"
-      },
-      {
-       "title": "Key Statistical Distributions in Finance",
-       "printed": "265–281",
-       "pdf": [
-        275,
-        291
-       ],
-       "priority": "CLOSE",
-       "why": "LO2 moments of key distributions"
+       "why": ""
       }
      ]
     }
@@ -3423,14 +3405,13 @@
     243,
     244,
     245,
-    "book-pp-V1-LM05",
     246,
     247,
     248,
-    249
+    "book-pp-V1-LM05"
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Key Statistical Distributions moves to Tuesday, which had about 70 min of work, to make room on Wednesday."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
    "date": "2026-12-09",
@@ -3439,11 +3420,11 @@
    "kind": "study",
    "phase": "Main topic",
    "course": "Quantitative Methods",
-   "assignment": "Module 6: Statistical Distributions for Financial Asset Prices and Returns (Conditional Expectations, Variances, and Covariances to Solutions); Module 7: Estimation and Hypothesis Testing (Learning outcomes (module opening page) to The Central Limit Theorem, Confidence Intervals, and Sampling)",
+   "assignment": "Module 6: Statistical Distributions for Financial Asset Prices and Returns | 6.03 | Key Statistical Distributions in Finance through Flashcards: Statistical Distributions for Financial Asset Prices and Returns",
    "core_hours": 2,
    "psm_hours": 0,
    "questions_target": 15,
-   "content_pages": 41,
+   "content_pages": 40,
    "reading": [
     {
      "module": "V1-LM06",
@@ -3452,12 +3433,22 @@
      "course": "Quantitative Methods",
      "module_num": 6,
      "title": "Statistical Distributions for Financial Asset Prices and Returns",
-     "printed": "282–308",
+     "printed": "265–308",
      "pdf": [
-      292,
+      275,
       318
      ],
      "sections": [
+      {
+       "title": "Key Statistical Distributions in Finance",
+       "printed": "265–281",
+       "pdf": [
+        275,
+        291
+       ],
+       "priority": "CLOSE",
+       "why": ""
+      },
       {
        "title": "Conditional Expectations, Variances, and Covariances",
        "printed": "282–293",
@@ -3466,7 +3457,7 @@
         303
        ],
        "priority": "CLOSE",
-       "why": "LO3"
+       "why": ""
       },
       {
        "title": "Bayesian Updating",
@@ -3476,7 +3467,7 @@
         311
        ],
        "priority": "CLOSE",
-       "why": "LO4 taught only here"
+       "why": ""
       },
       {
        "title": "Summary: Statistical Distributions for Financial Asset Prices and Returns",
@@ -3486,7 +3477,7 @@
         312
        ],
        "priority": "SKIM",
-       "why": "Recap"
+       "why": ""
       },
       {
        "title": "Practice Problems",
@@ -3496,7 +3487,7 @@
         314
        ],
        "priority": "STANDARD",
-       "why": "9 exam-style questions"
+       "why": ""
       },
       {
        "title": "Solutions",
@@ -3506,52 +3497,7 @@
         318
        ],
        "priority": "STANDARD",
-       "why": "Answers; p.318 blank"
-      }
-     ]
-    },
-    {
-     "module": "V1-LM07",
-     "book": "V1",
-     "book_title": "CFA Program Curriculum 2027, Level I, Volume 1: Quantitative Methods",
-     "course": "Quantitative Methods",
-     "module_num": 7,
-     "title": "Estimation and Hypothesis Testing",
-     "printed": "309–325",
-     "pdf": [
-      319,
-      335
-     ],
-     "sections": [
-      {
-       "title": "Learning outcomes (module opening page)",
-       "printed": "309",
-       "pdf": [
-        319,
-        319
-       ],
-       "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
-      },
-      {
-       "title": "Introduction: Estimation and Hypothesis Testing",
-       "printed": "309–312",
-       "pdf": [
-        319,
-        322
-       ],
-       "priority": "SKIM",
-       "why": "Two-paragraph preview plus 8-question pre-test that previews content taught later"
-      },
-      {
-       "title": "The Central Limit Theorem, Confidence Intervals, and Sampling",
-       "printed": "313–325",
-       "pdf": [
-        323,
-        335
-       ],
-       "priority": "STANDARD",
-       "why": "Container for three L4 sections (LO1)"
+       "why": ""
       }
      ]
     }
@@ -3562,18 +3508,16 @@
    ],
    "psm_items": [],
    "les_ids": [
+    249,
     250,
     251,
     252,
     253,
     254,
-    "book-pp-V1-LM06",
-    256,
-    257,
-    258
+    "book-pp-V1-LM06"
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Key Statistical Distributions moves to Tuesday, which had about 70 min of work, to make room on Wednesday. Estimation and Hypothesis Testing starts Wednesday with the Central Limit Theorem and confidence intervals; Thursday keeps hypothesis testing and non-parametric tests (about 3.8 h estimated for the whole module, which had been almost all on Thursday)."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
    "date": "2026-12-10",
@@ -3582,11 +3526,11 @@
    "kind": "study",
    "phase": "Main topic",
    "course": "Quantitative Methods",
-   "assignment": "Module 7: Estimation and Hypothesis Testing (Hypothesis Testing and Parametric Testing to Non-Parametric Tests)",
+   "assignment": "Module 6: Statistical Distributions for Financial Asset Prices and Returns; Module 7: Estimation and Hypothesis Testing | Real-World Applications: Bloomberg's News on Drug Approvals through 7.04 | Non-Parametric Tests",
    "core_hours": 2,
    "psm_hours": 0,
    "questions_target": 15,
-   "content_pages": 45,
+   "content_pages": 63,
    "reading": [
     {
      "module": "V1-LM07",
@@ -3595,12 +3539,42 @@
      "course": "Quantitative Methods",
      "module_num": 7,
      "title": "Estimation and Hypothesis Testing",
-     "printed": "326–371",
+     "printed": "309–371",
      "pdf": [
-      336,
+      319,
       381
      ],
      "sections": [
+      {
+       "title": "Learning outcomes (module opening page)",
+       "printed": "309",
+       "pdf": [
+        319,
+        319
+       ],
+       "priority": "SKIM",
+       "why": ""
+      },
+      {
+       "title": "Introduction: Estimation and Hypothesis Testing",
+       "printed": "309–312",
+       "pdf": [
+        319,
+        322
+       ],
+       "priority": "SKIM",
+       "why": ""
+      },
+      {
+       "title": "The Central Limit Theorem, Confidence Intervals, and Sampling",
+       "printed": "313–325",
+       "pdf": [
+        323,
+        335
+       ],
+       "priority": "STANDARD",
+       "why": ""
+      },
       {
        "title": "Hypothesis Testing and Parametric Testing",
        "printed": "326–358",
@@ -3609,7 +3583,7 @@
         368
        ],
        "priority": "CLOSE",
-       "why": "Container for LO2 and parametric half of LO3"
+       "why": ""
       },
       {
        "title": "Non-Parametric Tests",
@@ -3619,7 +3593,7 @@
         381
        ],
        "priority": "STANDARD",
-       "why": "LO carrier; short conceptual parametric vs non-parametric comparison, high-frequency exam points"
+       "why": ""
       }
      ]
     }
@@ -3630,11 +3604,14 @@
    "psm_items": [],
    "les_ids": [
     255,
+    256,
+    257,
+    258,
     259,
     260
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Estimation and Hypothesis Testing starts Wednesday with the Central Limit Theorem and confidence intervals; Thursday keeps hypothesis testing and non-parametric tests (about 3.8 h estimated for the whole module, which had been almost all on Thursday)."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
    "date": "2026-12-11",
@@ -8127,11 +8104,11 @@
    "kind": "study",
    "phase": "Main topic",
    "course": "Equities",
-   "assignment": "Module 5: Introduction to Equity Valuation; Module 6: Discounted Cash Flow (DCF) and Growth Models (Learning outcomes (module opening page) to Present Value Models for Equity Instruments)",
+   "assignment": "Module 4: Sources of Equity Returns; Module 5: Introduction to Equity Valuation | Glossary: Sources of Equity Returns through Glossary: Introduction to Equity Valuation",
    "core_hours": 3,
    "psm_hours": 0,
    "questions_target": 25,
-   "content_pages": 67,
+   "content_pages": 38,
    "reading": [
     {
      "module": "V5-LM05",
@@ -8154,7 +8131,7 @@
         115
        ],
        "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
+       "why": ""
       },
       {
        "title": "Introduction: Introduction to Equity Valuation",
@@ -8164,7 +8141,7 @@
         117
        ],
        "priority": "SKIM",
-       "why": "Framing and pre-test; content re-covered in later sections"
+       "why": ""
       },
       {
        "title": "Equity Price and Value",
@@ -8174,7 +8151,7 @@
         124
        ],
        "priority": "CLOSE",
-       "why": "LO1 mechanics and scenario calcs"
+       "why": ""
       },
       {
        "title": "Observable Measures of Company Value",
@@ -8184,7 +8161,7 @@
         135
        ],
        "priority": "CLOSE",
-       "why": "LO2; several calculations"
+       "why": ""
       },
       {
        "title": "Equity Valuation Models",
@@ -8194,7 +8171,7 @@
         149
        ],
        "priority": "CLOSE",
-       "why": "LO3 model categories and pros/cons"
+       "why": ""
       },
       {
        "title": "Summary: Introduction to Equity Valuation",
@@ -8204,7 +8181,7 @@
         150
        ],
        "priority": "SKIM",
-       "why": "Repeats earlier sections"
+       "why": ""
       },
       {
        "title": "Practice Problems",
@@ -8214,7 +8191,7 @@
         152
        ],
        "priority": "CLOSE",
-       "why": "Integrates all three LOs"
+       "why": ""
       },
       {
        "title": "Solutions",
@@ -8224,52 +8201,7 @@
         154
        ],
        "priority": "CLOSE",
-       "why": "Worked calculations (net debt, multiples)"
-      }
-     ]
-    },
-    {
-     "module": "V5-LM06",
-     "book": "V5",
-     "book_title": "CFA Program Curriculum 2027, Level I, Volume 5: Equities",
-     "course": "Equities",
-     "module_num": 6,
-     "title": "Discounted Cash Flow (DCF) and Growth Models",
-     "printed": "145–172",
-     "pdf": [
-      155,
-      182
-     ],
-     "sections": [
-      {
-       "title": "Learning outcomes (module opening page)",
-       "printed": "145",
-       "pdf": [
-        155,
-        155
-       ],
-       "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
-      },
-      {
-       "title": "Introduction: Discounted Cash Flow (DCF) and Growth Models",
-       "printed": "145–147",
-       "pdf": [
-        155,
-        157
-       ],
-       "priority": null,
        "why": ""
-      },
-      {
-       "title": "Present Value Models for Equity Instruments",
-       "printed": "148–172",
-       "pdf": [
-        158,
-        182
-       ],
-       "priority": "STANDARD",
-       "why": "Short opener with Eq. 1; the rest of the range is covered by the L4 sections"
       }
      ]
     }
@@ -8292,13 +8224,10 @@
     519,
     520,
     521,
-    "book-pp-V5-LM05",
-    524,
-    525,
-    526
+    "book-pp-V5-LM05"
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): DCF and Growth Models starts Sunday (a 3-hour day with about 95 min planned) with present value models."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
    "date": "2027-01-25",
@@ -8307,11 +8236,11 @@
    "kind": "study",
    "phase": "Main topic",
    "course": "Equities",
-   "assignment": "Module 6: Discounted Cash Flow (DCF) and Growth Models (Growth Assumptions in Present Value Models to Solutions)",
+   "assignment": "Module 5: Introduction to Equity Valuation; Module 6: Discounted Cash Flow (DCF) and Growth Models | Flashcards: Introduction to Equity Valuation through 6.03 | Growth Assumptions in Present Value Models",
    "core_hours": 2,
    "psm_hours": 0,
    "questions_target": 15,
-   "content_pages": 32,
+   "content_pages": 49,
    "reading": [
     {
      "module": "V5-LM06",
@@ -8320,12 +8249,42 @@
      "course": "Equities",
      "module_num": 6,
      "title": "Discounted Cash Flow (DCF) and Growth Models",
-     "printed": "173–208",
+     "printed": "145–193",
      "pdf": [
-      183,
-      218
+      155,
+      203
      ],
      "sections": [
+      {
+       "title": "Learning outcomes (module opening page)",
+       "printed": "145",
+       "pdf": [
+        155,
+        155
+       ],
+       "priority": "SKIM",
+       "why": ""
+      },
+      {
+       "title": "Introduction: Discounted Cash Flow (DCF) and Growth Models",
+       "printed": "145–147",
+       "pdf": [
+        155,
+        157
+       ],
+       "priority": null,
+       "why": ""
+      },
+      {
+       "title": "Present Value Models for Equity Instruments",
+       "printed": "148–172",
+       "pdf": [
+        158,
+        182
+       ],
+       "priority": "STANDARD",
+       "why": ""
+      },
       {
        "title": "Growth Assumptions in Present Value Models",
        "printed": "173–193",
@@ -8334,8 +8293,53 @@
         203
        ],
        "priority": "SKIM",
-       "why": "Framing and life-cycle recap; its L4 subsections are rated separately; LO1 is taught in the subsections"
-      },
+       "why": ""
+      }
+     ]
+    }
+   ],
+   "online_only": [
+    "Flashcards: Introduction to Equity Valuation",
+    "Real-World Applications: Bloomberg's Equity Relative Valuation"
+   ],
+   "psm_items": [],
+   "les_ids": [
+    522,
+    523,
+    524,
+    525,
+    526,
+    527
+   ],
+   "workbook_status": "Not started",
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
+  },
+  {
+   "date": "2027-01-26",
+   "dow": "Tue",
+   "lesson": 72,
+   "kind": "study",
+   "phase": "Main topic",
+   "course": "Equities",
+   "assignment": "Module 6: Discounted Cash Flow (DCF) and Growth Models; Module 7: Relative Value Equity Valuation Approaches | 6.04 | Limitations of Discounted Cash Flow Growth Models through Learning Outcomes: Relative Value Equity Valuation Approaches",
+   "core_hours": 2,
+   "psm_hours": 0,
+   "questions_target": 15,
+   "content_pages": 13,
+   "reading": [
+    {
+     "module": "V5-LM06",
+     "book": "V5",
+     "book_title": "CFA Program Curriculum 2027, Level I, Volume 5: Equities",
+     "course": "Equities",
+     "module_num": 6,
+     "title": "Discounted Cash Flow (DCF) and Growth Models",
+     "printed": "194–208",
+     "pdf": [
+      204,
+      218
+     ],
+     "sections": [
       {
        "title": "Limitations of Discounted Cash Flow Growth Models",
        "printed": "194–199",
@@ -8344,7 +8348,7 @@
         209
        ],
        "priority": "STANDARD",
-       "why": "Qualitative but carries LO2 not taught elsewhere; two small calcs"
+       "why": ""
       },
       {
        "title": "Preferred Stock Valuation",
@@ -8354,7 +8358,7 @@
         214
        ],
        "priority": "CLOSE",
-       "why": "New formulas Eq 28/29 and contingency feature direction (LO3)"
+       "why": ""
       },
       {
        "title": "Summary: Discounted Cash Flow (DCF) and Growth Models",
@@ -8364,7 +8368,7 @@
         215
        ],
        "priority": "SKIM",
-       "why": "Repeats section conclusions"
+       "why": ""
       },
       {
        "title": "Practice Problems",
@@ -8374,7 +8378,7 @@
         216
        ],
        "priority": "STANDARD",
-       "why": "Five items, two quick calculations"
+       "why": ""
       },
       {
        "title": "Solutions",
@@ -8384,47 +8388,10 @@
         218
        ],
        "priority": "STANDARD",
-       "why": "Answer explanations for the five problems"
+       "why": ""
       }
      ]
-    }
-   ],
-   "online_only": [
-    "Flashcards: Introduction to Equity Valuation",
-    "Real-World Applications: Bloomberg's Equity Relative Valuation",
-    "Glossary: Discounted Cash Flow (DCF) and Growth Models",
-    "Flashcards: Discounted Cash Flow (DCF) and Growth Models",
-    "Real-World Applications: Bloomberg's Consensus Overview"
-   ],
-   "psm_items": [],
-   "les_ids": [
-    522,
-    523,
-    527,
-    528,
-    529,
-    530,
-    531,
-    532,
-    533,
-    "book-pp-V5-LM06"
-   ],
-   "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): DCF and Growth Models starts Sunday (a 3-hour day with about 95 min planned) with present value models. Monday finishes DCF and Growth Models: growth assumptions, limitations, preferred stock and its practice set."
-  },
-  {
-   "date": "2027-01-26",
-   "dow": "Tue",
-   "lesson": 72,
-   "kind": "study",
-   "phase": "Main topic",
-   "course": "Equities",
-   "assignment": "Module 7: Relative Value Equity Valuation Approaches (Learning outcomes (module opening page) to Price and Enterprise Value Multiples)",
-   "core_hours": 2,
-   "psm_hours": 0,
-   "questions_target": 15,
-   "content_pages": 42,
-   "reading": [
+    },
     {
      "module": "V5-LM07",
      "book": "V5",
@@ -8432,10 +8399,10 @@
      "course": "Equities",
      "module_num": 7,
      "title": "Relative Value Equity Valuation Approaches",
-     "printed": "209–249",
+     "printed": "209",
      "pdf": [
       219,
-      259
+      219
      ],
      "sections": [
       {
@@ -8446,8 +8413,56 @@
         219
        ],
        "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
-      },
+       "why": ""
+      }
+     ]
+    }
+   ],
+   "online_only": [
+    "Glossary: Discounted Cash Flow (DCF) and Growth Models",
+    "Flashcards: Discounted Cash Flow (DCF) and Growth Models",
+    "Real-World Applications: Bloomberg's Consensus Overview"
+   ],
+   "psm_items": [],
+   "les_ids": [
+    528,
+    529,
+    530,
+    531,
+    532,
+    533,
+    534,
+    "book-pp-V5-LM06"
+   ],
+   "workbook_status": "Not started",
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
+  },
+  {
+   "date": "2027-01-27",
+   "dow": "Wed",
+   "lesson": 73,
+   "kind": "study",
+   "phase": "Main topic",
+   "course": "Equities",
+   "assignment": "Module 7: Relative Value Equity Valuation Approaches | 7.01 | Introduction: Relative Value Equity Valuation Approaches through 7.06 | Summary: Relative Value Equity Valuation Approaches",
+   "core_hours": 2,
+   "psm_hours": 0,
+   "questions_target": 15,
+   "content_pages": 60,
+   "reading": [
+    {
+     "module": "V5-LM07",
+     "book": "V5",
+     "book_title": "CFA Program Curriculum 2027, Level I, Volume 5: Equities",
+     "course": "Equities",
+     "module_num": 7,
+     "title": "Relative Value Equity Valuation Approaches",
+     "printed": "209–270",
+     "pdf": [
+      219,
+      280
+     ],
+     "sections": [
       {
        "title": "Introduction: Relative Value Equity Valuation Approaches",
        "printed": "209–211",
@@ -8466,7 +8481,7 @@
         235
        ],
        "priority": "CLOSE",
-       "why": "LO1 core: method of comparables and forecasted fundamentals"
+       "why": ""
       },
       {
        "title": "Price and Enterprise Value Multiples",
@@ -8476,48 +8491,8 @@
         259
        ],
        "priority": "CLOSE",
-       "why": "LO2 core: many justified-multiple formulas and calculations"
-      }
-     ]
-    }
-   ],
-   "online_only": [],
-   "psm_items": [],
-   "les_ids": [
-    534,
-    535,
-    536,
-    537
-   ],
-   "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Monday finishes DCF and Growth Models: growth assumptions, limitations, preferred stock and its practice set. Relative valuation starts Tuesday with price and enterprise value multiples; Wednesday keeps peer groups, using multiples and the practice set."
-  },
-  {
-   "date": "2027-01-27",
-   "dow": "Wed",
-   "lesson": 73,
-   "kind": "study",
-   "phase": "Main topic",
-   "course": "Equities",
-   "assignment": "Module 7: Relative Value Equity Valuation Approaches (Peer Groups for Multiples Valuation to Solutions)",
-   "core_hours": 2,
-   "psm_hours": 0,
-   "questions_target": 15,
-   "content_pages": 19,
-   "reading": [
-    {
-     "module": "V5-LM07",
-     "book": "V5",
-     "book_title": "CFA Program Curriculum 2027, Level I, Volume 5: Equities",
-     "course": "Equities",
-     "module_num": 7,
-     "title": "Relative Value Equity Valuation Approaches",
-     "printed": "250–270",
-     "pdf": [
-      260,
-      280
-     ],
-     "sections": [
+       "why": ""
+      },
       {
        "title": "Peer Groups for Multiples Valuation",
        "printed": "250–256",
@@ -8526,7 +8501,7 @@
         266
        ],
        "priority": "SKIM",
-       "why": "Short framing; LO taught in subsections"
+       "why": ""
       },
       {
        "title": "Use of Multiples to Estimate Equity Value",
@@ -8536,7 +8511,7 @@
         274
        ],
        "priority": "STANDARD",
-       "why": "Mispriced peer group caveat; contains both subsections' content"
+       "why": ""
       },
       {
        "title": "Summary: Relative Value Equity Valuation Approaches",
@@ -8546,7 +8521,7 @@
         275
        ],
        "priority": "SKIM",
-       "why": "Recap of material"
+       "why": ""
       },
       {
        "title": "Practice Problems",
@@ -8556,7 +8531,7 @@
         278
        ],
        "priority": "CLOSE",
-       "why": "Justified multiple calculations and regression use"
+       "why": ""
       },
       {
        "title": "Solutions",
@@ -8566,7 +8541,7 @@
         280
        ],
        "priority": "CLOSE",
-       "why": "Formulas and explanations of wrong choices"
+       "why": ""
       }
      ]
     }
@@ -8574,13 +8549,16 @@
    "online_only": [],
    "psm_items": [],
    "les_ids": [
+    535,
+    536,
+    537,
     538,
     539,
     540,
     "book-pp-V5-LM07"
    ],
    "workbook_status": "Not started",
-   "revision_note": "v2 (2026-11-15): Relative valuation starts Tuesday with price and enterprise value multiples; Wednesday keeps peer groups, using multiples and the practice set."
+   "revision_note": "v3 (2026-11-15): back to the workbook's own assignment for this day, so the lesson and the Daily Plan row agree; v2 had moved sections here by estimated workload."
   },
   {
    "date": "2027-01-28",

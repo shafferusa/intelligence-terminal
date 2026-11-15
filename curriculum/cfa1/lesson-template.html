@@ -11,9 +11,9 @@
   element, the dateline, reading_minutes, generated_at and the Previous link,
   and refuses the page while any placeholder is left. Keep the head, the
   stylesheet link, report.js, the REPORT markers and the nav block. Only the
-  classes already used below, plus the calc keystroke classes Lesson 1 uses;
-  no inline styles, no images, no new scripts, no external links. This
-  comment must never contain a literal tag written with angle brackets.
+  classes already used below; no inline styles, no images, no new scripts, no
+  external links. Delete an optional block whole. This comment must never
+  contain a literal tag written with angle brackets.
 -->
 <html lang="en">
 <head>
@@ -46,13 +46,13 @@
     "slot": "cfa1",
     "title": "HEADLINE",
     "path": "reports/YYYY/MM/YYYY-MM-DD-cfa1.html",
-    "summary": "Lesson N: ONE SENTENCE ON TODAY'S RECALL AND TONIGHT'S ASSIGNMENT.",
+    "summary": "Lesson N: ONE SENTENCE ON THE REFRESHER AND WHAT TODAY'S READING TEACHES.",
     "headlines": [
-      "Lesson N · COURSE: tonight MODULE TITLE (printed pp.A–B)",
-      "THE ONE IDEA OR CORRECTION THAT MATTERS MOST TODAY",
-      "Practice: Q.., Q.. · reply “CFA: …” with your time and score"
+      "Lesson N · COURSE: MODULE TITLE (printed pp.A–B)",
+      "Refresher: REFRESHER TOPIC",
+      "THE ONE IDEA TO CARRY INTO TONIGHT'S STUDY"
     ],
-    "reading_minutes": 5,
+    "reading_minutes": 4,
     "generated_at": "YYYY-MM-DDTHH:MM:SS-05:00",
     "timezone": "America/New_York"
   }
@@ -75,7 +75,7 @@
         WEEKDAY, MONTH D, YYYY <span class="sep">&middot;</span> N min read
       </p>
       <p class="paper-standfirst">
-        ONE SENTENCE: WHAT TODAY'S RECALL COVERS AND WHAT TONIGHT'S READING IS FOR.
+        ONE SENTENCE: WHAT THE REFRESHER COVERS AND WHAT TODAY&rsquo;S READING TEACHES.
       </p>
     </header>
 
@@ -87,55 +87,25 @@
     <article class="lesson-body">
 
       <div class="sie-plan">
-        <b>Tonight</b>
+        <b>Where you are</b>
         <ul>
-          <li>BOOK TITLE, Learning Module M, &ldquo;MODULE TITLE&rdquo;: printed pp.A&ndash;B (PDF C&ndash;D).</li>
-          <li>Problems printed pp.E&ndash;F, solutions G&ndash;H (PDF ...). About N hours.</li>
+          <li>WORKBOOK FACTS: what the workbook confirms, with its save time (session statuses, checklist counts), or one line saying it is unavailable or unchanged and which confirmed progress is used instead.</li>
+          <li>INTERPRETATION, LABELLED AS ONE, AND ANY CONFLICT BETWEEN NOTES AND STATUSES. Delete if none.</li>
+          <li>Tonight: BOOK TITLE, Learning Module M, printed pp.A&ndash;B (PDF C&ndash;D). PLAN CHANGE, IF ANY, IN ONE SENTENCE.</li>
         </ul>
       </div>
 
-      <div class="sie-block traps">
-        <b>Correction from your reply</b>
-        <p>ONLY WHEN A REPLY SHOWED A MISTAKE: what was wrong, the right idea, and why, in two to four sentences. Delete this block otherwise.</p>
-      </div>
-
-      <h3>1 &middot; Recall first, closed book</h3>
-      <p>ONE LINE: WHAT IS LOGGED (FROM REPLIES ONLY) AND WHAT THESE QUESTIONS COVER.</p>
-      <ol>
-        <li>YESTERDAY'S PRINCIPLE, AS A QUESTION.</li>
-        <li>YESTERDAY'S VOCABULARY OR FORMULA, AS A QUESTION.</li>
-        <li>YESTERDAY'S CALCULATION OR MISTAKE, AS A QUESTION.</li>
-        <li>SPACED REVIEW: FROM LESSON K (DATE), AS A QUESTION.</li>
-      </ol>
-      <details class="check">
-        <summary><span class="check-label">Answers</span> open after you have tried</summary>
-        <ol>
-          <li>ANSWER, WITH THE PRINTED PAGE.</li>
-          <li>ANSWER.</li>
-          <li>ANSWER.</li>
-          <li>ANSWER.</li>
-        </ol>
-      </details>
-
-      <h3>2 &middot; Tonight&rsquo;s principles: PLAIN-ENGLISH TITLE</h3>
-      <p>THE QUESTION THE MODULE ANSWERS, IN ONE OR TWO SENTENCES.</p>
-      <p><b>PRINCIPLE ONE.</b> THE REASONING BEFORE THE FORMULA: WHO PAYS WHOM, WHAT CHANGES THE CASH FLOW, WHAT RISK IS TAKEN.</p>
-      <div class="worked">
-        <b>Worked example (hypothetical)</b>
-        <ol>
-          <li>EACH STEP ON ITS OWN LINE; EVERY NUMBER COMPUTED BY SCRIPT.</li>
-        </ol>
-      </div>
-      <div class="formula">
-        <p class="expr">THE KEY FORMULA</p>
-        <dl>
-          <dt>SYMBOL</dt><dd>MEANING, UNITS, ASSUMPTION (p.X)</dd>
-        </dl>
-      </div>
+<!--PART1:START-->
+      <h3>1 &middot; Refresher: REFRESHER TOPIC</h3>
+      <p><b>REFRESHER PRINCIPLE.</b> THE IDEA, WHY IT WORKS, AND THE TERM OR FORMULA THAT NAMES IT.</p>
       <div class="key-terms">
         <dl>
           <dt>TERM</dt><dd>SHORT ORIGINAL DEFINITION (p.X)</dd>
         </dl>
+      </div>
+      <div class="sie-block traps">
+        <b>Clearing up</b>
+        <p>ONLY WHEN YOUR NOTES SHOW CONFUSION: the idea explained another way, in your own words, never quoting the notes. Delete this block otherwise.</p>
       </div>
       <div class="sie-block memorize">
         <b>Memorize</b>
@@ -143,31 +113,54 @@
           <li>FORMULA OR FACT, EXACTLY AS IT SHOULD BE MEMORIZED</li>
         </ul>
       </div>
+<!--PART1:END-->
+
+      <h3>2 &middot; Today: TODAY&rsquo;S TOPIC</h3>
+      <p>THE QUESTION THE MODULE ANSWERS, IN ONE OR TWO SENTENCES.</p>
+      <p><b>PRINCIPLE.</b> THE IDEA, WHY IT WORKS, WHO PAYS WHOM, WHAT CHANGES THE CASH FLOW, WHAT RISK IS TAKEN; NAME THE TERM AFTER THE IDEA.</p>
+      <div class="worked">
+        <b>Everyday picture</b>
+        <p>A BRIEF EVERYDAY ILLUSTRATION, NO CALCULATION. Delete this block if none helps.</p>
+      </div>
+      <div class="key-terms">
+        <dl>
+          <dt>TERM</dt><dd>SHORT ORIGINAL DEFINITION (p.X)</dd>
+        </dl>
+      </div>
+      <div class="formula">
+        <p class="expr">THE KEY FORMULA</p>
+        <dl>
+          <dt>SYMBOL</dt><dd>MEANING AND UNITS (p.X)</dd>
+        </dl>
+      </div>
       <div class="sie-block traps">
-        <b>Exam traps</b>
+        <b>Assumptions and exceptions</b>
         <ul>
-          <li>A MISTAKE THE EXAM IS BUILT TO CATCH, AND HOW TO AVOID IT.</li>
+          <li>ASSUMPTION OR EXCEPTION, AND WHAT CHANGES IF IT FAILS.</li>
+        </ul>
+      </div>
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>FORMULA OR FACT, EXACTLY AS IT SHOULD BE MEMORIZED</li>
         </ul>
       </div>
 
-      <h3>3 &middot; Tonight&rsquo;s reading plan</h3>
-      <p>ONE LINE ON WHY THE PRIORITIES ARE WHAT THEY ARE.</p>
+      <h3>References</h3>
       <div class="table-wrap">
         <table class="data-table">
-          <caption>Module M, in book order (printed / PDF pages)</caption>
-          <thead><tr><th>Section</th><th>Printed</th><th>PDF</th><th>How</th></tr></thead>
+          <caption>BOOK TITLE, Learning Module M: MODULE TITLE (printed pages, PDF pages)</caption>
+          <thead><tr><th>Section</th><th>Printed</th><th>PDF</th></tr></thead>
           <tbody>
-            <tr><td class="txt">SECTION</td><td>A&ndash;B</td><td>C&ndash;D</td><td class="txt">Close / Standard / Skim: REASON</td></tr>
+            <tr><td class="txt">SECTION</td><td>A&ndash;B</td><td>C&ndash;D</td></tr>
           </tbody>
         </table>
       </div>
-
       <div class="recap">
-        <b>Tonight&rsquo;s checklist</b>
+        <b>Worth opening separately</b>
         <ul>
-          <li>Read the Close sections; skim the rest as marked.</li>
-          <li>Problems, pp.E&ndash;F: Q.., Q... Check against pp.G&ndash;H; one-line rule for each miss.</li>
-          <li>Reply to the bot, e.g. <samp>CFA: MM done, 2h05, 7/8, missed Q4</samp>. Your reply, not this page, marks the module done.</li>
+          <li>Exhibit N, &ldquo;CAPTION&rdquo; (printed p.X, PDF Y): WHY IT IS WORTH OPENING.</li>
+          <li>PASSAGE (printed pp.A&ndash;B, PDF C&ndash;D): WHY IT IS WORTH OPENING.</li>
         </ul>
       </div>
 
@@ -175,9 +168,10 @@
 
     <footer class="colophon">
       <h2>Colophon</h2>
-      <p><strong>Sources.</strong> CFA Institute, BOOK TITLE, Learning Module M; page numbers are the book&rsquo;s printed pages, with PDF pages where shown. Worked examples are original and hypothetical.</p>
+      <p><strong>Sources.</strong> CFA Institute, BOOK TITLE, Learning Module M. Printed pages are the book&rsquo;s own page numbers; PDF pages are the file&rsquo;s page count. The explanations are original; everyday pictures are hypothetical.</p>
+      <p><strong>Progress.</strong> Read from your study workbook&rsquo;s status fields. Your notes are read but never published, and a lesson being sent never counts as studying.</p>
       <p><strong>Corrections.</strong> None.</p>
-      <p><strong>Method.</strong> Written from notes on the full module, with every number recomputed. Progress is recorded only from your replies, never from a lesson being sent. <a href="../../../status.html">System status</a>.</p>
+      <p><a href="../../../status.html">System status</a>.</p>
     </footer>
 
     <nav class="report-nav" aria-label="Report navigation">
@@ -190,19 +184,5 @@
   </main>
 
   <script src="../../../assets/report.js" defer></script>
-  <script>
-    /* Print support: expand every collapsed details element before printing. */
-    (function () {
-      var touched = [];
-      window.addEventListener("beforeprint", function () {
-        touched = [];
-        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
-      });
-      window.addEventListener("afterprint", function () {
-        touched.forEach(function (d) { d.removeAttribute("open"); });
-        touched = [];
-      });
-    })();
-  </script>
 </body>
 </html>

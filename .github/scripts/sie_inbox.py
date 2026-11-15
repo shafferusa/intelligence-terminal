@@ -34,12 +34,10 @@ Only messages from TG_CHAT are considered, and only SIE and CFA messages are
 stored (the repo is public; nothing else Logan sends the bot is written
 anywhere).
 
-CFA Morning Lesson (2026-11-15). Messages that start with "CFA" are Logan's
-study reports for the morning-lesson routine (prompts/cfa-morning.md), e.g.
-"CFA: M3 done, 2h10, 6/8, missed Q7 Q21". They go to state/cfa1/inbox.jsonl
-the same way, with a short acknowledgement echoing what was understood. The
-4:50 AM routine reads that inbox (and never writes it) and records progress
-only from these messages.
+CFA Morning Lesson (2026-11-15). Since the same day's simplification, Logan's
+study workbook is the progress record and his notes are private, so a message
+starting with "CFA" is answered with a pointer to the workbook and only its
+update_id is kept in state/cfa1/inbox.jsonl (no text), so it is answered once.
 
 Actions is the only Telegram sender in this system (shared-rules section 14).
 The routines read the inboxes; they never send.
@@ -293,14 +291,11 @@ def reply_for(parsed):
 # ---------------------------------------------------------------- CFA morning lessons
 
 CFA_HELP = (
-    "<b>CFA Morning Lesson — how to reply</b>\n"
-    "After each night's study, one message starting with <code>CFA</code>:\n"
-    "<code>CFA: M3 done, 2h10, 6/8, missed Q7 Q21, deflator confused me</code>\n"
-    "<code>CFA: M3 partial, stopped at p.110, 1h55</code>\n"
-    "<code>CFA: skipped tonight</code>\n"
-    "Anything in plain words works; the 4:50 AM lesson reads it, records your progress and "
-    "corrects mistakes. Progress is only ever recorded from these messages.\n"
-    "<code>CFA pause</code> · <code>CFA resume</code> · <code>CFA note …</code>"
+    "<b>CFA Morning Lesson</b>\n"
+    "Your study workbook is the progress record now. Write anything in the Daily Plan column "
+    "<i>Nightly notes - write freely</i>, mark the session status, and save. Your PC sends it "
+    "encrypted, and the 4:50 AM reading picks it up.\n"
+    "CFA messages here are not stored, because the lesson repository is public."
 )
 
 
@@ -348,32 +343,11 @@ def parse_cfa(text):
 
 
 def reply_cfa(parsed):
-    kind = parsed["kind"]
-    if kind == "command":
-        cmd = parsed["command"]
-        if cmd == "help":
-            return CFA_HELP
-        if cmd == "pause":
-            return ("Morning lessons pause from the next 4:50 AM run. Send <code>CFA resume</code> to continue; "
-                    "the plan will be re-dated from that day, with nothing dropped.")
-        if cmd == "resume":
-            return "Morning lessons resume at the next 4:50 AM run, with the plan re-dated from there."
-        if cmd == "note":
-            return "Note saved for the next morning lesson."
-    bits = []
-    if parsed.get("module"):
-        bits.append("M%d" % parsed["module"])
-    if parsed.get("status"):
-        bits.append(parsed["status"])
-    if parsed.get("minutes"):
-        bits.append("%dh%02d" % divmod(parsed["minutes"], 60))
-    if parsed.get("score"):
-        bits.append(parsed["score"])
-    if parsed.get("questions"):
-        bits.append("Q" + ", Q".join(str(q) for q in parsed["questions"]))
-    seen = (" — read as: " + html.escape(" · ".join(bits))) if bits else ""
-    return ("Saved for the 4:50 AM lesson%s. It will record your progress and work on what you missed. "
-            "Send <code>CFA help</code> for examples." % seen)
+    if parsed["kind"] == "command" and parsed["command"] == "help":
+        return CFA_HELP
+    return ("Not saved: this repository is public, so your CFA notes belong in your study workbook "
+            "(Daily Plan, <i>Nightly notes - write freely</i>), which stays private. "
+            "Send <code>CFA help</code> for details.")
 
 
 # ---------------------------------------------------------------- phases
@@ -415,7 +389,9 @@ def collect(token, chat, pending_path):
         stamp = datetime.fromtimestamp(msg.get("date", 0), tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         cfa = parse_cfa(text)
         if cfa is not None:
-            cfa_lines.append({"update_id": uid, "date": stamp, "text": text[:4000], "parsed": cfa})
+            # Only the id is kept (so each message is answered once): Logan's study notes are private
+            # and this repository is public. His notes go in his study workbook instead.
+            cfa_lines.append({"update_id": uid, "date": stamp, "kind": cfa.get("kind"), "text_withheld": True})
             replies.append(reply_cfa(cfa))
             continue
         parsed = parse(text)
