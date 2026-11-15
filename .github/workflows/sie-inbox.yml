@@ -37,7 +37,10 @@ jobs:
     env:
       TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-      SIE_PENDING: ${{ runner.temp }}/sie-pending.json
+      # A plain path: job-level env cannot use the runner context. Until
+      # 2026-11-15 this line used the runner.temp expression, so GitHub rejected the
+      # whole file and the inbox never ran (every push showed a failed run).
+      SIE_PENDING: /tmp/sie-pending.json
     steps:
       - uses: actions/checkout@v4
         with:
