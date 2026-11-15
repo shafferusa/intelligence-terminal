@@ -271,11 +271,15 @@ something similar for me"*); its files stay as they are.
 - **Progress comes only from Logan.** He replies to the bot with a message starting "CFA" (for
   example "CFA: M3 done, 2h10, 6/8, missed Q7 Q21"); the `sie-inbox` Action stores it in
   `state/cfa1/inbox.jsonl` and acknowledges it. The routine applies replies with `cfa1.py feedback`.
-  A generated lesson or a passed date never marks anything studied.
+  A generated lesson or a passed date never marks anything studied, and a missed question is logged
+  as the topic it tests, never as a guessed mistake.
+- **Every page is checked before it is recorded.** `cfa1.py finish` stamps what a script knows
+  exactly (dateline, title element, reading time, timestamp, Previous link), then refuses a page
+  that still holds template text or whose headline, lesson number or days-to-exam disagree.
 - **Sources.** The books are "for candidate use only. Not for distribution", so the full verified
   reading notes stay on Logan's PC. The repo carries only compact, paraphrased module briefs
   (`curriculum/cfa1/briefs/`) and the lessons: no exhibit data, book example numbers, question text or
-  answers. Pages come only from the plan, the module map or a brief. The Professional Skills Modules
+  answers. Pages come only from the plan, the module map or a brief. The Practical Skills Modules
   (Financial Modeling, Python Programming Fundamentals) are not downloaded: their slots stay in the
   plan marked pending, and lessons never claim they were read (`state/cfa1/blockers.json`).
 - **Writes:** `site/reports/`, `site/reports/index.json`, `state/cfa1/`, `state/last-run.json` and

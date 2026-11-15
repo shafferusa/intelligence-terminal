@@ -5,11 +5,16 @@ plain commands, so the model spends its effort on teaching, not on JSON.
     python3 .github/scripts/cfa1.py today --out FILE [--date YYYY-MM-DD]
         Today's context: the plan day, yesterday's assignment and lesson, spaced-
         review candidates, open misconceptions, backlog, unread CFA replies,
-        the previous report link, briefs on file. Writes JSON to FILE.
+        the previous report link, briefs on file, the time now (ET). Writes
+        JSON to FILE. Run it again after `feedback`: progress has changed.
     python3 .github/scripts/cfa1.py feedback --apply FILE
         Apply the routine's reading of Logan's replies (progress, sessions,
         misconceptions, pause/resume) and advance the inbox cursor. Progress
         changes must cite the update_ids of the replies they came from.
+    python3 .github/scripts/cfa1.py start-page [--date YYYY-MM-DD] [--record-out FILE] [--fresh]
+        Create today's page: the queued lesson if one is waiting (and its
+        lesson record, copied to --record-out), otherwise the template.
+        Leaves an existing page alone unless --fresh.
     python3 .github/scripts/cfa1.py snapshot --reason-file FILE
         Save the current plan to state/cfa1/plan-history/vN.json and open
         version N+1 (call BEFORE editing plan.json; then run check-plan).
@@ -17,11 +22,15 @@ plain commands, so the model spends its effort on teaching, not on JSON.
         Every module still scheduled, first pass by first_pass_by, the review
         window kept free of new reading, lesson numbers in order.
     python3 .github/scripts/cfa1.py finish --page PAGE --record FILE [--date YYYY-MM-DD]
-        After the page passes check_report: index entry, lesson record,
-        last-run (idempotency) and the run-log line. Prints the live URL.
+        Stamps the page (dateline date and reading time, title element,
+        reading_minutes, generated_at, Previous link), then checks it
+        (check_report plus the lesson checks: no template text left, h1 =
+        report-meta title, lesson number, days to the exam) and only then
+        records: index entry, lesson record, last-run (idempotency) and the
+        run-log line. Prints the live URL.
     python3 .github/scripts/cfa1.py selftest --out FILE [--log]
-        Pre-start check (before the first lesson): files, plan, queued page;
-        --log also appends the run-log line.
+        Pre-start check (before the first lesson): files, plan, queued page
+        and record, the page guards; --log also appends the run-log line.
 
 Progress is recorded only from Logan's replies or explicit records -- never
 from a lesson having been generated or a date having passed.
@@ -30,6 +39,7 @@ Stdlib only. Run from the repository root.
 
 import argparse
 import datetime as dt
+import html
 import json
 import os
 import re
@@ -37,6 +47,8 @@ import shutil
 import sys
 
 ST = "state/cfa1"
+QUEUE = ST + "/queue"
+TEMPLATE = "curriculum/cfa1/lesson-template.html"
 PLAN = ST + "/plan.json"
 HIST = ST + "/plan-history"
 PROGRESS = ST + "/progress.json"
@@ -137,6 +149,26 @@ def modules_index():
     return {x["key"]: x for x in m.get("modules", [])}
 
 
+def page_paths(date):
+    path = "reports/%s/%s/%s-%s.html" % (date[:4], date[5:7], date, SLOT)
+    return path, "site/" + path
+
+
+def queued_record_path(date):
+    return "%s/%s-%s.record.json" % (QUEUE, date, SLOT)
+
+
+def previous_entry(index, date):
+    """The report the Previous link points to: the newest earlier CFA lesson,
+    else (before Lesson 2) the newest earlier report of any slot."""
+    earlier = [e for e in index if e.get("path") and e.get("date", "") <= date
+               and (e.get("date"), e.get("slot")) != (date, SLOT)]
+    for pool in ([e for e in earlier if e.get("slot") == SLOT and e["date"] < date], earlier):
+        if pool:
+            return sorted(pool, key=lambda e: e["date"], reverse=True)[0]   # stable: index order breaks ties
+    return None
+
+
 # ------------------------------------------------------------------ today
 
 def cmd_today(a):
@@ -184,15 +216,9 @@ def cmd_today(a):
 
     control = load(CONTROL, {"paused": False}) or {"paused": False}
 
-    page_path = "reports/%s/%s/%s-%s.html" % (date[:4], date[5:7], date, SLOT)
+    page_path, page_file = page_paths(date)
     index = load(INDEX, []) or []
-    prev_entry = None
-    for e in index:
-        if (e.get("date"), e.get("slot")) == (date, SLOT):
-            continue
-        if e.get("date", "") <= date:
-            prev_entry = e
-            break
+    prev_entry = previous_entry(index, date)
     already_in_index = any((e.get("date"), e.get("slot")) == (date, SLOT) for e in index)
 
     briefs = {}
@@ -201,9 +227,11 @@ def cmd_today(a):
         briefs[r["module"]] = p if os.path.exists(p) else None
 
     queued = (day or {}).get("queued")
+    qrec = queued_record_path(date)
     exam = plan["exam"]["date"]
     out = {
         "date": date,
+        "now_et": et_now().isoformat(timespec="seconds"),
         "dow": d(date).strftime("%a"),
         "run_key": key,
         "already_done": done,
@@ -226,7 +254,9 @@ def cmd_today(a):
         "new_messages": new_msgs,
         "briefs": briefs,
         "queued_page": queued if queued and os.path.exists(queued) else None,
-        "page": {"file": "site/" + page_path, "path": page_path, "url": BASE + page_path},
+        "queued_record": qrec if os.path.exists(qrec) else None,
+        "page": {"file": page_file, "path": page_path, "url": BASE + page_path,
+                 "exists": os.path.exists(page_file)},
         "previous_report": ({"date": prev_entry.get("date"), "slot": prev_entry.get("slot"),
                              "href": rel_link(page_path, prev_entry["path"])} if prev_entry else None),
         "blockers": [b for b in (load(BLOCKERS, {"items": []}) or {}).get("items", [])
@@ -240,7 +270,9 @@ def cmd_today(a):
     print("new replies: %d, backlog items: %d, open misconceptions: %d, spaced-review lessons: %d" % (
         len(new_msgs), len(backlog), len(open_misc), len(spaced)))
     print("briefs: %s" % json.dumps(briefs))
-    print("queued page: %s" % out["queued_page"])
+    print("queued page: %s, queued record: %s" % (out["queued_page"], out["queued_record"]))
+    print("previous report: %s" % ((out["previous_report"] or {}).get("href")))
+    print("now (ET): %s" % out["now_et"])
     print("context written to %s" % a.out)
     return 0
 
@@ -280,6 +312,8 @@ def cmd_feedback(a):
             problems.append("session: unknown module %s" % s["module"])
         if s.get("status") and s["status"] not in VALID_STATUS:
             problems.append("session: bad status %s" % s["status"])
+        if s.get("date_studied") and not re.match(r"\d{4}-\d{2}-\d{2}$", str(s["date_studied"])):
+            problems.append("session %s: date_studied %r is not YYYY-MM-DD" % (s.get("module"), s["date_studied"]))
         s = dict(s)
         s["source_update_ids"] = ids
         s["recorded"] = now
@@ -308,11 +342,18 @@ def cmd_feedback(a):
     misc = load(MISC, {"items": []}) or {"items": []}
     items = misc.setdefault("items", [])
     next_id = max([x.get("id", 0) for x in items] + [0]) + 1
+    new_ids = []
     for x in fb.get("misconceptions_add", []):
         ids = cited(x.get("source_update_ids"), "misconception")
+        if not x.get("item"):
+            problems.append("misconceptions_add: empty item")
+        if x.get("module") and x["module"] not in mods:
+            problems.append("misconceptions_add: unknown module %s" % x["module"])
+        # "taught": true when today's lesson teaches the correction (the usual case).
         items.append({"id": next_id, "opened": now[:10], "module": x.get("module"), "item": x.get("item"),
                       "correction": x.get("correction"), "source_update_ids": ids, "status": "open",
-                      "taught": [], "resolved": None})
+                      "taught": [now[:10]] if x.get("taught") is True else [], "resolved": None})
+        new_ids.append(next_id)
         next_id += 1
     for x in fb.get("misconceptions_resolve", []):
         hit = [m for m in items if m.get("id") == x.get("id")]
@@ -323,9 +364,13 @@ def cmd_feedback(a):
         hit[0]["status"] = "resolved"
         hit[0]["resolved"] = {"date": now[:10], "evidence": x.get("evidence", "")}
     for x in fb.get("misconceptions_taught", []):
-        for m in items:
-            if m.get("id") == x:
-                m.setdefault("taught", []).append(now[:10])
+        hit = [m for m in items if m.get("id") == x and m.get("id") not in new_ids]
+        if not hit:
+            problems.append("misconceptions_taught: no earlier misconception with id %s "
+                            "(for one added in this file, set \"taught\": true on it instead)" % x)
+            continue
+        if now[:10] not in hit[0].setdefault("taught", []):
+            hit[0]["taught"].append(now[:10])
 
     control = load(CONTROL, {"paused": False}) or {"paused": False}
     if fb.get("control") is not None:
@@ -349,9 +394,45 @@ def cmd_feedback(a):
     save(PROGRESS, progress)
     save(MISC, misc)
     save(CONTROL, control)
-    print("applied: %d sessions, %d module updates, %d new misconceptions, %d resolved; cursor -> %s" % (
-        len(fb.get("sessions", [])), len(fb.get("module_status", [])), len(fb.get("misconceptions_add", [])),
+    print("applied: %d sessions, %d module updates, %d new misconceptions (ids %s), %d resolved; cursor -> %s" % (
+        len(fb.get("sessions", [])), len(fb.get("module_status", [])), len(new_ids), new_ids,
         len(fb.get("misconceptions_resolve", [])), through))
+    print("now re-run `today`: progress, backlog and misconceptions have changed")
+    return 0
+
+
+# ------------------------------------------------------------------ start-page
+
+def cmd_start_page(a):
+    date = a.date or today_et()
+    plan = load(PLAN)
+    if plan is None:
+        sys.exit("no plan at " + PLAN)
+    day = plan_day(plan, date)
+    if day is None:
+        sys.exit("no plan day for %s" % date)
+    page_path, page_file = page_paths(date)
+    queued = day.get("queued")
+    if os.path.exists(page_file) and not a.fresh:
+        print("page exists, left as is: %s (--fresh starts it over)" % page_file)
+    else:
+        src = queued if queued and os.path.exists(queued) else TEMPLATE
+        os.makedirs(os.path.dirname(page_file), exist_ok=True)
+        shutil.copyfile(src, page_file)
+        print("%s -> %s (%s)" % (src, page_file, "queued lesson: change only what Step 4 lists"
+                                 if src != TEMPLATE else "template: replace every placeholder"))
+    qrec = queued_record_path(date)
+    if os.path.exists(qrec):
+        if os.path.exists(a.record_out) and not a.fresh:
+            print("record exists, left as is: %s" % a.record_out)
+        else:
+            d_ = os.path.dirname(a.record_out)
+            if d_:
+                os.makedirs(d_, exist_ok=True)
+            shutil.copyfile(qrec, a.record_out)
+            print("%s -> %s (the queued lesson's record: update run_note)" % (qrec, a.record_out))
+    else:
+        print("no queued record: write %s yourself (Step 6)" % a.record_out)
     return 0
 
 
@@ -434,33 +515,229 @@ def cmd_check_plan(a):
 
 # ------------------------------------------------------------------ finish
 
+META_RE = r'(<script type="application/json" id="report-meta">)(.*?)(</script>)'
+
+# Text from lesson-template.html that must never reach a published lesson. Matched against the
+# rendered text (comments removed, tags stripped) and report-meta; "<...>" entries against the HTML.
+PLACEHOLDERS = [
+    r"\bHEADLINE\b", r"\bWEEKDAY\b", r"\bMONTH D\b", r"\bMON D\b", r"\bYYYY\b", r"\bLesson [NK]\b",
+    r"\bModule M\b", r"\bD days to the exam\b", r"\bN min read\b", r"\bAbout N hours\b",
+    r"\bONE SENTENCE\b", r"\bONE LINE\b", r"\bCOURSE\b", r"\bMODULE TITLE\b", r"\bBOOK TITLE\b",
+    r"\bpp\.[A-H]–[A-H]\b", r"\bPDF [C-H]–[C-H]\b", r"\(PDF \.\.\.\)", r"\bONLY WHEN A REPLY\b",
+    r"Delete this block otherwise", r"\bYESTERDAY['’]S\b", r"\bSPACED REVIEW: FROM\b", r"\bANSWER\b",
+    r"\bPLAIN-ENGLISH TITLE\b", r"\bTHE QUESTION THE MODULE\b", r"\bPRINCIPLE ONE\b",
+    r"\bTHE REASONING BEFORE\b", r"\bEACH STEP ON ITS OWN\b", r"\bTHE KEY FORMULA\b",
+    r"\bMEANING, UNITS\b", r"\bSHORT ORIGINAL DEFINITION\b", r"\bFORMULA OR FACT\b",
+    r"\bA MISTAKE THE EXAM\b", r"\bREASON\b", r"\bQ\.\.", r"\bCFA: MM\b", r"\bp\.X\b",
+    r"\bTHE ONE IDEA OR CORRECTION\b",
+    r"<dt>SYMBOL</dt>", r"<dt>TERM</dt>", r'<td class="txt">SECTION</td>', r"<td>[A-H]&ndash;[A-H]</td>",
+]
+
+
+def masked(raw):
+    """The page with every comment blanked to spaces: same offsets, so a match found here can be
+    spliced into the real file without ever touching a comment (check_report.py says why)."""
+    return re.sub(r"<!--.*?-->", lambda m: " " * len(m.group(0)), raw, flags=re.S)
+
+
+def splice(raw, pattern, repl, flags=re.S):
+    """Replace the first match of pattern outside comments; repl gets the match. None if no match."""
+    m = re.search(pattern, masked(raw), flags)
+    if not m:
+        return None
+    return raw[:m.start()] + repl(m) + raw[m.end():]
+
+
 def page_meta(page):
     raw = open(page, encoding="utf-8").read()
-    m = re.search(r'<script type="application/json" id="report-meta">(.*?)</script>', raw, re.S)
+    m = re.search(META_RE, masked(raw), re.S)
     if not m:
         sys.exit("no report-meta in " + page)
-    return json.loads(m.group(1))
+    return json.loads(raw[m.start(2):m.end(2)])
+
+
+def long_date(date):
+    x = d(date)
+    return "%s, %s %d, %d" % (x.strftime("%A"), x.strftime("%B"), x.day, x.year)
+
+
+def short_date(date):
+    x = d(date)
+    return "%s, %s %d, %d" % (x.strftime("%a"), x.strftime("%b"), x.day, x.year)
+
+
+def visible_text(fragment):
+    t = re.sub(r"<!--.*?-->", " ", fragment, flags=re.S)
+    t = re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", t, flags=re.S)
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", t)).split())
+
+
+def stamp_page(page, date):
+    """Set what a script can know exactly: the dateline (date and reading time), the title element
+    from report-meta's title, reading_minutes, generated_at and the Previous link. Returns notes."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import reading_minutes  # noqa: E402
+    notes = []
+    raw = open(page, encoding="utf-8").read()
+    try:
+        minutes, words = reading_minutes.count(page)
+    except SystemExit as exc:
+        return ["reading time not set: %s" % exc]
+
+    m = re.search(META_RE, masked(raw), re.S)
+    meta = None
+    if m:
+        try:
+            meta = json.loads(raw[m.start(2):m.end(2)])
+        except ValueError:
+            meta = None
+    if meta is None:
+        notes.append("report-meta missing or not valid JSON: not stamped")
+    else:
+        meta["reading_minutes"] = minutes
+        meta["generated_at"] = et_now().isoformat(timespec="seconds")
+        block = "\n  " + json.dumps(meta, ensure_ascii=False, indent=2).replace("\n", "\n  ") + "\n  "
+        raw = raw[:m.start(2)] + block + raw[m.end(2):]
+        if isinstance(meta.get("title"), str) and meta["title"].strip():
+            title = "%s — CFA Morning Lesson, %s · Logan’s Daily Newspaper" % (
+                html.escape(meta["title"].strip(), quote=False), short_date(date))
+            new = splice(raw, r"<title>.*?</title>", lambda _m: "<title>%s</title>" % title)
+            if new is None:
+                notes.append("no title element to stamp")
+            else:
+                raw = new
+
+    new = splice(raw, r'(<p class="paper-dateline">)(.*?)(</p>)', lambda x: (
+        x.group(1) + '\n        %s <span class="sep">&middot;</span> %d min read\n      ' % (long_date(date), minutes)
+        + x.group(3)))
+    if new is None:
+        notes.append("no paper-dateline paragraph to stamp")
+    else:
+        raw = new
+
+    index = load(INDEX, []) or []
+    prev = previous_entry(index, date)
+    path, _file = page_paths(date)
+    link = ('<a href="%s">&larr; Previous report</a>' % rel_link(path, prev["path"]) if prev else
+            '<a class="is-disabled" aria-disabled="true">&larr; Previous report</a>')
+    new = splice(raw, r"<a\b[^>]*>\s*&larr; Previous report\s*</a>", lambda _m: link)
+    if new is None:
+        notes.append("no Previous-report link to stamp")
+    else:
+        raw = new
+
+    with open(page, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(raw)
+    notes.append("stamped: %s, %d min read (%d words), Previous -> %s" % (
+        long_date(date), minutes, words, prev["path"] if prev else "none"))
+    return notes
+
+
+def lesson_problems(page, date, plan):
+    """What check_report cannot know about a CFA lesson: template text left in, a headline that
+    differs between report-meta and the h1, the wrong lesson number or days to the exam."""
+    out = []
+    raw = open(page, encoding="utf-8").read()
+    seen = masked(raw)
+    m = re.search(META_RE, seen, re.S)
+    try:
+        meta = json.loads(raw[m.start(2):m.end(2)]) if m else {}
+    except ValueError:
+        meta = {}
+    body = re.sub(META_RE, " ", seen, flags=re.S)
+    text = visible_text(body)
+    meta_text = " ".join(str(meta.get(k, "")) for k in ("title", "summary", "path", "date")) + " " + \
+        " ".join(str(h) for h in (meta.get("headlines") or []))
+    left = []
+    for pat in PLACEHOLDERS:
+        where = body if pat.startswith("<") else text + " " + meta_text
+        for hit in re.findall(pat, where):
+            left.append(hit if isinstance(hit, str) else pat)
+    if left:
+        out.append("template text left in the page: %s" % ", ".join(sorted(set(left))[:12]))
+
+    path, _file = page_paths(date)
+    if meta and meta.get("path") != path:
+        out.append("report-meta path is %r, should be %r" % (meta.get("path"), path))
+    if meta and meta.get("timezone") != "America/New_York":
+        out.append("report-meta timezone should be America/New_York")
+    if meta and not re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$", str(meta.get("generated_at", ""))):
+        out.append("report-meta generated_at %r is not an ET timestamp" % meta.get("generated_at"))
+    norm = lambda s: " ".join(str(s).replace("'", "’").split())  # noqa: E731
+    h1 = re.findall(r"<h1\b[^>]*>(.*?)</h1>", body, flags=re.S)
+    if len(h1) != 1:
+        out.append("expected exactly one h1, found %d" % len(h1))
+    elif meta and norm(visible_text(h1[0])) != norm(meta.get("title", "")):
+        out.append("h1 %r differs from report-meta title %r" % (visible_text(h1[0]), meta.get("title")))
+
+    day = plan_day(plan, date) if plan else None
+    if day and day.get("lesson") is not None:
+        n = day["lesson"]
+        tp = re.search(r'<span class="track-progress">(.*?)</span>', body, re.S)
+        track = visible_text(tp.group(1)) if tp else ""
+        for where, s in (("track line", track), ("first headline", (meta.get("headlines") or [""])[0])):
+            got = re.search(r"\bLesson (\d+)\b", s)
+            if got and int(got.group(1)) != n:
+                out.append("%s says Lesson %s; the plan says %d" % (where, got.group(1), n))
+        exam = plan["exam"]["date"]
+        left_days = (d(exam) - d(date)).days
+        got = re.search(r"\b(\d+) days? to the exam\b", track)
+        if got and int(got.group(1)) != left_days:
+            out.append("track line says %s days to the exam; it is %d" % (got.group(1), left_days))
+    return out
+
+
+def record_problems(rec, date, day):
+    out = []
+    if rec is None:
+        return ["lesson record missing"]
+    if rec.get("date") != date:
+        out.append("lesson record date %r, should be %s" % (rec.get("date"), date))
+    for k in ("lesson", "modules", "concepts", "recall"):
+        if k not in rec:
+            out.append("lesson record lacks %r" % k)
+    if day and rec.get("lesson") != day.get("lesson"):
+        out.append("lesson record says lesson %r; the plan says %r" % (rec.get("lesson"), day.get("lesson")))
+    recall = rec.get("recall")
+    if not isinstance(recall, list) or any(not (isinstance(x, dict) and x.get("q") and x.get("a")) for x in recall):
+        out.append("recall must be a list of {\"q\", \"a\", \"ref\"} items")
+    elif day and day.get("kind") in STUDY_KINDS and len(recall) < 3:
+        out.append("a study day's record needs 3-5 recall items on tonight's material (later lessons draw on them)")
+    return out
+
+
+LENGTH = {"study": (800, 1100), "exam": (0, 300)}     # Lesson 1 is longer: the one-time calculator setup
 
 
 def cmd_finish(a):
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
     import check_report  # noqa: E402
-    probs = check_report.problems(a.page)
+    import reading_minutes  # noqa: E402
+    m = re.search(r"(\d{4}-\d{2}-\d{2})-%s\.html$" % SLOT, a.page.replace("\\", "/"))
+    if not m:
+        sys.exit("page name is not YYYY-MM-DD-%s.html: %s" % (SLOT, a.page))
+    date = a.date or m.group(1)
+    if m.group(1) != date:
+        sys.exit("page %s is not dated %s" % (a.page, date))
+    plan = load(PLAN)
+    day = plan_day(plan, date) if plan else None
+    for note in stamp_page(a.page, date):
+        print(note)
+    probs = check_report.problems(a.page) + lesson_problems(a.page, date, plan)
+    rec = load(a.record)
+    probs += record_problems(rec, date, day)
     if probs:
-        print("PAGE FAIL -- nothing recorded:")
+        print("PAGE FAIL -- nothing recorded (fix, then run finish again):")
         for p in probs:
             print("  - " + p)
         return 1
     meta = page_meta(a.page)
-    date = a.date or meta["date"]
     if meta.get("slot") != SLOT or meta.get("date") != date:
         sys.exit("report-meta slot/date %s %s do not match %s %s" % (meta.get("slot"), meta.get("date"), SLOT, date))
-    rec = load(a.record)
-    if rec is None or rec.get("date") != date:
-        sys.exit("lesson record missing or dated wrongly: " + a.record)
-    for k in ("lesson", "modules", "concepts", "recall"):
-        if k not in rec:
-            sys.exit("lesson record lacks %r" % k)
+    words = reading_minutes.count(a.page)[1]
+    lo, hi = LENGTH.get((day or {}).get("kind"), (300, 600))
+    if not lo <= words <= hi and (day or {}).get("lesson") != 1:
+        print("note: %d words; %s days aim for %d-%d (recorded anyway)" % (words, (day or {}).get("kind"), lo, hi))
 
     entry = {k: meta[k] for k in ("date", "slot", "title", "path", "summary", "headlines", "reading_minutes")}
     index = load(INDEX, []) or []
@@ -520,14 +797,27 @@ def cmd_selftest(a):
         first = plan_day(plan, start)
         q = (first or {}).get("queued")
         check("first lesson queued", bool(q and os.path.exists(q)), str(q))
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import check_report  # noqa: E402
+        import tempfile
+        tmpdir = tempfile.mkdtemp(prefix="cfa1-")
         if q and os.path.exists(q):
-            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-            import check_report  # noqa: E402
-            import tempfile
-            tmp = os.path.join(tempfile.mkdtemp(prefix="cfa1-"), "%s-%s.html" % (start, SLOT))
+            tmp = os.path.join(tmpdir, "%s-%s.html" % (start, SLOT))
             shutil.copyfile(q, tmp)
-            probs = check_report.problems(tmp)
-            check("queued lesson passes check_report", not probs, "; ".join(probs))
+            stamp_page(tmp, start)
+            probs = check_report.problems(tmp) + lesson_problems(tmp, start, plan)
+            check("queued lesson passes check_report and the lesson checks", not probs, "; ".join(probs))
+        rec = load(queued_record_path(start))
+        rp = record_problems(rec, start, first)
+        check("first lesson's record queued", not rp, "; ".join(rp) if rp else
+              "%d recall items" % len(rec.get("recall", [])))
+        # The guard itself: a bare template copy must be refused, so a half-written page never goes out.
+        second = (d(start) + dt.timedelta(days=1)).isoformat()
+        tmpl = os.path.join(tmpdir, "%s-%s.html" % (second, SLOT))
+        shutil.copyfile(TEMPLATE, tmpl)
+        caught = lesson_problems(tmpl, second, plan)
+        check("finish refuses an unfilled template", any(p.startswith("template text left") for p in caught),
+              (caught[0][:120] if caught else "nothing caught"))
         week = [x for x in plan["days"] if start <= x["date"] <= (d(start) + dt.timedelta(days=6)).isoformat()]
         need = sorted({r["module"] for x in week for r in x.get("reading", [])})
         missing = [m for m in need if not os.path.exists("%s/%s.md" % (BRIEFS, m))]
@@ -564,6 +854,10 @@ def main():
     p.add_argument("--date")
     p = sub.add_parser("feedback")
     p.add_argument("--apply", required=True)
+    p = sub.add_parser("start-page")
+    p.add_argument("--date")
+    p.add_argument("--record-out", default="/tmp/cfa1/record.json")
+    p.add_argument("--fresh", action="store_true", help="overwrite an existing page and record")
     p = sub.add_parser("snapshot")
     p.add_argument("--reason-file", required=True)
     sub.add_parser("check-plan")
@@ -575,8 +869,9 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--log", action="store_true", help="also append the run-log line")
     a = ap.parse_args()
-    return {"today": cmd_today, "feedback": cmd_feedback, "snapshot": cmd_snapshot,
-            "check-plan": cmd_check_plan, "finish": cmd_finish, "selftest": cmd_selftest}[a.cmd](a)
+    return {"today": cmd_today, "feedback": cmd_feedback, "start-page": cmd_start_page,
+            "snapshot": cmd_snapshot, "check-plan": cmd_check_plan, "finish": cmd_finish,
+            "selftest": cmd_selftest}[a.cmd](a)
 
 
 if __name__ == "__main__":

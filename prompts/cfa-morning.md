@@ -32,9 +32,10 @@ short paragraphs, one idea each.
 2. **Pages and facts come from the files.** Cite printed pages (and PDF pages where useful) only as
    they appear in the plan (`state/cfa1/plan.json`), the module index
    (`curriculum/cfa1/modules.json`) or the module brief (`curriculum/cfa1/briefs/<MODULE>.md`), all
-   built from a full reading of the 2027 books. Never invent a page, a quotation, a score or a
-   statistic. If something you want to teach is not in the brief, teach the general principle
-   without a page reference, or leave it out.
+   built from a full reading of the 2027 books (when they disagree, Step 4 says which wins). Never
+   invent a page, a quotation, a score or a statistic, and never invent what he did wrong: his
+   replies say what he got wrong only when they say how. If something you want to teach is not in
+   the brief, teach the general principle without a page reference, or leave it out.
 3. **Original words and hypothetical numbers.** The books are "for candidate use only": paraphrase,
    never copy sentences, exhibits or practice-question text; never print practice-problem answers
    (he checks them in the book's Solutions). Worked examples use your own labelled-hypothetical
@@ -47,9 +48,9 @@ short paragraphs, one idea each.
 
 ## Step 1 — Context and idempotency
 
-1. `TZ=America/New_York date +%F` → `TODAY`.
-2. `python3 .github/scripts/cfa1.py today --out /tmp/cfa1/today.json`, then Read that file.
-3. Decide the mode from it:
+1. `python3 .github/scripts/cfa1.py today --out /tmp/cfa1/today.json`, then Read that file. Its
+   `date` is `TODAY` (America/New_York); no `date` command is needed.
+2. Decide the mode from it:
    - `already_done` true → **stop**: generate nothing, commit nothing.
    - `before_start` true → **Self-test mode** (end of this file), then stop.
    - `after_exam` true → stop (nothing to teach).
@@ -66,6 +67,12 @@ practice score, which questions he missed, what confused him, where he stopped. 
 to modules from the plan; when a message is ambiguous, record what is certain and ask one short
 question in the lesson's recall intro.
 
+**Record only what he said.** A missed question number tells you which topic he missed (the
+brief's question list labels every question), not what he did wrong. Log it as that topic plus
+"working not reported", never as a guessed error; in the lesson, re-teach the idea the question
+tests and ask for his working ("CFA note: Q7, I ..."). Only a reply that says how he went wrong
+("I divided by the CPI") gives you a mistake to name and correct as his.
+
 Write `/tmp/cfa1/feedback.json` with the Write tool and apply it with
 `python3 .github/scripts/cfa1.py feedback --apply /tmp/cfa1/feedback.json`:
 
@@ -75,20 +82,33 @@ Write `/tmp/cfa1/feedback.json` with the Write tool and apply it with
    "minutes": 130, "score": "6/8", "missed": ["Q7", "Q21"], "stopped_at": "printed p.110",
    "notes": "what he said, briefly", "source_update_ids": [123]}],
  "module_status": [{"module": "PRE-ECON-LM03", "status": "done|partial|not_started",
-   "understanding": "solid|shaky|unknown", "evidence": "6/8; missed the deflator questions",
+   "understanding": "solid|shaky|unknown", "evidence": "6/8 (75%); missed Q7 and Q21",
    "stopped_at": "printed p.110", "source_update_ids": [123]}],
- "misconceptions_add": [{"module": "PRE-ECON-LM03", "item": "treated the deflator as a growth rate",
-   "correction": "the deflator is a price index; real = nominal / (deflator/100)", "source_update_ids": [123]}],
- "misconceptions_resolve": [{"id": 4, "evidence": "got the deflator question right on 11/20", "source_update_ids": [130]}],
+ "misconceptions_add": [{"module": "PRE-ECON-LM03",
+   "item": "missed Q7 (real growth from nominal growth and the deflator); working not reported",
+   "correction": "the idea Q7 tests, in a sentence, from the brief", "taught": true,
+   "source_update_ids": [123]}],
+ "misconceptions_resolve": [{"id": 4, "evidence": "got a deflator question right on 11/20", "source_update_ids": [130]}],
  "misconceptions_taught": [4],
  "control": null}
 ```
 
-`understanding`: "solid" only from a strong practice score (about 75%+ with no repeated miss on
-the same idea), "shaky" from a weak score or a stated confusion, otherwise "unknown". A "CFA pause"
-message → `"control": {"paused": true, "note": "...", "source_update_ids": [..]}`; "CFA resume" →
-`paused: false` plus a plan re-dating in Step 3. A "CFA note" is context for today's lesson. If
-`feedback` prints NOT APPLIED, fix the file and re-run it; never bypass it.
+- `date_studied`: the date of the plan day that assigned the module (`yesterday_assignment`, or
+  the `backlog` item), unless he says when he studied it.
+- `understanding`: "solid" when his score is at least 75% (6/8 counts) and no miss repeats a topic
+  already in `open_misconceptions`; "shaky" when it is below 75% or he says something confused
+  him; "unknown" when he gave no score.
+- `misconceptions_add`: one item per missed question or stated confusion, with
+  `"taught": true` when today's lesson teaches its correction (the usual case).
+  `misconceptions_taught` is only for earlier items (ids from `open_misconceptions`) that today's
+  lesson re-teaches. `misconceptions_resolve` needs evidence from a reply: a later right answer on
+  the same idea, or his saying it is clear now.
+
+A "CFA pause" message → `"control": {"paused": true, "note": "...", "source_update_ids": [..]}`;
+"CFA resume" → `paused: false` plus a plan re-dating in Step 3. A "CFA note" is context for today's
+lesson. If `feedback` prints NOT APPLIED, fix the file and re-run it; never bypass it. **Then run
+Step 1's `today` command again and re-read `/tmp/cfa1/today.json`**: progress, the backlog and the
+open misconceptions have changed.
 
 ## Step 3 — Revise the plan when the evidence says so
 
@@ -126,34 +146,50 @@ From `today.json`: `today` (kind, reading sections with printed/PDF pages and pr
 yesterday's module. If a brief is missing, teach from the plan's sections and general Level I
 knowledge with no page references beyond the plan's, say so in the colophon, and add a blocker.
 
-**Queued page.** If `queued_page` is set, that lesson was written and verified in advance. Copy it to
-`page.file` and change only: `generated_at`; the Previous-report link (from `previous_report.href`);
-and, if a reply arrived since it was written, the one-line recall intro ("Module 2 is logged as
-done", or a Correction block per Step 5). Then go to Step 6.
+**When the files disagree.** For pages and for Close / Standard / Skim, the brief wins (it was
+checked against the full reading notes), then `modules.json`, then the plan. A section whose plan
+priority is null takes the brief's. Where only a PDF page is known, cite it as "PDF n".
+
+**Queued page.** If `queued_page` is set, that lesson was written and verified in advance. Run
+`python3 .github/scripts/cfa1.py start-page`: it copies the page to `page.file` and its lesson
+record (`queued_record`) to `/tmp/cfa1/record.json`. If a reply arrived since it was written,
+change only the one-line recall intro ("Module 2 is logged as done") and add a Correction block
+per Step 5, and say in the record's `run_note` what was applied. `finish` sets the timestamp, the
+reading time and the Previous link. Then go to Step 6.
 
 ## Step 5 — Write the lesson
 
-Copy `curriculum/cfa1/lesson-template.html` to `page.file` (create the month folder if needed) and
-replace every placeholder. Lesson 1 (`state/cfa1/queue/2026-11-16-cfa1.html`) shows every block done
-well; match its tone and density.
+Run `python3 .github/scripts/cfa1.py start-page` (it creates the month folder and copies
+`curriculum/cfa1/lesson-template.html` to `page.file`), then replace every placeholder: `finish`
+refuses a page with any template text left. Use only the template's classes, plus the `calc`
+keystroke classes Lesson 1 uses for BA II Plus steps. Lesson 1
+(`state/cfa1/queue/2026-11-16-cfa1.html`) shows every block done well: match its tone and density.
+It runs to about 1,800 words only because of the one-time calculator setup; other study days stay
+within the length below.
 
-**Title and meta.** h1 = a specific, plain headline about tonight's idea (no "Lesson N" in it).
-`<title>`: `<headline> — CFA Morning Lesson, <Dow, Mon D, YYYY> · Logan’s Daily Newspaper`.
-report-meta `title` = the headline; `headlines` = exactly three: `Lesson N · <course>: tonight
-<module title> (printed pp.A–B)`, the single most useful idea or correction, and the practice line.
-Track line: `Lesson N · Module M of T · <module title> · D days to the exam` (T = modules in that
-course).
+**Title and meta.** h1 = a specific, plain headline about tonight's idea (no "Lesson N" in it);
+report-meta `title` = the same headline. `finish` builds the `<title>` element and the dateline
+from them. `headlines` = exactly three: `Lesson N · <course>: tonight <module title> (printed
+pp.A–B)`, the single most useful idea or correction, and the practice line. Track line:
+`Lesson N · Module M of T · <module title> · D days to the exam` (T = modules in that course).
+`<course>` is the module's `course` in modules.json, except the two prerequisite books, which are
+"Prerequisite Economics" and "Prerequisite Financial Statement Analysis" (as on their covers).
 
 **The blocks, in order (study days):**
 1. *Tonight* box: book title, Learning Module number and title, printed and PDF page span, problem
    and solution pages, planned time.
-2. *Correction from your reply* — only when a reply showed a mistake or confusion: what was wrong,
-   the right idea, why. Direct and short. Mark those misconceptions as taught (`misconceptions_taught`).
+2. *Correction from your reply* — only when a reply reported a miss or a confusion. When he said
+   how he went wrong: what was wrong, the right idea, why, directly ("That's wrong: ..."). When he
+   only listed missed questions: the idea each one tests and the right reasoning, in a sentence or
+   two, then ask for his working; never guess what he did. Short. Record these per Step 2
+   (`"taught": true`, or `misconceptions_taught` for earlier items).
 3. *Recall first, closed book*: 3–4 questions on yesterday's assigned material (its principles,
    vocabulary, formulas, and any mistake he reported), then 1–2 spaced-review questions taken from
-   `spaced_review` or `open_misconceptions` (say which lesson each comes from). Answers, with
-   printed pages, in the `details.check` after the questions. If he has not reported yesterday's
-   module, say so in one line and ask; still ask the questions (they are retrieval practice).
+   `spaced_review` or `open_misconceptions` (say which lesson each comes from). In the first weeks
+   both can be empty: then ask about a module logged done in `progress_modules` (from its brief) or
+   Lesson 1's calculator checks. Answers, with printed pages, in the `details.check` after the
+   questions. If he has not reported yesterday's module, say so in one line and ask; still ask the
+   questions (they are retrieval practice).
 4. *Tonight's principles*: what question the module answers; 2–4 principles in plain English, each
    with the reasoning before any formula and the cash-flow / incentive / risk angle; one small
    worked example (hypothetical, script-computed); the formula box (each symbol, units,
@@ -183,30 +219,33 @@ course).
   timing, three formulas to glance at, and calm.
 
 **Length.** Study days 800–1,100 words inside the article (count with
-`python3 .github/scripts/reading_minutes.py <page>`); cut repetition before cutting outcomes.
+`python3 .github/scripts/reading_minutes.py <page>`, which prints minutes then words); cut
+repetition before cutting outcomes. Lesson 1 is the only longer one.
 
 **Numbers.** Write every calculation in `/tmp/cfa1/calc.py` (standard library only), run it, and copy
 the printed results. Check every page reference against the brief or plan before you finish.
 
-## Step 6 — Check, record, publish
+## Step 6 — Record, check, publish
 
-1. `python3 .github/scripts/check_report.py <page.file>` must print `OK` (fix and re-run on FAIL).
-2. `python3 .github/scripts/reading_minutes.py <page.file>` → set `reading_minutes` in report-meta
-   and the dateline's "N min read".
-3. Previous-report link: `previous_report.href` from today.json (keep it disabled if null). Next
-   stays disabled.
-4. Write the lesson record `/tmp/cfa1/record.json`:
+1. The lesson record `/tmp/cfa1/record.json` (for a queued page, `start-page` already copied it:
+   update `run_note`, and `plan_changes` if Step 3 changed the plan):
    `{"lesson": N, "date": "TODAY", "kind": "...", "modules": ["..."], "concepts": ["..."],
    "vocab": ["..."], "formulas": ["..."], "recall": [{"q": "...", "a": "...", "ref": "printed p.X"}],
    "assigned": {"reading": "printed pp.A–B", "practice": ["Q4", "Q7"]}, "plan_changes": null,
    "run_note": "one or two sentences for the status page"}`.
-   `recall` holds 3–5 good retrieval questions on TONIGHT's material (with answers): tomorrow's lesson
-   and later spaced reviews draw on them.
-5. `python3 .github/scripts/cfa1.py finish --page <page.file> --record /tmp/cfa1/record.json`
-   (writes the index entry, the lesson record, last-run and the run-log line).
-6. `python3 .github/scripts/publish.py --subject "learning: TODAY cfa1 lesson N"` (exit 3: resolve per
+   On study days `recall` holds 3–5 good retrieval questions on TONIGHT's material (with answers
+   and printed pages): tomorrow's lesson and later spaced reviews draw on them. Other days may
+   leave it empty.
+2. `python3 .github/scripts/cfa1.py finish --page <page.file> --record /tmp/cfa1/record.json`.
+   It first sets what a script knows exactly: the dateline (date and "N min read"), the `<title>`
+   element, `reading_minutes`, `generated_at` and the Previous link (the last CFA lesson; Next
+   stays disabled). Then it runs `check_report.py` and the lesson checks (no template text left,
+   h1 = report-meta title, lesson number, days to the exam, a complete record), and only then
+   writes the index entry, the lesson record, last-run and the run-log line. On `PAGE FAIL`, fix
+   what it lists and run it again.
+3. `python3 .github/scripts/publish.py --subject "learning: TODAY cfa1 lesson N"` (exit 3: resolve per
    §15.2, then `--push-only`). ONE commit for everything.
-7. `python3 .github/scripts/api_get.py --wait-200 <page.url>`.
+4. `python3 .github/scripts/api_get.py --wait-200 <page.url>`.
 
 ## Step 7 — If something fails
 
