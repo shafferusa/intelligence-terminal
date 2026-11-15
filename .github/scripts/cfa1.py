@@ -149,6 +149,33 @@ def modules_index():
     return {x["key"]: x for x in m.get("modules", [])}
 
 
+# modules.json keeps the Master Study Plan's course labels; lessons use the books' own wording.
+COURSE_DISPLAY = {"Economics prerequisite": "Prerequisite Economics",
+                  "FSA prerequisite": "Prerequisite Financial Statement Analysis"}
+
+
+def brief_questions(key):
+    """Question numbers in a module brief's question list ("- Q7 — topic"), or None without a brief."""
+    try:
+        with open("%s/%s.md" % (BRIEFS, key), encoding="utf-8") as fh:
+            txt = fh.read()
+    except (FileNotFoundError, TypeError):
+        return None
+    return sorted({int(n) for n in re.findall(r"(?m)^- Q(\d+) —", txt)})
+
+
+def module_info(mods, key):
+    """What a lesson needs to name a module: display course, 'Module M of T', question count."""
+    m = mods.get(key)
+    if not m:
+        return None
+    total = sum(1 for x in mods.values() if x.get("course") == m.get("course") and x.get("module_num") != 0)
+    qs = brief_questions(key)
+    return {"course": COURSE_DISPLAY.get(m.get("course"), m.get("course")), "module_num": m.get("module_num"),
+            "of": total, "title": m.get("title"), "book_title": m.get("book_title"),
+            "questions_in_brief": len(qs) if qs else None}
+
+
 def page_paths(date):
     path = "reports/%s/%s/%s-%s.html" % (date[:4], date[5:7], date, SLOT)
     return path, "site/" + path
@@ -210,6 +237,14 @@ def cmd_today(a):
 
     misc = (load(MISC, {"items": []}) or {}).get("items", [])
     open_misc = [x for x in misc if x.get("status") == "open"]
+    older_misc = [x for x in open_misc if (x.get("opened") or "") < date]   # today's belong to the Correction block
+    shaky = [{"module": k, "evidence": v.get("evidence"), "updated": v.get("updated"),
+              "brief": "%s/%s.md" % (BRIEFS, k) if os.path.exists("%s/%s.md" % (BRIEFS, k)) else None}
+             for k, v in sorted(mods.items()) if v.get("understanding") == "shaky"]
+    mindex = modules_index()
+    wanted = [r["module"] for x in (day, prev_day) if x for r in x.get("reading", [])]
+    wanted += [b["module"] for b in backlog] + [s["module"] for s in shaky]
+    minfo = {k: module_info(mindex, k) for k in dict.fromkeys(wanted)}
 
     cursor = (load(CURSOR, {"last_update_id": 0}) or {}).get("last_update_id", 0) or 0
     new_msgs = [x for x in inbox_lines() if int(x.get("update_id", 0)) > int(cursor)]
@@ -247,6 +282,9 @@ def cmd_today(a):
         "last_lesson": last_lesson,
         "spaced_review": spaced,
         "open_misconceptions": open_misc,
+        "older_misconceptions": older_misc,
+        "shaky_modules": shaky,
+        "modules_info": minfo,
         "backlog": backlog,
         "progress_modules": mods,
         "recent_sessions": (progress.get("sessions") or [])[-10:],
@@ -267,8 +305,9 @@ def cmd_today(a):
     print("date %s (%s) run_key %s already_done=%s paused=%s plan v%s" % (
         date, out["dow"], key, done, out["paused"], out["plan_version"]))
     print("today: lesson %s, kind %s, %s" % (t.get("lesson"), t.get("kind"), t.get("assignment")))
-    print("new replies: %d, backlog items: %d, open misconceptions: %d, spaced-review lessons: %d" % (
-        len(new_msgs), len(backlog), len(open_misc), len(spaced)))
+    print("new replies: %d, backlog items: %d, open misconceptions: %d (%d older), shaky modules: %d, "
+          "spaced-review lessons: %d" % (len(new_msgs), len(backlog), len(open_misc), len(older_misc),
+                                         len(shaky), len(spaced)))
     print("briefs: %s" % json.dumps(briefs))
     print("queued page: %s, queued record: %s" % (out["queued_page"], out["queued_record"]))
     print("previous report: %s" % ((out["previous_report"] or {}).get("href")))
@@ -283,6 +322,20 @@ VALID_STATUS = {"not_started", "partial", "done"}
 VALID_UNDERSTANDING = {"unknown", "shaky", "solid"}
 
 
+def question_problems(module, qs, what):
+    """Missed questions must be written Q7 and exist in the module brief's question list."""
+    out = []
+    listed = brief_questions(module) if module else None
+    for q in qs:
+        n = re.match(r"Q(\d+)$", str(q).strip())
+        if not n:
+            out.append("%s: missed question %r should be written like Q7" % (what, q))
+        elif listed and int(n.group(1)) not in listed:
+            out.append("%s: %s is not in the %s brief's question list (Q%d-Q%d)" % (
+                what, q, module, listed[0], listed[-1]))
+    return out
+
+
 def cmd_feedback(a):
     fb = load(a.apply)
     if fb is None:
@@ -290,9 +343,12 @@ def cmd_feedback(a):
     inbox = {int(x["update_id"]): x for x in inbox_lines()}
     mods = modules_index()
     problems = []
+    accounted = set()
+    day = a.date or today_et()          # the lesson date: opened / taught / resolved
 
     def cited(ids, what):
         ids = [int(i) for i in (ids or [])]
+        accounted.update(ids)
         if not ids:
             problems.append("%s: no source_update_ids -- progress changes only from Logan's replies" % what)
             return []
@@ -314,6 +370,7 @@ def cmd_feedback(a):
             problems.append("session: bad status %s" % s["status"])
         if s.get("date_studied") and not re.match(r"\d{4}-\d{2}-\d{2}$", str(s["date_studied"])):
             problems.append("session %s: date_studied %r is not YYYY-MM-DD" % (s.get("module"), s["date_studied"]))
+        problems.extend(question_problems(s.get("module"), s.get("missed") or [], "session %s" % s.get("module")))
         s = dict(s)
         s["source_update_ids"] = ids
         s["recorded"] = now
@@ -332,6 +389,12 @@ def cmd_feedback(a):
         if und not in VALID_UNDERSTANDING:
             problems.append("module_status %s: bad understanding %s" % (key, und))
             continue
+        if und == "solid":
+            for s in fb.get("sessions", []):
+                sc = re.match(r"\s*(\d+)\s*/\s*(\d+)\s*$", str(s.get("score") or ""))
+                if s.get("module") == key and sc and int(sc.group(2)) and int(sc.group(1)) < 0.75 * int(sc.group(2)):
+                    problems.append("module_status %s: \"solid\" needs a score of at least 75%%; this file reports %s"
+                                    % (key, s["score"]))
         rec = progress["modules"].get(key, {})
         rec.update({"status": m["status"], "understanding": und, "evidence": m.get("evidence", ""),
                     "source": "telegram update_ids %s" % ids, "updated": now})
@@ -349,10 +412,12 @@ def cmd_feedback(a):
             problems.append("misconceptions_add: empty item")
         if x.get("module") and x["module"] not in mods:
             problems.append("misconceptions_add: unknown module %s" % x["module"])
+        problems.extend(question_problems(x.get("module"), re.findall(r"\bQ\d+\b", x.get("item") or ""),
+                                          "misconceptions_add"))
         # "taught": true when today's lesson teaches the correction (the usual case).
-        items.append({"id": next_id, "opened": now[:10], "module": x.get("module"), "item": x.get("item"),
+        items.append({"id": next_id, "opened": day, "module": x.get("module"), "item": x.get("item"),
                       "correction": x.get("correction"), "source_update_ids": ids, "status": "open",
-                      "taught": [now[:10]] if x.get("taught") is True else [], "resolved": None})
+                      "taught": [day] if x.get("taught") is True else [], "resolved": None})
         new_ids.append(next_id)
         next_id += 1
     for x in fb.get("misconceptions_resolve", []):
@@ -362,15 +427,15 @@ def cmd_feedback(a):
             continue
         cited(x.get("source_update_ids"), "resolve %s" % x.get("id"))
         hit[0]["status"] = "resolved"
-        hit[0]["resolved"] = {"date": now[:10], "evidence": x.get("evidence", "")}
+        hit[0]["resolved"] = {"date": day, "evidence": x.get("evidence", "")}
     for x in fb.get("misconceptions_taught", []):
         hit = [m for m in items if m.get("id") == x and m.get("id") not in new_ids]
         if not hit:
             problems.append("misconceptions_taught: no earlier misconception with id %s "
                             "(for one added in this file, set \"taught\": true on it instead)" % x)
             continue
-        if now[:10] not in hit[0].setdefault("taught", []):
-            hit[0]["taught"].append(now[:10])
+        if day not in hit[0].setdefault("taught", []):
+            hit[0]["taught"].append(day)
 
     control = load(CONTROL, {"paused": False}) or {"paused": False}
     if fb.get("control") is not None:
@@ -378,16 +443,35 @@ def cmd_feedback(a):
         cited(c.get("source_update_ids"), "control")
         control.update({"paused": bool(c.get("paused")), "note": c.get("note", ""), "updated": now})
 
+    # Every reply up to processed_through must be accounted for: cited by a change above, or listed
+    # in "noted" with the reason it changes nothing (a CFA note, a duplicate, a pasted sample...).
+    noted = []
+    for n in fb.get("noted", []):
+        uid = int(n.get("update_id", 0))
+        if uid not in inbox:
+            problems.append("noted: update_id %s is not in %s" % (uid, INBOX))
+        if not str(n.get("why", "")).strip():
+            problems.append("noted %s: say why it needs no change" % uid)
+        accounted.add(uid)
+        noted.append({"update_id": uid, "why": str(n.get("why", ""))[:300], "recorded": now})
+    cur = int((load(CURSOR, {"last_update_id": 0}) or {}).get("last_update_id", 0) or 0)
+    through = fb.get("processed_through")
+    if through is not None:
+        skipped = sorted(u for u in inbox if cur < u <= int(through) and u not in accounted)
+        if skipped:
+            problems.append("replies %s are neither cited by a change nor listed in \"noted\" with a reason "
+                            "(every reply up to processed_through must be accounted for)" % skipped)
+
     if problems:
         print("NOT APPLIED -- fix the feedback file:")
         for p in problems:
             print("  - " + p)
         return 1
 
-    through = fb.get("processed_through")
     if through is not None:
-        cur = (load(CURSOR, {"last_update_id": 0}) or {}).get("last_update_id", 0) or 0
-        save(CURSOR, {"last_update_id": max(int(cur), int(through)), "updated": now})
+        save(CURSOR, {"last_update_id": max(cur, int(through)), "updated": now})
+    if noted:
+        progress.setdefault("noted", []).extend(noted)
     progress["updated"] = now
     progress["note"] = ("Recorded only from Logan's replies (state/cfa1/inbox.jsonl) or explicit records; "
                         "a lesson being sent is never evidence of study.")
@@ -684,6 +768,26 @@ def lesson_problems(page, date, plan):
         got = re.search(r"\b(\d+) days? to the exam\b", track)
         if got and int(got.group(1)) != left_days:
             out.append("track line says %s days to the exam; it is %d" % (got.group(1), left_days))
+        got = re.search(r"\bModule (\d+) of (\d+)\b", track)
+        mindex = modules_index()
+        infos = [module_info(mindex, r["module"]) for r in day.get("reading", [])]
+        infos = [i for i in infos if i]
+        if got and infos and not any((i["module_num"], i["of"]) == (int(got.group(1)), int(got.group(2)))
+                                     for i in infos):
+            out.append("track line says Module %s of %s; tonight is %s" % (got.group(1), got.group(2), ", ".join(
+                "Module %s of %s" % (i["module_num"], i["of"]) for i in infos)))
+
+    # A miss logged today and marked taught must actually be taught on this page.
+    misc = (load(MISC, {"items": []}) or {}).get("items", [])
+    fresh = [x for x in misc if x.get("opened") == date and date in (x.get("taught") or [])]
+    if fresh and "Correction from your reply" not in text:
+        out.append("misconceptions %s were logged today as taught, but the page has no "
+                   "\"Correction from your reply\" block" % [x.get("id") for x in fresh])
+    for x in fresh:
+        for q in re.findall(r"\bQ\d+\b", x.get("item") or ""):
+            if not re.search(r"\b%s\b" % q, text):
+                out.append("misconception %s (%s) is marked taught, but %s is not on the page" % (
+                    x.get("id"), x.get("item"), q))
     return out
 
 
@@ -703,10 +807,14 @@ def record_problems(rec, date, day):
         out.append("recall must be a list of {\"q\", \"a\", \"ref\"} items")
     elif day and day.get("kind") in STUDY_KINDS and len(recall) < 3:
         out.append("a study day's record needs 3-5 recall items on tonight's material (later lessons draw on them)")
+    elif day and day.get("kind") in STUDY_KINDS and any(not str(x.get("ref") or "").strip() for x in recall):
+        out.append("every recall item needs a \"ref\" (the printed page its answer comes from)")
     return out
 
 
-LENGTH = {"study": (800, 1100), "exam": (0, 300)}     # Lesson 1 is longer: the one-time calculator setup
+# (target low, target high, refused above). Lesson 1 is exempt: the one-time calculator setup.
+LENGTH = {"study": (800, 1100, 1250), "exam": (0, 300, 450)}
+OTHER_LENGTH = (300, 600, 900)
 
 
 def cmd_finish(a):
@@ -726,6 +834,13 @@ def cmd_finish(a):
     probs = check_report.problems(a.page) + lesson_problems(a.page, date, plan)
     rec = load(a.record)
     probs += record_problems(rec, date, day)
+    words = reading_minutes.count(a.page)[1]
+    kind = (day or {}).get("kind")
+    lo, hi, cap = LENGTH.get(kind, OTHER_LENGTH)
+    long_ok = (a.long_ok or "").strip()
+    if words > cap and (day or {}).get("lesson") != 1 and not long_ok:
+        probs.append("%d words: %s days aim for %d-%d. Cut repetition (never an examinable outcome); or, only if "
+                     "cutting would drop one, re-run with --long-ok \"why\"" % (words, kind, lo, hi))
     if probs:
         print("PAGE FAIL -- nothing recorded (fix, then run finish again):")
         for p in probs:
@@ -734,10 +849,11 @@ def cmd_finish(a):
     meta = page_meta(a.page)
     if meta.get("slot") != SLOT or meta.get("date") != date:
         sys.exit("report-meta slot/date %s %s do not match %s %s" % (meta.get("slot"), meta.get("date"), SLOT, date))
-    words = reading_minutes.count(a.page)[1]
-    lo, hi = LENGTH.get((day or {}).get("kind"), (300, 600))
     if not lo <= words <= hi and (day or {}).get("lesson") != 1:
-        print("note: %d words; %s days aim for %d-%d (recorded anyway)" % (words, (day or {}).get("kind"), lo, hi))
+        print("note: %d words; %s days aim for %d-%d (recorded)" % (words, kind, lo, hi))
+    if long_ok:
+        rec = dict(rec)
+        rec["run_note"] = ("%s (long page, %d words: %s)" % (rec.get("run_note", ""), words, long_ok)).strip()
 
     entry = {k: meta[k] for k in ("date", "slot", "title", "path", "summary", "headlines", "reading_minutes")}
     index = load(INDEX, []) or []
@@ -854,6 +970,7 @@ def main():
     p.add_argument("--date")
     p = sub.add_parser("feedback")
     p.add_argument("--apply", required=True)
+    p.add_argument("--date", help="the lesson date (default: today in New York); for tests")
     p = sub.add_parser("start-page")
     p.add_argument("--date")
     p.add_argument("--record-out", default="/tmp/cfa1/record.json")
@@ -865,6 +982,7 @@ def main():
     p.add_argument("--page", required=True)
     p.add_argument("--record", required=True)
     p.add_argument("--date")
+    p.add_argument("--long-ok", help="why a page over the length limit cannot be cut (recorded in the run note)")
     p = sub.add_parser("selftest")
     p.add_argument("--out", required=True)
     p.add_argument("--log", action="store_true", help="also append the run-log line")

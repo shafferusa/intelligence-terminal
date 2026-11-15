@@ -4,8 +4,9 @@
 Usage:  python3 .github/scripts/reading_minutes.py PAGE.html
 
 Counts the words inside <article class="lesson-body"> (tags stripped; the
-masthead, track head and colophon are not counted), skipping spoken-formula
-paragraphs, and prints "<minutes> <words>": minutes = words / 220, rounded up
+masthead, track head and colophon are not counted; sub- and superscripts join
+their word), skipping spoken-formula paragraphs, and prints "<minutes> <words>":
+minutes = words / 220, rounded up
 (shared-rules section 12.7). A script file, so routines can run it as one plain
 command under the shell rule instead of an inline `python3 -c`.
 """
@@ -22,6 +23,8 @@ def count(path):
     if not m:
         raise SystemExit("no <article class=\"lesson-body\"> in %s" % path)
     body = re.sub(r'<p class="expr-spoken[^"]*">.*?</p>', "", m.group(1), flags=re.S)
+    # Sub- and superscripts belong to the word they mark: q<sub>0</sub> is one word, not two.
+    body = re.sub(r"</?su[bp]\b[^>]*>", "", body)
     words = len(html.unescape(re.sub(r"<[^>]+>", " ", body)).split())
     return math.ceil(words / 220), words
 

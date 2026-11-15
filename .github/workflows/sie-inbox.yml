@@ -7,7 +7,11 @@ name: Telegram inbox (SIE quiz answers, CFA study reports)
 # (read by the noon routine, never written by it), and replies with an
 # instant score from the answer key the routine stored.
 #
-# Scheduled workflows are best-effort; in practice this runs every 15-30 min.
+# Scheduled workflows are best-effort, and GitHub runs this repo's schedules
+# hours late (Nov 2026: the CFA Math release's 09:37 UTC cron fired at 16:00-21:30
+# every day). So every push to main also polls -- including each morning's lesson
+# publish -- and no reply sits unread past Telegram's 24-hour limit. The inbox's
+# own pushes use GITHUB_TOKEN, which never triggers a workflow, so this cannot loop.
 # Commits only when an SIE message actually arrived, and state/ changes never
 # trigger the site build or the edition notification.
 #
@@ -21,6 +25,8 @@ name: Telegram inbox (SIE quiz answers, CFA study reports)
 on:
   schedule:
     - cron: "*/15 * * * *"
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

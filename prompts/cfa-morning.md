@@ -1,7 +1,9 @@
 # CFA Morning Lesson — run procedure (slot `cfa1`, every day 4:50 AM ET)
 
 Read CLAUDE.md and `prompts/shared-rules.md` §0b (the shell rule), §1, §11–15 first. This file
-overrides them only where it says so.
+overrides them only where it says so. Of `docs/SPEC.md`, only §0f (this slot) applies; you need not
+read the rest. Skip every `date` command those files mention (shared-rules §1.4's `RUN_START`
+included): `today.json` carries the date and `now_et`, and `finish` records the times.
 
 **THE SHELL RULE.** Every Bash call is ONE plain command. Compute or parse only by writing a script
 with the Write tool and running `python3 <that file>`; publish only with
@@ -71,7 +73,10 @@ question in the lesson's recall intro.
 brief's question list labels every question), not what he did wrong. Log it as that topic plus
 "working not reported", never as a guessed error; in the lesson, re-teach the idea the question
 tests and ask for his working ("CFA note: Q7, I ..."). Only a reply that says how he went wrong
-("I divided by the CPI") gives you a mistake to name and correct as his.
+("I divided by the CPI") gives you a mistake to name and correct as his. A score with no misses
+named ("5/7") is recorded as it is: no misconception, and the recall intro asks which ones he
+missed. A reply that repeats, word for word, the sample reply printed in a lesson's checklist is
+probably the sample pasted unchanged: record nothing from it (list it under `noted`) and ask him.
 
 Write `/tmp/cfa1/feedback.json` with the Write tool and apply it with
 `python3 .github/scripts/cfa1.py feedback --apply /tmp/cfa1/feedback.json`:
@@ -90,8 +95,12 @@ Write `/tmp/cfa1/feedback.json` with the Write tool and apply it with
    "source_update_ids": [123]}],
  "misconceptions_resolve": [{"id": 4, "evidence": "got a deflator question right on 11/20", "source_update_ids": [130]}],
  "misconceptions_taught": [4],
+ "noted": [{"update_id": 124, "why": "CFA note: context for today, no progress change"}],
  "control": null}
 ```
+
+Every reply up to `processed_through` must be cited by a change or listed in `noted` with the
+reason it changes nothing; `feedback` refuses a file that silently skips one.
 
 - `date_studied`: the date of the plan day that assigned the module (`yesterday_assignment`, or
   the `backlog` item), unless he says when he studied it.
@@ -171,9 +180,10 @@ within the length below.
 report-meta `title` = the same headline. `finish` builds the `<title>` element and the dateline
 from them. `headlines` = exactly three: `Lesson N · <course>: tonight <module title> (printed
 pp.A–B)`, the single most useful idea or correction, and the practice line. Track line:
-`Lesson N · Module M of T · <module title> · D days to the exam` (T = modules in that course).
-`<course>` is the module's `course` in modules.json, except the two prerequisite books, which are
-"Prerequisite Economics" and "Prerequisite Financial Statement Analysis" (as on their covers).
+`Lesson N · Module M of T · <module title> · D days to the exam`. Take `<course>`, M and T from
+`modules_info` in today.json. pp.A–B in the headline is the whole module, from its first page to
+its last solutions page, as in Lesson 1; the Tonight box splits it into reading, problems and
+solutions.
 
 **The blocks, in order (study days):**
 1. *Tonight* box: book title, Learning Module number and title, printed and PDF page span, problem
@@ -184,12 +194,15 @@ pp.A–B)`, the single most useful idea or correction, and the practice line. Tr
    two, then ask for his working; never guess what he did. Short. Record these per Step 2
    (`"taught": true`, or `misconceptions_taught` for earlier items).
 3. *Recall first, closed book*: 3–4 questions on yesterday's assigned material (its principles,
-   vocabulary, formulas, and any mistake he reported), then 1–2 spaced-review questions taken from
-   `spaced_review` or `open_misconceptions` (say which lesson each comes from). In the first weeks
-   both can be empty: then ask about a module logged done in `progress_modules` (from its brief) or
-   Lesson 1's calculator checks. Answers, with printed pages, in the `details.check` after the
-   questions. If he has not reported yesterday's module, say so in one line and ask; still ask the
-   questions (they are retrieval practice).
+   vocabulary, formulas, and any mistake he reported), then 1–2 spaced-review questions on OLDER
+   material (say which lesson or module each comes from). Take them from the first source that has
+   something: `spaced_review` (lessons 3, 7, 14, 28 and 56 days back), `older_misconceptions`,
+   `shaky_modules` (from the module's brief), a module logged done in `progress_modules`, Lesson 1's
+   calculator checks. Today's new misconceptions belong to the Correction block, not here. Answers,
+   with printed pages, in the `details.check` after the questions. If yesterday's module is not
+   logged, say so in one line ("No reply logged yet for Module 3"), never that he did not reply:
+   replies can reach the repo hours late, and the next lesson applies them. Still ask the questions
+   (they are retrieval practice).
 4. *Tonight's principles*: what question the module answers; 2–4 principles in plain English, each
    with the reasoning before any formula and the cash-flow / incentive / risk angle; one small
    worked example (hypothetical, script-computed); the formula box (each symbol, units,
@@ -202,8 +215,9 @@ pp.A–B)`, the single most useful idea or correction, and the practice line. Tr
    the planned hours), give a stop rule and where the rest goes.
 6. *Tonight's checklist*: reading, the practice questions (use `practice_picks`; otherwise choose
    `questions_target` questions from the brief's question list, spread across the learning
-   outcomes, weighted to the Close sections), checking against the Solutions with a one-line rule
-   for each miss, and the reply line.
+   outcomes, weighted to the Close sections; if the module has fewer, assign them all), checking
+   against the Solutions with a one-line rule for each miss, and the reply line. Make the sample
+   reply in the reply line differ from any reply he has actually sent.
 
 **Other day kinds** (shorter: 300–600 words, recall always first):
 - `buffer`: recall + spaced review; then the `backlog` (what to finish tonight, with pages) or, if
@@ -219,8 +233,14 @@ pp.A–B)`, the single most useful idea or correction, and the practice line. Tr
   timing, three formulas to glance at, and calm.
 
 **Length.** Study days 800–1,100 words inside the article (count with
-`python3 .github/scripts/reading_minutes.py <page>`, which prints minutes then words); cut
-repetition before cutting outcomes. Lesson 1 is the only longer one.
+`python3 .github/scripts/reading_minutes.py <page>`, which prints minutes then words). Every block
+above fits in that only if each stays inside its budget, so draft to it from the start instead of
+trimming afterwards: Tonight box 50 words; Correction 80; Recall questions and answers 220 (one
+line per question, one or two per answer); principles with the worked example 330; formula box,
+key terms, Memorize and Exam traps together 220; reading plan 140; checklist 60. Cut repetition
+before outcomes. `finish` refuses a study page over 1,250 words (other days: 900) unless you pass
+`--long-ok "why"`, which is only for a page where cutting would drop an examinable outcome.
+Lesson 1 is the only longer one.
 
 **Numbers.** Write every calculation in `/tmp/cfa1/calc.py` (standard library only), run it, and copy
 the printed results. Check every page reference against the brief or plan before you finish.
@@ -240,9 +260,10 @@ the printed results. Check every page reference against the brief or plan before
    It first sets what a script knows exactly: the dateline (date and "N min read"), the `<title>`
    element, `reading_minutes`, `generated_at` and the Previous link (the last CFA lesson; Next
    stays disabled). Then it runs `check_report.py` and the lesson checks (no template text left,
-   h1 = report-meta title, lesson number, days to the exam, a complete record), and only then
-   writes the index entry, the lesson record, last-run and the run-log line. On `PAGE FAIL`, fix
-   what it lists and run it again.
+   h1 = report-meta title, lesson number, Module M of T, days to the exam, a Correction block
+   naming every miss logged today as taught, the length, a complete record with a `ref` on every
+   recall item), and only then writes the index entry, the lesson record, last-run and the run-log
+   line. On `PAGE FAIL`, fix what it lists and run it again.
 3. `python3 .github/scripts/publish.py --subject "learning: TODAY cfa1 lesson N"` (exit 3: resolve per
    §15.2, then `--push-only`). ONE commit for everything.
 4. `python3 .github/scripts/api_get.py --wait-200 <page.url>`.

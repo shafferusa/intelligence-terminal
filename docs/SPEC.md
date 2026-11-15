@@ -270,7 +270,9 @@ something similar for me"*); its files stay as they are.
   `cfa1.py check-plan`, and is explained in the next lesson. If the plan cannot fit, the lesson says so.
 - **Progress comes only from Logan.** He replies to the bot with a message starting "CFA" (for
   example "CFA: M3 done, 2h10, 6/8, missed Q7 Q21"); the `sie-inbox` Action stores it in
-  `state/cfa1/inbox.jsonl` and acknowledges it. The routine applies replies with `cfa1.py feedback`.
+  `state/cfa1/inbox.jsonl` and acknowledges it. It polls every 15 minutes in principle (GitHub runs
+  this repo's schedules hours late) and after every push to main, so a reply can reach the lesson a
+  day late but is never lost. The routine applies replies with `cfa1.py feedback`.
   A generated lesson or a passed date never marks anything studied, and a missed question is logged
   as the topic it tests, never as a guessed mistake.
 - **Every page is checked before it is recorded.** `cfa1.py finish` stamps what a script knows
