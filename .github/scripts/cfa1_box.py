@@ -4,8 +4,9 @@ The extract carries Logan's own nightly notes, and this repository is public, so
 encrypted. The construction uses only the standard library, so it runs unchanged on his PC and in
 the routine's sandbox: HMAC-SHA256 in counter mode as the keystream, then HMAC-SHA256 over nonce
 and ciphertext (encrypt-then-MAC), with separate derived keys for the two jobs. The 32-byte key
-lives in %USERPROFILE%\\.cfa1\\workbook.key on his PC and in the routine's environment as
-CFA1_WORKBOOK_KEY. It is never written to the repository.
+lives in %USERPROFILE%\\.cfa1\\workbook.key on his PC and in the routine's private prompt,
+which has each run write it to /tmp/cfa1/workbook.key (CFA1_WORKBOOK_KEY also works). It is never
+written to the repository.
 """
 
 import base64
@@ -47,6 +48,7 @@ def seal(key, plaintext):
 
 
 def open_sealed(key, blob):
+    blob = blob.replace(b"\r\n", b"\n")   # a Windows checkout (core.autocrlf) adds CRs to the lines
     if not blob.startswith(MAGIC):
         raise ValueError("not a sealed workbook extract")
     raw = base64.b64decode(blob[len(MAGIC):].strip())

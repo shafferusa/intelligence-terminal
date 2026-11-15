@@ -273,9 +273,11 @@ something similar for me"*); its files stay as they are.
 - **Progress comes from Logan's study workbook** (`CFA_Level_I_Master_Study_Plan.xlsx` on his PC),
   the primary record. Its Daily Plan column "Nightly notes - write freely" takes unstructured notes.
   A Windows scheduled task on his PC ("CFA1 workbook sync", `workbook_sync.py` in his local
-  Morning_Lessons folder: every 10 minutes while he is logged on and at 4:30 AM with wake) extracts
-  the workbook's values, encrypts them with a key kept only on his PC and in the routine's
-  configuration (`CFA1_WORKBOOK_KEY`), and pushes `state/cfa1/workbook.enc` when it changes
+  Morning_Lessons folder: every 10 minutes while he is logged on, whenever he locks the PC, and at
+  4:30 AM with wake, which works on AC power only) extracts the workbook's values, encrypts them
+  with a key kept only on his PC and in the routine's private prompt (each run writes it to
+  `/tmp/cfa1/workbook.key`; the trigger API keeps no environment variables), and pushes
+  `state/cfa1/workbook.enc` when it changes
   (`.github/scripts/cfa1_box.py`: HMAC-SHA256 counter-mode keystream, encrypt-then-MAC). Each run,
   `cfa1.py today` decrypts it into `/tmp/cfa1/` only, reports what the status fields confirm
   (sessions, checklist counts, conflicts between notes and statuses, whether anything changed since

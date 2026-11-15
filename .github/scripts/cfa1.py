@@ -6,7 +6,8 @@ so the model spends its effort on teaching.
         Today's context: the plan day and its modules (course, Module M of T, sections with
         printed and PDF pages, exhibits), the previous report, the queued page, and what Logan's
         study workbook confirms. The workbook arrives encrypted (state/cfa1/workbook.enc, opened
-        with CFA1_WORKBOOK_KEY); FILE gets only statuses, counts and flags. His notes go to the
+        with the key in /tmp/cfa1/workbook.key or CFA1_WORKBOOK_KEY); FILE gets only statuses,
+        counts and flags. His notes go to the
         private extract /tmp/cfa1/workbook.json, which is never committed.
     python3 .github/scripts/cfa1.py start-page [--date D] [--record-out F] [--page-out F] [--fresh]
         Create the page: the queued lesson if one is waiting (and its record), else the template.
@@ -214,7 +215,8 @@ def open_workbook(key_file=None):
         return None, "no synced workbook in the repository yet (%s)" % WORKBOOK_ENC
     key = key_text(key_file)
     if not key:
-        return None, "CFA1_WORKBOOK_KEY is not set in this environment"
+        return None, ("no workbook key: %s is missing and CFA1_WORKBOOK_KEY is not set"
+                      % os.path.join(PRIVATE_DIR, "workbook.key"))
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import cfa1_box  # noqa: E402
     try:

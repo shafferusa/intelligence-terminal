@@ -27,7 +27,8 @@ what would make it fail. Short paragraphs, one idea each.
 
 **His study workbook is the progress record.** He keeps `CFA_Level_I_Master_Study_Plan.xlsx` on
 his PC and writes free-form nightly notes in it. A task on his PC sends it here encrypted
-(`state/cfa1/workbook.enc`), and `cfa1.py today` opens it with `CFA1_WORKBOOK_KEY`.
+(`state/cfa1/workbook.enc`), and `cfa1.py` opens it with the key that the routine's prompt has you
+write to `/tmp/cfa1/workbook.key` first (or `CFA1_WORKBOOK_KEY`, if set). Never print the key.
 
 **Non-negotiables.**
 1. **Progress only from the workbook's status fields**, never from a lesson having been sent or a
