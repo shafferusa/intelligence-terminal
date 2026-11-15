@@ -1,5 +1,5 @@
 {
- "ran_at_et": "2026-11-15T09:59:42-05:00",
+ "ran_at_et": "2026-11-15T14:39:26-05:00",
  "all_ok": true,
  "results": [
   {
@@ -18,14 +18,54 @@
    "detail": "state/cfa1/queue/2026-11-16-cfa1.html"
   },
   {
-   "check": "queued lesson passes check_report",
+   "check": "the queued lesson's run-time slot is guarded",
    "ok": true,
-   "detail": ""
+   "detail": "finish refuses it until the routine writes the workbook facts"
+  },
+  {
+   "check": "queued lesson passes check_report, the lesson checks and the page/exhibit checks",
+   "ok": true,
+   "detail": "846 words in the reading"
+  },
+  {
+   "check": "finish refuses invented pages and exhibits",
+   "ok": true,
+   "detail": "page numbers outside PRE-ECON-LM03, PRE-ECON-LM01 (printed [(67, 136), (3, 36)], PDF [(75, 144), (11, 44)]): PDF 998, p.999 Exhibit 99 does not exist in PRE-ECO"
+  },
+  {
+   "check": "alternate refresher PRE-ECON-LM02 fits and passes",
+   "ok": true,
+   "detail": "Part 1 is now state/cfa1/queue/2026-11-16-refresher-PRE-ECON-LM02.html (Refresher: market structure and pricing power); 887 words"
+  },
+  {
+   "check": "first lesson's record queued",
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "check": "finish refuses an unfilled template",
+   "ok": true,
+   "detail": "template text left in the page: <dt>SYMBOL</dt>, <dt>TERM</dt>, <td class=\"txt\">SECTION</td>, <td>A&ndash;B</td>, <td>C&"
   },
   {
    "check": "briefs on file for the first week",
    "ok": true,
    "detail": "6 modules"
+  },
+  {
+   "check": "exhibit index loads",
+   "ok": true,
+   "detail": "110 modules"
+  },
+  {
+   "check": "study workbook readable (key and synced extract)",
+   "ok": true,
+   "detail": "saved 2026-11-15T11:52:42-05:00, synced 2026-11-15T14:26:39-05:00; 3 sessions with a status, writing on 0 dates, 1 modules started"
+  },
+  {
+   "check": "leak check catches copied note text",
+   "ok": true,
+   "detail": ""
   },
   {
    "check": "modules.json loads",
@@ -43,11 +83,6 @@
    "detail": ""
   },
   {
-   "check": "state/cfa1/misconceptions.json loads",
-   "ok": true,
-   "detail": ""
-  },
-  {
    "check": "state/cfa1/blockers.json loads",
    "ok": true,
    "detail": ""
@@ -59,11 +94,6 @@
   },
   {
    "check": "state/cfa1/control.json loads",
-   "ok": true,
-   "detail": ""
-  },
-  {
-   "check": "inbox file exists",
    "ok": true,
    "detail": ""
   },
