@@ -1,4 +1,4 @@
-name: SIE inbox (quiz answers from Telegram)
+name: Telegram inbox (SIE quiz answers, CFA study reports)
 
 # Logan answers the SIE Program's quizzes by messaging the bot. Telegram only
 # keeps undelivered bot updates for 24 hours, and the SIE routine runs once a
@@ -10,6 +10,10 @@ name: SIE inbox (quiz answers from Telegram)
 # Scheduled workflows are best-effort; in practice this runs every 15-30 min.
 # Commits only when an SIE message actually arrived, and state/ changes never
 # trigger the site build or the edition notification.
+#
+# Since 2026-11-15 it also saves messages that start with "CFA" -- Logan's
+# nightly study reports for the CFA Morning Lesson -- to state/cfa1/inbox.jsonl,
+# read by the 4:50 AM routine (prompts/cfa-morning.md), never written by it.
 #
 # The acknowledgement is the only Telegram message outside notify.py, and it
 # is still sent by Actions, never by a routine (shared-rules section 14).
@@ -39,19 +43,19 @@ jobs:
         with:
           ref: main
 
-      - name: Collect SIE replies
+      - name: Collect SIE and CFA replies
         run: python3 .github/scripts/sie_inbox.py collect
 
       - name: Persist the inbox
         run: |
-          if git diff --quiet -- state/sie/inbox.jsonl; then
-            echo "no new SIE messages"
+          if git diff --quiet -- state/sie/inbox.jsonl state/cfa1/inbox.jsonl; then
+            echo "no new SIE or CFA messages"
             exit 0
           fi
           git config user.name  "Intelligence Terminal Bot"
           git config user.email "loganshaffer87@gmail.com"
-          git add state/sie/inbox.jsonl
-          git commit -m "sie: inbox"
+          git add state/sie/inbox.jsonl state/cfa1/inbox.jsonl
+          git commit -m "inbox: telegram replies"
           # A report run may be pushing at the same moment. The inbox is
           # append-only and written only here, so a rebase never conflicts.
           for i in 1 2 3 4 5; do

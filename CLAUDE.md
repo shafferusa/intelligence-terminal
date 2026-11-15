@@ -23,7 +23,14 @@ on a chained git commit. Details: `prompts/shared-rules.md` §0b.
 2. `prompts/shared-rules.md` — operational rules every run must follow (labels, verification,
    Telegram, page creation, ledgers, idempotency).
 3. Your run procedure — one of:
-   - `prompts/learning.md` — **Learning Brief — PAUSED since 2026-11-06** (SPEC §0e): while
+   - `prompts/cfa-morning.md` — **CFA Morning Lesson** (slot `cfa1`, SPEC §0f), every day at
+     4:50 AM ET on the trigger that used to run the Learning Brief (repurposed 2026-11-15; first
+     lesson 2026-11-16, exam 2027-05-15). Opens with closed-book recall of yesterday's CFA Level I
+     study, corrections and spaced review, then teaches tonight's reading from the plan in
+     `state/cfa1/plan.json` and the briefs in `curriculum/cfa1/briefs/`. Progress is recorded only
+     from Logan's "CFA …" Telegram replies (`state/cfa1/inbox.jsonl`). No news.
+   - `prompts/learning.md` — **Learning Brief — PAUSED since 2026-11-06** (SPEC §0e); since
+     2026-11-15 no trigger runs it (its trigger now runs the CFA Morning Lesson). While
      `state/learning.json` has `"paused": true` the run exits at once, writing nothing. When live:
      Mon–Fri ~5:00 AM ET, delivered by 5:30. Strictly
      learning: ONE concept per ~15-minute report from `curriculum/academy-connected.json`, connected
@@ -35,10 +42,12 @@ on a chained git commit. Details: `prompts/shared-rules.md` §0b.
      course with quizzes, grading, a weakness tracker and spaced repetition (SPEC §0b). Strictly
      exam study, no news.
 
-**The 2026-11-05 CFA course:** Logan's 90-day CFA Math course (Level I, May 2027) replaces the
+**The 2026-11-05 CFA course:** Logan's 90-day CFA Math course (Level I, May 2027) replaced the
 Learning Brief. Its lessons are written in advance (`curriculum/cfa-l1/`) and published daily by the
-`cfa-release` GitHub Action, never by a routine. No routine writes `site/reports/cfa/`,
-`state/cfa.json` or `curriculum/cfa-l1*`, and no news edition carries CFA lessons (SPEC §0e).
+`cfa-release` GitHub Action, never by a routine. It was **paused before Day 1 on 2026-11-15**
+(`state/cfa.json`) and replaced by the CFA Morning Lesson (`cfa1`). No routine writes
+`site/reports/cfa/`, `state/cfa.json` or `curriculum/cfa-l1*` (the CFA Morning Lesson only reads
+`curriculum/cfa-l1/calculator-guide.md`), and no news edition carries CFA lessons (SPEC §0e, §0f).
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
@@ -54,7 +63,7 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 ## File map
 
 - `docs/SPEC.md` — product spec. `docs/RUNBOOK.md` — ops runbook + egress domain allowlist.
-- `prompts/` — routine procedures (shared-rules.md, weekday.md, weekend.md, learning.md).
+- `prompts/` — routine procedures (shared-rules.md, cfa-morning.md, weekday.md, weekend.md, learning.md, sie.md).
 - `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
 - `curriculum/academy-connected.json` — **the live curriculum** for the Learning Brief: Logan's
@@ -67,6 +76,10 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   spec, calculator-guide.md, template.html, and the pre-written `day-NN.html` lessons) — released
   by `.github/workflows/cfa-release.yml` + `.github/scripts/cfa_release.py` to
   `site/reports/cfa/l1/`; position in `state/cfa.json`; course page `site/cfa.html` (SPEC §0e).
+- `curriculum/cfa1/` — the CFA Morning Lesson's reference: `modules.json` (every 2027 Level I
+  module and section with printed/PDF pages and reading priorities), `briefs/<MODULE>.md` (compact,
+  paraphrased teaching briefs written from a full, verified reading of the books; the full notes
+  stay on Logan's PC because the books are "for candidate use only"), `lesson-template.html`.
 - `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
   (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
   `curriculum/sie-question-style.md` — the house question style for SIE quizzes and exams.
@@ -86,6 +99,11 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   `run-log.jsonl`, `sie.json` (SIE program state: tracker, error log, review queue, scores),
   `sie/quizzes/day-NN.json` (SIE answer keys), `sie/inbox.jsonl` (Logan's Telegram replies —
   written ONLY by the `sie-inbox` Action; routines read it, never write it). `curriculum.json` is retired — do not read or write it.
+  `cfa1/` — the CFA Morning Lesson: `plan.json` (the Daily Study Plan; every revision keeps the
+  prior version in `plan-history/`), `progress.json`, `lessons.json`, `misconceptions.json`,
+  `blockers.json`, `control.json` (pause), `queue/` (lessons written in advance),
+  `inbox-cursor.json`, and `inbox.jsonl` (Logan's "CFA …" replies — written ONLY by the
+  `sie-inbox` Action; the routine reads it, never writes it).
 - `ledgers/` — `corrections.json`, `forecasts.json` (append-only accountability),
   `book-notes.jsonl` (one labelled claim per Learning Brief, raw material for Logan's book).
 - `registry/` — `entities.json` (public/private status; never hardcode — verify via EDGAR).

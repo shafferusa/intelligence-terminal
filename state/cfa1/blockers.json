@@ -1,0 +1,32 @@
+{
+ "items": [
+  {
+   "id": "psm-materials",
+   "opened": "2026-11-15",
+   "status": "open",
+   "what": "Financial Modeling PSM (10 units) and Python Programming Fundamentals PSM (5 units): materials not downloaded, so they could not be read.",
+   "impact": "Their ten Friday slots (Jan 15 - Mar 19) stay in the plan as pending; those mornings teach nothing from them and say so. Download the PSM materials to unblock."
+  },
+  {
+   "id": "roadmap-docx",
+   "opened": "2026-11-15",
+   "status": "open",
+   "what": "CFA_Level_I_Study_Roadmap.docx was not found in the CFA folder or Downloads.",
+   "impact": "None on the schedule: the Master Study Plan workbook supplied the dates."
+  },
+  {
+   "id": "master-plan-location",
+   "opened": "2026-11-15",
+   "status": "open",
+   "what": "CFA_Level_I_Master_Study_Plan.xlsx lives in Downloads, outside the CFA folder; the plan was built from a 2026-11-15 snapshot of it.",
+   "impact": "Edits made to the workbook after 2026-11-15 are not seen by the routine. Report progress by replying 'CFA: ...' instead."
+  },
+  {
+   "id": "notes-private",
+   "opened": "2026-11-15",
+   "status": "open",
+   "what": "The books are marked 'For candidate use only. Not for distribution', and this repository is public, so the full reading notes stay on Logan's PC; the routine teaches from compact paraphrased briefs in curriculum/cfa1/briefs.",
+   "impact": "Lessons are written from the briefs plus the plan; the books stay the primary reading."
+  }
+ ]
+}

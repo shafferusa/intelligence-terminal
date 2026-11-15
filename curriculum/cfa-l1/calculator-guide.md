@@ -32,7 +32,7 @@ never as the key underneath. TI-84 menu choices are `kbd class="menu"` with thei
 | Payments per year = 1 | `2ND` `P/Y` `1` `ENTER` (C/Y follows), `2ND` `QUIT` | in the TVM Solver: `P/Y=1`, `C/Y=1` |
 | 4 decimals | `2ND` `FORMAT` `4` `ENTER` `2ND` `QUIT` | `MODE`, row `FLOAT 0123456789`, pick `4`, `ENTER`, `2nd` `MODE` (QUIT) |
 | Order of operations | `2ND` `FORMAT`, `↓` to `Chn`/`AOS`, `2ND` `SET` until `AOS`, `2ND` `QUIT` (factory setting is Chn) | always algebraic |
-| Reset everything | `2ND` `RESET` `ENTER` (then redo the three lines above: reset puts P/Y back to 12 — 1 on the BA II Plus Professional — decimals to 2 and the method to Chn) | — |
+| Reset everything | `2ND` `RESET` `ENTER` (then redo the three lines above: reset sets decimals to 2 and the method to Chn; TI's guidebooks for both the BA II Plus (2024, p.20) and the Professional list P/Y = C/Y = 1 as the reset default, but some older units come back at 12, so always check P/Y) | — |
 | Statistics screens | — | turn STAT WIZARDS off so the commands below paste directly: `MODE`, row `STAT WIZARDS`, choose `OFF`, `ENTER` (TI-84 Plus OS 2.55MP or later and every CE; older software has no wizards) |
 
 ## Time value of money (TVM)

@@ -30,11 +30,19 @@ collected again. If confirm fails after a successful push, the next poll
 finds those update_ids already in the inbox and neither stores nor replies
 twice.
 
-Only messages from TG_CHAT are considered, and only SIE messages are stored
-(the repo is public; nothing else Logan sends the bot is written anywhere).
+Only messages from TG_CHAT are considered, and only SIE and CFA messages are
+stored (the repo is public; nothing else Logan sends the bot is written
+anywhere).
+
+CFA Morning Lesson (2026-11-15). Messages that start with "CFA" are Logan's
+study reports for the morning-lesson routine (prompts/cfa-morning.md), e.g.
+"CFA: M3 done, 2h10, 6/8, missed Q7 Q21". They go to state/cfa1/inbox.jsonl
+the same way, with a short acknowledgement echoing what was understood. The
+4:50 AM routine reads that inbox (and never writes it) and records progress
+only from these messages.
 
 Actions is the only Telegram sender in this system (shared-rules section 14).
-The routine reads the inbox; it never sends.
+The routines read the inboxes; they never send.
 
 Env: TG_TOKEN, TG_CHAT, SIE_PENDING (path for the collect->confirm handoff).
 Stdlib only.
@@ -51,6 +59,7 @@ import urllib.request
 from datetime import datetime, timezone
 
 INBOX = "state/sie/inbox.jsonl"
+CFA_INBOX = "state/cfa1/inbox.jsonl"
 STATE = "state/sie.json"
 KEYS = "state/sie/quizzes"
 LIMIT = 4096
@@ -281,21 +290,108 @@ def reply_for(parsed):
     return "Saved. I could not read answers in that message; the next noon edition will interpret it. Send <code>SIE help</code> for the format."
 
 
+# ---------------------------------------------------------------- CFA morning lessons
+
+CFA_HELP = (
+    "<b>CFA Morning Lesson — how to reply</b>\n"
+    "After each night's study, one message starting with <code>CFA</code>:\n"
+    "<code>CFA: M3 done, 2h10, 6/8, missed Q7 Q21, deflator confused me</code>\n"
+    "<code>CFA: M3 partial, stopped at p.110, 1h55</code>\n"
+    "<code>CFA: skipped tonight</code>\n"
+    "Anything in plain words works; the 4:50 AM lesson reads it, records your progress and "
+    "corrects mistakes. Progress is only ever recorded from these messages.\n"
+    "<code>CFA pause</code> · <code>CFA resume</code> · <code>CFA note …</code>"
+)
+
+
+def parse_cfa(text):
+    """Return a parsed dict for a CFA message, or None if it is not one.
+
+    The routine interprets the raw text; this only pulls out what the
+    acknowledgement echoes back, so Logan can see at once what was understood."""
+    t = (text or "").strip()
+    m = re.match(r"^/?cfa\b\s*[:#\-]?\s*", t, re.I)
+    if not m:
+        return None
+    body = t[m.end():].strip()
+    if not body or re.match(r"help\b", body, re.I):
+        return {"kind": "command", "command": "help"}
+    c = re.match(r"(pause|resume)\b", body, re.I)
+    if c:
+        return {"kind": "command", "command": c.group(1).lower()}
+    c = re.match(r"note\b[:\s]*(.*)$", body, re.I | re.S)
+    if c:
+        return {"kind": "command", "command": "note", "text": c.group(1).strip()}
+    out = {"kind": "report"}
+    mod = re.search(r"\b(?:m|lm|module)\s*\.?\s*(\d{1,2})\b", body, re.I)
+    if mod:
+        out["module"] = int(mod.group(1))
+    st = re.search(r"\b(done|finished|complete|completed|partial|half|started|skipped|missed|not done|didn'?t)\b",
+                   body, re.I)
+    if st:
+        w = st.group(1).lower()
+        out["status"] = ("done" if w in ("done", "finished", "complete", "completed")
+                         else "partial" if w in ("partial", "half", "started") else "not done")
+    hm = re.search(r"\b(\d{1,2})\s*h(?:ours?|rs?)?\s*(\d{1,2})?\s*(?:m(?:in)?s?)?\b", body, re.I)
+    mins = re.search(r"\b(\d{2,3})\s*(?:m|min|mins|minutes)\b", body, re.I)
+    if hm:
+        out["minutes"] = int(hm.group(1)) * 60 + int(hm.group(2) or 0)
+    elif mins:
+        out["minutes"] = int(mins.group(1))
+    sc = re.search(r"\b(\d{1,3})\s*/\s*(\d{1,3})\b", body)
+    if sc and int(sc.group(2)) > 0 and int(sc.group(1)) <= int(sc.group(2)):
+        out["score"] = "%s/%s" % (sc.group(1), sc.group(2))
+    missed = re.findall(r"\bq\s*(\d{1,3})\b", body, re.I)
+    if missed:
+        out["questions"] = sorted({int(x) for x in missed})
+    return out
+
+
+def reply_cfa(parsed):
+    kind = parsed["kind"]
+    if kind == "command":
+        cmd = parsed["command"]
+        if cmd == "help":
+            return CFA_HELP
+        if cmd == "pause":
+            return ("Morning lessons pause from the next 4:50 AM run. Send <code>CFA resume</code> to continue; "
+                    "the plan will be re-dated from that day, with nothing dropped.")
+        if cmd == "resume":
+            return "Morning lessons resume at the next 4:50 AM run, with the plan re-dated from there."
+        if cmd == "note":
+            return "Note saved for the next morning lesson."
+    bits = []
+    if parsed.get("module"):
+        bits.append("M%d" % parsed["module"])
+    if parsed.get("status"):
+        bits.append(parsed["status"])
+    if parsed.get("minutes"):
+        bits.append("%dh%02d" % divmod(parsed["minutes"], 60))
+    if parsed.get("score"):
+        bits.append(parsed["score"])
+    if parsed.get("questions"):
+        bits.append("Q" + ", Q".join(str(q) for q in parsed["questions"]))
+    seen = (" — read as: " + html.escape(" · ".join(bits))) if bits else ""
+    return ("Saved for the 4:50 AM lesson%s. It will record your progress and work on what you missed. "
+            "Send <code>CFA help</code> for examples." % seen)
+
+
 # ---------------------------------------------------------------- phases
 
 def known_ids():
     ids = set()
-    try:
-        with open(INBOX, encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if line:
-                    try:
-                        ids.add(int(json.loads(line)["update_id"]))
-                    except Exception:  # noqa: BLE001
-                        pass
-    except FileNotFoundError:
-        pass
+    for path in (INBOX, CFA_INBOX):
+        try:
+            with open(path, encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if line:
+                        try:
+                            ids.add(int(json.loads(line)["update_id"]))
+                        except Exception:  # noqa: BLE001
+                            pass
+        except FileNotFoundError:
+            pass
     return ids
 
 
@@ -304,6 +400,7 @@ def collect(token, chat, pending_path):
     updates = resp.get("result") or []
     seen = known_ids()
     new_lines = []
+    cfa_lines = []
     replies = []
     max_id = None
     for u in updates:
@@ -315,23 +412,29 @@ def collect(token, chat, pending_path):
         if uid in seen:
             continue
         text = msg.get("text") or ""
+        stamp = datetime.fromtimestamp(msg.get("date", 0), tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        cfa = parse_cfa(text)
+        if cfa is not None:
+            cfa_lines.append({"update_id": uid, "date": stamp, "text": text[:4000], "parsed": cfa})
+            replies.append(reply_cfa(cfa))
+            continue
         parsed = parse(text)
         if parsed is None:
             continue
         reply = reply_for(parsed)
-        stamp = datetime.fromtimestamp(msg.get("date", 0), tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         new_lines.append({"update_id": uid, "date": stamp, "text": text[:4000], "parsed": parsed})
         replies.append(reply)
 
-    if new_lines:
-        os.makedirs(os.path.dirname(INBOX), exist_ok=True)
-        with open(INBOX, "a", encoding="utf-8") as fh:
-            for line in new_lines:
-                fh.write(json.dumps(line, ensure_ascii=False) + "\n")
+    for path, lines in ((INBOX, new_lines), (CFA_INBOX, cfa_lines)):
+        if lines:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "a", encoding="utf-8") as fh:
+                for line in lines:
+                    fh.write(json.dumps(line, ensure_ascii=False) + "\n")
 
     with open(pending_path, "w", encoding="utf-8") as fh:
         json.dump({"max_update_id": max_id, "replies": replies}, fh)
-    print("updates: %d, new SIE messages: %d" % (len(updates), len(new_lines)))
+    print("updates: %d, new SIE messages: %d, new CFA messages: %d" % (len(updates), len(new_lines), len(cfa_lines)))
     return 0
 
 

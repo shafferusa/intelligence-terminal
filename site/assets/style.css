@@ -732,6 +732,7 @@ td.down, .fact-card dd.down { color: var(--down); }
 .paper[data-slot="learn"] { --edition: var(--edition-learn); }
 .paper[data-slot="sie"]   { --edition: var(--edition-sie); }
 .paper[data-slot="cfa"]   { --edition: var(--edition-cfa); }
+.paper[data-slot="cfa1"]  { --edition: var(--edition-cfa); }
 
 /* ---------- report masthead ---------- */
 

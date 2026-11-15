@@ -241,6 +241,47 @@ chose both calculators side by side and about 20 minutes a day.
 - **No routine writes any of this.** News routines leave `site/reports/cfa/`, `state/cfa.json` and
   `curriculum/cfa-l1*` alone.
 
+### 0f. Amendment of 2026-11-15 — the CFA Morning Lesson (slot `cfa1`) replaces the CFA Math course (PAUSES §0e)
+
+Logan asked (2026-11-15, from a Claude Code session on his PC) for a personalized CFA Level I morning
+lesson: he reads it in the morning and does the official reading and practice that night, from
+Monday 2026-11-16 to the exam on Saturday 2027-05-15 at 8:30 AM ET. The CFA Math course was paused
+before Day 1 (`state/cfa.json`, Logan: *"Cancel this, terminal claude code is currently going to do
+something similar for me"*); its files stay as they are.
+
+- **Schedule.** One lesson **every day at 4:50 AM ET**, written by the routine that used to run the
+  Learning Brief (same trigger, repurposed and renamed "CFA Morning Lesson"; model Opus 5.5; the old
+  configuration is backed up on Logan's PC). Procedure: `prompts/cfa-morning.md`. Slot `cfa1`; page
+  `site/reports/YYYY/MM/YYYY-MM-DD-cfa1.html`; Telegram through the usual index push.
+- **Each lesson, in order:** closed-book recall of yesterday's assignment (principles, vocabulary,
+  formulas, mistakes; answers folded below), corrections from Logan's last reply, spaced review of
+  older concepts (2, 6, 13, 27 and 55 days back), then tonight's assignment: the principles in plain
+  language with the cash flows, incentives and risks; a simple worked example (labelled hypothetical);
+  vocabulary; formulas with units, assumptions and intuition; traps; what to understand versus
+  memorize; the exact books, sections and verified printed/PDF pages with a close-read / standard /
+  skim call and the reason for each; and a checklist of tonight's reading and practice. 800–1,100
+  words (shorter on buffer days). Lesson 1 adds the BA II Plus setup.
+- **The Daily Study Plan** is `state/cfa1/plan.json` (built from the 2027 curriculum map in
+  `curriculum/cfa1/modules.json`). First pass of all ten Level I topics plus the prerequisite
+  Economics and FSA readings by 2027-04-19; 2027-04-20 to 05-14 is protected for review and mocks.
+  Logan authorized revising the plan without asking when workload, dependencies or results justify
+  it: every revision first snapshots the prior plan to `state/cfa1/plan-history/vN.json`, never drops
+  a module or moves study into the review window, keeps completed work, passes
+  `cfa1.py check-plan`, and is explained in the next lesson. If the plan cannot fit, the lesson says so.
+- **Progress comes only from Logan.** He replies to the bot with a message starting "CFA" (for
+  example "CFA: M3 done, 2h10, 6/8, missed Q7 Q21"); the `sie-inbox` Action stores it in
+  `state/cfa1/inbox.jsonl` and acknowledges it. The routine applies replies with `cfa1.py feedback`.
+  A generated lesson or a passed date never marks anything studied.
+- **Sources.** The books are "for candidate use only. Not for distribution", so the full verified
+  reading notes stay on Logan's PC. The repo carries only compact, paraphrased module briefs
+  (`curriculum/cfa1/briefs/`) and the lessons: no exhibit data, book example numbers, question text or
+  answers. Pages come only from the plan, the module map or a brief. The Professional Skills Modules
+  (Financial Modeling, Python Programming Fundamentals) are not downloaded: their slots stay in the
+  plan marked pending, and lessons never claim they were read (`state/cfa1/blockers.json`).
+- **Writes:** `site/reports/`, `site/reports/index.json`, `state/cfa1/`, `state/last-run.json` and
+  the run log, one commit per run, like every routine. `state/cfa1/inbox.jsonl` is written only by
+  the `sie-inbox` Action.
+
 ## 1. Mission
 
 A permanent, automated, mobile-first personal intelligence platform: global news desk + market terminal + economic research + political/geopolitical brief + company & industry watcher + space dashboard + light physics/spaceflight/quant tutors + searchable archive. It must gather, verify, analyze, generate, store, and deliver polished reports to Logan's iPhone with NO computer on, NO open session, NO custom app, NO manual step. Accuracy, clarity, evidence, organization, reliability and intellectual honesty over speed or drama. It must never feel like a chatbot transcript, feed clone, or AI wall of text.

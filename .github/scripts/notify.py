@@ -55,6 +55,7 @@ EDITION = {
     "learn": "Learning Brief",
     "sie": "SIE Program",
     "cfa": "CFA Math",
+    "cfa1": "CFA Morning Lesson",
 }
 
 
