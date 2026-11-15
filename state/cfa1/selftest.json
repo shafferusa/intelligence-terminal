@@ -1,0 +1,76 @@
+{
+ "ran_at_et": "2026-11-15T09:59:42-05:00",
+ "all_ok": true,
+ "results": [
+  {
+   "check": "plan.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "plan passes check-plan",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "first lesson queued",
+   "ok": true,
+   "detail": "state/cfa1/queue/2026-11-16-cfa1.html"
+  },
+  {
+   "check": "queued lesson passes check_report",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "briefs on file for the first week",
+   "ok": true,
+   "detail": "6 modules"
+  },
+  {
+   "check": "modules.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "state/cfa1/progress.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "state/cfa1/lessons.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "state/cfa1/misconceptions.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "state/cfa1/blockers.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "state/cfa1/inbox-cursor.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "state/cfa1/control.json loads",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "inbox file exists",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "routine instructions exist",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}
