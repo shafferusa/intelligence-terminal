@@ -1,203 +1,195 @@
 {
-  "last_success": "2026-11-14-sat",
-  "runs": {
-    "2026-11-05-learn": {
-      "status": "success",
-      "ts": "2026-11-05T09:56:24Z"
-    },
-    "2026-11-04-learn": {
-      "status": "success",
-      "ts": "2026-11-04T09:59:00Z"
-    },
-    "2026-11-03-learn": {
-      "status": "success",
-      "ts": "2026-11-03T09:59:29Z"
-    },
-    "2026-11-02-learn": {
-      "status": "success",
-      "ts": "2026-11-02T09:58:00Z"
-    },
-    "2026-10-29-learn": {
-      "status": "success",
-      "ts": "2026-10-29T08:58:00Z"
-    },
-    "2026-10-21-learn": {
-      "status": "success",
-      "ts": "2026-10-21T08:56:44Z"
-    },
-    "2026-10-20-learn": {
-      "status": "success",
-      "ts": "2026-10-20T08:59:41Z"
-    },
-    "2026-10-19-learn": {
-      "status": "success",
-      "ts": "2026-10-19T08:58:03Z"
-    },
-    "2026-10-15-learn": {
-      "status": "success",
-      "ts": "2026-10-15T08:59:29Z"
-    },
-    "2026-10-15-am": {
-      "status": "success",
-      "ts": "2026-10-15T10:43:39Z"
-    },
-    "2026-10-15-pm": {
-      "status": "success",
-      "ts": "2026-10-15T20:48:35Z"
-    },
-    "2026-10-16-learn": {
-      "status": "success",
-      "ts": "2026-10-16T08:54:54Z"
-    },
-    "2026-10-16-am": {
-      "status": "success",
-      "ts": "2026-10-16T10:42:38Z"
-    },
-    "2026-10-16-pm": {
-      "status": "success",
-      "ts": "2026-10-16T20:41:45Z"
-    },
-    "2026-10-17-sat": {
-      "status": "success",
-      "ts": "2026-10-17T13:39:24Z"
-    },
-    "2026-10-18-sun": {
-      "status": "success",
-      "ts": "2026-10-18T13:22:00Z"
-    },
-    "2026-10-19-am": {
-      "status": "success",
-      "ts": "2026-10-19T10:39:17Z"
-    },
-    "2026-10-19-pm": {
-      "status": "success",
-      "ts": "2026-10-19T20:47:03Z"
-    },
-    "2026-10-20-am": {
-      "status": "success",
-      "ts": "2026-10-20T10:52:14Z"
-    },
-    "2026-10-20-pm": {
-      "status": "success",
-      "ts": "2026-10-20T20:48:12Z"
-    },
-    "2026-10-21-am": {
-      "status": "success",
-      "ts": "2026-10-21T10:49:25Z"
-    },
-    "2026-10-21-pm": {
-      "status": "success",
-      "ts": "2026-10-21T20:52:07Z"
-    },
-    "2026-10-27-pm": {
-      "status": "success",
-      "ts": "2026-10-27T20:52:48Z"
-    },
-    "2026-10-28-learn": {
-      "status": "success",
-      "ts": "2026-10-28T08:58:00Z"
-    },
-    "2026-10-28-am": {
-      "status": "success",
-      "ts": "2026-10-28T10:49:33Z"
-    },
-    "2026-10-28-pm": {
-      "status": "success",
-      "ts": "2026-10-28T20:46:47Z"
-    },
-    "2026-10-29-am": {
-      "status": "success",
-      "ts": "2026-10-29T10:49:29Z"
-    },
-    "2026-10-29-pm": {
-      "status": "success",
-      "ts": "2026-10-29T20:51:21Z"
-    },
-    "2026-10-30-learn": {
-      "status": "success",
-      "ts": "2026-10-29T21:10:11Z",
-      "note": "Skipped at Logan's request: Mathematics days 8-24 were published at once on 2026-10-29."
-    },
-    "2026-10-30-am": {
-      "status": "success",
-      "ts": "2026-10-30T10:48:17Z"
-    },
-    "2026-10-30-pm": {
-      "status": "success",
-      "ts": "2026-10-30T21:15:00Z"
-    },
-    "2026-10-31-sat": {
-      "status": "success",
-      "ts": "2026-10-31T13:25:23Z"
-    },
-    "2026-11-01-sun": {
-      "status": "success",
-      "ts": "2026-11-01T15:25:00Z"
-    },
-    "2026-11-02-am": {
-      "status": "success",
-      "ts": "2026-11-02T11:49:42Z"
-    },
-    "2026-11-02-pm": {
-      "status": "success",
-      "ts": "2026-11-02T21:47:27Z"
-    },
-    "2026-11-03-am": {
-      "status": "success",
-      "ts": "2026-11-03T11:48:10Z"
-    },
-    "2026-11-03-pm": {
-      "status": "success",
-      "ts": "2026-11-03T22:34:28Z"
-    },
-    "2026-11-04-am": {
-      "status": "success",
-      "ts": "2026-11-04T15:39:18Z"
-    },
-    "2026-11-04-pm": {
-      "status": "success",
-      "ts": "2026-11-04T21:46:54Z"
-    },
-    "2026-11-05-am": {
-      "status": "success",
-      "ts": "2026-11-05T19:30:16Z",
-      "note": "Published late (~2:40 PM ET) by owner override after the morning run stalled."
-    },
-    "2026-11-05-pm": {
-      "status": "success",
-      "ts": "2026-11-05T21:46:22Z"
-    },
-    "2026-11-10-pm": {
-      "status": "success",
-      "ts": "2026-11-10T21:47:00Z"
-    },
-    "2026-11-11-am": {
-      "status": "success",
-      "ts": "2026-11-11T11:49:03Z"
-    },
-    "2026-11-11-pm": {
-      "status": "success",
-      "ts": "2026-11-11T21:46:51Z"
-    },
-    "2026-11-12-am": {
-      "status": "success",
-      "ts": "2026-11-12T11:45:27Z"
-    },
-    "2026-11-12-pm": {
-      "status": "success",
-      "ts": "2026-11-12T21:45:51Z"
-    },
-    "2026-11-13-am": {
-      "status": "success",
-      "ts": "2026-11-13T11:46:57Z"
-    },
-    "2026-11-13-pm": {
-      "status": "success",
-      "ts": "2026-11-13T21:46:50Z"
-    },
-    "2026-11-14-sat": {
-      "status": "success",
-      "ts": "2026-11-14T14:22:20Z"
-    }
+ "last_success": "2026-11-15-sun",
+ "runs": {
+  "2026-11-05-learn": {
+   "status": "success",
+   "ts": "2026-11-05T09:56:24Z"
+  },
+  "2026-11-04-learn": {
+   "status": "success",
+   "ts": "2026-11-04T09:59:00Z"
+  },
+  "2026-11-03-learn": {
+   "status": "success",
+   "ts": "2026-11-03T09:59:29Z"
+  },
+  "2026-11-02-learn": {
+   "status": "success",
+   "ts": "2026-11-02T09:58:00Z"
+  },
+  "2026-10-29-learn": {
+   "status": "success",
+   "ts": "2026-10-29T08:58:00Z"
+  },
+  "2026-10-21-learn": {
+   "status": "success",
+   "ts": "2026-10-21T08:56:44Z"
+  },
+  "2026-10-20-learn": {
+   "status": "success",
+   "ts": "2026-10-20T08:59:41Z"
+  },
+  "2026-10-19-learn": {
+   "status": "success",
+   "ts": "2026-10-19T08:58:03Z"
+  },
+  "2026-10-16-learn": {
+   "status": "success",
+   "ts": "2026-10-16T08:54:54Z"
+  },
+  "2026-10-16-am": {
+   "status": "success",
+   "ts": "2026-10-16T10:42:38Z"
+  },
+  "2026-10-16-pm": {
+   "status": "success",
+   "ts": "2026-10-16T20:41:45Z"
+  },
+  "2026-10-17-sat": {
+   "status": "success",
+   "ts": "2026-10-17T13:39:24Z"
+  },
+  "2026-10-18-sun": {
+   "status": "success",
+   "ts": "2026-10-18T13:22:00Z"
+  },
+  "2026-10-19-am": {
+   "status": "success",
+   "ts": "2026-10-19T10:39:17Z"
+  },
+  "2026-10-19-pm": {
+   "status": "success",
+   "ts": "2026-10-19T20:47:03Z"
+  },
+  "2026-10-20-am": {
+   "status": "success",
+   "ts": "2026-10-20T10:52:14Z"
+  },
+  "2026-10-20-pm": {
+   "status": "success",
+   "ts": "2026-10-20T20:48:12Z"
+  },
+  "2026-10-21-am": {
+   "status": "success",
+   "ts": "2026-10-21T10:49:25Z"
+  },
+  "2026-10-21-pm": {
+   "status": "success",
+   "ts": "2026-10-21T20:52:07Z"
+  },
+  "2026-10-27-pm": {
+   "status": "success",
+   "ts": "2026-10-27T20:52:48Z"
+  },
+  "2026-10-28-learn": {
+   "status": "success",
+   "ts": "2026-10-28T08:58:00Z"
+  },
+  "2026-10-28-am": {
+   "status": "success",
+   "ts": "2026-10-28T10:49:33Z"
+  },
+  "2026-10-28-pm": {
+   "status": "success",
+   "ts": "2026-10-28T20:46:47Z"
+  },
+  "2026-10-29-am": {
+   "status": "success",
+   "ts": "2026-10-29T10:49:29Z"
+  },
+  "2026-10-29-pm": {
+   "status": "success",
+   "ts": "2026-10-29T20:51:21Z"
+  },
+  "2026-10-30-learn": {
+   "status": "success",
+   "ts": "2026-10-29T21:10:11Z",
+   "note": "Skipped at Logan's request: Mathematics days 8-24 were published at once on 2026-10-29."
+  },
+  "2026-10-30-am": {
+   "status": "success",
+   "ts": "2026-10-30T10:48:17Z"
+  },
+  "2026-10-30-pm": {
+   "status": "success",
+   "ts": "2026-10-30T21:15:00Z"
+  },
+  "2026-10-31-sat": {
+   "status": "success",
+   "ts": "2026-10-31T13:25:23Z"
+  },
+  "2026-11-01-sun": {
+   "status": "success",
+   "ts": "2026-11-01T15:25:00Z"
+  },
+  "2026-11-02-am": {
+   "status": "success",
+   "ts": "2026-11-02T11:49:42Z"
+  },
+  "2026-11-02-pm": {
+   "status": "success",
+   "ts": "2026-11-02T21:47:27Z"
+  },
+  "2026-11-03-am": {
+   "status": "success",
+   "ts": "2026-11-03T11:48:10Z"
+  },
+  "2026-11-03-pm": {
+   "status": "success",
+   "ts": "2026-11-03T22:34:28Z"
+  },
+  "2026-11-04-am": {
+   "status": "success",
+   "ts": "2026-11-04T15:39:18Z"
+  },
+  "2026-11-04-pm": {
+   "status": "success",
+   "ts": "2026-11-04T21:46:54Z"
+  },
+  "2026-11-05-am": {
+   "status": "success",
+   "ts": "2026-11-05T19:30:16Z",
+   "note": "Published late (~2:40 PM ET) by owner override after the morning run stalled."
+  },
+  "2026-11-05-pm": {
+   "status": "success",
+   "ts": "2026-11-05T21:46:22Z"
+  },
+  "2026-11-10-pm": {
+   "status": "success",
+   "ts": "2026-11-10T21:47:00Z"
+  },
+  "2026-11-11-am": {
+   "status": "success",
+   "ts": "2026-11-11T11:49:03Z"
+  },
+  "2026-11-11-pm": {
+   "status": "success",
+   "ts": "2026-11-11T21:46:51Z"
+  },
+  "2026-11-12-am": {
+   "status": "success",
+   "ts": "2026-11-12T11:45:27Z"
+  },
+  "2026-11-12-pm": {
+   "status": "success",
+   "ts": "2026-11-12T21:45:51Z"
+  },
+  "2026-11-13-am": {
+   "status": "success",
+   "ts": "2026-11-13T11:46:57Z"
+  },
+  "2026-11-13-pm": {
+   "status": "success",
+   "ts": "2026-11-13T21:46:50Z"
+  },
+  "2026-11-14-sat": {
+   "status": "success",
+   "ts": "2026-11-14T14:22:20Z"
+  },
+  "2026-11-15-sun": {
+   "status": "success",
+   "ts": "2026-11-15T14:19:36Z"
   }
+ }
 }

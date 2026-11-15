@@ -1,31 +1,31 @@
 {
- "fetched": "2026-11-13T16:46:50-05:00",
- "earnings_fetched": "2026-11-01",
- "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
+ "fetched": "2026-11-15T09:19:36-05:00",
+ "earnings_fetched": "2026-11-15",
+ "earnings_fetched_note": "2026-11-15 sun: Finnhub Nov 16-20 fetched; Alpha Vantage 3-month CSV fetched. Conflicts: NVDA Finnhub $111.2B/$2.52 vs Benzinga/LSEG ~$109.2B/$2.48; WMT EPS 0.64 (Finnhub/Zacks) vs 0.74 (one preview); HD Finnhub $3.96/$44.1B vs Kiplinger/Zacks $3.84-3.87/$42.7-42.8B.",
  "events": [
   {
-   "ts_et": "2026-11-13T17:45",
+   "ts_et": "2026-11-15T12:11",
    "type": "launch",
-   "name": "Starship Flight 15 (window 5:45-7:00 PM)",
-   "importance": "Medium",
-   "reason": "SPCX; outcome after pm press",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-11-14T00:30",
-   "type": "launch",
-   "name": "Electron 100th launch (iQPS)",
-   "importance": "Low",
-   "reason": "RKLB",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-11-14T12:32",
-   "type": "launch",
-   "name": "Vulcan VC6L Amazon Leo LV-01 (scrubbed Nov 13, GN2 plant power)",
+   "name": "Vulcan VC6L Amazon Leo LV-01 (window 12:11-12:40)",
    "importance": "Low",
    "reason": "AMZN; return to flight",
-   "source": "thespacedevs + Spaceflight Now"
+   "source": "ULA + thespacedevs"
+  },
+  {
+   "ts_et": "2026-11-15T18:50",
+   "type": "data",
+   "name": "Japan Q3 GDP prelim (poll +0.3% ann.)",
+   "importance": "Medium",
+   "reason": "Yen at 160, BoJ Dec",
+   "source": "Reuters poll"
+  },
+  {
+   "ts_et": "2026-11-15T21:00",
+   "type": "data",
+   "name": "China Oct retail sales / IP / FAI",
+   "importance": "Medium",
+   "reason": "Pre-APEC",
+   "source": "FXStreet"
   },
   {
    "ts_et": "2026-11-16T08:30",
@@ -36,75 +36,147 @@
    "source": "research"
   },
   {
-   "ts_et": "2026-11-17T00:00",
-   "type": "earnings",
-   "name": "Nvidia earnings (date per one source)",
-   "importance": "Critical",
-   "reason": "CEO crisis + AI bellwether",
-   "source": "research"
+   "ts_et": "2026-11-16T11:30",
+   "type": "auction",
+   "name": "13-week $95B and 26-week $82B bills",
+   "importance": "Low",
+   "reason": "Supply",
+   "source": "TreasuryDirect"
   },
   {
-   "ts_et": "2026-11-17T07:00",
+   "ts_et": "2026-11-16T12:00",
+   "type": "fed",
+   "name": "Warsh opening remarks (productivity conference); Williams, Musalem, Hammack, Barr, Kashkari listed",
+   "importance": "High",
+   "reason": "Dec hike ~90% priced",
+   "source": "Fed/NY Fed/Kiplinger"
+  },
+  {
+   "ts_et": "2026-11-16T07:00",
    "type": "earnings",
-   "name": "Home Depot, Disney (bmo)",
-   "importance": "Medium",
-   "reason": "Consumer/housing",
-   "source": "research"
+   "name": "PDD, Baidu, Tyson, XPeng (bmo)",
+   "importance": "Low",
+   "reason": "China/consumer",
+   "source": "Finnhub"
   },
   {
    "ts_et": "2026-11-17T08:30",
    "type": "data",
    "name": "Retail sales (Oct)",
    "importance": "High",
-   "reason": "Cons +0.2%, control +0.4%",
-   "source": "research (Newsquawk)"
+   "reason": "Fcst ~+0.2-0.3%, control ~+0.4%; prior +0.8%",
+   "source": "Newsquawk/calendars"
+  },
+  {
+   "ts_et": "2026-11-17T07:00",
+   "type": "earnings",
+   "name": "Home Depot, Disney (bmo)",
+   "importance": "Medium",
+   "reason": "Housing/consumer",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-17T11:30",
+   "type": "auction",
+   "name": "6-week $100B bill",
+   "importance": "Low",
+   "reason": "Supply",
+   "source": "TreasuryDirect"
+  },
+  {
+   "ts_et": "2026-11-17T13:00",
+   "type": "tech",
+   "name": "Microsoft Ignite keynote (Nadella)",
+   "importance": "Low",
+   "reason": "AI agents/Copilot",
+   "source": "Microsoft"
   },
   {
    "ts_et": "2026-11-17T16:20",
    "type": "earnings",
-   "name": "Nvidia Q3 FY27 results (call 17:00)",
+   "name": "Nvidia Q3 FY27 (call 17:00)",
    "importance": "Critical",
-   "reason": "Interim CEO's first report",
-   "source": "Nvidia IR"
+   "reason": "Interim CEO Kress's first; ~$109.2B/$2.48; implied ~9%",
+   "source": "Nvidia IR, Benzinga"
   },
   {
-   "ts_et": "2026-11-18T00:00",
-   "type": "ipo",
-   "name": "Anthropic IPO pricing (ANT), trading Nov 19",
-   "importance": "High",
-   "reason": "Largest AI listing",
-   "source": "research"
+   "ts_et": "2026-11-17T22:14",
+   "type": "launch",
+   "name": "Falcon 9 USSF-317 (Vandenberg)",
+   "importance": "Low",
+   "reason": "SPCX",
+   "source": "thespacedevs"
   },
   {
-   "ts_et": "2026-11-18T00:00",
-   "type": "summit",
-   "name": "APEC Shenzhen Nov 18-19 (Trump-Xi expected)",
-   "importance": "High",
-   "reason": "Trade/chips",
-   "source": "research"
+   "ts_et": "2026-11-18T08:30",
+   "type": "data",
+   "name": "Housing starts/permits (Oct)",
+   "importance": "Medium",
+   "reason": "Prior 1.40M",
+   "source": "calendars"
   },
   {
    "ts_et": "2026-11-18T07:00",
    "type": "earnings",
-   "name": "Target, Lowe's (bmo)",
+   "name": "Target, Lowe's, TJX (bmo); Palo Alto (amc)",
    "importance": "Medium",
    "reason": "Consumer",
-   "source": "research"
+   "source": "Finnhub"
   },
   {
    "ts_et": "2026-11-18T14:00",
    "type": "fed",
    "name": "FOMC minutes (Oct 27-28)",
    "importance": "High",
-   "reason": "Hike path",
+   "reason": "Hike path, 50bp talk",
+   "source": "federalreserve.gov"
+  },
+  {
+   "ts_et": "2026-11-18T18:00",
+   "type": "ipo",
+   "name": "Anthropic IPO pricing expected (ANT, $70-78, 825M sh)",
+   "importance": "High",
+   "reason": "Largest AI listing",
    "source": "research"
+  },
+  {
+   "ts_et": "2026-11-18T00:00",
+   "type": "politics",
+   "name": "Alaska ranked-choice tabulation (Senate, House)",
+   "importance": "Low",
+   "reason": "Senate margin",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-11-19T08:30",
+   "type": "data",
+   "name": "Jobless claims",
+   "importance": "Medium",
+   "reason": "Prior 200K",
+   "source": "DOL"
   },
   {
    "ts_et": "2026-11-19T07:00",
    "type": "earnings",
-   "name": "Walmart (bmo)",
+   "name": "Walmart, Alibaba, NetEase (bmo); Intuit (amc)",
    "importance": "High",
    "reason": "Consumer bellwether",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-19T00:00",
+   "type": "summit",
+   "name": "APEC Shenzhen: Trump-Xi bilateral + lunch; Trump-Xi-Putin",
+   "importance": "High",
+   "reason": "Trade/chips/Iran",
+   "source": "White House as reported"
+  },
+  {
+   "ts_et": "2026-11-19T09:30",
+   "type": "ipo",
+   "name": "Anthropic (ANT) first trade, Nasdaq",
+   "importance": "High",
+   "reason": "AI appetite",
    "source": "research"
   },
   {
@@ -114,6 +186,22 @@
    "importance": "Medium",
    "reason": "Prelim 51.0, 1y infl exp 4.3%",
    "source": "research"
+  },
+  {
+   "ts_et": "2026-11-20T00:00",
+   "type": "auction",
+   "name": "20Y $16B bond and 10Y $19B reopening this period (day unconfirmed; settle Nov 30)",
+   "importance": "Medium",
+   "reason": "Weak long-end demand",
+   "source": "TreasuryDirect"
+  },
+  {
+   "ts_et": "2026-11-21T07:30",
+   "type": "launch",
+   "name": "Falcon 9 NROL-136 (Vandenberg)",
+   "importance": "Low",
+   "reason": "SPCX",
+   "source": "thespacedevs"
   },
   {
    "ts_et": "2026-11-29T00:00",
@@ -128,11 +216,19 @@
    "type": "fomc",
    "name": "FOMC decision",
    "importance": "Critical",
-   "reason": "Dec hike ~72% priced (Oct 30, as reported)",
+   "reason": "~90% hike priced (Nov 13, as reported)",
    "source": "federalreserve.gov"
+  },
+  {
+   "ts_et": "2026-12-11T00:00",
+   "type": "fiscal",
+   "name": "Federal funding expires",
+   "importance": "High",
+   "reason": "Shutdown risk",
+   "source": "P.L. 119-103"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
  "fomc_next": "2026-12-09",
- "holiday_note": "2026-11-13: no NYSE holiday or early close (data/nyse-holidays.json)."
+ "holiday_note": "Week of 2026-11-16: no NYSE holiday or early close (data/nyse-holidays.json); Thanksgiving Nov 26, early close Nov 27."
 }

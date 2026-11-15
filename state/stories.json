@@ -1,14 +1,94 @@
 {
  "stories": [
   {
+   "id": "van-hollen-schumer",
+   "first_seen": "2026-11-15",
+   "headline": "Van Hollen Sunday-show push vs Schumer for Democratic leader",
+   "status": "Developing",
+   "rationale": "Senate leadership",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "watch-fomc-minutes-nov18",
+   "first_seen": "2026-11-15",
+   "headline": "WATCH: FOMC minutes Wed 2 PM; retail sales Tue 8:30; Warsh Mon noon",
+   "status": "Scheduled",
+   "rationale": "Dec hike ~90% priced",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "watch-apec-shenzhen-nov19",
+   "first_seen": "2026-11-15",
+   "headline": "WATCH: APEC Shenzhen; Trump-Xi bilateral + Trump-Xi-Putin Nov 19",
+   "status": "Scheduled",
+   "rationale": "Chips/trade/Iran",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "watch-anthropic-ipo-nov18",
+   "first_seen": "2026-11-15",
+   "headline": "WATCH: Anthropic IPO pricing Wed Nov 18, trading Thu Nov 19 (ANT, $70-78)",
+   "status": "Scheduled",
+   "rationale": "Largest AI listing",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "watch-nvda-q3-nov17",
+   "first_seen": "2026-11-15",
+   "headline": "WATCH: Nvidia Q3 FY27 Tue Nov 17 amc; cons ~$109.2B/$2.48; implied ~9%",
+   "status": "Scheduled",
+   "rationale": "Week's main market event",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "iran-bahrain-drones-nov15",
+   "first_seen": "2026-11-15",
+   "headline": "IRGC claims 6-drone attack on US radar at Al-Riffa, Bahrain; CENTCOM: 2 intercepted, no damage",
+   "status": "Disputed",
+   "rationale": "Escalation channel; strikes forecast 25-40%",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "btc-below-63k-nov15",
+   "first_seen": "2026-11-15",
+   "headline": "Bitcoin dips to ~$62-63K, lowest since August; ~$65.2K Sun morning; 6th weekly loss pending",
+   "status": "Developing",
+   "rationale": "Only market open; liquidations >$1B",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
+   "id": "starship-ship-catch-nov14",
+   "first_seen": "2026-11-15",
+   "headline": "SpaceX catches Starship Ship 42 with tower after orbit (first upper-stage catch); Booster 22 lost in Gulf",
+   "status": "New",
+   "rationale": "Weekend lead; reuse milestone, SPCX",
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
+  },
+  {
    "id": "electron-100-vulcan-nov14",
    "first_seen": "2026-11-14",
-   "headline": "Electron 100th launch success (iQPS, company release); Vulcan LV-01 retry 12:32 PM ET Nov 14 (40 Amazon Leo)",
+   "headline": "Electron 100th launch success; Vulcan LV-01 scrubbed Nov 13-14 (nitrogen plant), retry Nov 15 12:11 PM ET",
    "status": "Developing",
    "rationale": "Result for Monday",
-   "last_seen": "2026-11-14",
-   "last_report": "reports/2026/11/2026-11-14-sat.html",
-   "updated": "2026-11-14-sat"
+   "last_seen": "2026-11-15",
+   "last_report": "reports/2026/11/2026-11-15-sun.html",
+   "updated": "2026-11-15-sun"
   },
   {
    "id": "scotus-asylum-nov13",
@@ -598,5 +678,5 @@
    "updated": "2026-11-10-pm"
   }
  ],
- "updated": "2026-11-14-sat"
+ "updated": "2026-11-15-sun"
 }
