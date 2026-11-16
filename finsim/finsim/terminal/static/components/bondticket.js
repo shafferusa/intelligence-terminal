@@ -20,6 +20,10 @@
  * still to answer dropped); a trade's answer is said for that trade - after a fresh hand-off it is never painted on the trade shown
  * now (a toast names the trade it was for), and while the ticket is out of sight it is painted AND said in a toast naming it; the fill
  * line names the bond submitted.
+ * FinSim 1.0.7.2 simplify round 9 (R-1): Submit takes a click of its own - the second click of a double click (a third ...) never
+ * trades; one whose first click was elsewhere is said - and the submit key held down trades once (a repeat never trades).  A fill keeps
+ * Submit held: the ticket does not preview the same trade again by itself (the immediate preview after a fill, the 10 s refresh, a
+ * preview still in flight), and Submit waits until the bond, the side or the face is changed or Preview is pressed, saying so.
  */
 (function () {
   'use strict';
@@ -45,6 +49,9 @@
   function rowKeysParen() { var b = kl('grid.buy'), s = kl('grid.sell'); return b || s ? ' (' + [b, s].filter(Boolean).join(' / ') + ' on a row)' : ''; }
   var DEBOUNCE_MS = 300, REPREVIEW_MS = 10000, PREVIEW_TTL_MS = 60000;
   var PV_HINT = 'the preview appears here: price, yield, accrued, fee, settlement';
+  /* simplify round 9: Submit after a fill - held until the bond, the side or the face is changed or Preview is pressed (said) */
+  var HELD_TITLE = 'filled: Submit is held - change the bond, the side or the face, or press Preview, to trade again';
+  var HELD_HINT = 'trade filled (above): change the bond, the side or the face, or press Preview, to trade again';
   var st = null;                                               /* the one ticket's state */
 
   function open(body, fields) {
@@ -65,15 +72,18 @@
     }
     if (fields.instrument_id && (fields.fresh || fields.instrument_id !== st.instrument_id)) { setInstrument(fields.instrument_id, null); }
     if (fields.side) { setSide(String(fields.side).toUpperCase() === 'SELL' ? 'SELL' : 'BUY'); }
-    if (fields.qty != null || fields.face != null) { st.ui.face.value = String(fields.face != null ? fields.face : fields.qty); }
-    schedule();
+    if (fields.qty != null || fields.face != null) { st.ui.face.value = String(fields.face != null ? fields.face : fields.qty); invalidate(); }
+    /* simplify round 9: a trade handed over (fresh, its bond, side or face: each invalidates) ends a fill's hold on Submit; the ticket
+       opened again with none (a dock tab) keeps it - Submit stays held, said, until a field is changed or Preview is pressed */
+    if (!st.filled) { schedule(); }
     return st;
   }
 
   function build(body, account_id) {
     T.clear(body);
     if (st && st.timer) { clearInterval(st.timer); }
-    st = { body: body, account_id: account_id, instrument_id: null, inst: null, side: 'BUY', seq: 0, deal: 0, preview: null, previewAt: 0, deb: null, busy: false, ui: {}, timer: null };
+    st = { body: body, account_id: account_id, instrument_id: null, inst: null, side: 'BUY', seq: 0, deal: 0, preview: null, previewAt: 0, deb: null, busy: false, ui: {}, timer: null,
+           filled: null, submitAt: 0 };           /* simplify round 9: the trade just filled (Submit held until an edit or Preview); Submit's last click of its own */
     var root = T.h('div', { class: 'bt', tabindex: '-1' });
     var acct = T.h('div', { class: 'meta', title: account_id }, 'account ' + (T.accountName ? T.accountName(account_id) : account_id));   /* V104R2-BW-02 (f): the name; the id in the hover */
     var inst = T.h('input', { type: 'text', id: 'ticket-instrument', placeholder: 'CUSIP, coupon or maturity (e.g. 912810 or 2035)', autocomplete: 'off', 'aria-label': 'bond' });
@@ -101,17 +111,30 @@
     st.ui = { root: root, inst: inst, dd: dd, meta: meta, buy: buy, sell: sell, face: face, pv: pv, status: status, submit: submit, result: result, lotNote: lotNote };
     buy.addEventListener('click', function () { setSide('BUY'); schedule(); });
     sell.addEventListener('click', function () { setSide('SELL'); schedule(); });
-    function step(dir) { var lot = (st.inst && st.inst.lot) || 1000; var v = Number(String(face.value).replace(/,/g, '')) || 0; v = Math.max(0, v + dir * lot); face.value = v ? String(v) : ''; schedule(); }
+    function step(dir) { var lot = (st.inst && st.inst.lot) || 1000; var v = Number(String(face.value).replace(/,/g, '')) || 0; v = Math.max(0, v + dir * lot); face.value = v ? String(v) : ''; invalidate(); schedule(); }
     minus.addEventListener('click', function () { step(-1); });
     plus.addEventListener('click', function () { step(1); });
     face.addEventListener('input', function () { invalidate(); schedule(); });
-    /* the registry's ticket keys (keys.js; Settings > Keyboard): the face box submits / previews itself */
+    /* the registry's ticket keys (keys.js; Settings > Keyboard): the face box submits / previews itself; simplify round 9 (R-1): the
+       submit key held down trades once - its repeats never trade */
     face.addEventListener('keydown', function (e) {
-      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); doSubmit(); }
-      else if (T.keys.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); runPreview(); }
+      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
+      else if (T.keys.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); previewNow(); }
     });
-    previewBtn.addEventListener('click', function () { runPreview(); });
-    submit.addEventListener('click', function () { doSubmit(); });
+    previewBtn.addEventListener('click', function () { previewNow(); });
+    /* simplify round 9 (R-1): Submit takes a click of its own, as the order ticket's Submit does - the second click of a double click (a
+       third ...) never trades.  After a click on Submit it is that Submit's double click (filled or said already: nothing more); else the
+       click before it was not on an armed Submit (it handed a trade over, or Submit came under the pointer since): not traded, said */
+    submit.addEventListener('click', function (e) {
+      if (e && e.detail > 1) {
+        if (Date.now() - st.submitAt > 5000) {
+          setStatus('not traded: Submit takes a click of its own (that was the second click of a double click) - click Submit once to trade', 'err');
+          st.holdUntil = Date.now() + 20000;                     /* readable: the 10 s refresh paints no 'ready' over it */
+        }
+        return;
+      }
+      st.submitAt = Date.now(); doSubmit();
+    });
     clear.addEventListener('click', function () { st.instrument_id = null; st.inst = null; inst.value = ''; face.value = ''; meta.textContent = 'pick a bond'; invalidate(); T.clear(pv); T.clear(result); });
     root.addEventListener('keydown', function (e) {
       var typing = e.target && (e.target.tagName === 'INPUT');
@@ -119,14 +142,15 @@
       if (typing) { return; }                                      /* the face box submits itself: no second submit here */
       if (T.keys.is(e, 'ticket.buy')) { setSide('BUY'); schedule(); e.preventDefault(); e.stopPropagation(); }
       else if (T.keys.is(e, 'ticket.sell')) { setSide('SELL'); schedule(); e.preventDefault(); e.stopPropagation(); }
-      else if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); doSubmit(); }
+      else if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
     });
     st.paintKeys = function () {
       meta.textContent = st.instrument_id ? meta.textContent : 'pick a bond from the list' + rowKeysParen() + ' or search here';
-      buy.title = 'BUY' + kp('ticket.buy'); sell.title = 'SELL' + kp('ticket.sell'); submit.title = 'submit' + kp('ticket.submit');
+      buy.title = 'BUY' + kp('ticket.buy'); sell.title = 'SELL' + kp('ticket.sell'); submit.title = st.filled ? HELD_TITLE : 'submit' + kp('ticket.submit');
     };
     typeahead(inst, dd);
-    st.timer = setInterval(function () { if (!document.hidden && st && st.instrument_id && document.body.contains(root) && T.dock.visible()) { runPreview(true); } }, REPREVIEW_MS);
+    /* simplify round 9: never while a fill holds Submit - the ticket does not preview the same trade again by itself */
+    st.timer = setInterval(function () { if (!document.hidden && st && st.instrument_id && !st.filled && document.body.contains(root) && T.dock.visible()) { runPreview(true); } }, REPREVIEW_MS);
   }
 
   function typeahead(input, dd) {
@@ -182,7 +206,11 @@
       schedule();
     }, function (e) { if (st && st.instrument_id === id) { st.ui.meta.textContent = 'unknown bond ' + id + ': ' + (e.message || e.code); } });
   }
-  function invalidate() { st.preview = null; st.ui.submit.disabled = true; }
+  /* every edit of the bond, the side or the face (and a trade handed over) drops the preview and ends a fill's hold on Submit (round 9) */
+  function invalidate() { st.preview = null; release(); st.ui.submit.disabled = true; }
+  function release() { if (st.filled) { st.filled = null; st.ui.submit.title = 'submit' + kp('ticket.submit'); } }
+  /* Preview pressed (the button or the preview key): the owner asks for the trade again, so a fill no longer holds Submit */
+  function previewNow() { release(); runPreview(); }
   function schedule() { clearTimeout(st.deb); st.deb = setTimeout(function () { runPreview(); }, DEBOUNCE_MS); }
   function fieldsNow() { return { account_id: st.account_id, instrument_id: st.instrument_id, side: st.side, face: String(st.ui.face.value || '').replace(/[, ]/g, '') }; }
   function same(a, b) { return a && b && a.account_id === b.account_id && a.instrument_id === b.instrument_id && a.side === b.side && String(a.face) === String(b.face); }
@@ -194,7 +222,7 @@
     var seq = ++st.seq;
     if (!quiet) { setStatus('previewing ...', ''); }
     T.api.mutate('POST', '/api/bonds/preview', f, { retries: 1 }).then(function (p) {
-      if (!st || seq !== st.seq) { return; }
+      if (!st || seq !== st.seq || st.filled) { return; }     /* simplify round 9: a fill holds Submit, whatever answer comes */
       st.preview = p; st.previewAt = Date.now(); st.previewFields = f;
       paintPreview(p);
       var ok = p && p.ok && !(p.blockers || []).length;
@@ -262,6 +290,7 @@
   function unseenTrade(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while the ticket was out of sight: ' + msg, cls, 15000); } }
   function doSubmit() {
     if (!st || st.busy) { return; }
+    if (st.filled) { setStatus('not traded again: ' + st.filled + ' filled - change the bond, the side or the face, or press Preview, to trade again', 'err'); return; }
     var p = st.preview; var f = fieldsNow();
     if (!p || !p.ok || (p.blockers || []).length) { setStatus('preview first: nothing is submitted without a clean preview', 'err'); return; }
     if (!same(f, st.previewFields) || Date.now() - st.previewAt > PREVIEW_TTL_MS) { setStatus('the preview is stale - previewing again', 'err'); runPreview(); return; }
@@ -280,7 +309,12 @@
       if (away) { unseenTrade(away, words, head, 'ok'); } else { T.ui.toast('bond ' + fill.side + ' ' + T.fmt.qty(fill.qty) + ' ' + bond + ' @ ' + fill.price + ' booked', 'ok'); }
       ['positions', 'account_detail', 'accounts', 'orders'].forEach(function (n) { T.poll.kick(n); });
       T.poll.kickAll();
-      invalidate(); runPreview(true);
+      /* simplify round 9 (R-1): the fill holds Submit - never previewed again by itself and re-armed for a second click (the second click
+         of a double click traded it twice): a preview in flight is dropped, and Submit waits for an edit or Preview */
+      invalidate(); clearTimeout(st.deb); st.seq++;
+      st.filled = (fill.fill_id || 'the trade') + ' (' + words + ')';
+      st.ui.submit.title = HELD_TITLE;
+      T.clear(st.ui.pv).appendChild(T.h('div', { class: 'hint' }, HELD_HINT));
     }, function (e) {
       if (me !== st || deal !== me.deal) { lateTrade(words, 'refused, nothing traded: ' + T.api.describe(e), 'err'); return; }
       st.busy = false;

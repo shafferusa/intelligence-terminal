@@ -20,6 +20,10 @@
  * Confirm (Ctrl+Enter) = POST /api/fx/deal with one request id per click (503 retries the same id; X-Replayed is 'already
  * submitted'); it is enabled only by a fresh preview without blockers matching the fields.  The last deals of the account are
  * listed underneath (forwards with their computed mark-to-market).  Every figure is the server's.  ASCII only.
+ * FinSim 1.0.7.2 simplify round 9 (R-1): Confirm takes a click of its own - the second click of a double click (a third ...) never
+ * books; one whose first click was elsewhere is said - and the submit key held down books once (a repeat never deals).  A deal booked
+ * keeps Confirm held: the desk does not preview the same deal again by itself (the immediate preview after a booking, the 10 s refresh,
+ * a preview still in flight), and Confirm waits until a field is changed or Preview is pressed, saying so.
  */
 (function () {
   'use strict';
@@ -44,6 +48,8 @@
   var DEFAULT_CCYS = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'NZD'];
   var DEBOUNCE_MS = 300, REPREVIEW_MS = 10000, PREVIEW_TTL_MS = 60000, CCY_TTL_MS = 60000;
   var DEFAULT_TENOR = '3M', PV_HINT = 'the preview appears here: rate, spread, value date, both legs and how the sold currency is funded';
+  /* simplify round 9: Confirm after a booking - held until a field is changed or Preview is pressed (said on the button and the preview) */
+  var HELD_TITLE = 'booked: Confirm is held - change a field or press Preview to deal again', HELD_HINT = 'deal booked (above): change a field or press Preview to deal again';
   /* the keys in force (keys.js registry, Settings > Keyboard; KB-R1-01): the desk previews with 'Preview the order' (Enter)
      and confirms with 'Submit the order' (Ctrl+Enter) */
   function kl(id) { return T.keys && T.keys.label ? T.keys.label(id) : ''; }
@@ -84,7 +90,8 @@
   function build(body, acct) {
     T.clear(body);
     if (st && st.timer) { clearInterval(st.timer); }
-    st = { body: body, account_id: acct, mode: 'SPOT', buy: 'EUR', sell: 'USD', unit: 'EUR', seq: 0, deal: 0, preview: null, previewAt: 0, previewFields: null, deb: null, busy: false, ui: {}, timer: null, holdUntil: 0 };
+    st = { body: body, account_id: acct, mode: 'SPOT', buy: 'EUR', sell: 'USD', unit: 'EUR', seq: 0, deal: 0, preview: null, previewAt: 0, previewFields: null, deb: null, busy: false, ui: {}, timer: null, holdUntil: 0,
+           booked: null, confirmAt: 0 };          /* simplify round 9: the deal just booked (Confirm held until an edit or Preview); Confirm's last click of its own */
     var root = T.h('div', { class: 'fxd', tabindex: '-1' });
     var meta = T.h('div', { class: 'meta', title: acct }, 'account ' + (T.accountName ? T.accountName(acct) : acct));
     var spotB = T.h('button', { class: 'btn on', title: 'spot: value T+2 (USD/CAD T+1)' }, 'Spot');
@@ -128,23 +135,37 @@
     unitBuy.addEventListener('click', function () { st.unit = st.buy; paintUnits(); invalidate(); schedule(); });
     unitSell.addEventListener('click', function () { st.unit = st.sell; paintUnits(); invalidate(); schedule(); });
     amount.addEventListener('input', function () { invalidate(); schedule(); });
+    /* simplify round 9 (R-1): the submit key held down books once - its repeats never deal */
     amount.addEventListener('keydown', function (e) {
-      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); doSubmit(); }
-      else if (T.keys.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); runPreview(); }
+      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
+      else if (T.keys.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); previewNow(); }
     });
     tenor.addEventListener('change', function () { showTenor(); invalidate(); schedule(); });
     vdate.addEventListener('change', function () { invalidate(); schedule(); });
-    previewBtn.addEventListener('click', function () { runPreview(); });
-    confirm.addEventListener('click', function () { doSubmit(); });
+    previewBtn.addEventListener('click', function () { previewNow(); });
+    /* simplify round 9 (R-1): Confirm takes a click of its own, as the order ticket's Submit does - the second click of a double click (a
+       third ...) never books.  After a click on Confirm it is that Confirm's double click (booked or said already: nothing more); else the
+       click before it was not on an armed Confirm (it handed a deal over, or Confirm came under the pointer since): not booked, said */
+    confirm.addEventListener('click', function (e) {
+      if (e && e.detail > 1) {
+        if (Date.now() - st.confirmAt > 5000) {
+          setStatus('not booked: Confirm takes a click of its own (that was the second click of a double click) - click Confirm once to book the deal', 'err');
+          st.holdUntil = Date.now() + 20000;                     /* readable: the 10 s refresh paints no 'ready' over it */
+        }
+        return;
+      }
+      st.confirmAt = Date.now(); doSubmit();
+    });
     clear.addEventListener('click', function () { amount.value = ''; invalidate(); T.clear(pv).appendChild(T.h('div', { class: 'hint' }, 'enter an amount')); T.clear(result); setStatus('', ''); });
     root.addEventListener('keydown', function (e) {
-      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); doSubmit(); }
+      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
     });
-    st.paintKeys = function () { confirm.title = 'book the deal' + kp('ticket.submit'); };
+    st.paintKeys = function () { confirm.title = st.booked ? HELD_TITLE : 'book the deal' + kp('ticket.submit'); };
     fillCcys(DEFAULT_CCYS);
     currencies(acct).then(function (list) { if (st && st.ui.root === root) { fillCcys(list); } });
     st.timer = setInterval(function () {
-      if (!document.hidden && st && document.body.contains(root) && T.dock.visible() && parseAmount(st.ui.amount.value)) { runPreview(true); }
+      /* simplify round 9: never while a deal booked holds Confirm - the desk does not preview the same deal again by itself */
+      if (!document.hidden && st && !st.booked && document.body.contains(root) && T.dock.visible() && parseAmount(st.ui.amount.value)) { runPreview(true); }
       if (st && !document.body.contains(root)) { clearInterval(st.timer); }
     }, REPREVIEW_MS);
     loadRecent();
@@ -219,11 +240,17 @@
     if (f.amount_ccy) { st.unit = String(f.amount_ccy).toUpperCase(); }
     if (f.amount != null || f.qty != null) { st.ui.amount.value = String(f.amount != null ? f.amount : f.qty); }
     paintUnits();
-    invalidate();
-    schedule();
+    /* simplify round 9: a deal handed over (fresh, or any field of one) ends a booked deal's hold on Confirm; the desk opened again with
+       none (a dock tab, a page's "FX desk" button) keeps it - Confirm stays held, said, until a field is changed or Preview is pressed */
+    if (f.fresh || pair || buy || sell || mode || f.tenor || f.value_date || f.amount_ccy || f.amount != null || f.qty != null) { release(); }
+    if (!st.booked) { invalidate(); schedule(); }
     if (st.ui.amount && !f.no_focus) { try { st.ui.amount.focus({ preventScroll: true }); } catch (e) { /* focus is a convenience */ } }
   }
-  function invalidate() { st.preview = null; st.ui.confirm.disabled = true; }
+  /* every edit of a field (and a new deal handed over) drops the preview and ends a booked deal's hold on Confirm (simplify round 9) */
+  function invalidate() { st.preview = null; release(); st.ui.confirm.disabled = true; }
+  function release() { if (st.booked) { st.booked = null; st.ui.confirm.title = 'book the deal' + kp('ticket.submit'); } }
+  /* Preview pressed (the button or the preview key): the owner asks for the deal again, so a booked deal no longer holds Confirm */
+  function previewNow() { release(); runPreview(); }
   function schedule() { clearTimeout(st.deb); st.deb = setTimeout(function () { runPreview(); }, DEBOUNCE_MS); }
   function fieldsNow() {
     var f = { account_id: st.account_id, kind: st.mode, buy_ccy: st.buy, sell_ccy: st.sell, amount: parseAmount(st.ui.amount.value), amount_ccy: st.unit };
@@ -247,7 +274,7 @@
     var seq = ++st.seq;
     if (!quiet) { setStatus('previewing ...', ''); }
     T.api.mutate('POST', '/api/fx/preview', f, { retries: 1 }).then(function (p) {
-      if (!st || seq !== st.seq) { return; }
+      if (!st || seq !== st.seq || st.booked) { return; }     /* simplify round 9: a booked deal holds Confirm, whatever answer comes */
       st.preview = p; st.previewAt = Date.now(); st.previewFields = f;
       paintPreview(p);
       var ok = p && p.ok && !(p.blockers || []).length;
@@ -336,6 +363,7 @@
   function unseenDeal(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while the desk was out of sight: ' + msg, cls, 15000); } }
   function doSubmit() {
     if (!st || st.busy) { return; }
+    if (st.booked) { setStatus('not booked again: ' + st.booked + ' was booked - change a field or press Preview to deal again', 'err'); return; }
     var p = st.preview; var f = fieldsNow();
     if (!p || !p.ok || (p.blockers || []).length) { setStatus('preview first: nothing is dealt without a clean preview', 'err'); return; }
     if (!same(f, st.previewFields) || Date.now() - st.previewAt > PREVIEW_TTL_MS) { setStatus('the preview is stale - previewing again', 'err'); runPreview(); return; }
@@ -356,7 +384,13 @@
       T.clear(st.ui.result).appendChild(box);
       if (away) { unseenDeal(away, words, head, 'ok'); } else { T.ui.toast('FX ' + (d.kind === 'FORWARD' ? 'forward' : 'spot') + ' ' + (d.deal_id || '') + ' booked', 'ok'); }
       T.poll.kickAll();
-      invalidate(); runPreview(true); loadRecent();
+      /* simplify round 9 (R-1): the deal booked holds Confirm - never previewed again by itself and re-armed for a second click (the
+         second click of a double click booked it twice): a preview in flight is dropped, and Confirm waits for an edit or Preview */
+      invalidate(); clearTimeout(st.deb); st.seq++;
+      st.booked = (d.deal_id || 'the deal') + ' (' + words + ')';
+      st.ui.confirm.title = HELD_TITLE;
+      T.clear(st.ui.pv).appendChild(T.h('div', { class: 'hint' }, HELD_HINT));
+      loadRecent();
     }, function (e) {
       if (me !== st || deal !== me.deal) { lateDeal(words, 'refused, nothing booked: ' + T.api.describe(e), 'err'); return; }
       st.busy = false;

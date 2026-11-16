@@ -269,6 +269,7 @@
   /* ---------------------------------------------------------------- state ----------------------------------------- */
   var orderGen = 0;                                  /* the number of the order the ticket shows (st.gen); see the header */
   var submitClickAt = 0;                             /* simplify round 8: when Submit last took a click of its own (see wire) */
+  var packageClickAt = 0;                            /* simplify round 9: when Submit package last took one (see submitPackage) */
   function fresh(account_id) {
     return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
              hedge_pos: null, hedge_for: null, fx_convert: false,
@@ -374,7 +375,8 @@
       document.addEventListener('keydown', function (e) {
         if (!ui || !ui.root.isConnected || !T.dock.visible()) { return; }
         if (T.ui && T.ui.dialogs && T.ui.dialogs()) { return; }
-        if (T.keys.is(e, 'ticket.submit') && !ui.root.contains(e.target)) { e.preventDefault(); submit(); }
+        /* simplify round 9: the key held down submits once - its repeats never send */
+        if (T.keys.is(e, 'ticket.submit') && !ui.root.contains(e.target)) { e.preventDefault(); if (!e.repeat) { submit(); } }
       });
       T.state.on('keybinds', function () { if (ui && ui.root.isConnected) { paintKeyHints(); } });
       T.state.on('route', function (r) { if (ui && ui.root.isConnected && r && r.account && st && r.account !== st.account_id) { reset(r.account); } });
@@ -992,12 +994,20 @@
     body.confirm_large = !!opts.confirm_large;
     send(body, rid, st.mode || 'single');
   }
-  function submitPackage(body, spec) {
-    if (st.submitting) { return; }
+  /* the hedge panel's Submit package (hedge.js hands its click along); true when the package was sent.  Simplify round 9 (R-3): it takes
+     a click of its own, as Submit does - the second click of a double click (a third ...) never sends; after a click of its own it is that
+     button's double click (sent or said already: nothing more), else the click before it was elsewhere: not sent, said */
+  function submitPackage(body, spec, click) {
+    if (click && click.detail > 1) {
+      if (Date.now() - packageClickAt > 5000) { paintStatus('not sent: Submit package takes a click of its own (that was the second click of a double click) - click Submit package once to send', 'err'); }
+      return false;
+    }
+    packageClickAt = Date.now();
+    if (st.submitting) { return false; }
     var rid = T.uuid();
     body = Object.assign({}, body, { confirm_large: false });
     st.package_spec = spec || null;
-    send(body, rid, 'package');
+    return send(body, rid, 'package');
   }
   /* 1.0.7.2 sixth review: what an amend / replace of a shares order did to its hedge legs (the answer's hedge_legs_follow: the legs still
      waiting take its time in force; hedge_legs_longer: legs already released for shares bought now work as long as it - never shortened) */
@@ -1029,7 +1039,7 @@
   function unseenAnswer(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while its ticket was out of sight: ' + msg, cls, 15000); } }
   function send(body, rid, kind) {
     /* simplify round 7: every send (a submit, a package, the large order's confirmation, a reviewed diff) - never while the box names
-       another symbol than the order filled in */
+       another symbol than the order filled in; true only when the request went out (simplify round 9: the package button is held then) */
     var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return; }
     var gen = st.gen, words = orderWords(kind);
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
@@ -1116,6 +1126,7 @@
       unseenAnswer(away, words, 'refused: ' + T.api.describe(e), 'err');
       if (e.status === 409 && (e.code === 'QUOTE_STALE' || e.code === 'INSUFFICIENT_FUNDS')) { scheduleReprev(); }
     });
+    return true;
   }
   function acceptStale() {
     var s = st.stale; if (!s) { return; }
@@ -1145,7 +1156,7 @@
   var QTY_STEP = { 'ticket.qty_up': 1, 'ticket.qty_up_10': 10, 'ticket.qty_down': -1, 'ticket.qty_down_10': -10 };
   function onKey(e) {
     var K = T.keys;
-    if (K.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); submit(); return; }
+    if (K.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { submit(); } return; }   /* round 9: a repeat never sends */
     if (K.is(e, 'ticket.clear')) { e.preventDefault(); e.stopPropagation(); if (!ui.dd.hidden) { ui.dd.hidden = true; return; } clear(); return; }
     if (K.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); if (e.target === ui.inst) { resolveTyped(); } else { runPreview(true); } return; }
     var id = K.action(e, 'ticket'); if (!id) { return; }                 /* a single-character key never matches while typing */

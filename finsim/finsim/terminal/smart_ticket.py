@@ -61,9 +61,12 @@ Conventions (sentence SMART_TICKET)
   "Look it up").  Options in this order: the cached chain row (the standard root first; two roots for one expiry, right and strike ->
   ROOT_CHOICE, never a silent pick, offering only the contracts the order ticket lists - in the master, or on a root that names its
   underlying as ``products.options.underlying_of`` reads it; an adjusted root outside the master is named and not offered, alone it is
-  NOT_TRADEABLE_HERE, as an OCC id typed whole on such a root is: simplify round 7), the master's option rows, else the OCC id built by ``occ_symbol`` and flagged OPTION_UNVERIFIED with
+  NOT_TRADEABLE_HERE, as an OCC id typed whole on such a root is: simplify round 7), the master's option rows (simplify round 9: by
+  the same root rule - the standard root first, two roots ROOT_CHOICE, so the same words read alike with the chain cached or not; only
+  an ACTIVE contract, one that is not is NOT_TRADEABLE_HERE), else the OCC id built by ``occ_symbol`` and flagged OPTION_UNVERIFIED with
   "Load the chain" (the preview refuses NOT_LISTED until the chain lists it: nothing is invented).  An expiry or strike that is not
-  listed is NEVER snapped: it is a blocker with the nearest listed values as choices.  Futures by id, root + month (+ year) on the listing
+  listed is NEVER snapped: it is a blocker with the nearest listed values as choices; an expiry that has passed is EXPIRY_NOT_LISTED,
+  also in an OCC id typed whole of a contract in the master (simplify round 9).  Futures by id, root + month (+ year) on the listing
   rule, or front / active through ``api_products.active_months``.  FX, bonds, private names and swaps open their own ticket
   (KIND_OWN_TICKET with an action), which starts a new trade from the side, the amount and the account only: a typed term it cannot
   take (a price other than market, a time in force, another account, a side other than buy / sell, 'all' / 'half' or a unit, a close,
@@ -2959,10 +2962,37 @@ class Resolver:
                                       f" {'are' if len(shut) > 1 else 'is'} not offered: " + self._unlisted_words(under.symbol) if shut else ""),
                                    leg["span"], choices))
             m = self.master.get(row.occ, self.conn)
+            if m is not None and m.status != "ACTIVE":
+                # simplify round 9: a contract the master has as expired (its expiry job ran after the last close, the chain cached before
+                # it) is refused by the order route (INSTRUMENT_EXPIRED): never a ready card
+                flags.append(_flag("NOT_TRADEABLE_HERE", f"{row.occ} is {str(m.status).lower()} in the instrument master", leg["span"]))
+                return None
             return self._opt_out(under, row.occ, d, right, k, self._root(row.occ), std, True, m, row, chain)
-        for m in self._master_options(uid, d):
-            if m.right == right and m.strike is not None and Decimal(m.strike) == k and (not root_filter or self._root(m.instrument_id) == root_filter):
-                return self._opt_out(under, m.instrument_id, d, right, k, self._root(m.instrument_id), std, True, m, None, chain)
+        # simplify round 9: the master's option rows of these terms are read by the chain's root rule - the standard root first, two roots
+        # ROOT_CHOICE - never the first row by instrument id, so the same words read alike with the chain cached or not (after a restart,
+        # or the name dropped from the option chains kept live); only a contract the order route takes (ACTIVE) is a candidate
+        found = [m for m in self._master_options(uid, d)
+                 if m.right == right and m.strike is not None and Decimal(m.strike) == k and (not root_filter or self._root(m.instrument_id) == root_filter)]
+        if found:
+            live: Dict[str, Any] = {}
+            for m in found:
+                if m.status == "ACTIVE":
+                    live.setdefault(self._root(m.instrument_id), m)
+            if not live:
+                flags.append(_flag("NOT_TRADEABLE_HERE", ", ".join(f"{m.instrument_id} is {str(m.status).lower()}" for m in found) + " in the instrument master",
+                                   leg["span"]))
+                return None
+            roots = sorted(live, key=lambda x: (0 if _norm_root(x) == _norm_root(std) else 1, x))
+            if len(roots) > 1:
+                choices = []
+                for rt in roots:
+                    txt = ed["root"](live[rt].instrument_id)
+                    if txt:
+                        choices.append({"label": f"{live[rt].instrument_id} (root {rt}{', the standard root' if _norm_root(rt) == _norm_root(std) else ''})", "clause": txt})
+                flags.append(_flag("ROOT_CHOICE", f"the instrument master lists {len(roots)} {under.symbol} contracts for {d} {_kstr(k)} {_call_put(right)} (roots "
+                                   f"{', '.join(roots)}): pick one", leg["span"], choices))
+            m = live[roots[0]]
+            return self._opt_out(under, m.instrument_id, d, right, k, self._root(m.instrument_id), std, True, m, None, chain)
         if snap is not None:
             exps = list(snap.expiries())
             if d not in exps:
@@ -2996,6 +3026,12 @@ class Resolver:
             return None
         root, dd, right, k = p
         d = dd.isoformat()
+        # simplify round 9 (R-4): an expiry that has passed is refused before any contract is read - one in the instrument master or on a
+        # cached chain too - as its terms typed are (EXPIRY_NOT_LISTED; the order route answers 400 INSTRUMENT_EXPIRED): never a card shown
+        # ready that cannot be sent
+        if d < self.today.isoformat():
+            flags.append(_flag("EXPIRY_NOT_LISTED", f"{occ} expired on {d}", span))
+            return None
         # simplify round 7: the contract itself first - one in the instrument master reads on its own underlying, whatever its root (an
         # adjusted series such as ACME1 listed there with ACME as its underlying); else the underlying its root names
         inst = self.master.get(occ, self.conn)
@@ -3020,13 +3056,13 @@ class Resolver:
         snap = self._snap(under.instrument_id)
         chain = self._chain_info(under, snap, leg, under.instrument_id) if snap is not None else None
         if inst is not None:
+            if inst.status != "ACTIVE":                 # simplify round 9: what the order route refuses (INSTRUMENT_EXPIRED) is refused here
+                flags.append(_flag("NOT_TRADEABLE_HERE", f"{occ} is {str(inst.status).lower()} in the instrument master", span))
+                return None
             return self._opt_out(under, occ, d, right, k, root, std, True, inst, None, chain)
         row = next((r for r in self._rows(snap, d) if str(r.occ).upper() == occ), None)
         if row is not None:
             return self._opt_out(under, row.occ, d, right, k, root, std, True, None, row, chain)
-        if d < self.today.isoformat():
-            flags.append(_flag("EXPIRY_NOT_LISTED", f"{occ} expired on {d}", span))
-            return None
         if snap is not None:
             flags.append(_flag("STRIKE_NOT_LISTED", f"{occ} is not on the cached {under.symbol} chain: nothing is snapped", span))
             return None

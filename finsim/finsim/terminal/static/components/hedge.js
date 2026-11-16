@@ -1,7 +1,7 @@
 /* Hedge panel (TERMINAL_DESIGN.md s10.9, s13.16, s17.6; WP-13): two tabs inside the ticket.
  *
  *   var h = T.components.hedge.mount(el, {account_id, instrument_id, side, qty, inst, onPick(hedge|null), onLegs(ids),
- *                                        onSubmitPackage(body, spec), tif()});
+ *                                        onSubmitPackage(body, spec, click) -> true when sent, tif()});
  *   h.update({account_id, instrument_id, side, qty, inst});   the ticket's fields changed (debounced by the ticket)
  *   h.seed(previewHedgesBlock);   the preview's `hedges` block: ready -> rendered without another fetch (single shared fetch)
  *   h.load();                     GET /api/hedges (202 -> spinner, polled; one in-flight promise per key, shared)
@@ -22,7 +22,9 @@
  * strike), POST /api/strategies/preview (202 while the chain loads) -> per-leg prices with freshness, totals (net
  * premium, fees, net cash, delta / vega / theta, incremental option margin ONCE for the package, futures IM), the
  * expiry payoff grid (+/-35 %, intrinsic at the near expiry, drawn here from the server's points - never computed) and
- * ONE Submit: an option-only package fills all-or-none (the AON sentence is shown), the others sequentially.
+ * ONE Submit: an option-only package fills all-or-none (the AON sentence is shown), the others sequentially.  FinSim 1.0.7.2 simplify
+ * round 9 (R-3): Submit package takes a click of its own (the ticket's rule: the second click of a double click never sends), and a
+ * priced package is sent once - its button held, said, until a new preview of the package replaces it.
  *
  * Build 2 (P10):
  * - POSITION MODE (USX-12 / ORC-4; mount opts.mode 'position'): GET /api/hedges?mode=position lists the hedges of the
@@ -524,10 +526,14 @@
       if (fm !== 'AON') { box.appendChild(T.h('div', { class: 'hint' }, 'sequential: the stock / futures leg is the primary; the option legs wait for it (WAITING_PARENT), sized to its filled quantity x ratio, and can rest')); }
       if (spec.strategy_key === 'POSITION_HEDGE') { box.appendChild(T.h('div', { class: 'hint' }, 'hedges the position already held: only these option legs trade, together or not at all; the payoff includes the position (not traded)')); }
       var canSubmit = !(spec.blockers && spec.blockers.length) && (spec.legs || []).length && !(spec.legs || []).some(function (l) { return l.available === false; });
-      var btn = T.h('button', { class: 'btn primary', id: 'hg-submit', disabled: !canSubmit, title: fm === 'AON' ? 'one submit: every leg fills together or nothing fills' : 'one submit: primary + hedge legs' },
-        fm === 'AON' ? 'Submit package (all-or-none)' : 'Submit package (sequential)');
-      btn.addEventListener('click', function () {
-        if (!opts.onSubmitPackage) { return; }
+      /* simplify round 9 (R-3): a priced package is sent once - after its Submit package the button is held, said on it, until a new
+         preview of the package (its own button, a template, parameter or candidate picked again) replaces it */
+      var btn = T.h('button', { class: 'btn primary', id: 'hg-submit', disabled: !canSubmit || !!spec.$sent,
+                                title: spec.$sent ? 'this priced package was sent: preview the package again to send another'
+                                                 : (fm === 'AON' ? 'one submit: every leg fills together or nothing fills' : 'one submit: primary + hedge legs') },
+        spec.$sent ? 'Package sent - preview it again to send another' : (fm === 'AON' ? 'Submit package (all-or-none)' : 'Submit package (sequential)'));
+      btn.addEventListener('click', function (e) {
+        if (!opts.onSubmitPackage || spec.$sent) { return; }
         var pk;
         if (spec.strategy_key === 'POSITION_HEDGE') {
           /* the hedge of a position held: the same candidate and edits the preview priced (no order in the underlying) */
@@ -541,7 +547,10 @@
           if (p.other) { pk.other = p.other; }
           if (p.underlying) { pk.underlying = p.underlying; }
         }
-        opts.onSubmitPackage({ account_id: st.account_id, package: pk, tif: opts.tif ? opts.tif() : 'DAY', preview_id: spec.preview_id || null }, spec);
+        /* the click goes with it: the ticket takes a click of its own only (the second click of a double click never sends); true when sent */
+        if (opts.onSubmitPackage({ account_id: st.account_id, package: pk, tif: opts.tif ? opts.tif() : 'DAY', preview_id: spec.preview_id || null }, spec, e) === true) {
+          spec.$sent = true; paint();
+        }
       });
       box.appendChild(T.h('div', { class: 'row' }, btn, T.h('span', { class: 'hint' }, spec.preview_id ? 'preview ' + spec.preview_id : '')));
       return box;
