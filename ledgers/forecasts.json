@@ -7592,6 +7592,56 @@
    "probability": "75-85%",
    "basis": "Set for Nov 15 12:11 PM; two ground-nitrogen scrubs; vehicle reported healthy; ground systems are a separate scrub risk",
    "status": "open"
+  },
+  {
+   "id": "2026-11-16-am-1",
+   "date": "2026-11-16",
+   "slot": "am",
+   "forecast": "The S&P 500 closes Monday Nov 16 below Friday's 7,561.67.",
+   "horizon": "2026-11-16",
+   "probability": "55-65%",
+   "basis": "ES futures -0.31% and NQ -0.80% at 06:27 ET after Asia chip rout; defensives offset",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-am-2",
+   "date": "2026-11-16",
+   "slot": "am",
+   "forecast": "The Empire State manufacturing index for November prints below October's 25.5.",
+   "horizon": "2026-11-16",
+   "probability": "70-80%",
+   "basis": "Consensus 17.6-19 after an unusually strong October",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-am-3",
+   "date": "2026-11-16",
+   "slot": "am",
+   "forecast": "The S&P 500 closes Fri Nov 20 more than 3% below 7,561.67 (below ~7,335).",
+   "horizon": "2026-11-20",
+   "probability": "20-30%",
+   "basis": "Nasdaq-100 below 200-day, Asia rout, Nvidia governance pressure vs firm credit and defensive rotation",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-am-4",
+   "date": "2026-11-16",
+   "slot": "am",
+   "forecast": "Japan conducts yen intervention that is confirmed or officially acknowledged by Nov 20.",
+   "horizon": "2026-11-20",
+   "probability": "15-25%",
+   "basis": "USD/JPY ~159.6-160; summer intervention near 164; weak Q3 GDP; no new MOF escalation today",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-am-5",
+   "date": "2026-11-16",
+   "slot": "am",
+   "forecast": "The Nov 18 20-year Treasury bond auction tails (stops above the when-issued yield).",
+   "horizon": "2026-11-18",
+   "probability": "50-65%",
+   "basis": "All three refunding auctions tailed last week; least liquid point of the curve",
+   "status": "open"
   }
  ]
 }

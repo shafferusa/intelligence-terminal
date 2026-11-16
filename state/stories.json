@@ -1,14 +1,94 @@
 {
  "stories": [
   {
+   "id": "iran-bahrain-hormuz-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "IRGC claims 6 drones at Riffa radar Nov 15 (Bahrain: several intercepted; no CENTCOM statement); mine claims on 2 tankers unconfirmed; UKMTO tanker hit by projectile Nov 16; 3rd carrier (single)",
+   "status": "Disputed",
+   "rationale": "Oil/escalation",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "bitcoin-64k-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "BTC $64,557 06:40 ET (Yahoo); low ~$62,006 last week; ETF outflows -$1.07B wk; Strategy avg cost ~$75,456",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist; <$60K forecast open",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "measles-elimination-lost-nov13",
+   "first_seen": "2026-11-16",
+   "headline": "PAHO: US loses measles elimination status (WSJ first; WaPo/CNN/CBS); ~5,412 cases this year",
+   "status": "New",
+   "rationale": "Public health",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "faa-router-cause-nov15",
+   "first_seen": "2026-11-16",
+   "headline": "FAA ground stop traced to L3Harris-installed router flooding FTI network (>1,000 attempts / 4-5 s); function disabled on ~60 routers; no cyber; Juniper says device didn't fail",
+   "status": "Materially changed",
+   "rationale": "Infrastructure; LHX",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "vulcan-lv01-failure-nov15",
+   "first_seen": "2026-11-16",
+   "headline": "Vulcan VC6L LV-01 failed ~10 min into flight Nov 15; all 40 Amazon Leo sats lost; ULA first total loss; stage disputed (ULA: during Centaur burn); Blue Origin assisting (Reuters, single); no FAA statement found",
+   "status": "New",
+   "rationale": "Space/AMZN; NSSL recert delayed",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "china-japan-data-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "China Oct retail +0.4% (cons 0.8), IP +4.8% (5.3), FAI YTD -8.1% (-7.0); Japan Q3 GDP -0.1% ann. (poll +0.3)",
+   "status": "New",
+   "rationale": "Global growth; pre-APEC",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "bessent-nvidia-nov15",
+   "first_seen": "2026-11-16",
+   "headline": "Bessent (Fox, Nov 15): asks if Nvidia 'goosed' revenue via shell buyers to China; 'culture of noncompliance'; 10 days for board/counsel; urges outside CEO; no Nvidia response found",
+   "status": "New",
+   "rationale": "Policy pressure on AI bellwether before earnings",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "asia-chip-rout-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "Taiex -6.03% 41,040, Kospi -3.59% ~5,100 (SK Hynix -7.9%), Nikkei -2.42% 59,662 (Kioxia -7.7%); NQ fut -0.80%, ES -0.31% 06:27 ET",
+   "status": "New",
+   "rationale": "Lead am Nov 16: AI supply-chain selloff spreads to Asia before NVDA",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
    "id": "van-hollen-schumer",
    "first_seen": "2026-11-15",
    "headline": "Van Hollen Sunday-show push vs Schumer for Democratic leader",
    "status": "Developing",
    "rationale": "Senate leadership",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "watch-fomc-minutes-nov18",
@@ -16,9 +96,9 @@
    "headline": "WATCH: FOMC minutes Wed 2 PM; retail sales Tue 8:30; Warsh Mon noon",
    "status": "Scheduled",
    "rationale": "Dec hike ~90% priced",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "watch-apec-shenzhen-nov19",
@@ -26,9 +106,9 @@
    "headline": "WATCH: APEC Shenzhen; Trump-Xi bilateral + Trump-Xi-Putin Nov 19",
    "status": "Scheduled",
    "rationale": "Chips/trade/Iran",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "watch-anthropic-ipo-nov18",
@@ -36,9 +116,9 @@
    "headline": "WATCH: Anthropic IPO pricing Wed Nov 18, trading Thu Nov 19 (ANT, $70-78)",
    "status": "Scheduled",
    "rationale": "Largest AI listing",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "watch-nvda-q3-nov17",
@@ -46,9 +126,9 @@
    "headline": "WATCH: Nvidia Q3 FY27 Tue Nov 17 amc; cons ~$109.2B/$2.48; implied ~9%",
    "status": "Scheduled",
    "rationale": "Week's main market event",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "iran-bahrain-drones-nov15",
@@ -83,12 +163,12 @@
   {
    "id": "electron-100-vulcan-nov14",
    "first_seen": "2026-11-14",
-   "headline": "Electron 100th launch success; Vulcan LV-01 scrubbed Nov 13-14 (nitrogen plant), retry Nov 15 12:11 PM ET",
-   "status": "Developing",
+   "headline": "Electron 100th launch success; Vulcan LV-01 scrubbed Nov 13-14 (nitrogen plant), retry Nov 15 12:11 PM ET -> Nov 15: Vulcan launched and failed (see vulcan-lv01-failure-nov15)",
+   "status": "Resolved",
    "rationale": "Result for Monday",
    "last_seen": "2026-11-15",
    "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
+   "updated": "2026-11-16-am"
   },
   {
    "id": "scotus-asylum-nov13",
@@ -96,9 +176,9 @@
    "headline": "SCOTUS grants administration appeal on border asylum restrictions (lower courts ruled against); no argument date",
    "status": "New",
    "rationale": "Weekend news; legal stage: cert granted",
-   "last_seen": "2026-11-14",
-   "last_report": "reports/2026/11/2026-11-14-sat.html",
-   "updated": "2026-11-14-sat"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "apec-trilateral-nov19",
@@ -146,9 +226,9 @@
    "headline": "Week Nov 6-13: 2Y 4.51->4.88 (+37), 10Y 4.86->5.15 (+29), 30Y +21; 10Y real 2.63->2.91, breakeven flat 2.24; three tailing auctions",
    "status": "Continuing",
    "rationale": "Keep on watchlist: real yields, 10Y >=5% call",
-   "last_seen": "2026-11-14",
-   "last_report": "reports/2026/11/2026-11-14-sat.html",
-   "updated": "2026-11-14-sat"
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "bitcoin-below-70k-nov13",
@@ -519,164 +599,7 @@
    "last_seen": "2026-11-11",
    "last_report": "reports/2026/11/2026-11-11-pm.html",
    "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "oil-strike-pause-nov10",
-   "headline": "Brent settles ~$92.76 (+1.39%), WTI $86.53 (Reuters via summaries, single chain); fell >$3 early on Trump 'quite unlikely' strikes, recovered on Rezaei denial; EIA delayed to Thu",
-   "status": "Continuing",
-   "rationale": "Oil/Iran",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "dollar-gold-nov11",
-   "headline": "ECB fix EURUSD 1.1127 (from 1.1215), USDJPY 159.23; Dec gold ~$3,996 2:51 PM; GLD -1.13%; BTC ~$74,600 +1%; FedWatch ~91% 25bp / 9% 50bp",
-   "status": "New",
-   "rationale": "Hike pricing via FX/metals",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "europe-record-nov11",
-   "headline": "Stoxx 600 record close 663.05 (+0.72%), DAX +1.12%, FTSE +0.78%; VGK -0.22% on euro; EEM +2.43%",
-   "status": "New",
-   "rationale": "Global equities",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "senate-uncalled-nov11",
-   "headline": "MS: Colom lead >3,000 (3,041-3,783 by source) after Hinds affidavits; Hyde-Smith preservation letter; counties certify by Fri. AK: Peltola +4,250 first-choice; RCV tab Nov 18",
-   "status": "Developing",
-   "rationale": "Senate margin",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "allegheny-budget-2027",
-   "headline": "Innamorato 2027 operating $1.25B, no tax hike, no layoffs, +4.7%; $160M capital; closes 150 vacancies (~$9M) (WPXI, single)",
-   "status": "New",
-   "rationale": "Local county budget",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "coreweave-q3-nov10",
-   "headline": "CRWV Q3 rev $3.66B vs ~$3.54B; 2026 guide $13.0-13.3B; backlog ~$132.5B; premarket +13-15% Nov 11; NQ futures +1.91%, ES +0.89% at 06:28 ET; Taiex +3.6%, Kospi +2.6%",
-   "status": "Materially changed",
-   "rationale": "Lead am Nov 11: AI financing question; drives tech futures",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-am.html",
-   "updated": "2026-11-11-am"
-  },
-  {
-   "id": "fed-hawks-nov11",
-   "first_seen": "2026-11-11",
-   "headline": "Logan: at least two more 25bp hikes, may move faster this winter; Goolsbee: CPI 'borderline disturbing'; FedWatch Dec 25bp ~88-91%, 50bp ~9-11%; Goldman adds Mar 2027 hike (secondary)",
-   "status": "New",
-   "rationale": "Fed path repricing after hot CPI",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-am.html",
-   "updated": "2026-11-11-am"
-  },
-  {
-   "id": "bessent-china-nov10",
-   "first_seen": "2026-11-11",
-   "headline": "Bessent NY speech: 'de-risk, not decouple'; planned US-China AI incident channel; Xie Feng 'red lines'; Trump-Xi expected at APEC Shenzhen next week",
-   "status": "New",
-   "rationale": "Trade/China tail risk for chips and exporters",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-am.html",
-   "updated": "2026-11-11-am"
-  },
-  {
-   "id": "hegseth-impeachment-nov10",
-   "first_seen": "2026-11-11",
-   "headline": "House refers Massie's 8 Hegseth impeachment articles to Judiciary 211-204 (Nov 10); Massie only R against; Jeffries: 'just the beginning'",
-   "status": "Resolved",
-   "rationale": "Major US political vote",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-am.html",
-   "updated": "2026-11-11-am"
-  },
-  {
-   "id": "ukraine-abu-dhabi-nov11",
-   "first_seen": "2026-11-11",
-   "headline": "Abu Dhabi talks end; Medinsky: fundamental agreement on another large prisoner exchange (1,000-for-1,000+ per Interfax-Ukraine sources); no Donbas breakthrough; Russia hits 6 substations",
-   "status": "Materially changed",
-   "rationale": "War/diplomacy",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-am.html",
-   "updated": "2026-11-11-am"
-  },
-  {
-   "id": "pgh-budget-2027-nov9",
-   "first_seen": "2026-11-11",
-   "headline": "Mayor O'Connor 2027 budget $872.6M (~$727M op + $145M capital), no tax hike, ~$28M reserve draw, pension $112M->$105M, trust-fund transfers ended; hearing Dec 10",
-   "status": "New",
-   "rationale": "Local: city finances",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-am.html",
-   "updated": "2026-11-11-am"
-  },
-  {
-   "id": "cpi-hot-oct-nov10",
-   "headline": "Oct CPI +0.4% m/m (core +0.3%) vs 0.3/0.2 consensus; no y/y (2025 shutdown gap); Waller: lean 25bp Dec 8-9, 50bp should be considered if core >=0.3; FedWatch ~99% hike, 50bp ~10-15%; par 2Y 4.73 (+17), 10Y 4.98 (+10), 30Y 5.35; 10Y auction $42B 5.020% btc 2.46 ~1bp tail",
-   "status": "New",
-   "rationale": "Lead: largest rates move of the cycle; Fed path repricing",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "rebound-nov6-9",
-   "headline": "S&P Fri +0.31% 7,376.86, Mon +2.35% 7,549.94 (best since Apr 8), Tue -0.38% 7,520.93; SOX +11% since Nov 5; VIX 28.18 -> 19.46, contango restored; Nov 9 breadth 4,488/989",
-   "status": "Materially changed",
-   "rationale": "Follow-up on Nov 5 AI selloff",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "payrolls-oct-nov6",
-   "headline": "Oct NFP +165K vs ~59-65K; Aug rev +186K, Sep +60K; UR 4.1%; AHE +0.4% m/m, 3.1% y/y; U-6 7.9%; forecast 2026-11-04-pm-3 (25-100K) wrong",
-   "status": "Resolved",
-   "rationale": "Set up the rates repricing",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "china-tariff-truce-ext-nov10",
-   "headline": "China extends suspension of extra 24% tariff + rare-earth controls by two months to January from Nov 10; 10% stays (Bloomberg/MLex)",
-   "status": "New",
-   "rationale": "Trade",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
-  },
-  {
-   "id": "gop-leadership-nov10",
-   "headline": "House GOP picks Jordan 106-73 over Scalise; Senate GOP re-elects Thune; Massie 8 Hegseth impeachment articles, procedural vote pending at press; MS/AK Senate uncalled; Dec 11 funding deadline",
-   "status": "Materially changed",
-   "rationale": "US politics",
-   "last_seen": "2026-11-10",
-   "last_report": "reports/2026/11/2026-11-10-pm.html",
-   "updated": "2026-11-10-pm"
   }
  ],
- "updated": "2026-11-15-sun"
+ "updated": "2026-11-16-am"
 }
