@@ -68,8 +68,9 @@ CHILD = ("import hashlib, json\n"
 class Normalise(unittest.TestCase):
     def test_ascii_mapping_and_unparsed_spans(self):
         text, bad = st.normalise("buy\u00a0100 \u201cACME\u201d \u2013 limit 2\u00d73\r\nsell 1 \uff21\uff23\uff2d\uff25\ttoday \u2605\u2605 ok")
-        self.assertEqual('buy 100 "ACME" - limit 2x3\nsell 1 ACME today ?? ok', text)       # NFKC (full-width ACME), quotes, dash, NBSP, x, CRLF, tab
-        self.assertEqual([[45, 47]], bad)                                                     # the two stars: one span, two "?"
+        self.assertEqual('buy 100 "ACME" - limit 2x3\nsell 1 ???? today ?? ok', text)       # quotes, dash, NBSP, x, CRLF, tab; full-width ACME unread
+        self.assertEqual([[34, 38], [45, 47]], bad)                                           # simplify round 8: no NFKC - the full-width letters and
+                                                                                              # the two stars are unparsed (one span each, a "?" a character)
         self.assertTrue(text.isascii())
         self.assertEqual((text, []), st.normalise(text))                                     # idempotent on its own output (the "?" are ASCII)
         self.assertEqual(("x?", [[1, 2]]), st.normalise("x\x00"))                           # a control character is unparsed too

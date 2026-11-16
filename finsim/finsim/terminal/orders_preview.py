@@ -1147,7 +1147,9 @@ def cover_check(services, conn, account_id: str, legs: List[tuple], covered: boo
 
     - ``covered`` (INV-1): the calls are placed only while ``free_for_calls`` >= multiplier x contracts: 409 NOT_COVERED, nothing placed
       (the shares were sold, or taken by other calls or a short sale).  400 COVERED_INVALID when the request sells no call to open on
-      one name, or sells an index call (shares never cover a cash-settled option).
+      one name, sells an index call (shares never cover a cash-settled option) or a call whose multiplier is not a whole number
+      (simplify round 8: ``_per_contract`` is 0 for it - FinSim's margin never gives it shares - so it would be placed and claimed with
+      no share reserved for it).
     - not ``covered`` (INV-9): while the account has calls on the name sold as covered (``cover_state(claims=True)["claimed"]``), every
       new call sold to open on it needs the same free shares - else FinSim's margin, which gives shares to calls by expiry and strike and
       never by claim, would give it their cover: 409 SHARES_RESERVED naming the covered calls.  No claim on the name: nothing checked."""
@@ -1158,6 +1160,13 @@ def cover_check(services, conn, account_id: str, legs: List[tuple], covered: boo
                 or any(is_index_option(inst) for inst, _n in calls):
             raise RejectError("COVERED_INVALID", "covered: true is for an order, or an all-or-none package, that sells calls to open on one name the account"
                               " holds (an index call is settled in cash: shares never cover it)")
+        frac = [inst for inst, _n in calls if _per_contract(inst.multiplier) == 0]
+        if frac:
+            # simplify round 8 (INV-1): shares never cover a contract with a fractional multiplier (``_per_contract``, as the margin counts
+            # it), so the claim could reserve nothing for it - refused, never placed as covered
+            raise RejectError("COVERED_INVALID", f"not placed as covered: {frac[0].instrument_id} has the multiplier {frac[0].multiplier}, and shares never"
+                                                 " cover a contract with a fractional multiplier (FinSim's margin gives it none) - send it as a plain call,"
+                                                 " or sell a contract of whole shares as covered")
     if not calls:
         return None
     acct = str(account_id or "")

@@ -19,9 +19,12 @@ Conventions (sentence SMART_TICKET)
 - DETERMINISM.  The same text with the same master, chains and positions gives the same answer: legs in text order, flags sorted by
   (severity, code, span), no clock in the answer except ``as_of``, no random id (the ticket id is the page's).  The pure layer
   (``normalise``, ``tokenize``, ``split_clauses``, ``parse_clause``, ``parse``, ``expand_strategy``) has no services and no clock.
-- NORMALISATION.  NFKC, then curly quotes, dashes, non-breaking spaces and the multiplication sign to ASCII; any other non-ASCII
-  character becomes "?" and an UNPARSED_TEXT span.  At most ``MAX_CHARS`` (2,000) characters after normalisation and ``MAX_LEGS`` (20)
-  legs after expansion: beyond either the route answers 400 TEXT_TOO_LONG / TOO_MANY_LEGS.
+- NORMALISATION.  Curly quotes, dashes, non-breaking spaces and the multiplication sign to ASCII (``_ASCII_MAP``); any other non-ASCII
+  character becomes "?" and an UNPARSED_TEXT span - no compatibility folding (simplify round 8: NFKC made a superscript, subscript,
+  circled or full-width digit a plain digit joined to the number beside it, "limit 99" with superscript cents a limit of 9950, nothing
+  underlined), and a number glued to such a character is one unread token with it (``_GLUED_UNREAD``: never the number before a decimal
+  point the character follows).  At most ``MAX_CHARS`` (2,000) characters after normalisation and ``MAX_LEGS`` (20) legs after
+  expansion: beyond either the route answers 400 TEXT_TOO_LONG / TOO_MANY_LEGS.
 - TOKENS (longest first): an OCC id typed whole; a futures id (root + month code + 2-digit year, the root in FUTURES_SPECS); an account
   id (``F1:US_EXCHANGE``); an ISO date; a US date ``m/d/yy`` or ``m/d/yyyy`` ALWAYS with a year (a bare ``12/18`` is a strike pair, never a
   date); a strike list ``n/n[/n...]``; a strike with its right (``240c``); ``'yy``; a number (thousands commas, decimals, a leading ``$``
@@ -122,7 +125,6 @@ from __future__ import annotations
 
 import json
 import re
-import unicodedata
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
@@ -328,11 +330,13 @@ _ASCII_MAP = {"\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u203
 
 
 def normalise(text: str) -> Tuple[str, List[List[int]]]:
-    """``(the ASCII text, the spans of characters that are not ASCII)``: NFKC; curly quotes, dashes, non-breaking spaces and the
-    multiplication sign to ASCII; CR / CRLF to a newline, a tab to a space; any other non-ASCII or control character becomes "?" and its
-    span is returned (each becomes an UNPARSED_TEXT span).  Idempotent."""
-    t = unicodedata.normalize("NFKC", str(text or ""))
-    t = t.replace("\r\n", "\n").replace("\r", "\n")
+    """``(the ASCII text, the spans of characters that are not ASCII)``: curly quotes, dashes, non-breaking spaces and the multiplication
+    sign to ASCII (``_ASCII_MAP``, nothing else); CR / CRLF to a newline, a tab to a space; any other non-ASCII or control character becomes
+    "?" and its span is returned (each becomes an UNPARSED_TEXT span).  Idempotent.  Simplify round 8: no compatibility folding (NFKC)
+    first - it turned a superscript, subscript, circled or full-width digit into a plain digit joined to the number beside it ("limit 99"
+    with superscript cents was a sendable limit of 9950, "buy 10" with a superscript 2 a BUY 102) and full-width letters into a ticker,
+    nothing underlined; each such character is now underlined as not read, as docs/SMART_TICKET.md says."""
+    t = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
     out: List[str] = []
     bad: List[List[int]] = []
     for ch in t:
@@ -392,6 +396,10 @@ _THOUSANDS_OK = re.compile(r"\$?\d{1,3}(?:,\d{3})+(?:\.\d+)?[kKmMxX%]?")
 _DAY_YEAR = re.compile(r"\d{1,2},(?:\d{2}|\d{4})")
 #: a quantity typed with a point before exactly three digits ("1.000"): a decimal point or a thousands point?  TOKEN_AMBIGUOUS
 _THOUSANDS_POINT = re.compile(r"\d{1,3}\.\d{3}")
+#: simplify round 8: a number glued to a character not read (normalisation's "?": a superscript, subscript, circled or full-width digit
+#: ...) - before its decimal point, after it or after the number - is ONE unread token, never a number: "99.?0" is never the limit 99
+#: with "?0" a clause of its own after the point (a "." ends a clause), "10?" never a quantity of 10
+_GLUED_UNREAD = re.compile(r"\$?\d+(?:[.,]\d+)*\.?\?(?:[\d?]|[.,](?=[\d?]))*")
 
 
 def _num_value(s: str) -> dict:
@@ -496,6 +504,11 @@ def tokenize(text: str) -> List[Token]:
         if ch == "\n":
             toks.append(Token("nl", "\n", i, i + 1, "\n"))
             i += 1
+            continue
+        gm = _GLUED_UNREAD.match(text, i) if ch.isdigit() or ch == "$" else None
+        if gm is not None:                                  # simplify round 8: a number with a character not read in it or glued to it
+            toks.append(Token("bad", gm.group(0), i, gm.end(), gm.group(0)))
+            i = gm.end()
             continue
         bm = _BADNUM.match(text, i) if ch.isdigit() or ch == "$" else None
         prev = toks[-1] if toks else None

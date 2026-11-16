@@ -31,7 +31,10 @@
  *   the draft was read again since it was restored, the instruction has no red flag and no unread word, the card and its group have no
  *   red flag, its order is complete and the order ticket takes its kind.  The owner previews and sends it there, exactly as an order
  *   typed there (its own preview, Submit, moved-price and large-order questions and lost-answer handling).  The card then says "opened
- *   in the ticket at HH:MM": the page never reads orders, so it never says that an order was sent.
+ *   in the ticket at HH:MM": the page never reads orders, so it never says that an order was sent.  Simplify round 8: a click acts
+ *   here only as a click of its own (the second click of a double click never does), and the rest of the gesture that handed an order
+ *   over (a double click's second click, its double click) is swallowed before the account page sees it - it never lands on that
+ *   ticket's Submit or on a Markets row that would fill the ticket with another instrument.
  * - A product's own ticket (the card's "Open the FX desk", "Open the bond ticket" ...: a new trade there, prefilled with the side, the
  *   amount and the account) opens on the same gates less the order ticket's own (simplify round 5): the reading holds, the instruction
  *   has no red flag and no unread word, the card has no red flag but the one naming its own ticket (and "how many?" when no amount was
@@ -88,6 +91,18 @@
   document.addEventListener('pointerup', pointerDone, true);
   document.addEventListener('pointercancel', pointerDone, true);
   window.addEventListener('blur', pointerDone);
+  /* simplify round 8 (R-1): the rest of the gesture that handed an order over is dropped.  A hand-off moves to the account's page, whose
+     docked ticket (or the FX desk, the bond or the private ticket) then lies under the pointer: its Submit armed once the preview
+     answers, a Markets row whose double click fills the ticket with another instrument.  The second click of a double click (a third
+     ...) would land there.  From a hand-off until the next press that starts a new gesture (a click count of 1), every press, release,
+     click and double click with a click count above 1 is swallowed before any handler sees it (capture, on the window) */
+  var handGesture = false;
+  function dropGestureRest(e) {
+    if (!handGesture) { return; }
+    if (!(e.detail > 1)) { if (e.type === 'mousedown') { handGesture = false; } return; }
+    e.preventDefault(); e.stopImmediatePropagation();
+  }
+  ['mousedown', 'mouseup', 'click', 'dblclick'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });
 
   /* ---------------------------------------------------------------- small helpers -------------------------------- */
   function esc(s) { return T.esc(s == null ? '' : s); }
@@ -404,6 +419,7 @@
   function handTicket(S, acct, fields) {
     var f = Object.assign({}, fields || {}, { fresh: true, account_id: acct });
     var off = T.state.on('route', function (route) { off(); if (route && route.account === acct) { T.ticket.open(f); } });
+    handGesture = true;                                       /* simplify round 8: the rest of this click's gesture never reaches that page */
     T.router.go(T.router.account(acct, 'markets'));
   }
   function openCard(S, c) {
@@ -726,6 +742,7 @@
   }
   function onClick(e) {
     var S = st; if (!S || S.dead || !ui) { return; }
+    if (e.detail > 1) { return; }                             /* simplify round 8: one click acts; the second of a double click never does */
     var b = e.target.closest('[data-act]'); if (!b || !ui.page.contains(b) || b.disabled) { return; }
     var act = b.dataset.act, w = b.dataset.w || '';
     var c = w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null;

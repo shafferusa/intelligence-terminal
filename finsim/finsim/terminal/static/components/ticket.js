@@ -84,6 +84,10 @@
  *   in a toast naming its order (placed, refused, NOT placed: a moved price, a lost answer), so the next order filled in never clears
  *   it unseen.  A fresh hand-off writes its instrument into the symbol box (a symbol typed there and not resolved never stays beside
  *   another order), and a look-up answered after another order was filled in is dropped.
+ * FinSim 1.0.7.2 simplify round 8 (the labels true at Send, nothing sent unconfirmed): Submit takes a click of its own - the second
+ *   click of a double click never sends (one that began elsewhere, on a Smart Ticket card's Open in ticket, is said: not sent); the
+ *   trail box keeps its number when the trail mode changes (it becomes that mode's trail, the other mode's value dropped); a quantity
+ *   typed that is not a whole number stays in the box as typed and holds the preview and Submit, said - never rounded into the order.
  * Keys inside the ticket (focus inside the dock; typing fields take only the box actions preview / submit / clear) are the
  * registry's ticket actions (keys.js, Settings > Keyboard; defaults = the 1.0.3 keys): b s x c sides, m l k j r types,
  * = + - _ qty by lot (the numpad + / - one lot, Shift ten), h hedge panel, 1..5 pick a candidate / 0 none, Enter preview,
@@ -264,10 +268,11 @@
 
   /* ---------------------------------------------------------------- state ----------------------------------------- */
   var orderGen = 0;                                  /* the number of the order the ticket shows (st.gen); see the header */
+  var submitClickAt = 0;                             /* simplify round 8: when Submit last took a click of its own (see wire) */
   function fresh(account_id) {
     return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
              hedge_pos: null, hedge_for: null, fx_convert: false,
-             qty: 0, order_type: 'MARKET', limit_px: '', stop_px: '',
+             qty: 0, qty_bad: null, order_type: 'MARKET', limit_px: '', stop_px: '',
              trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', gtd_date: '', mode: null, mode_order: null, mode_tif0: null, hedge: null, hedge_cand: null, hedgeOpen: false, covered: false, covered_offer: false,
              preview: null, preview_body: null, previewing: false, pseq: 0, dirty: false, preview_err: null, submit_err: null, stale: null,
              submitting: false, result: null, result_kind: null, last_rid: null, timer: null, reprev: null, taTimer: null, tick: null, resolving: false,
@@ -432,10 +437,10 @@
     } else if (f.side) {
       /* a Close ticket re-sided by a later prefill (the instrument page opens every visit with BUY) is no longer that close:
          its quantity must be entered again, so a Close -> chart visit never leaves BUY <position qty> ready to submit */
-      if (!newInst && st.close_req && String(f.side) !== st.side && f.qty == null) { st.qty = 0; }
+      if (!newInst && st.close_req && String(f.side) !== st.side && f.qty == null) { st.qty = 0; st.qty_bad = null; }
       st.side_req = String(f.side); st.close_req = null;
     }
-    if (f.qty != null && num(f.qty) != null) { st.qty = Math.max(0, Math.floor(Math.abs(num(f.qty)))); }
+    if (f.qty != null && num(f.qty) != null) { st.qty = Math.max(0, Math.floor(Math.abs(num(f.qty)))); st.qty_bad = null; }
     if (f.order_type) { st.order_type = f.order_type; }
     if (f.price != null && f.leg) { st.order_type = 'LIMIT'; st.limit_px = String(f.price); }
     if (f.limit_px != null) { st.limit_px = String(f.limit_px); }
@@ -470,6 +475,7 @@
   function resetOrder() {
     clearTimeout(st.timer); clearTimeout(st.reprev);
     st.qty = 0; st.order_type = 'MARKET'; st.limit_px = ''; st.stop_px = ''; st.trail_mode = 'amt'; st.trail_amt = ''; st.trail_pct = ''; st.tif = 'DAY'; st.gtd_date = '';
+    st.qty_bad = null;                               /* simplify round 8: a quantity typed that is not whole goes with the order it was typed for */
     st.mode = null; st.mode_order = null; st.mode_tif0 = null;
     st.side_req = null; st.close_req = null; st.side_err = null; st.fx_convert = false;
     st.preview = null; st.preview_body = null; st.preview_err = null; st.submit_err = null; st.stale = null; st.previewing = false; st.pseq++;
@@ -674,13 +680,25 @@
     });
     ui.inst.addEventListener('blur', function () { setTimeout(function () { if (ui) { ui.dd.hidden = true; } }, 150); });
     ui.side.addEventListener('change', function () { st.side = ui.side.value; st.side_req = null; st.close_req = null; st.side_err = null; paintFields(); fieldChanged(); });
-    ui.qty.addEventListener('input', function () { var n = num(ui.qty.value); st.qty = n == null ? 0 : Math.max(0, Math.floor(n)); fieldChanged(); });
+    /* simplify round 8 (R-4): a quantity that is not a whole number is never rounded into the order unseen - the box keeps what was typed
+       and nothing previews or submits until a whole number is typed (validity says why) */
+    ui.qty.addEventListener('input', function () {
+      var raw = String(ui.qty.value == null ? '' : ui.qty.value).trim(), n = num(ui.qty.value);
+      st.qty_bad = raw !== '' && n != null && n !== Math.floor(n) ? raw : null;
+      st.qty = n == null ? 0 : Math.max(0, Math.floor(n)); fieldChanged();
+    });
     ui.minus.addEventListener('click', function (e) { stepQty(-(e.shiftKey ? 10 : 1)); });
     ui.plus.addEventListener('click', function (e) { stepQty(e.shiftKey ? 10 : 1); });
     ui.type.addEventListener('change', function () { st.order_type = ui.type.value; paintFields(); fieldChanged(); });
     ui.limit.addEventListener('input', function () { st.limit_px = ui.limit.value.trim(); fieldChanged(); });
     ui.stop.addEventListener('input', function () { st.stop_px = ui.stop.value.trim(); fieldChanged(); });
-    ui.trailMode.addEventListener('change', function () { st.trail_mode = ui.trailMode.value; fieldChanged(); });
+    /* simplify round 8 (R-4): the trail typed stays the trail when the mode changes - the box's number becomes the new mode's trail and the
+       other mode's value is dropped, so what the box shows beside the mode is what the preview and Submit send */
+    ui.trailMode.addEventListener('change', function () {
+      var v = ui.trail.value.trim(); st.trail_mode = ui.trailMode.value === 'pct' ? 'pct' : 'amt';
+      if (st.trail_mode === 'pct') { st.trail_pct = v; st.trail_amt = ''; } else { st.trail_amt = v; st.trail_pct = ''; }
+      paintFields(); fieldChanged();
+    });
     ui.trail.addEventListener('input', function () { if (st.trail_mode === 'pct') { st.trail_pct = ui.trail.value.trim(); } else { st.trail_amt = ui.trail.value.trim(); } fieldChanged(); });
     ui.tif.addEventListener('change', function () { st.tif = ui.tif.value; paintFields(); fieldChanged(); });
     ui.gtd.addEventListener('change', function () { st.gtd_date = ui.gtd.value; fieldChanged(); });
@@ -688,11 +706,20 @@
     ui.covered.addEventListener('change', function () { st.covered = !!ui.covered.checked && coveredOk(); paintFields(); fieldChanged(); });
     ui.hedgeBtn.addEventListener('click', function () { toggleHedge(); });
     ui.previewBtn.addEventListener('click', function () { runPreview(true); });
-    ui.submitBtn.addEventListener('click', function () { submit(); });
+    /* simplify round 8 (R-1): Submit takes a click of its own - the second click of a double click (a third ...) never sends.  After a
+       click on this Submit it is that Submit's double click (sent or said already: nothing more); else the click before it was not on an
+       armed Submit (it handed an order over, or this button came under the pointer since): not sent, said */
+    ui.submitBtn.addEventListener('click', function (e) {
+      if (e && e.detail > 1) {
+        if (Date.now() - submitClickAt > 5000) { paintStatus('not sent: Submit takes a click of its own (that was the second click of a double click) - click Submit once to send', 'err'); }
+        return;
+      }
+      submitClickAt = Date.now(); submit();
+    });
     ui.clearBtn.addEventListener('click', clear);
     ui.root.addEventListener('keydown', onKey);
   }
-  function stepQty(n) { var l = lot(); st.qty = Math.max(0, (st.qty || 0) + n * l); st.qty = Math.round(st.qty / l) * l; paintFields(); fieldChanged(); }
+  function stepQty(n) { var l = lot(); st.qty = Math.max(0, (st.qty || 0) + n * l); st.qty = Math.round(st.qty / l) * l; st.qty_bad = null; paintFields(); fieldChanged(); }
   function paintMode() {
     var pos = st.hedge_pos;
     T.clear(ui.modeBox); ui.modeBox.hidden = !pos && !st.hedge_for && !st.mode;
@@ -731,7 +758,8 @@
     ui.side.value = sides.indexOf(st.side) >= 0 ? st.side : '';
     ui.side.classList.toggle('side-unset', !(st.side && sides.indexOf(st.side) >= 0));
     ui.side.title = st.side_err || '';
-    if (document.activeElement !== ui.qty || num(ui.qty.value) !== st.qty) { ui.qty.value = st.qty > 0 ? String(st.qty) : ''; }
+    /* simplify round 8: a quantity typed that is not whole stays in the box as typed (Submit waits, said) - never repainted as the order's */
+    if (st.qty_bad == null && (document.activeElement !== ui.qty || num(ui.qty.value) !== st.qty)) { ui.qty.value = st.qty > 0 ? String(st.qty) : ''; }
     ui.qty.step = String(lot()); ui.qty.min = '0';
     if (ui.rows.qty && ui.rows.qty[0]) { ui.rows.qty[0].textContent = 'qty (' + unitLabel() + ')'; }
     ui.qty.placeholder = unitLabel() + ' (required)';
@@ -807,6 +835,7 @@
     if (!st.instrument_id) { return 'enter an instrument'; }
     if (st.side_err) { return st.side_err; }
     if (!st.side || sidesFor().indexOf(st.side) < 0) { return 'choose the side (' + sidesFor().map(function (s) { return SIDE_LABEL[s] || s; }).join(' / ') + ')'; }
+    if (st.qty_bad != null) { return 'whole ' + unitLabel() + ' only: ' + st.qty_bad + ' typed (a quantity is never rounded) - type a whole number'; }
     if (!(st.qty > 0)) { return 'enter a quantity'; }
     if (st.qty % lot() !== 0) { return 'quantity must be a multiple of the lot (' + T.fmt.qty(lot()) + ')'; }
     if (st.mode === 'amend' && st.mode_order && st.qty <= Number(st.mode_order.filled_qty || 0)) { return 'the total quantity must be above what has filled (' + T.fmt.qty(st.mode_order.filled_qty) + ')'; }
