@@ -1,14 +1,104 @@
 {
  "stories": [
   {
+   "id": "tech-selloff-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "S&P -1.92% 7,416.59, Nasdaq -2.49% 24,509.76, Dow -739 51,608.17 (CNBC/AP); SMH -5.11%, MU -7.62, MRVL -7.27, INTC -7.02, TSM -6.34, ASML -5.91, AMD -5.58, NVDA -4.12% $156.14 lowest close since Jul 2025; RSP -1.01 vs SPY -1.91; only XLP/XLU up",
+   "status": "New",
+   "rationale": "Lead pm Nov 16: chip rout broadens to big tech before NVDA",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "bis-ai-chip-rule-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "BIS interim rule: licences for advanced AI chips to Brazil, Indonesia, Malaysia, Singapore, Thailand; targets Chinese remote compute; rescinds AI Diffusion Rule; effective on Federal Register publication (date unconfirmed); CNBC (single): chip limits unlikely in final NDAA",
+   "status": "New",
+   "rationale": "Export policy moves from talk to rule",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "warsh-ai-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "Warsh: AI possibly most transformational of adult life; productivity not 'definitively' broken out; downside scenario AI 'disappoint', valuations fall; no policy comment. Hammack: 'slow, steady' hikes",
+   "status": "New",
+   "rationale": "Fed framing of AI risk",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "empire-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "Empire State Nov 7.8 vs ~17-18 cons, prior 25.5; par 2Y 4.83 (-5), 10Y 5.12 (-3), 30Y 5.46; 10Y real 2.92; implied BE ~2.20",
+   "status": "New",
+   "rationale": "Growth data; bull steepener",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "oil-glut-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "Brent Jan $92.44 -3.6%, WTI $85.72 -3.2% at 15:41 (Rigzone) after Goldman 2027 glut note; IRGC claims 6 tankers mined since Sun (unconfirmed, Reuters can't confirm); CENTCOM confirms USS Theodore Roosevelt = 3rd carrier",
+   "status": "New",
+   "rationale": "Oil vs Hormuz claims",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "tyson-q4-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "TSN +8.72% $63.95: adj EPS 0.61 vs 0.58; FY27 AOI $1.7-2.15B, beef -$300M to +$100M (vs -$654M); sales -3.5 to -5.5%",
+   "status": "New",
+   "rationale": "Earnings",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "ukraine-online-talks-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "Zelenskyy: 'difficult' online talks with Witkoff/Kushner + full European delegation; Berlin CoW summit next (Nov 19 unconfirmed); Ushakov: Moscow hasn't agreed to Europe role; EU sanctions 113",
+   "status": "Developing",
+   "rationale": "Diplomacy",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "pa-trifecta-agenda-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "PA Dem trifecta from Jan: min wage first ($7.25 -> $15 push), transit funding (PRT), cannabis ($729M yr-1 proj.), on-time budget pledge",
+   "status": "New",
+   "rationale": "Local PA",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
+   "id": "pit-faa-disruption-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "WTAE: PIT cancellations/delays continue Mon after FAA ground stop; L3Harris router diagnostics w/ FBI; Duffy seeks 'tens of billions' for FAA",
+   "status": "Developing",
+   "rationale": "Local/infrastructure",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
+  },
+  {
    "id": "iran-bahrain-hormuz-nov16",
    "first_seen": "2026-11-16",
-   "headline": "IRGC claims 6 drones at Riffa radar Nov 15 (Bahrain: several intercepted; no CENTCOM statement); mine claims on 2 tankers unconfirmed; UKMTO tanker hit by projectile Nov 16; 3rd carrier (single)",
+   "headline": "3rd carrier now CENTCOM-confirmed (Theodore Roosevelt); IRGC mine claims up to 6 tankers (unconfirmed); Bahrain says all drones intercepted; GCC condemns",
    "status": "Disputed",
    "rationale": "Oil/escalation",
    "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
   },
   {
    "id": "bitcoin-64k-nov16",
@@ -23,12 +113,12 @@
   {
    "id": "measles-elimination-lost-nov13",
    "first_seen": "2026-11-16",
-   "headline": "PAHO: US loses measles elimination status (WSJ first; WaPo/CNN/CBS); ~5,412 cases this year",
+   "headline": "PAHO committee decision reported (US News, NPR, Forbes); formal announcement expected Tue Nov 17; 5,412 cases thru Nov 12",
    "status": "New",
    "rationale": "Public health",
    "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
   },
   {
    "id": "faa-router-cause-nov15",
@@ -43,12 +133,12 @@
   {
    "id": "vulcan-lv01-failure-nov15",
    "first_seen": "2026-11-16",
-   "headline": "Vulcan VC6L LV-01 failed ~10 min into flight Nov 15; all 40 Amazon Leo sats lost; ULA first total loss; stage disputed (ULA: during Centaur burn); Blue Origin assisting (Reuters, single); no FAA statement found",
-   "status": "New",
+   "headline": "Space Force suspends Vulcan NSSL missions; out for months; ULA no specific data yet; Blue Origin assisting",
+   "status": "Materially changed",
    "rationale": "Space/AMZN; NSSL recert delayed",
    "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
   },
   {
    "id": "china-japan-data-nov16",
@@ -63,12 +153,12 @@
   {
    "id": "bessent-nvidia-nov15",
    "first_seen": "2026-11-16",
-   "headline": "Bessent (Fox, Nov 15): asks if Nvidia 'goosed' revenue via shell buyers to China; 'culture of noncompliance'; 10 days for board/counsel; urges outside CEO; no Nvidia response found",
+   "headline": "No Nvidia board response to Bessent found; CNBC: board not considering Huang return; FT (single): board approached Arm CEO Rene Haas",
    "status": "New",
    "rationale": "Policy pressure on AI bellwether before earnings",
    "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
   },
   {
    "id": "asia-chip-rout-nov16",
@@ -123,12 +213,12 @@
   {
    "id": "watch-nvda-q3-nov17",
    "first_seen": "2026-11-15",
-   "headline": "WATCH: Nvidia Q3 FY27 Tue Nov 17 amc; cons ~$109.2B/$2.48; implied ~9%",
+   "headline": "WATCH: Nvidia Q3 FY27 Tue Nov 17 ~16:20, call 17:00; guide $108B +/-2%; cons $109.0-109.4B / $2.47-2.49; implied ~9%",
    "status": "Scheduled",
    "rationale": "Week's main market event",
    "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_report": "reports/2026/11/2026-11-16-pm.html",
+   "updated": "2026-11-16-pm"
   },
   {
    "id": "iran-bahrain-drones-nov15",
@@ -509,97 +599,7 @@
    "last_seen": "2026-11-12",
    "last_report": "reports/2026/11/2026-11-12-pm.html",
    "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "nvidia-huang-board-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Nvidia board preparing to oust CEO Jensen Huang (WSJ; confirmed CBS/CNBC/CNN); late Wed meeting, no decision; NVDA AH -8.6% $158.78, premarket ~-7%; NQ fut -0.83% -> resolved pm Nov 12: Huang resigned",
-   "status": "Resolved",
-   "rationale": "Lead am Nov 12: leadership crisis at largest index weight",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "treasury-30y-auction-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Bond market reopens; $25B 30Y auction 1 PM; par Nov 10 2Y 4.73 10Y 4.98 30Y 5.35; six Fed speakers incl. Williams 6:30 PM",
-   "status": "Developing",
-   "rationale": "Rates/Fed set-up",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "yen-160-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "USD/JPY 159.66 near 160, Japanese verbal warnings, no intervention; DXY 102.90 near 52w high 103.08",
-   "status": "Developing",
-   "rationale": "FX intervention risk",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "iran-hormuz-mines-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "IRGC claims mines disabled two VLCCs (>4M bbl) in Hormuz Wed night, unconfirmed; Trump to CNN return to full war 'highly unlikely'; Brent $92.32",
-   "status": "Developing",
-   "rationale": "Oil/geopolitics",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "uk-gdp-q3-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "UK Q3 GDP +0.7% q/q, +1.9% y/y, Q2 revised 0.5%; Sept +0.2%",
-   "status": "New",
-   "rationale": "Global macro",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-am"
-  },
-  {
-   "id": "ms-senate-colom-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "AP calls Mississippi Senate for Scott Colom (D); Hyde-Smith concedes; AP 473,336-468,667; Democrats at 55 by count",
-   "status": "Resolved",
-   "rationale": "US politics",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-am.html",
-   "updated": "2026-11-12-am"
-  },
-  {
-   "id": "coreweave-rally-nov11",
-   "headline": "CRWV closes $60.77 +24.71%; MU +11.9, MRVL +9.3, AMD +7.3, SMH +4.87, XLK +3.24; S&P +1.31% 7,619.38, Nasdaq +1.60% 25,466.19, Dow +0.49%; MSFT -2.3, META -2.0, AMZN -1.7; RSP +0.81 < SPY +1.32",
-   "status": "Materially changed",
-   "rationale": "Lead pm Nov 11: AI supplier rally vs hyperscaler weakness",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "nvda-huang-probe-nov10",
-   "headline": "NVDA +2.87% to $173.73 lags SMH; Morgan Stanley drops from top picks (OW, $300 PT); Baird to Neutral; DOJ NSD takes Megaspeed probe, Commerce paused (NBC); class action filed Nov 10",
-   "status": "Continuing",
-   "rationale": "AI bellwether governance",
-   "first_seen": "2026-11-11",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
-  },
-  {
-   "id": "anthropic-ipo-range-nov10",
-   "headline": "Bloomberg: book multiple times oversubscribed; FT/Capital Brief: pricing above $70-78 expected; grey resale 3-5% premium (single); pricing Nov 18, trade Nov 19",
-   "status": "Materially changed",
-   "rationale": "Largest AI listing",
-   "first_seen": "2026-11-10",
-   "last_seen": "2026-11-11",
-   "last_report": "reports/2026/11/2026-11-11-pm.html",
-   "updated": "2026-11-11-pm"
   }
  ],
- "updated": "2026-11-16-am"
+ "updated": "2026-11-16-pm"
 }

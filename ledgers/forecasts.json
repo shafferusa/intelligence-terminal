@@ -7642,6 +7642,46 @@
    "probability": "50-65%",
    "basis": "All three refunding auctions tailed last week; least liquid point of the curve",
    "status": "open"
+  },
+  {
+   "id": "2026-11-16-pm-1",
+   "date": "2026-11-16",
+   "slot": "pm",
+   "forecast": "The 10-year Treasury par yield closes at or above 5.00% on Tue Nov 17, 2026 (Nov 16: 5.12%).",
+   "horizon": "2026-11-17",
+   "probability": "85-92%",
+   "basis": "12 bp cushion; hawkish Fed speakers; one-day moves rarely exceed 10 bp",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-pm-2",
+   "date": "2026-11-16",
+   "slot": "pm",
+   "forecast": "The S&P 500 closes Tue Nov 17, 2026 above Mon's 7,416.59.",
+   "horizon": "2026-11-17",
+   "probability": "45-55%",
+   "basis": "Three-day losing streak vs main risk event (Nvidia) after the close; retail sales at 8:30",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-pm-3",
+   "date": "2026-11-16",
+   "slot": "pm",
+   "forecast": "Nvidia closes Wed Nov 18, 2026 more than 5% away (either direction) from its Tue Nov 17 close.",
+   "horizon": "2026-11-18",
+   "probability": "55-70%",
+   "basis": "Options-implied post-earnings move ~9%; leadership and export-rule uncertainty",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-16-pm-4",
+   "date": "2026-11-16",
+   "slot": "pm",
+   "forecast": "Brent front-month settles below $95.00 on Fri Nov 20, 2026.",
+   "horizon": "2026-11-20",
+   "probability": "60-75%",
+   "basis": "Brent ~$92.44 at 15:41 Nov 16; Goldman/IEA glut view; risk = confirmed large tanker loss in Hormuz",
+   "status": "open"
   }
  ]
 }
