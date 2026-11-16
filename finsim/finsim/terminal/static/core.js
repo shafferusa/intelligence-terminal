@@ -690,16 +690,20 @@
       if (first) { try { first.focus(); } catch (e) { /* ignore */ } }
       return handle;
     },
+    /* opts {title, ok, cancel, focus}: focus 'cancel' puts the focus on Cancel instead of the primary button (1.0.7.2 simplify round 6:
+       a question that comes with a server's answer, not with the owner's click, is never answered yes by a key pressed for something
+       else) */
     confirm: function (text, opts) {
       opts = opts || {};
       return new Promise(function (resolve) {
         var h = T.ui.modal({
           title: opts.title || 'Confirm', body: T.h('div', null, text), sticky: true,
           onDismiss: function () { resolve(false); },                /* Esc / x answer "no" (the promise never hangs) */
-          actions: [{ label: opts.cancel || 'Cancel', onClick: function (m) { m.close(); resolve(false); } },
+          actions: [{ label: opts.cancel || 'Cancel', cls: 'cancel', onClick: function (m) { m.close(); resolve(false); } },
                     { label: opts.ok || 'Confirm', cls: 'primary', onClick: function (m) { m.close(); resolve(true); } }]
         });
         h.bg.addEventListener('mousedown', function (e) { if (e.target === h.bg) { h.close(); resolve(false); } });
+        if (opts.focus === 'cancel') { var c = h.el.querySelector('.modal-actions .btn.cancel'); if (c) { try { c.focus(); } catch (e) { /* ignore */ } } }
       });
     },
     /* the keyboard help ('?' / Shift+F12 by default): the CURRENT keys from the registry (T.help.renderKeys) */

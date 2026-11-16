@@ -15,6 +15,11 @@
  * bondlist.render(el, {account_id, scope: 'FOREIGN'}) -> {unmount}: GET /api/debt/bonds; the generic government
  * benchmarks with price (freshness), yield, coupon, maturity, currency, DV01, position and b / s; the countries that cannot be
  * listed (gilts / OATs / BTPs while FRED is down) as grey rows with the reason.  ASCII only.
+ * FinSim 1.0.7.2 simplify round 6: a fresh hand-off (the Smart Ticket's "Open the bond ticket") puts the bond it names in the bond box,
+ * also when the ticket holds that bond already (words typed there and never looked up are dropped, the look-up list closed, a look-up
+ * still to answer dropped); a trade's answer is said for that trade - after a fresh hand-off it is never painted on the trade shown
+ * now (a toast names the trade it was for), and while the ticket is out of sight it is painted AND said in a toast naming it; the fill
+ * line names the bond submitted.
  */
 (function () {
   'use strict';
@@ -53,8 +58,12 @@
          held rides along */
       clearTimeout(st.deb); st.seq++; st.holdUntil = 0; st.ui.face.value = ''; setSide('BUY');
       T.clear(st.ui.pv).appendChild(T.h('div', { class: 'hint' }, PV_HINT)); T.clear(st.ui.result); setStatus('', '');
+      /* simplify round 6 (R-4): a trade in flight answers in a toast naming it (doSubmit); the bond box names the bond handed off, also
+         the one the ticket holds (below): words typed there and not looked up never stay beside another trade, the look-up list closed */
+      st.deal++; st.busy = false; st.ui.dd.hidden = true;
+      if (!fields.instrument_id) { st.instrument_id = null; st.inst = null; st.ui.inst.value = ''; st.ui.meta.textContent = 'pick a bond'; }
     }
-    if (fields.instrument_id && fields.instrument_id !== st.instrument_id) { setInstrument(fields.instrument_id, null); }
+    if (fields.instrument_id && (fields.fresh || fields.instrument_id !== st.instrument_id)) { setInstrument(fields.instrument_id, null); }
     if (fields.side) { setSide(String(fields.side).toUpperCase() === 'SELL' ? 'SELL' : 'BUY'); }
     if (fields.qty != null || fields.face != null) { st.ui.face.value = String(fields.face != null ? fields.face : fields.qty); }
     schedule();
@@ -64,7 +73,7 @@
   function build(body, account_id) {
     T.clear(body);
     if (st && st.timer) { clearInterval(st.timer); }
-    st = { body: body, account_id: account_id, instrument_id: null, inst: null, side: 'BUY', seq: 0, preview: null, previewAt: 0, deb: null, busy: false, ui: {}, timer: null };
+    st = { body: body, account_id: account_id, instrument_id: null, inst: null, side: 'BUY', seq: 0, deal: 0, preview: null, previewAt: 0, deb: null, busy: false, ui: {}, timer: null };
     var root = T.h('div', { class: 'bt', tabindex: '-1' });
     var acct = T.h('div', { class: 'meta', title: account_id }, 'account ' + (T.accountName ? T.accountName(account_id) : account_id));   /* V104R2-BW-02 (f): the name; the id in the hover */
     var inst = T.h('input', { type: 'text', id: 'ticket-instrument', placeholder: 'CUSIP, coupon or maturity (e.g. 912810 or 2035)', autocomplete: 'off', 'aria-label': 'bond' });
@@ -128,6 +137,7 @@
       if (q.charAt(0) === '^') { T.clear(dd).appendChild(T.h('div', { class: 'muted' }, q.toUpperCase() + ': a Treasury YIELD index (percent), not a security - pick a note or bond of that maturity')); dd.hidden = false; return; }
       t = setTimeout(function () {
         T.api.get('/api/instruments', { q: q.toUpperCase(), kinds: 'BOND', limit: 30, account: st.account_id }).then(function (rows) {
+          if (!st || st.ui.inst !== input || input.value.trim() !== q) { return; }   /* simplify round 6: the box holds other words now */
           items = Array.isArray(rows) ? rows : []; sel = -1; T.clear(dd);
           if (!items.length) { dd.appendChild(T.h('div', { class: 'muted' }, 'no bond in this account matches ' + q)); dd.hidden = false; return; }
           items.forEach(function (it, i) { var d = T.h('div', null, (it.symbol || it.instrument_id) + '  ' + (it.name || '')); d.addEventListener('mousedown', function (e) { e.preventDefault(); pick(it); }); dd.appendChild(d); void i; });
@@ -238,27 +248,46 @@
   /* V104R2-BW-02 (c): the fill line without the internal conventions group the stored memo ends with ('(EXECUTION, ACCRUED, COST_BASIS)') */
   function memoWords(m) { return String(m || '').replace(/\s*\((?:[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)(?:,\s*[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)*\)\s*$/, ''); }
 
+  /* simplify round 6 (R-4): a trade's answer is said for that trade, as the order ticket says an order's (ticket.js lateAnswer /
+     unseenAnswer).  An answer that comes after a fresh hand-off (the Smart Ticket's next card) or a ticket built for another account is
+     never painted on the trade shown now: a toast names the trade it was for.  One that comes while the ticket is out of sight (the dock
+     hidden - the owner went back to the Smart Ticket - or another ticket in the dock) is painted as always AND said in a toast naming its
+     trade.  The fill line names the bond submitted, never what the bond box holds when the answer comes. */
+  function tradeWords(f, bond) { return 'bond ' + f.side + ' ' + T.fmt.qty(Number(f.face)) + ' ' + bond + ' in ' + (T.accountName ? T.accountName(f.account_id) : f.account_id); }
+  function outOfSight(me) { return !(T.dock && T.dock.visible && T.dock.visible()) || !(me && me.ui.root && me.ui.root.isConnected); }
+  function lateTrade(words, msg, cls) {
+    T.ui.toast('the answer for ' + words + ' came after the ticket moved on to another trade: ' + msg, cls, 15000);
+    ['positions', 'account_detail', 'accounts', 'orders'].forEach(function (n) { T.poll.kick(n); });
+  }
+  function unseenTrade(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while the ticket was out of sight: ' + msg, cls, 15000); } }
   function doSubmit() {
     if (!st || st.busy) { return; }
     var p = st.preview; var f = fieldsNow();
     if (!p || !p.ok || (p.blockers || []).length) { setStatus('preview first: nothing is submitted without a clean preview', 'err'); return; }
     if (!same(f, st.previewFields) || Date.now() - st.previewAt > PREVIEW_TTL_MS) { setStatus('the preview is stale - previewing again', 'err'); runPreview(); return; }
+    var me = st, deal = st.deal, bond = (st.inst && st.inst.symbol) || String(st.instrument_id || '').replace(/^UST-/, ''), words = tradeWords(f, bond);
     st.busy = true; st.ui.submit.disabled = true; setStatus('submitting ...', '');
     T.api.post('/api/bonds/trade', { account_id: f.account_id, instrument_id: f.instrument_id, side: f.side, qty: Number(f.face) }).then(function (r) {
-      st.busy = false;
       var fill = (r && r.fill) || {};
       var eco = (r && r.economics) || {};
-      setStatus((r && r.replayed ? 'already submitted: ' : 'filled: ') + fill.side + ' ' + T.fmt.qty(fill.qty) + ' ' + (st.ui.inst.value || '') + ' @ ' + fill.price, 'ok');
+      var head = (r && r.replayed ? 'already submitted: ' : 'filled: ') + fill.side + ' ' + T.fmt.qty(fill.qty) + ' ' + bond + ' @ ' + fill.price;
+      if (me !== st || deal !== me.deal) { lateTrade(words, head, 'ok'); return; }
+      st.busy = false;
+      var away = outOfSight(me);
+      setStatus(head, 'ok');
       st.holdUntil = Date.now() + 20000;
       T.clear(st.ui.result).appendChild(T.h('div', { class: 'wrn', style: 'border-left-color:var(--up)', title: fill.memo || '' }, memoWords(fill.memo) + ' . net ' + (eco.currency || '') + ' ' + money(eco.net_cash) + ' . fill ' + (fill.fill_id || '')));
-      T.ui.toast('bond ' + fill.side + ' ' + T.fmt.qty(fill.qty) + ' @ ' + fill.price + ' booked', 'ok');
+      if (away) { unseenTrade(away, words, head, 'ok'); } else { T.ui.toast('bond ' + fill.side + ' ' + T.fmt.qty(fill.qty) + ' ' + bond + ' @ ' + fill.price + ' booked', 'ok'); }
       ['positions', 'account_detail', 'accounts', 'orders'].forEach(function (n) { T.poll.kick(n); });
       T.poll.kickAll();
       invalidate(); runPreview(true);
     }, function (e) {
+      if (me !== st || deal !== me.deal) { lateTrade(words, 'refused, nothing traded: ' + T.api.describe(e), 'err'); return; }
       st.busy = false;
+      var away = outOfSight(me);
       setStatus('refused: ' + T.api.describe(e), 'err');
       st.holdUntil = Date.now() + 20000;
+      unseenTrade(away, words, 'refused, nothing traded: ' + T.api.describe(e), 'err');
       runPreview(true);
     });
   }

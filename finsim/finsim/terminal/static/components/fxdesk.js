@@ -84,7 +84,7 @@
   function build(body, acct) {
     T.clear(body);
     if (st && st.timer) { clearInterval(st.timer); }
-    st = { body: body, account_id: acct, mode: 'SPOT', buy: 'EUR', sell: 'USD', unit: 'EUR', seq: 0, preview: null, previewAt: 0, previewFields: null, deb: null, busy: false, ui: {}, timer: null, holdUntil: 0 };
+    st = { body: body, account_id: acct, mode: 'SPOT', buy: 'EUR', sell: 'USD', unit: 'EUR', seq: 0, deal: 0, preview: null, previewAt: 0, previewFields: null, deb: null, busy: false, ui: {}, timer: null, holdUntil: 0 };
     var root = T.h('div', { class: 'fxd', tabindex: '-1' });
     var meta = T.h('div', { class: 'meta', title: acct }, 'account ' + (T.accountName ? T.accountName(acct) : acct));
     var spotB = T.h('button', { class: 'btn on', title: 'spot: value T+2 (USD/CAD T+1)' }, 'Spot');
@@ -195,6 +195,7 @@
     var buy = f.buy_ccy ? String(f.buy_ccy).toUpperCase() : null, sell = f.sell_ccy ? String(f.sell_ccy).toUpperCase() : null;
     if (f.fresh) {
       clearTimeout(st.deb); st.seq++; st.holdUntil = 0;          /* a preview answer for the previous deal is dropped */
+      st.deal++; st.busy = false;                                /* simplify round 6: a deal in flight answers in a toast naming it (doSubmit) */
       setMode('SPOT'); st.ui.tenor.value = DEFAULT_TENOR; st.ui.vdate.value = ''; st.ui.amount.value = '';
       T.clear(st.ui.pv).appendChild(T.h('div', { class: 'hint' }, PV_HINT)); T.clear(st.ui.result); setStatus('', '');
     }
@@ -321,16 +322,31 @@
     if (fwd) { pv.appendChild(T.h('div', { class: 'hint' }, 'A forward moves no cash before its value date; its mark-to-market (computed) is in Currency positions and is realised at the value date.')); }
   }
 
+  /* simplify round 6 (R-4): a deal's answer is said for that deal, as the order ticket says an order's (ticket.js lateAnswer /
+     unseenAnswer).  An answer that comes after the desk was handed a new deal (fresh: the Smart Ticket's next card) or was built again for
+     another account is never painted on the deal shown now: a toast names the deal it was for.  One that comes while the desk is out of
+     sight (the dock hidden - the owner went back to the Smart Ticket - or another ticket in the dock) is painted as always AND said in a
+     toast naming its deal, so the next card's hand-off never clears it unseen. */
+  function dealWords(f) {
+    return 'FX ' + (f.kind === 'FORWARD' ? 'forward' : 'spot') + ' BUY ' + f.buy_ccy + ' / SELL ' + f.sell_ccy + ' ' + money(f.amount) + ' ' + f.amount_ccy +
+      ' in ' + (T.accountName ? T.accountName(f.account_id) : f.account_id);
+  }
+  function outOfSight(me) { return !(T.dock && T.dock.visible && T.dock.visible()) || !(me && me.ui.root && me.ui.root.isConnected); }
+  function lateDeal(words, msg, cls) { T.ui.toast('the answer for ' + words + ' came after the desk moved on to another deal: ' + msg, cls, 15000); T.poll.kickAll(); }
+  function unseenDeal(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while the desk was out of sight: ' + msg, cls, 15000); } }
   function doSubmit() {
     if (!st || st.busy) { return; }
     var p = st.preview; var f = fieldsNow();
     if (!p || !p.ok || (p.blockers || []).length) { setStatus('preview first: nothing is dealt without a clean preview', 'err'); return; }
     if (!same(f, st.previewFields) || Date.now() - st.previewAt > PREVIEW_TTL_MS) { setStatus('the preview is stale - previewing again', 'err'); runPreview(); return; }
+    var me = st, deal = st.deal, words = dealWords(f);
     st.busy = true; st.ui.confirm.disabled = true; setStatus('booking ...', '');
     T.api.post('/api/fx/deal', f).then(function (r) {
-      st.busy = false;
       var d = (r && r.deal) || {};
       var head = (r && r.replayed ? 'already submitted: ' : 'booked ') + (d.deal_id || '') + ': BUY ' + d.buy_ccy + ' ' + money(d.buy) + ' / SELL ' + d.sell_ccy + ' ' + money(d.sell) + ' @ ' + (d.rate_quoted || '') + ', value ' + (d.value_date || '');
+      if (me !== st || deal !== me.deal) { lateDeal(words, head, 'ok'); if (me === st) { loadRecent(); } return; }
+      st.busy = false;
+      var away = outOfSight(me);
       setStatus(head, 'ok');
       st.holdUntil = Date.now() + 20000;
       var box = T.h('div', { class: 'okb' }, head + (d.kind === 'FORWARD' ? ' (forward ' + (d.tenor || '') + ': no cash until the value date)' : ''));
@@ -338,14 +354,17 @@
         T.h('a', { href: T.router.account(st.account_id, 'transactions') }, 'Transactions')));
       if (r && r.warning) { box.appendChild(T.h('div', { class: 'why' }, r.warning)); }
       T.clear(st.ui.result).appendChild(box);
-      T.ui.toast('FX ' + (d.kind === 'FORWARD' ? 'forward' : 'spot') + ' ' + (d.deal_id || '') + ' booked', 'ok');
+      if (away) { unseenDeal(away, words, head, 'ok'); } else { T.ui.toast('FX ' + (d.kind === 'FORWARD' ? 'forward' : 'spot') + ' ' + (d.deal_id || '') + ' booked', 'ok'); }
       T.poll.kickAll();
       invalidate(); runPreview(true); loadRecent();
     }, function (e) {
+      if (me !== st || deal !== me.deal) { lateDeal(words, 'refused, nothing booked: ' + T.api.describe(e), 'err'); return; }
       st.busy = false;
+      var away = outOfSight(me);
       setStatus('refused: ' + T.api.describe(e), 'err');
       T.clear(st.ui.result).appendChild(T.h('div', { class: 'blk', title: (e && e.code) || '' }, T.api.describe(e)));
       st.holdUntil = Date.now() + 20000;
+      unseenDeal(away, words, 'refused, nothing booked: ' + T.api.describe(e), 'err');
       runPreview(true);
     });
   }

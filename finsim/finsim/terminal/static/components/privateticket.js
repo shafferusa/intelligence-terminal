@@ -31,6 +31,9 @@
  * NEW trade on a ticket already docked for the account - BUY unless it names the side, the quantity empty unless it names one, a
  * SECONDARY at the mark with the default fee, settlement and lock-up, no discount, the previous preview and result dropped: nothing
  * typed there before rides along.
+ * FinSim 1.0.7.2 simplify round 6: a trade's answer is said for that trade - after a fresh hand-off it is never painted under the trade
+ * shown now (a toast names the trade it was for), and while the ticket is out of sight (the dock hidden, or the ticket gone from the
+ * page) it is painted as always AND said in a toast naming it (as the FX desk and the bond ticket say theirs).
  */
 (function () {
   'use strict';
@@ -101,7 +104,7 @@
     ensureCss();
     var companies = opts.companies || [];
     var listed = opts.listed || [];
-    var state = { company_id: '', side: String(opts.side || 'BUY').toUpperCase() === 'SELL' ? 'SELL' : 'BUY', preview: null, previewAt: 0, busy: false, timer: null, seq: 0, foreign: null };
+    var state = { company_id: '', side: String(opts.side || 'BUY').toUpperCase() === 'SELL' ? 'SELL' : 'BUY', preview: null, previewAt: 0, busy: false, timer: null, seq: 0, trade: 0, foreign: null };
     var d = defaults();
     T.clear(el);
     var root = T.h('div', { class: 'pt', tabindex: '-1' });
@@ -262,12 +265,28 @@
       });
     }
     function schedule() { if (state.timer) { clearTimeout(state.timer); } state.preview = null; submit.disabled = true; state.timer = setTimeout(doPreview, 300); }
+    /* simplify round 6 (R-4): the trade's own words for a toast; out of sight = the dock hidden (a docked ticket) or the ticket gone */
+    function tradeWords(b) {
+      var c = current();
+      return 'the private ' + b.side + ' ' + T.fmt.qty(Number(b.qty)) + ' ' + ((c && c.name) || b.company_id) + ' @ ' + b.price + ' in ' + (T.accountName ? T.accountName(opts.account_id) : opts.account_id);
+    }
+    function outOfSight() { return (opts.docked && !(T.dock && T.dock.visible && T.dock.visible())) || !root.isConnected; }
     function doSubmit() {
       if (submit.disabled) { return; }
       var rf = refusal(current(), side.value);
       if (rf) { submit.disabled = true; state.preview = null; paintRefusal(rf); return; }
+      var b = body(), mine = state.trade, words = tradeWords(b);
       state.busy = true; submit.disabled = true; T.clear(result);
-      T.api.post('/api/private/trades', body()).then(function (r) {
+      T.api.post('/api/private/trades', b).then(function (r) {
+        var done = 'done: ' + (((r && r.fill) || {}).fill_id || '') + ' ' + ((r && (r.side || (r.fill || {}).side)) || '') + ' ' + T.fmt.qty(((r && r.fill) || {}).qty) + ' @ ' + T.fmt.px(((r && r.fill) || {}).price);
+        if (mine !== state.trade) {                            /* a fresh hand-off since: never painted under the trade shown now */
+          T.ui.toast('the answer for ' + words + ' came after the ticket moved on to another trade: ' + done, 'ok', 15000);
+          T.poll.kick('positions'); T.poll.kick('account_detail'); T.poll.kick('accounts');
+          if (T.state && T.state.emit) { T.state.emit('private_trade', r); }
+          if (opts.onDone) { try { opts.onDone(r); } catch (e) { console.error(e); } }
+          return;
+        }
+        var away = outOfSight();
         state.busy = false; state.preview = null; submit.disabled = true;
         var f = r.fill || {}; var s = r.settlement || {}; var l = r.lot || null;
         var fund = r.funding || f.funding || null;
@@ -280,13 +299,22 @@
           ['position', T.fmt.qty(r.position_qty)]];
         result.appendChild(T.h('div', { class: 'panel' }, T.h('h2', null, 'done'), T.kv(kv)));
         (r.warnings || []).forEach(function (w) { result.appendChild(T.h('div', { style: 'color: var(--accent)', title: w.code || '' }, w.message || T.codeWords(w.code))); });
-        T.ui.toast('private trade done: ' + (f.fill_id || '') + (swept ? ' (swept ' + swept + ' from Treasury)' : ''), 'ok', 5000);
+        if (away) { T.ui.toast('the answer for ' + words + ' came while the ticket was out of sight: ' + done, 'ok', 15000); }
+        else { T.ui.toast('private trade done: ' + (f.fill_id || '') + (swept ? ' (swept ' + swept + ' from Treasury)' : ''), 'ok', 5000); }
         T.poll.kick('positions'); T.poll.kick('account_detail'); T.poll.kick('accounts');
         if (T.state && T.state.emit) { T.state.emit('private_trade', r); }
         if (opts.onDone) { try { opts.onDone(r); } catch (e) { console.error(e); } }
       }, function (e) {
+        if (mine !== state.trade) {
+          console.error('private trade', e);
+          T.ui.toast('the answer for ' + words + ' came after the ticket moved on to another trade: refused, nothing traded: ' + T.api.describe(e), 'err', 15000);
+          return;
+        }
+        var away = outOfSight();
         state.busy = false; submit.disabled = true; state.preview = null;
-        var box = T.h('div', { class: 'error' }, T.api.fail(e, 'private trade'));
+        var msg = away ? T.api.describe(e) : T.api.fail(e, 'private trade');
+        if (away) { console.error('private trade', e); T.ui.toast('the answer for ' + words + ' came while the ticket was out of sight: refused, nothing traded: ' + msg, 'err', 15000); }
+        var box = T.h('div', { class: 'error' }, msg);
         var link = e && e.details ? usLink(e.details.trade_in, opts.account_id) : null; if (link) { box.appendChild(T.h('span', null, ' . ')); box.appendChild(link); }
         result.appendChild(box);
       });
@@ -311,6 +339,7 @@
       f = f || {};
       var id = f.company_id || f.instrument_id;
       if (f.fresh) {                                           /* simplify round 4: a new trade (above) */
+        state.trade++; state.busy = false;                     /* simplify round 6: a trade in flight answers in a toast naming it (doSubmit) */
         clearPreview(); side.value = 'BUY'; kind.value = 'SECONDARY'; qty.value = ''; price.value = ''; disc.value = '';
         fee.value = pctFromFraction(d.fee_pct); settle.value = d.settle_days; lock.value = d.lockup_months;
         if (!id) { paintMark(); }                              /* the price from the mark again (a company named repaints it below) */

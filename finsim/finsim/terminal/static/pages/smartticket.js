@@ -251,6 +251,10 @@
     var why = textBlock(S); if (why) { return why; }
     if (!c) { return 'open it from its order\'s card'; }
     var b = firstBlocker((c.leg.flags || []).filter(function (f) { return f && !OWN_OPENS_ANYWAY[f.code]; })); if (b) { return b.text || 'a red flag'; }
+    /* simplify round 6 (R-5): a hand-off with no account opens nothing (openOwnTicket): held with the reason, never pressable (the
+       server's ACCOUNT_NOT_IN_BOOK names the account the book lacks) */
+    var own = (c.leg.flags || []).filter(function (f) { return f && f.code === 'KIND_OWN_TICKET' && f.action && f.action.ticket; })[0];
+    if (own && !(own.action.ticket.account_id || c.leg.account_id)) { return 'no account of this book opens its ticket: trade it in a book that has one'; }
     var gb = c.group ? firstBlocker(c.group.flags) : null; if (gb) { return 'its group has a red flag: ' + (gb.text || 'see the group'); }
     return null;
   }

@@ -2134,6 +2134,8 @@ OWN_TICKET_LABEL = {"FX": "Open the FX desk", "BOND": "Open the bond ticket", "P
 OWN_TICKET_ROLE = {"FX": "FOREIGN_FX", "BOND": "DEBT", "PRIVATE": "PRIVATE"}
 #: simplify round 5: each own ticket in words, and how it deals (OWN_TICKET_TERMS: what the hand-off cannot carry is said)
 OWN_TICKET_NAME = {"FX": "the FX desk", "BOND": "the bond ticket", "PRIVATE": "the private-markets ticket", "OTC": "the OTC desk"}
+#: simplify round 6: the account each own ticket opens in, in words (ACCOUNT_NOT_IN_BOOK when the book has none)
+OWN_TICKET_ACCOUNT = {"FX": "Foreign Markets & FX", "BOND": "Debt Instruments", "PRIVATE": "Private Markets", "OTC": "prime-broker"}
 OWN_TICKET_DEALS = {"FX": "it deals at its own rate, spot unless you pick a forward there, when you confirm there",
                     "BOND": "it deals at its own price, the mark and its half-spread, when you confirm there",
                     "PRIVATE": "it takes the negotiated price you type there", "OTC": "you enter the terms there"}
@@ -2256,6 +2258,7 @@ class Resolver:
         self._opt_index: Dict[Tuple[str, str], list] = {}
         self._snaps: Dict[str, Any] = {}
         self._pos: Dict[Tuple[str, str], dict] = {}
+        self._hold: Dict[Tuple[str, str], Dict[str, int]] = {}  # simplify round 6: ``_holders`` per (lifetime, instrument), read once per parse
         self._cover: Dict[Tuple[str, str], dict] = {}        # 1.0.7.2: ``orders_preview.cover_state`` per (account, name), read once per parse
         self._fresh: Dict[tuple, tuple] = {}                 # fifth review: a chain's freshness, judged once per parse (shared with re-reads)
 
@@ -2385,14 +2388,17 @@ class Resolver:
         return int(pos.get("free_for_calls") or 0) if int(pos.get("qty") or 0) > 0 else 0
 
     def _holders(self, lid: Optional[str], iid: str) -> Dict[str, int]:
+        """The accounts of lifetime ``lid`` that hold ``iid`` (account id -> signed quantity), read once per parse (shared with the
+        guard's re-reads, as the positions are)."""
         if not lid:
             return {}
-        ids = [a["account_id"] for a in self._accounts(lid)]
-        if not ids:
-            return {}
-        rows = self.conn.execute(f"SELECT account_id, qty FROM v_positions WHERE instrument_id=? AND account_id IN ({','.join('?' * len(ids))})",
-                                 (iid, *ids)).fetchall()
-        return {r["account_id"]: int(r["qty"]) for r in rows if int(r["qty"] or 0) != 0}
+        key = (str(lid), str(iid))
+        if key not in self._hold:
+            ids = [a["account_id"] for a in self._accounts(lid)]
+            rows = self.conn.execute(f"SELECT account_id, qty FROM v_positions WHERE instrument_id=? AND account_id IN ({','.join('?' * len(ids))})",
+                                     (iid, *ids)).fetchall() if ids else []
+            self._hold[key] = {r["account_id"]: int(r["qty"]) for r in rows if int(r["qty"] or 0) != 0}
+        return dict(self._hold[key])
 
     def _is_trading_day(self, d: date) -> bool:
         cal = getattr(self.s, "cal", None)
@@ -3396,6 +3402,11 @@ class Resolver:
         if acct:
             a = next(x for x in self._accounts(lid) if x["account_id"] == acct)
             leg["account_id"], leg["account_name"] = a["account_id"], a["name"]
+        elif lid:
+            # simplify round 6 (R-4): the book has no account that ticket opens in (only the Institutional book has a Private Markets account
+            # at first): a red flag naming it, so "Open the ..." is held with the reason, never pressable for a page the book does not have
+            leg["flags"].append(_flag("ACCOUNT_NOT_IN_BOOK", f"the {leg['book_name']} has no {OWN_TICKET_ACCOUNT.get(tkind, 'such')} account, so"
+                                      f" {OWN_TICKET_NAME.get(tkind, 'its own ticket')} cannot open for it: trade it in a book that has one", leg["span"]))
         self._own_terms(c, leg, tkind, acct, named)
 
     def _own_terms(self, c: dict, leg: dict, tkind: str, acct: Optional[str], named: Optional[dict]) -> None:
@@ -3633,7 +3644,10 @@ class Resolver:
             if ia.get("kind") == "ticker" and leg["book"] is not None:
                 con = self._option_contract(ia["symbol"], al["expiry"], al["right"], al["strike"], leg, ed, ia["span"])
             self._set_instrument(leg, con)
-            a = self._account(c, leg, binfo, tree, con)
+            # simplify round 6: a strategy's leg is placed by the opening-side rule (US Exchange first, never ``aware``), and an account it
+            # offers that holds the leg's contract says what it holds, as a single order's check does (the holders only change those words)
+            holders = self._holders(leg["lifetime_id"], con["id"]) if con is not None and con.get("id") else None
+            a = self._account(c, leg, binfo, tree, con, holders)
             if a is not None and con is not None and con.get("id"):
                 leg["position"] = self._position(a["account_id"], con["id"], False)
             if con is not None:
@@ -4106,11 +4120,19 @@ class Resolver:
         if asked:
             flags.append(_flag("ONE_ORDER_ASKED", f"'{asked}' asks for one order; the Smart Ticket fills separate tickets that go and fill on their own"
                                + ("; for one all-or-none order, use the Strategies tab" if tab else ""), span, self._separate_choice(src), action=tab))
-        p = src.get("price")
-        if p is not None:
-            flags.append(_flag("NET_PRICE", f"'{self.text[p['span'][0]:p['span'][1]]}' on {label} is a price for the whole: separate tickets cannot carry a net"
-                               " price - give each order its own price, or leave it out", span,
-                               [{"label": "without the price", "clause": _edit(self.text, span, [(p["span"][0], p["span"][1], "")])}]))
+        # simplify round 6 (R-4): EVERY net price typed in the group (two priced strategies, a roll and a spread ... in one group) is named by
+        # its one NET_PRICE, and its choice "without the price" removes them all in one edit - never a choice whose reading is held again by
+        # a price no flag named (the group's other orders keep their own prices)
+        ps = [p for p in (src.get("prices") or []) if p is not None and p.get("span")]
+        if ps:
+            quoted = [f"'{self.text[p['span'][0]:p['span'][1]]}'" for p in ps]
+            if len(ps) == 1:
+                said = f"{quoted[0]} on {label} is a price for the whole: separate tickets cannot carry a net price - give each order its own price, or leave it out"
+            else:
+                said = (f"{', '.join(quoted[:-1])} and {quoted[-1]} on {label} are prices for the whole: separate tickets cannot carry a net price - give each"
+                        " order its own price, or leave them out (\"without the price\" removes all of them)")
+            flags.append(_flag("NET_PRICE", said, span,
+                               [{"label": "without the price", "clause": _edit(self.text, span, [(p["span"][0], p["span"][1], "") for p in ps])}]))
         n = len(legs)
         if n == 1:                                       # a group word or parentheses around one order: that order is one ticket
             words = f"{label if name else 'this order'} as one ticket: it goes and fills on its own (no all-or-none, no sequence)"
@@ -4118,7 +4140,7 @@ class Resolver:
             words = (f"{label} as {n} separate tickets: each order goes and fills on its own (no all-or-none, no sequence); send them in the order"
                      " shown" + ("; for one all-or-none order, use the Strategies tab" if tab else ""))
         flags.append(_flag("SEPARATE_TICKETS", words, span, action=None if asked else tab))
-        if p is None:
+        if not ps:
             for l in opts:
                 # each option of the group is a ticket of its own at market until the owner gives it a limit there: said, as every default
                 if l.get("order_type") == "MARKET" and not any(f["code"] == "TYPE_DEFAULT" for f in l["flags"]) and l.get("side"):
@@ -4210,20 +4232,21 @@ class Resolver:
                 # a typed price reaches the group of a strategy, a roll, a collar or a covered call that buys its shares (NET_PRICE there),
                 # never dropped (1.0.7.2 review)
                 sources.append({"legs": inst["legs"], "span": c["span"], "clauses": [ci], "kind": c["kind"], "strategy": name,
-                                "price": c["mods"].get("price")})
+                                "prices": [c["mods"]["price"]] if c["mods"].get("price") is not None else []})
         for g in tree["groups"]:
             reps = max((len(insts[ci]) for ci in g["clauses"]), default=0)
             names = [clauses[ci]["strategy"]["name"] for ci in g["clauses"] if clauses[ci]["kind"] == "strategy" and clauses[ci].get("strategy")]
             # second review: a price typed on a strategy, a roll, a collar or a covered call that buys its shares inside a group reaches
-            # the group and is refused there like an ungrouped one (its legs are at market), never dropped
-            gprice = next((clauses[ci]["mods"]["price"] for ci in g["clauses"] if clauses[ci]["mods"].get("price") is not None
-                           and (clauses[ci]["kind"] in ("strategy", "roll", "collar")
-                                or (clauses[ci]["kind"] == "covered" and any(len(inst["legs"]) > 1 for inst in insts[ci])))), None)
+            # the group and is refused there like an ungrouped one (its legs are at market), never dropped.  Simplify round 6: every such
+            # price of the group (two priced strategies in one group), never only the first
+            gprices = [clauses[ci]["mods"]["price"] for ci in g["clauses"] if clauses[ci]["mods"].get("price") is not None
+                       and (clauses[ci]["kind"] in ("strategy", "roll", "collar")
+                            or (clauses[ci]["kind"] == "covered" and any(len(inst["legs"]) > 1 for inst in insts[ci])))]
             for r in range(reps):
                 members = [l for ci in g["clauses"] for inst in insts[ci] if inst["rep"] == r for l in inst["legs"]]
                 if members:
                     sources.append({"legs": members, "span": g["span"], "clauses": list(g["clauses"]), "kind": "group", "group": g,
-                                    "strategy": names[0] if len(names) == 1 and len(g["clauses"]) == 1 else None, "price": gprice})
+                                    "strategy": names[0] if len(names) == 1 and len(g["clauses"]) == 1 else None, "prices": gprices})
         combos = [self._group(s) for s in sources]
         combos.sort(key=lambda cb: min(cb["legs"]) if cb["legs"] else 0)
         for n, cb in enumerate(combos, 1):

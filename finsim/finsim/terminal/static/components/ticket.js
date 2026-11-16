@@ -1027,6 +1027,14 @@
       }
       if (e.code === 'CONFIRM_REQUIRED') {
         if (d.preview && typeof d.preview === 'object' && d.preview.execution) { st.preview = d.preview; st.preview_body = JSON.stringify(previewBody()); st.dirty = false; paintPreview(); }
+        if (away) {
+          /* simplify round 6 (R-1): the large-order question is never asked while its ticket is out of sight - a key pressed there for
+             another purpose (the Smart Ticket's Enter that reads its text again) must never answer it: NOT placed, said on the ticket and
+             in a toast naming the order; the owner submits it again from its own ticket, which asks the question then */
+          paintStatus('NOT placed (' + words + '): a large order needs your confirmation - Submit again here to answer its question', 'err'); paintSubmit();
+          unseenAnswer(away, words, 'NOT placed: a large order needs your confirmation - submit it again from its ticket', 'err');
+          return;
+        }
         var sweep = d.sweep_in != null ? T.fmt.money(d.sweep_in) : (typeof d.sweep_in_c === 'number' && d.sweep_in_c > 0 ? T.fmt.cents(d.sweep_in_c) : null);
         var rules = Array.isArray(d.rules) ? d.rules.filter(function (x) { return x && x.text; }) : [];
         var txt = T.h('div', null,
@@ -1035,7 +1043,9 @@
           d.notional ? T.h('div', { class: 'hint' }, 'notional ' + T.fmt.money(d.notional) + (d.nav ? ' . lifetime NAV ' + T.fmt.money(d.nav) : '')) : null,
           T.h('div', { class: 'hint' }, 'Confirm sends the same order again with your confirmation; nothing was written yet.'));
         paintStatus('needs your confirmation: ' + (d.reason || 'a large order'), 'err'); paintSubmit();
-        T.ui.confirm(txt, { title: 'Confirm large order', ok: 'Confirm' }).then(function (yes) {
+        /* simplify round 6: the question comes with an answer, not with a click of the owner's: the focus is on Cancel, so a key pressed
+           for something else (an Enter typed in a box) answers no - Confirm is a click (or Tab to it) */
+        T.ui.confirm(txt, { title: 'Confirm large order', ok: 'Confirm', focus: 'cancel' }).then(function (yes) {
           if (gen !== st.gen) { if (yes) { T.ui.toast(words + ' was NOT sent: the ticket moved on to another order before your confirmation - open it again', 'err', 15000); } return; }
           if (!yes) { paintStatus('not confirmed; nothing was submitted'); scheduleReprev(); return; }
           var again = Object.assign({}, body, { confirm_large: true });
