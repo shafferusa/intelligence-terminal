@@ -1,6 +1,11 @@
 {
  "note": "Statuses only, copied from Logan's study workbook when a lesson is recorded. His notes stay private (they travel encrypted in workbook.enc and are never written here).",
- "updated": "2026-11-15",
+ "updated": "2026-11-16T04:51:50-05:00",
+ "workbook_seen": {
+  "saved_at": "2026-11-15T11:52:42-05:00",
+  "extracted_at": "2026-11-15T14:26:39-05:00",
+  "lesson_date": "2026-11-16"
+ },
  "modules": {
   "PRE-ECON-LM01": {
    "state": "done",
@@ -15,6 +20,10 @@
   },
   {
    "date": "2026-11-15",
+   "status": "Not started"
+  },
+  {
+   "date": "2026-11-16",
    "status": "Not started"
   }
  ]

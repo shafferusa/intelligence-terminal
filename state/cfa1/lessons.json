@@ -1,3 +1,58 @@
 {
- "lessons": []
+ "lessons": [
+  {
+   "lesson": 1,
+   "date": "2026-11-16",
+   "kind": "study",
+   "modules": [
+    "PRE-ECON-LM03"
+   ],
+   "refresher_modules": [
+    "PRE-ECON-LM01"
+   ],
+   "cited_modules": [],
+   "workbook": "updated",
+   "topics": [
+    "output = income = expenditure",
+    "GDP counts final goods and services; value added avoids double counting",
+    "nominal versus real GDP and the GDP deflator",
+    "the saving identity S = I + (G − T) + (X − M) is accounting, not cause",
+    "why AD slopes down: wealth, interest-rate and exchange-rate effects",
+    "SRAS slopes up, LRAS vertical at potential GDP",
+    "recessionary and inflationary gaps; stagflation from supply shocks",
+    "production function, diminishing returns, TFP as the lasting source of growth",
+    "sustainable growth ≈ trend hours growth + trend productivity growth",
+    "one-time BA II Plus setup: DEC 4, AOS, P/Y = C/Y = 1, END, clearing, signs, two checks"
+   ],
+   "refresher_topics": [
+    "elasticity as a ratio of percentage changes; it varies along a straight line",
+    "elasticity and total spending",
+    "income and cross-price elasticity signs",
+    "MR = MC; MR = P for a price taker; diminishing marginal returns raise MC"
+   ],
+   "references": {
+    "book": "CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics",
+    "module": 3,
+    "title": "Aggregate Output, Prices, and Economic Growth",
+    "printed": "67–136",
+    "pdf": "75–144",
+    "exhibits_named": [
+     7,
+     8,
+     10,
+     14,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21
+    ]
+   },
+   "plan_changes": null,
+   "run_note": "Lesson 1, written in advance: refresher on Module 1 (workbook: Done Nov 14), then Prerequisite Economics Module 3 (printed pp.67–136) and the one-time BA II Plus setup. Module 2 shows Not started as of the Nov 15 midday save, so it is unclear and the plan is unchanged.",
+   "path": "reports/2026/11/2026-11-16-cfa1.html",
+   "published": "2026-11-16T09:51:50Z"
+  }
+ ]
 }
