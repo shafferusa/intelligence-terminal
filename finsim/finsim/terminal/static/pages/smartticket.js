@@ -425,9 +425,12 @@
     handTicket(S, o.account_id, f);
   }
   /* "Strategies tab" of a group (or of its flag): the ticket of the group's account on its underlying, the hedge panel on its Strategies
-     tab - one all-or-none order of options is built there by the owner, from its templates */
+     tab - one all-or-none order of options is built there by the owner, from its templates.  Simplify round 7: held as every hand-off
+     is by the instruction (textBlock: the reading holds, no red flag of the instruction, no unread word - an account or book the owner
+     wrote and FinSim did not read never opens the ticket of another); the group's own flags (words asking for one order, separate
+     tickets, a net price) are what the tab is for and never hold it */
   function openStrategies(S, a, g) {
-    var why = readBlock(S); if (why) { say(S, why, 'err'); paint(S); return; }
+    var why = textBlock(S); if (why) { say(S, why, 'err'); paint(S); return; }
     var acct = (a && a.account_id) || (g && g.account_id) || null, und = (a && a.instrument_id) || (g && g.underlying_id) || null;
     if (!acct || !und) { say(S, 'this group names no single account and underlying for the Strategies tab', 'err'); return; }
     var refused = T.accountRefusal(acct); if (refused) { say(S, refused, 'err'); return; }
@@ -538,8 +541,10 @@
       h += '</div>';
     }
     if (f.action && f.action.label) {
-      /* simplify round 5: the product's own ticket is held as Open in ticket is (ownBlock), the reason beside the button */
-      var held = f.action.kind === 'open_ticket' ? ownBlock(S, w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null) : null;
+      /* simplify round 5: the product's own ticket is held as Open in ticket is (ownBlock), the reason beside the button; simplify
+         round 7: the Strategies tab as the group's button is (textBlock) */
+      var held = f.action.kind === 'open_ticket' ? ownBlock(S, w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null)
+        : (f.action.kind === 'strategies_tab' ? textBlock(S) : null);
       h += '<div><button type="button" class="btn small" data-act="action" data-w="' + esc(w) + '" data-f="' + esc(x.f) + '"' +
         (held ? ' disabled title="' + esc(held) + '"' : '') + '>' + esc(f.action.label) + '</button>' +
         (held ? ' <span class="smart-why">' + esc(short(held, 110)) + '</span>' : '') + '</div>';
@@ -633,7 +638,7 @@
     return null;
   }
   function groupHtml(S, g, cards) {
-    var w = 'g' + g.id; var tab = strategiesActionOf(g); var why = tab ? readBlock(S) : null;
+    var w = 'g' + g.id; var tab = strategiesActionOf(g); var why = tab ? textBlock(S) : null;     /* simplify round 7: the hand-offs' gate */
     var order = sendOrder(S, g).map(function (n) { return '#' + n; }).join(', then ');   /* simplify round 5: the sides held now */
     var h = '<div class="smart-group" data-g="' + esc(g.id) + '"><div class="smart-group-head"><b>' + esc(g.id) + '</b> ' +
       esc((g.strategy ? 'the ' + g.strategy : 'orders written together') + ': "' + short(g.clause || '', 90) + '" . ' + plural(cards.length, 'separate ticket') +

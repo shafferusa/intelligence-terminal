@@ -32,7 +32,8 @@ Conventions (sentence SMART_TICKET)
   package", "us exchange" ...).
 - CLAUSES.  ``;``, ``.`` and a newline always end a clause; ``,``, ``and``, ``then``, ``plus``, ``&`` end one only when the next token
   starts a clause (a side word, close, roll, a strategy verb, or a quantity followed by an instrument), so the comma of "Dec 18, 2026"
-  never splits.  A clause that starts with a quantity takes the side of the previous clause (SIDE_CARRIED).  ``( ... )`` groups exactly the
+  never splits: after "<month> <day>" or "<day> <month>" the comma before a year (four digits, or two followed by a grammar word in any
+  case) is the date's, whatever the case of the words after it (simplify round 7: "DEC 18, 2026 GTC" reads as "Dec 18, 2026 gtc").  A clause that starts with a quantity takes the side of the previous clause (SIDE_CARRIED).  ``( ... )`` groups exactly the
   clauses inside; a group word at the end of a clause ("as a package", "as one order", "together", "all or none", "aon") groups the run of
   consecutive clauses on the same underlying that ends at it.
 - THE SLOT DECIDES.  In the quantity or modifier slot a word is a keyword, in the instrument slot a ticker; a grammar keyword typed in
@@ -55,7 +56,9 @@ Conventions (sentence SMART_TICKET)
   that names no account, read in that leg's book.
 - INSTRUMENTS.  Equities by an exact id / symbol / Yahoo symbol / alias match (several -> SYMBOL_AMBIGUOUS, none -> SYMBOL_UNKNOWN with
   "Look it up").  Options in this order: the cached chain row (the standard root first; two roots for one expiry, right and strike ->
-  ROOT_CHOICE, never a silent pick), the master's option rows, else the OCC id built by ``occ_symbol`` and flagged OPTION_UNVERIFIED with
+  ROOT_CHOICE, never a silent pick, offering only the contracts the order ticket lists - in the master, or on a root that names its
+  underlying as ``products.options.underlying_of`` reads it; an adjusted root outside the master is named and not offered, alone it is
+  NOT_TRADEABLE_HERE, as an OCC id typed whole on such a root is: simplify round 7), the master's option rows, else the OCC id built by ``occ_symbol`` and flagged OPTION_UNVERIFIED with
   "Load the chain" (the preview refuses NOT_LISTED until the chain lists it: nothing is invented).  An expiry or strike that is not
   listed is NEVER snapped: it is a blocker with the nearest listed values as choices.  Futures by id, root + month (+ year) on the listing
   rule, or front / active through ``api_products.active_months``.  FX, bonds, private names and swaps open their own ticket
@@ -78,7 +81,7 @@ Conventions (sentence SMART_TICKET)
   ``fill_mode`` and ``request`` null, ``order`` the sending order - purchases first, shares then options, then sales to close, sales to
   open, share sales and short sales).  Every order of a group is its own ticket that goes and fills on its own (SEPARATE_TICKETS check);
   one all-or-none order of options is built in the order ticket's Strategies tab (the action "Strategies tab" on an option strategy it
-  has a template for).  Words asking for one order ("as a package", "as one order", "as one", "as a combo", "all or none", "aon",
+  has a template for in the direction read: the group has the shape of one of its option templates).  Words asking for one order ("as a package", "as one order", "as one", "as a combo", "all or none", "aon",
   "together") are ONE_ORDER_ASKED (blocker, "as separate tickets" offered), never split silently; a price typed on a strategy, a roll, a
   collar or a covered call that buys its shares is a net price the tickets cannot carry (NET_PRICE, "without the price"), never dropped;
   a leg's own limit is that ticket's.  A group blocker is repeated, without its choices, on every order of the group, so none of them has
@@ -122,6 +125,7 @@ import re
 import unicodedata
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from . import config, tables
@@ -714,6 +718,26 @@ def _starts_clause(toks: Sequence[Token], j: int, vocab: Vocab) -> bool:
     return False
 
 
+def _date_comma(cur: Sequence[Token], toks: Sequence[Token], i: int, j: int, vocab: Vocab) -> bool:
+    """Simplify round 7: whether the comma ``toks[i]`` (alone between ``cur`` and ``toks[j]``) is the comma of a date - the clause so
+    far ends with "<month> <day>" or "<day> <month>" and a year follows: four digits (2000-2099), or two digits followed by a grammar
+    word in any case but a unit ("Dec 18, 26 GTC").  That comma never ends a clause: the year is never a quantity and a grammar word
+    typed in capitals never an instrument there, so "Dec 18, 2026 GTC" reads as "Dec 18, 2026 gtc" does (and "good till Dec 18, 50
+    WIDG" is still two orders)."""
+    if j != i + 1 or not _is_punct(toks[i], ",") or len(cur) < 2 or j >= len(toks):
+        return False
+    a, b = cur[-2], cur[-1]
+    if not ((_month_of(a) and _day_of(b)) or (_day_of(a) and _month_of(b))):
+        return False
+    if _year4_of(toks[j]) is not None:
+        return True
+    v = _num(toks[j])
+    if not (v and v["int"] and v["digits"] == 2 and not v["dollar"] and not v["commas"] and v["suffix"] is None):
+        return False
+    nxt = toks[j + 1] if j + 1 < len(toks) else None
+    return nxt is not None and nxt.kind == "word" and nxt.lower in vocab.keywords and nxt.lower not in UNIT_WORDS
+
+
 def _is_filler(t: Optional[Token]) -> bool:
     return t is not None and ((t.kind == "punct" and t.text in FILLER_PUNCT) or (t.kind == "word" and t.lower in FILLER_WORDS))
 
@@ -777,7 +801,7 @@ def split_clauses(tokens: Sequence[Token], vocab: Optional[Vocab] = None) -> Tup
             j = i
             while j < n and _is_filler(toks[j]):
                 j += 1
-            if _starts_clause(toks, j, vocab):
+            if not _date_comma(cur, toks, i, j, vocab) and _starts_clause(toks, j, vocab):
                 flush()
                 i = j
                 continue
@@ -2141,9 +2165,72 @@ OWN_TICKET_DEALS = {"FX": "it deals at its own rate, spot unless you pick a forw
                     "PRIVATE": "it takes the negotiated price you type there", "OTC": "you enter the terms there"}
 UNITS_OK = {"option": ("contracts", "x"), "future": ("contracts", "lots", "x"), "shares": ("shares", "x")}
 #: option strategies the order ticket's Strategies tab has a template for (call / put spreads, straddles, strangles, iron condor and its
-#: reverse, iron butterfly, call butterfly, call / put calendars): their group offers the action "Strategies tab"
+#: reverse, iron butterfly, call butterfly, call / put calendars): their group offers the action "Strategies tab" when it also has the
+#: shape of one of those templates (simplify round 7: ``Resolver._has_template``)
 TEMPLATE_STRATEGIES = ("call spread", "put spread", "vertical", "straddle", "strangle", "iron condor", "iron butterfly", "butterfly", "call butterfly",
                        "calendar", "call calendar", "put calendar")
+_SHAPES: Optional[frozenset] = None
+
+
+def _shape(rows: Sequence[tuple]) -> Optional[tuple]:
+    """``rows`` (expiry rank, right, strike order, side BUY / SELL, size) -> the sides, rights and relative sizes in (expiry, right,
+    strike) order: the shape a group and a Strategies tab template are compared by."""
+    if not rows:
+        return None
+    rows = sorted(rows, key=lambda r: (r[0], r[1], r[2]))
+    base = min(r[4] for r in rows)
+    if base <= 0:
+        return None
+    return tuple((r[0], r[1], r[3], r[4] / base) for r in rows)
+
+
+def _rule_rank(rule) -> Optional[float]:
+    s = str(rule)
+    if s == "ATM":
+        return 0.0
+    if s.startswith("pct:"):
+        try:
+            return float(s.split(":", 1)[1])
+        except ValueError:
+            return None
+    return None
+
+
+def _template_shapes() -> frozenset:
+    """Simplify round 7: the shapes of the order ticket's Strategies tab templates made of options alone (``strategies_catalogue``, data
+    only; strikes ATM / pct:n).  The tab never reverses a template, and a strike it lets the owner move moves a strike, never a side or an
+    expiry: a group of another shape (a call butterfly sold, a calendar whose near expiry is bought) has no template there."""
+    global _SHAPES
+    if _SHAPES is None:
+        from . import strategies_catalogue as cat
+        out = set()
+        for s in cat.STRATEGIES:
+            legs = s.get("legs") or []
+            if not legs or any(l.get("kind") != "OPTION" or l.get("other") or _rule_rank(l.get("strike")) is None for l in legs):
+                continue
+            tenors = sorted({int(l.get("tenor") or 0) for l in legs})
+            out.add(_shape([(tenors.index(int(l.get("tenor") or 0)), str(l["type"]), _rule_rank(l["strike"]), str(l["side"]), Fraction(str(l.get("size", 1))))
+                            for l in legs]))
+        out.discard(None)
+        _SHAPES = frozenset(out)
+    return _SHAPES
+
+
+def _legs_shape(legs: Sequence[dict]) -> Optional[tuple]:
+    """A group's legs as a shape (``_shape``), or None when one has no side, quantity, expiry, right or strike read."""
+    exps = sorted({str((l.get("instrument") or {}).get("expiry") or "") for l in legs})
+    rows = []
+    for l in legs:
+        i = l.get("instrument") or {}
+        side = {"BTO": "BUY", "BTC": "BUY", "STO": "SELL", "STC": "SELL"}.get(str(l.get("side") or ""))
+        try:
+            k, q = Decimal(str(i.get("strike"))), Fraction(int(l.get("qty")))
+        except (InvalidOperation, TypeError, ValueError):
+            return None
+        if not side or not i.get("expiry") or i.get("right") not in ("C", "P") or q <= 0:
+            return None
+        rows.append((exps.index(str(i["expiry"])), str(i["right"]), k, side, q))
+    return _shape(rows)
 
 
 def _norm_root(r: Optional[str]) -> str:
@@ -2782,6 +2869,29 @@ class Resolver:
         p = parse_occ(occ)
         return p[0] if p else ""
 
+    def _root_under(self, root: str):
+        """The instrument an OCC root names as its underlying, as the order route reads it (``products.options.underlying_of``: the index
+        weekly root SPXW is SPX, a dotted root its dashed ticker, else the root as spelled), or None."""
+        for cand in (ROOT_UNDERLYING.get(root, root), root.replace(".", "-"), root):
+            u = self.master.get(cand, self.conn)
+            if u is not None:
+                return u
+        return None
+
+    def _fillable(self, occ: str, under) -> bool:
+        """Simplify round 7: whether the order ticket can list contract ``occ`` of ``under`` - it is in the instrument master, or its root
+        names ``under`` as the order route reads it (``_root_under``).  An adjusted series outside the master (a root with a digit, such
+        as ACME1) never is: the order route refuses it (INSTRUMENT_UNKNOWN), so it is never read as an order or offered as a choice."""
+        if self.master.get(occ, self.conn) is not None:
+            return True
+        u = self._root_under(self._root(occ))
+        return u is not None and u.instrument_id == under.instrument_id
+
+    @staticmethod
+    def _unlisted_words(sym: str) -> str:
+        return (f"the order ticket lists a contract only when its root names its underlying ({sym}) or the contract is in the instrument"
+                " master: it cannot be filled here")
+
     def _option_contract(self, sym: str, exp: Optional[dict], right: Optional[str], strike: Optional[str], leg: dict, ed: dict, span) -> Optional[dict]:
         flags = leg["flags"]
         under, root_filter = self._underlying(sym, leg, span)
@@ -2807,7 +2917,15 @@ class Resolver:
                 if rt not in by_root or (not by_root[rt].quoted and r.quoted):
                     by_root[rt] = r
             roots = sorted(by_root, key=lambda x: (0 if _norm_root(x) == _norm_root(std) else 1, x))
-            row = by_root[roots[0]]
+            # simplify round 7: a contract the order ticket cannot list (an adjusted series outside the instrument master) is never read
+            # as the order nor offered: it is named, and when the chain lists no other root for these terms the order is refused
+            shut = [x for x in roots if not self._fillable(by_root[x].occ, under)]
+            open_ = [x for x in roots if x not in shut]
+            if not open_:
+                flags.append(_flag("NOT_TRADEABLE_HERE", f"the {under.symbol} chain lists {d} {_kstr(k)} {_call_put(right)} only as "
+                                   + ", ".join(f"{by_root[x].occ} (root {x})" for x in roots) + ": " + self._unlisted_words(under.symbol), leg["span"]))
+                return None
+            row = by_root[open_[0]]
             pref = getattr(snap, "row", None)
             if len(roots) == 1 and callable(pref):
                 try:
@@ -2818,12 +2936,15 @@ class Resolver:
                     row = p
             if len(roots) > 1:
                 choices = []
-                for rt in roots:
+                for rt in open_:
                     txt = ed["root"](by_root[rt].occ)
                     if txt:
                         choices.append({"label": f"{by_root[rt].occ} (root {rt}{', the standard root' if _norm_root(rt) == _norm_root(std) else ''})", "clause": txt})
                 flags.append(_flag("ROOT_CHOICE", f"the {under.symbol} chain lists {len(roots)} contracts for {d} {_kstr(k)} {_call_put(right)} (roots "
-                                   f"{', '.join(roots)}): pick one", leg["span"], choices))
+                                   f"{', '.join(roots)}): pick one"
+                                   + (f"; {', '.join(by_root[x].occ for x in shut)} (root{'s' if len(shut) > 1 else ''} {', '.join(shut)})"
+                                      f" {'are' if len(shut) > 1 else 'is'} not offered: " + self._unlisted_words(under.symbol) if shut else ""),
+                                   leg["span"], choices))
             m = self.master.get(row.occ, self.conn)
             return self._opt_out(under, row.occ, d, right, k, self._root(row.occ), std, True, m, row, chain)
         for m in self._master_options(uid, d):
@@ -2861,20 +2982,30 @@ class Resolver:
         if p is None:
             return None
         root, dd, right, k = p
-        under = None
-        for cand in (ROOT_UNDERLYING.get(root, root), root.replace(".", "-"), root):
-            under = self.master.get(cand, self.conn)
-            if under is not None:
-                break
+        d = dd.isoformat()
+        # simplify round 7: the contract itself first - one in the instrument master reads on its own underlying, whatever its root (an
+        # adjusted series such as ACME1 listed there with ACME as its underlying); else the underlying its root names
+        inst = self.master.get(occ, self.conn)
+        under = self.master.get(inst.underlying_id, self.conn) if inst is not None and inst.kind == "OPTION" and inst.underlying_id else None
         if under is None:
+            under = self._root_under(root)
+        if under is None:
+            base = re.sub(r"\d+$", "", root)
+            bu = self.master.get(base, self.conn) if base and base != root else None
+            if bu is not None:
+                # a root with a digit on an underlying in the master: an adjusted series, which the order route cannot list outside the
+                # master - refused and said, never "look up" a root that names no instrument
+                snap = self._snap(bu.instrument_id)
+                listed = any(str(r.occ).upper() == occ for r in self._rows(snap, d))
+                flags.append(_flag("NOT_TRADEABLE_HERE", f"{occ} has the root {root}, an adjusted {bu.symbol} series"
+                                   + (f" listed on the {bu.symbol} chain" if listed else "") + ": " + self._unlisted_words(bu.symbol), span))
+                return None
             flags.append(_flag("SYMBOL_UNKNOWN", f"{occ}: its underlying {root} is not in the instrument master", span,
                                action={"kind": "resolve", "label": "Look it up", "symbol": ROOT_UNDERLYING.get(root, root)}))
             return None
-        d = dd.isoformat()
         std = (under.cboe_symbol or under.symbol or "").replace("_", "").upper()
         snap = self._snap(under.instrument_id)
         chain = self._chain_info(under, snap, leg, under.instrument_id) if snap is not None else None
-        inst = self.master.get(occ, self.conn)
         if inst is not None:
             return self._opt_out(under, occ, d, right, k, root, std, True, inst, None, chain)
         row = next((r for r in self._rows(snap, d) if str(r.occ).upper() == occ), None)
@@ -4160,12 +4291,15 @@ class Resolver:
 
     @staticmethod
     def _has_template(name: Optional[str], legs: List[dict]) -> bool:
-        """Whether the order ticket's Strategies tab has a template for the strategy ``name`` (a butterfly: of calls only)."""
+        """Whether the order ticket's Strategies tab has a template for the strategy ``name`` (a butterfly: of calls only) IN THE
+        DIRECTION read (simplify round 7): the legs' shape - by expiry, right and strike, each leg's side and relative size - is the
+        shape of one of its option templates (``_template_shapes``): a call butterfly only bought, a calendar only with its near expiry
+        sold; spreads, straddles, strangles, iron condors and iron butterflies both ways."""
         if not name or name not in TEMPLATE_STRATEGIES:
             return False
-        if name == "butterfly":
-            return all((l.get("instrument") or {}).get("right") == "C" for l in legs)
-        return True
+        if name == "butterfly" and not all((l.get("instrument") or {}).get("right") == "C" for l in legs):
+            return False
+        return _legs_shape(legs) in _template_shapes()
 
     def _one_order_spans(self, src: dict) -> List[List[int]]:
         """The words of group ``src`` that ask for one order: its group word, and one typed inside its parentheses."""
@@ -4696,6 +4830,8 @@ class Resolver:
                     return False                          # a copy outside the orders the choice is on changed, or became sendable
                 pool.remove(hit)
             my0, my2 = mine_k, pool
+        if my0 and all(x[0][4] is not None for x in my0) and any(x[0][4] is None for x in my2):
+            return False                                  # simplify round 7: the order it is on re-reads with no instrument (a dead end)
         if not place:                                     # a book or account not read yet (ambiguous, unknown) is settled, never moved
             where = {(x[0][0], x[0][1]) for x in my0}
             bks = {w[0] for w in where}

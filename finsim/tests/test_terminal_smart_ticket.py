@@ -373,7 +373,11 @@ class ResolverRules(_ResolverBase):
         self.assertEqual(("SPXW261218C06000000", "SPX 2026-12-18 6000 call (root SPXW)"), (leg["instrument"]["id"], leg["instrument"]["words"]))
         self.assertEqual("SPX261218C05900000", self.one("buy 1 SPX Dec 18 2026 5900 call")["instrument"]["id"])
         leg = self.one("buy 1 ACME Dec 18 2026 200 put")                                 # an adjusted root on one contract
-        self.assertEqual(["buy 1 ACME261218P00200000", "buy 1 ACME1261218P00200000"], [c["clause"] for c in flag(leg, "ROOT_CHOICE")["choices"]])
+        # simplify round 7: the adjusted series is not in the instrument master, so the order ticket cannot list it: named, not offered
+        f = flag(leg, "ROOT_CHOICE")
+        self.assertEqual((None, "blocker", ["buy 1 ACME261218P00200000"]), (leg["request"], f["severity"], [c["clause"] for c in f["choices"]]))
+        self.assertIn("ACME1261218P00200000 (root ACME1) is not offered: the order ticket lists a contract only when its root names its underlying"
+                      " (ACME) or the contract is in the instrument master", f["text"])
 
     def test_futures_month_year_and_active(self):
         leg = self.one("buy 2 ES Mar")

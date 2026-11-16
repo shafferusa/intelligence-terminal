@@ -482,7 +482,7 @@
     var ik = f.inst_kind || (f.kind && String(f.kind).toUpperCase() !== 'POSITION_HEDGE' ? f.kind : null);
     var meta = f.leg ? null : (ik && !instCache[id] ? { kind: String(ik).toUpperCase() } : null);
     if (id !== st.instrument_id) { setInstrument(id, meta, true); } else { resetOrder(); }
-    resetOrder();
+    resetOrder(); syncBox(id);
     st.result = null; T.clear(ui.result);
     var pq = num(f.position_qty);
     st.hedge_pos = { instrument_id: id, qty: pq, kind: ik || instKind() };
@@ -503,6 +503,7 @@
     var id = String(o.instrument_id || '');
     if (st.hedge_pos) { leavePositionMode(); }
     if (id !== st.instrument_id) { setInstrument(id, o.kind && !instCache[id] ? { kind: String(o.kind) } : null, true); } else { resetOrder(); }
+    syncBox(id);
     st.result = null; T.clear(ui.result);
     st.mode = mode; st.mode_order = o; st.hedgeOpen = false; st.hedge_for = null;
     st.side = o.side; st.side_req = o.side; st.close_req = null;
@@ -589,6 +590,23 @@
       });
     }
   }
+  /* simplify round 7 (R-4): a symbol typed in the instrument box and not resolved yet (Enter or a type-ahead pick resolves it) - the order
+     filled in is still for st.instrument_id, so while the box names another symbol (or none) nothing is sent: Submit is disabled with
+     the reason, and the submit key, a confirmation or a package say why instead of sending the previous instrument.  The text typed, or
+     null when the box names the order (an amend / replace keeps its instrument: its box is locked) */
+  function typedPending() {
+    if (!ui || !ui.inst || st.mode) { return null; }
+    var txt = String(ui.inst.value || '').trim();
+    return txt.toUpperCase() === String(st.instrument_id || '').toUpperCase() ? null : txt;
+  }
+  function typedWords(tp) {
+    var id = String(st.instrument_id || '');
+    if (!tp) { return 'the instrument box is empty' + (id ? ' and the order filled in is for ' + id + ': type ' + id + ' back (or another symbol, then Enter)' : ': type a symbol, then Enter'); }
+    return 'the instrument box shows ' + tp + (id ? ' and the order filled in is for ' + id : '') + ': press Enter in the box to resolve it' + (id ? ' (or type ' + id + ' back)' : '');
+  }
+  /* the box names the order of a mode entered on the instrument filled in (amend / replace, hedge this position): a symbol typed there
+     and not resolved never stays beside it, its look-up still to come dropped (as a fresh hand-off does) */
+  function syncBox(id) { clearTimeout(st.taTimer); st.taTimer = null; ui.inst.value = id || ''; ui.dd.hidden = true; }
   function resolveTyped() {
     var txt = ui.inst.value.trim().toUpperCase(); if (!txt) { return; }
     if (txt === st.instrument_id) { runPreview(true); return; }
@@ -649,7 +667,11 @@
 
   /* ---------------------------------------------------------------- fields ---------------------------------------- */
   function wire() {
-    ui.inst.addEventListener('input', function () { clearTimeout(st.taTimer); st.taTimer = setTimeout(typeahead, TA_MS); });
+    ui.inst.addEventListener('input', function () {
+      clearTimeout(st.taTimer); st.taTimer = setTimeout(typeahead, TA_MS);
+      /* simplify round 7: Submit waits, said, while the box names another symbol than the order filled in (typed back: it stands again) */
+      var tp = typedPending(); paintSubmit(); paintStatus(tp !== null ? typedWords(tp) : '');
+    });
     ui.inst.addEventListener('blur', function () { setTimeout(function () { if (ui) { ui.dd.hidden = true; } }, 150); });
     ui.side.addEventListener('change', function () { st.side = ui.side.value; st.side_req = null; st.close_req = null; st.side_err = null; paintFields(); fieldChanged(); });
     ui.qty.addEventListener('input', function () { var n = num(ui.qty.value); st.qty = n == null ? 0 : Math.max(0, Math.floor(n)); fieldChanged(); });
@@ -868,7 +890,7 @@
     clearTimeout(st.reprev);
     st.reprev = setTimeout(function () {
       if (!ui || !ui.root.isConnected) { return; }
-      if (document.hidden || !T.dock.visible() || st.submitting || st.dirty || st.stale) { scheduleReprev(); return; }
+      if (document.hidden || !T.dock.visible() || st.submitting || st.dirty || st.stale || typedPending() !== null) { scheduleReprev(); return; }
       if (st.preview || st.preview_err) { runPreview(false); }
     }, ms == null ? REPREVIEW_MS : ms);
   }
@@ -902,6 +924,7 @@
   /* ---------------------------------------------------------------- submit ---------------------------------------- */
   function canSubmit() {
     if (!st.preview || st.submitting || st.dirty || st.previewing || st.stale) { return false; }
+    if (typedPending() !== null) { return false; }                     /* simplify round 7: the box names another symbol than the order */
     var pv = st.preview;
     if (pv.ok === false || (pv.blockers && pv.blockers.length)) { return false; }
     var left = freshFor(); if (left != null && left <= 0) { return false; }
@@ -913,8 +936,9 @@
   function paintSubmit() {
     var ok = canSubmit();
     ui.submitBtn.disabled = !ok;
-    var sk = kl('ticket.submit');
-    var why = st.submitting ? 'submitting ...' : (st.dirty ? 'fields changed: waiting for the fresh preview' : (!st.preview ? 'no preview' : (st.stale ? 'review the diff' : (ok ? (sk || 'ready') : 'blocked or expired'))));
+    var sk = kl('ticket.submit'); var tp = typedPending();
+    var why = st.submitting ? 'submitting ...' : (tp !== null ? typedWords(tp) : (st.dirty ? 'fields changed: waiting for the fresh preview' : (!st.preview ? 'no preview' :
+      (st.stale ? 'review the diff' : (ok ? (sk || 'ready') : 'blocked or expired')))));
     ui.submitBtn.title = 'submit' + kp('ticket.submit') + ' - ' + why;
     ui.submitBtn.textContent = st.submitting ? 'Submitting ...' : 'Submit';
     tick();
@@ -931,6 +955,7 @@
   function detailsOf(e) { return T.components.preview ? T.components.preview.detailsOf(e) : (e && e.details) || {}; }
   function submit(opts) {
     opts = opts || {};
+    var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return; }
     if (!opts.force && !canSubmit()) { paintSubmit(); return; }
     var rid = opts.rid || T.uuid();
     var body = st.mode ? modeBody() : previewBody();
@@ -974,6 +999,9 @@
   function outOfSight() { return !(T.dock && T.dock.visible && T.dock.visible()) || !(ui && ui.root && ui.root.isConnected); }
   function unseenAnswer(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while its ticket was out of sight: ' + msg, cls, 15000); } }
   function send(body, rid, kind) {
+    /* simplify round 7: every send (a submit, a package, the large order's confirmation, a reviewed diff) - never while the box names
+       another symbol than the order filled in */
+    var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return; }
     var gen = st.gen, words = orderWords(kind);
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
     clearTimeout(st.reprev);

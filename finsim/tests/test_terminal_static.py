@@ -681,8 +681,18 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertIn("data-act=\"open\" data-w=\"c' + c.i + '\"' + (why ? ' disabled' : '')", src)
         self.assertIn("var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }", src)
         self.assertEqual("openCard", _enclosing(fns, src.index("var why = openBlock(S, c); if (why) { say(S, '#' + c.n + ': ' + why, 'err'); paint(S); return; }")))
+        # simplify round 7: the Strategies tab is held by the instruction's gates too (textBlock: unread words, the instruction's red flag),
+        # the group's button and its flag box's action disabled with the reason, the click checking again - never by the reading alone
         self.assertEqual(["openStrategies"],
-                         sorted(_enclosing(fns, m.start()) for m in re.finditer(r"var why = readBlock\(S\); if \(why\) \{ say\(S, why, 'err'\); paint\(S\); return; \}", src)))
+                         sorted(_enclosing(fns, m.start()) for m in re.finditer(r"var why = textBlock\(S\); if \(why\) \{ say\(S, why, 'err'\); paint\(S\); return; \}", src)))
+        self.assertEqual([], [m.start() for m in re.finditer(r"var why = readBlock\(S\); if \(why\) \{ say\(", src)])
+        self.assertIn("var w = 'g' + g.id; var tab = strategiesActionOf(g); var why = tab ? textBlock(S) : null;", src)
+        self.assertEqual("groupHtml", _enclosing(fns, src.index("var why = tab ? textBlock(S) : null;")))
+        self.assertIn("(tab ? ' <button type=\"button\" class=\"btn small\" data-act=\"strategies\" data-w=\"' + esc(w) + '\"' + (why ? ' disabled' : '') +", src)
+        self.assertIn(": (f.action.kind === 'strategies_tab' ? textBlock(S) : null);", src)
+        self.assertEqual("panelHtml", _enclosing(fns, src.index(": (f.action.kind === 'strategies_tab' ? textBlock(S) : null);")))
+        self.assertEqual(["groupHtml", "openBlock", "openStrategies", "ownBlock", "panelHtml"],
+                         sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )textBlock\(S\)", src)}))
         # simplify round 5: a product's own ticket - the card's red flags but its own ticket's and "how many?", its group's; held, its
         # button is disabled with the reason beside it, and the click checks again
         own = src[src.index("function ownBlock(S, c) {"):src.index("function canEdit(S, c)")]
@@ -692,7 +702,7 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertEqual("openOwnTicket", _enclosing(fns, src.index(
             "var why = ownBlock(S, c); if (why) { say(S, (c ? '#' + c.n + ': ' : '') + why, 'err'); paint(S); return; }")))
         self.assertEqual(["openOwnTicket", "panelHtml"], sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )ownBlock\(", src)}))
-        self.assertIn("var held = f.action.kind === 'open_ticket' ? ownBlock(S, w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null) : null;", src)
+        self.assertIn("var held = f.action.kind === 'open_ticket' ? ownBlock(S, w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null)", src)
         self.assertIn("(held ? ' disabled title=\"' + esc(held) + '\"' : '') + '>' + esc(f.action.label) + '</button>' +", src)
         self.assertIn("(held ? ' <span class=\"smart-why\">' + esc(short(held, 110)) + '</span>' : '') + '</div>';", src)
         # the gates follow the box: typing repaints the cards whenever what the text allows changes
