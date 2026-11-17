@@ -382,8 +382,10 @@ NOT_SENDS = {
     ("pages/watchlists.js", "('/api/watchlists'"): "a watchlist",
 }
 #: controls that send nothing themselves but hand the owner to a ticket: one hand-off per click
-HANDOFFS = {("pages/smartticket.js", "return T.guard('smart.handoff:' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,"):
-            "the Smart Ticket's hand-off (each card's Open in ticket, a group's Strategies tab, a flag's action: each button its own control)"}
+HANDOFFS = {("pages/smartticket.js", "return T.guard('smart.handoff:' + (st ? st.pseq : 0) + ':' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':'"
+                                     " + (b.dataset.f || ''), e, run,"):
+            "the Smart Ticket's hand-off (each card's Open in ticket, a group's Strategies tab, a flag's action: each button of each reading its own"
+            " control - round 10 fixes)"}
 
 _CLIENT = None
 

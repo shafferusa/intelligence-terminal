@@ -644,7 +644,8 @@ class SmartTicketShellTests(unittest.TestCase):
         # one card at a time: Open in ticket opens the card its button names, never a walk over the cards
         # (1.0.7.2 simplify round 10: through the hand-off's guard, T.guard('smart.handoff:' + the button, ...): one hand-off per press of a button)
         self.assertIn("if (act === 'open') { if (c) { handOff(e, b, function () { openCard(S, c); }); } return; }", src)
-        self.assertIn("return T.guard('smart.handoff:' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,", src)
+        # (round 10 fixes: each reading's button is its own control - the key names the reading, S.pseq)
+        self.assertIn("return T.guard('smart.handoff:' + (st ? st.pseq : 0) + ':' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,", src)
         self.assertNotIn("S.cards", src[src.index("function openCard("):src.index("function openStrategies(")])
 
     def test_open_in_ticket_has_every_gate(self):

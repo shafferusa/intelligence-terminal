@@ -586,6 +586,26 @@
     guard.on = function (key, opts, run) { return function (ev) { return guard(key, ev, function () { return run(ev); }, opts); }; };
     return guard;
   })();
+  /* simplify round 10 fixes (a key held down presses nothing): a key held on a focused button reaches the page as clicks of their own -
+     Edge / Chrome press the focused button again on every repeat of Enter (a keydown with repeat: true, then a click with detail 0 and
+     no repeat of its own), so the guard never saw them as the key held: the question the first press opened (its focus on its button)
+     was answered yes by the first repeat, and a control whose answer came back inside the repeat delay acted again.  One listener on the
+     window, before any other: a repeat of Enter has no default action - the browser presses no button and submits nothing (a textarea or
+     an editable text still takes its new lines); every handler still sees it, and T.guard refuses it.  And Enter acts only where it went
+     down: when its keydown moved the focus (a question it opened, a page it changed), the keypress that would press the button the focus
+     moved to has no default action.  One fresh press of Enter on a question's button still answers it. */
+  (function () {
+    var downOn = null;                                         /* where the Enter being pressed went down (until its keyup) */
+    function lines(t) { return !!(t && (t.tagName === 'TEXTAREA' || t.isContentEditable)); }
+    window.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || e.isComposing) { return; }
+      if (!e.repeat) { downOn = e.target; return; }
+      if (!lines(e.target)) { e.preventDefault(); }
+    }, true);
+    window.addEventListener('keypress', function (e) { if (e.key === 'Enter' && downOn && e.target !== downOn) { e.preventDefault(); } }, true);
+    window.addEventListener('keyup', function (e) { if (e.key === 'Enter') { downOn = null; } }, true);
+    window.addEventListener('blur', function () { downOn = null; });
+  })();
 
   /* ---------------------------------------------------------------- conventions ----------------------------------- */
   T.conv = function (key) { var c = T.state.conventions || {}; return c[key] || ''; };
@@ -732,7 +752,8 @@
         var acts = T.h('div', { class: 'modal-actions' }), dk = 'dialog:' + (++_dialogSeq) + ':';
         /* simplify round 10 (the guard): every action of a dialog but its Cancel acts through T.guard - the second click of a double click
            (the one that opened the dialog, or its own) never confirms, books or cancels anything, nor a key held on it, nor a second press
-           while its request is in flight (an onClick returns its request's promise) */
+           while its request is in flight (an onClick returns its request's promise).  Round 10 fixes: the key that opened a question never
+           answers it - its repeats press no button and its keypress presses none the focus moved to (the window's key rule, after T.guard) */
         spec.actions.forEach(function (a, i) {
           var b = T.h('button', { class: 'btn ' + (a.cls || ''), onclick: function (ev) {
             if (!a.onClick) { handle.close(); return; }

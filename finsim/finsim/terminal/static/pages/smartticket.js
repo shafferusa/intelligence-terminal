@@ -34,7 +34,8 @@
  *   in the ticket at HH:MM": the page never reads orders, so it never says that an order was sent.  Simplify round 8: a click acts
  *   here only as a click of its own (the second click of a double click never does), and the rest of the gesture that handed an order
  *   over (a double click's second click, its double click) is swallowed before the account page sees it - it never lands on that
- *   ticket's Submit or on a Markets row that would fill the ticket with another instrument.
+ *   ticket's Submit or on a Markets row that would fill the ticket with another instrument.  Simplify round 10 fixes: nor does a second
+ *   click of its own on the same point (slower than a double click) until the pointer has moved away or 2 s have passed - said.
  * - A product's own ticket (the card's "Open the FX desk", "Open the bond ticket" ...: a new trade there, prefilled with the side, the
  *   amount and the account) opens on the same gates less the order ticket's own (simplify round 5): the reading holds, the instruction
  *   has no red flag and no unread word, the card has no red flag but the one naming its own ticket (and "how many?" when no amount was
@@ -79,6 +80,7 @@
                   'in the Fund book: buy 100 ACME; buy 100 WIDG gtc'];
   var st = null;                                               /* the mounted page's state (null while another page shows) */
   var ui = null;
+  var reads = 0;                                               /* round 10 fixes: each reading of this page load has its own number (S.pseq), the page shown again included */
   /* simplify round 1: an edit's repaint waits while a pointer is down, so the click that took the focus out of the box (Open in ticket
      right after typing) lands on the button it was pressed on, never on a repainted one */
   var pointerDown = false, repaintDue = null;
@@ -95,14 +97,35 @@
      docked ticket (or the FX desk, the bond or the private ticket) then lies under the pointer: its Submit armed once the preview
      answers, a Markets row whose double click fills the ticket with another instrument.  The second click of a double click (a third
      ...) would land there.  From a hand-off until the next press that starts a new gesture (a click count of 1), every press, release,
-     click and double click with a click count above 1 is swallowed before any handler sees it (capture, on the window) */
-  var handGesture = false;
+     click and double click with a click count above 1 is swallowed before any handler sees it (capture, on the window).
+     Simplify round 10 fixes (R-1): a second click OF ITS OWN on the same point (a double click slower than the system's double-click
+     time, an impatient second click) is the rest of that gesture too.  After a hand-off by a click, a press on the account page it
+     opened within REST_PX of where that click was - whatever its click count - is swallowed with its release, click and double click
+     until the pointer has moved away from there or REST_MS have passed, and said: nothing that came up under the pointer acts (the
+     ticket's Submit armed there, a desk's Confirm, a Markets row).  A hand-off from the keyboard has no point: the next click is a gesture
+     of its own. */
+  var REST_MS = 2000, REST_PX = 4;
+  var handGesture = false, hand = null, handRest = null, restPress = null;
+  function nearRest(e) { return Math.abs(e.clientX - handRest.x) <= REST_PX && Math.abs(e.clientY - handRest.y) <= REST_PX; }
   function dropGestureRest(e) {
-    if (!handGesture) { return; }
-    if (!(e.detail > 1)) { if (e.type === 'mousedown') { handGesture = false; } return; }
+    if (e.type === 'mousemove') { if (handRest && !nearRest(e)) { handRest = null; } return; }
+    if (e.type === 'mousedown') {
+      var r = T.router && T.router.current;
+      if (handRest && (Date.now() - handRest.at > REST_MS || (r && r.page !== 'smart' && r.account !== handRest.acct))) { handRest = null; }
+      restPress = handRest && r && r.account === handRest.acct && nearRest(e) ? handRest : null;   /* decided at the press, for its release, click and double click */
+      if (!(e.detail > 1)) { handGesture = false; }
+    }
+    var rest = !!restPress && e.detail > 0;
+    if (!rest && !(handGesture && e.detail > 1)) { return; }
     e.preventDefault(); e.stopImmediatePropagation();
+    if (rest && e.type === 'click') {
+      var msg = 'not taken: that click came where "' + restPress.label + '" was just pressed, as its ticket came up under the pointer - nothing was sent' +
+                ' or changed; move to the button you want and click it';
+      T.ui.toast(msg, 'err guard', 8000);
+      if (T.guard && T.guard.refused) { T.guard.refused.push({ key: 'smart.handoff.rest', msg: msg, at: Date.now() }); }
+    }
   }
-  ['mousedown', 'mouseup', 'click', 'dblclick'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });
+  ['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });
 
   /* ---------------------------------------------------------------- small helpers -------------------------------- */
   function esc(s) { return T.esc(s == null ? '' : s); }
@@ -351,7 +374,7 @@
     var text = textOverride != null ? String(textOverride) : ui.bar.value;
     if (!text.trim()) { say(S, 'type what you want to trade first (a fictional example: buy 100 ACME limit 50)', 'err'); return; }
     if (T.modulesKnown() && !T.hasModule('smart_ticket')) { say(S, 'the Smart Ticket\'s reader is not in this build: nothing can be read', 'err'); return; }
-    var seq = ++S.pseq;
+    var seq = S.pseq = ++reads;
     var book = forBook || (S.parsed && S.parsed.selected_book) || T.book.code || null;
     S.parsing = true; say(S, 'reading ...'); paint(S);
     var body = { text: text }; if (book) { body.book = book; }
@@ -420,6 +443,8 @@
     var f = Object.assign({}, fields || {}, { fresh: true, account_id: acct });
     var off = T.state.on('route', function (route) { off(); if (route && route.account === acct) { T.ticket.open(f); } });
     handGesture = true;                                       /* simplify round 8: the rest of this click's gesture never reaches that page */
+    var ev = hand && hand.ev;                                 /* round 10 fixes: nor a click of its own on the same point (above) */
+    handRest = ev && ev.type === 'click' && ev.detail > 0 ? { x: ev.clientX, y: ev.clientY, at: Date.now(), label: hand.label, acct: acct } : null;
     T.router.go(T.router.account(acct, 'markets'));
   }
   function openCard(S, c) {
@@ -767,16 +792,22 @@
   /* simplify round 10 (the guard): each hand-off button (a card's Open in ticket, a group's Strategies tab, a flag's Open the FX desk /
      the bond or private ticket) acts through T.guard as its own control - a second activation of it inside the double-click time (an Enter
      pressed twice on it, a key held down) hands nothing over again, said; another card's button is its own; it sends nothing itself (the
-     ticket it fills has its own Submit) */
+     ticket it fills has its own Submit).  Round 10 fixes: a button is the reading's (S.pseq: each reading of the page load is a new one,
+     the page shown again included) - a new reading's card is a new control, never refused for a press on the card of a reading before
+     it; the press is kept for the hand-off (handTicket) */
   function handOff(e, b, run) {
-    return T.guard('smart.handoff:' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,
-                   { label: String(b.textContent || 'the hand-off').trim(), not: 'not handed over', act: 'open it' });
+    var label = String(b.textContent || 'the hand-off').trim();
+    hand = { ev: e, label: label };
+    try {
+      return T.guard('smart.handoff:' + (st ? st.pseq : 0) + ':' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,
+                     { label: label, not: 'not handed over', act: 'open it' });
+    } finally { hand = null; }
   }
 
   /* ---------------------------------------------------------------- the page -------------------------------------- */
   function newTicketNow() {
     var S = st; if (!S || S.dead) { return; }
-    S.pseq++; S.parsing = false; S.parsed = null; S.parsedFrom = null; S.cards = []; S.edits = {}; S.opened = {}; S.lost = []; S.restored = false; S.expand = null;
+    S.pseq = ++reads; S.parsing = false; S.parsed = null; S.parsedFrom = null; S.cards = []; S.edits = {}; S.opened = {}; S.lost = []; S.restored = false; S.expand = null;
     S.text = ''; ui.bar.value = '';
     saveState(S);                                             /* simplify round 3: this window's draft only; another window keeps its own */
     paint(S); say(S, 'a new ticket: the text, its reading and your edits are cleared');

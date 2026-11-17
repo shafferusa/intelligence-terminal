@@ -801,10 +801,12 @@ class PageTests(unittest.TestCase):
 class TicketSourceTests(unittest.TestCase):
     def test_the_rest_of_a_hand_off_gesture_is_dropped_and_a_click_acts_alone(self):
         src = _read(os.path.join(STATIC, "pages", "smartticket.js"))
-        for s in ("var handGesture = false;",
-                  "if (!(e.detail > 1)) { if (e.type === 'mousedown') { handGesture = false; } return; }",
+        # (simplify round 10 fixes: the same rule, beside the rest of a hand-off by a click on its own point - test_terminal_simplify_r10_fix)
+        for s in ("var handGesture = false, hand = null, handRest = null, restPress = null;",
+                  "if (!(e.detail > 1)) { handGesture = false; }",
+                  "if (!rest && !(handGesture && e.detail > 1)) { return; }",
                   "e.preventDefault(); e.stopImmediatePropagation();",
-                  "['mousedown', 'mouseup', 'click', 'dblclick'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });"):
+                  "['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });"):
             self.assertEqual(1, src.count(s), s)
         at = src.index("function handTicket(S, acct, fields) {")
         body = src[at:src.index("\n  }\n", at)]
