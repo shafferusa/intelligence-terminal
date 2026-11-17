@@ -3543,6 +3543,11 @@ def h_rfq_accept(ctx: TxContext, payload: dict) -> dict:
     if row is None:
         raise NotFound("RFQ_UNKNOWN", f"quote request {rid or '(none)'} does not exist", {"rfq_id": rid})
     status = row["status"]
+    if status == "ACCEPTED" and row.get("accept_command_id"):
+        # 1.0.7.2 simplify round 10 (the guard): a quote is accepted once - a second acceptance (a double click, a resubmission after a lost
+        # answer) is answered as the acceptance that booked it (its stored answer, replayed), never booked again
+        from ..commands import AnsweredAs
+        raise AnsweredAs(int(row["accept_command_id"]), f"{rid} was accepted already (contract {row.get('contract_id')}): the same booking")
     if status != "QUOTED":
         why = {"REQUESTED": "the dealer has not quoted yet (the simulated dealer answers on the next lifecycle tick, about 30 s)",
                "ACCEPTED": f"it was already accepted (contract {row.get('contract_id')})", "DECLINED": "it was declined",

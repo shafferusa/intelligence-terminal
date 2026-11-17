@@ -561,7 +561,7 @@
       title: 'Terminate ' + c.contract_id, body: body, sticky: true,
       actions: [{ label: 'Cancel' }, { label: 'Terminate', cls: 'primary', onClick: function (m, btn) {
         btn.disabled = true; err.hidden = true;
-        T.api.post('/api/otc/contracts/' + encodeURIComponent(c.contract_id) + '/terminate', {}).then(function (r) {
+        return T.api.post('/api/otc/contracts/' + encodeURIComponent(c.contract_id) + '/terminate', {}).then(function (r) {
           m.close();
           var text = 'Terminated ' + c.contract_id + ' . value ' + money(r, 'termination_value') + ' . coupons settled: pay ' + money(r, 'accrued_pay') + ' / receive ' +
             money(r, 'accrued_receive') + (r.accrued_through ? ' (accrued through the night of ' + r.accrued_through + ((r.caught_up || []).length ? '; ' + r.caught_up.length +
@@ -630,6 +630,10 @@
   function rfqRequest(account, kind, terms) {
     return T.api.post('/api/otc/rfqs', { account_id: account, kind: kind, terms: terms });
   }
+  /* simplify round 10 (the guard): a ticket's Request quote (its button and its submit key) acts through T.guard as that ticket's own
+     control - one request in flight; the second click of a double click, a key held down or a second press inside the double-click time
+     requests nothing, said.  run returns the request's promise.  Shared by the swap, CDX, CDS and options / forwards tickets */
+  function guardRequest(key, ev, run) { return T.guard(key, ev && ev.type ? ev : null, run, { label: 'Request quote', not: 'not requested', act: 'request a quote' }); }
   function nowSec() { return T.clock && T.clock.nowInt ? T.clock.nowInt() : Math.floor(Date.now() / 1000); }
   function validText(r) {
     if (r.status !== 'QUOTED' || r.expires_ts == null) { return ''; }
@@ -638,7 +642,7 @@
   }
   /* the acceptance: the quote and what booking it posts (the IM, its funding, the cost of dealing), then Accept and book */
   function acceptDialog(r, after) {
-    T.api.get('/api/otc/rfqs/' + encodeURIComponent(r.rfq_id)).then(function (d) {
+    return T.api.get('/api/otc/rfqs/' + encodeURIComponent(r.rfq_id)).then(function (d) {
       var pv = d.quote_preview || {};
       var f = pv.funding || {};
       var rows = [['contract', (d.label || '') + ' with ' + (d.dealer || 'the dealer')], ['side', d.side_words || ''], ['quote', T.h('b', null, d.quote_words || '')],
@@ -653,7 +657,7 @@
           T.kv(rows), err),
         actions: [{ label: 'Cancel' }, { label: 'Accept and book', cls: 'primary', onClick: function (m, btn) {
           btn.disabled = true; err.hidden = true;
-          T.api.post('/api/otc/rfqs/' + encodeURIComponent(d.rfq_id) + '/accept', {}).then(function (res) {
+          return T.api.post('/api/otc/rfqs/' + encodeURIComponent(d.rfq_id) + '/accept', {}).then(function (res) {
             m.close();
             var c = res.contract || {};
             var t = res.im_transfer || {};
@@ -669,7 +673,7 @@
   }
   function d0(r) { return (r && r.rfq_id) || 'the quote request'; }
   function declineRfq(r, after) {
-    T.api.post('/api/otc/rfqs/' + encodeURIComponent(r.rfq_id) + '/decline', {}).then(function () { T.ui.toast(r.rfq_id + ' declined', 'ok', 3000); if (after) { after(); } },
+    return T.api.post('/api/otc/rfqs/' + encodeURIComponent(r.rfq_id) + '/decline', {}).then(function () { T.ui.toast(r.rfq_id + ' declined', 'ok', 3000); if (after) { after(); } },
       function (e) { T.ui.toast(r.rfq_id + ': ' + describe(e), 'err', 6000); if (after) { after(); } });
   }
   /* the quote requests of an account (opts.account_id) or of the selected book, open ones first, with Accept / Decline and a countdown;
@@ -712,16 +716,16 @@
     function action(r) {
       var cell = T.h('span');
       if (r.status === 'QUOTED' && r.actions && r.actions.accept && Number(r.expires_ts) > nowSec()) {
-        cell.appendChild(T.h('button', { class: 'btn small primary', title: 'book at the quoted terms', onclick: function () { acceptDialog(r, after); } }, 'Accept ...'));
+        cell.appendChild(T.h('button', { class: 'btn small primary', title: 'book at the quoted terms', onclick: T.guard.on('rfq.accept:' + r.rfq_id, { label: 'Accept', not: 'not opened', act: 'open the acceptance' }, function () { return acceptDialog(r, after); }) }, 'Accept ...'));
         cell.appendChild(document.createTextNode(' '));
       }
       if (r.status === 'REQUESTED' || r.status === 'QUOTED') {
-        cell.appendChild(T.h('button', { class: 'btn small', title: 'close this request; nothing is booked', onclick: function () { declineRfq(r, after); } }, 'Decline'));
+        cell.appendChild(T.h('button', { class: 'btn small', title: 'close this request; nothing is booked', onclick: T.guard.on('rfq.decline:' + r.rfq_id, { label: 'Decline', not: 'not declined', act: 'decline it' }, function () { return declineRfq(r, after); }) }, 'Decline'));
       } else if (r.status === 'EXPIRED' && r.terms) {
-        cell.appendChild(T.h('button', { class: 'btn small', title: 'ask the dealer again with the same terms', onclick: function () {
-          rfqRequest(r.account_id, r.kind, r.terms).then(function (x) { T.ui.toast('Quote requested again (' + x.rfq_id + ')', 'ok', 4000); load(); },
+        cell.appendChild(T.h('button', { class: 'btn small', title: 'ask the dealer again with the same terms', onclick: T.guard.on('rfq.again:' + r.rfq_id, { label: 'Request again', not: 'not requested', act: 'request a quote' }, function () {
+          return rfqRequest(r.account_id, r.kind, r.terms).then(function (x) { T.ui.toast('Quote requested again (' + x.rfq_id + ')', 'ok', 4000); load(); },
             function (e) { T.ui.toast(describe(e), 'err', 6000); });
-        } }, 'Request again'));
+        }) }, 'Request again'));
       } else if (r.status === 'ACCEPTED' && r.contract_id) {
         cell.appendChild(T.h('span', { class: 'muted' }, 'booked ' + r.contract_id));
       }
@@ -794,7 +798,7 @@
         ev.preventDefault(); ev.stopPropagation();
         var cur = state.previews[state.kind], p = (cur && cur.p) || {}, f = p.funding || {};
         var fundable = f.ok !== false && !(p.im_funding && p.im_funding.ok === false);
-        if (cur && !cur.stale && !state.blocked && fundable) { onRequest(cur); }
+        if (cur && !cur.stale && !state.blocked && fundable) { onRequest(cur, ev); }
         return;
       }
       if (ui.form && ui.form.contains(ev.target) && T.keys.is(ev, 'ticket.preview')) { ev.preventDefault(); ev.stopPropagation(); if (!state.blocked) { onPreview(); } return; }
@@ -1099,7 +1103,7 @@
       }
       var why = state.blocked ? state.blocked : (pv.stale ? 'preview again first' : unfunded);
       ui.requestBtn = T.h('button', { class: 'btn primary', disabled: !!why, title: why || ('asks the prime broker\'s simulated dealer for a quote (it answers within about 30 s; the quote is good for 120 s)' +
-        (T.keys.paren ? T.keys.paren('ticket.submit') : '')), onclick: function () { onRequest(pv); } }, 'Request quote');
+        (T.keys.paren ? T.keys.paren('ticket.submit') : '')), onclick: function (ev) { onRequest(pv, ev); } }, 'Request quote');
       box.appendChild(T.h('div', { class: 'actions' }, ui.requestBtn, why ? T.h('span', { class: 'hint' }, ' ' + why) : null));
       ui.preview.appendChild(box);
     }
@@ -1290,12 +1294,13 @@
 
     /* ---- the quote request (C14): the preview's terms go to the prime broker's simulated dealer; its quote is accepted or declined in
        the Quote requests block above the contracts (it answers on the next lifecycle tick, about 30 s; a quote is good for 120 s) ---- */
-    function onRequest(pv) {
+    function onRequest(pv, ev) { return guardRequest('rfq.request:swap:' + account, ev, function () { return requestNow(pv); }); }
+    function requestNow(pv) {
       if (!pv || pv.stale || state.blocked) { return; }
       var p = pv.p || {};
       var kind = p.kind || pv.kind;
       if (ui.requestBtn) { ui.requestBtn.disabled = true; ui.requestBtn.textContent = 'Requesting ...'; }
-      rfqRequest(account, kind, pv.terms).then(function (r) {
+      return rfqRequest(account, kind, pv.terms).then(function (r) {
         if (ui.requestBtn) { ui.requestBtn.disabled = false; ui.requestBtn.textContent = 'Request quote'; }
         var text = 'Quote requested from ' + (p.broker || 'the prime broker') + ' (' + (r.rfq_id || '') + '): the simulated dealer answers within about 30 s - accept or' +
           ' decline it under Quote requests';
@@ -1718,7 +1723,7 @@
   T.components.swapticket = { mount: mount, prefill: prefill, terminate: terminate, toCents: toCents, pctToFraction: pctToFraction, fractionToPct: fractionToPct,
     fmtPct: fmtPct, eventsText: eventsText, fixingText: fixingText, sideText: sideText, readTerms: readTerms, formValues: formValues,
     /* C14 / UI-11: the quote requests and the contract timeline, for the CDX and options tickets and the Derivatives page */
-    rfqRequest: rfqRequest, mountRfqs: mountRfqs, acceptDialog: acceptDialog, timelineTable: timelineTable, kindShort: kindShort, nowText: nowText,
+    rfqRequest: rfqRequest, guardRequest: guardRequest, mountRfqs: mountRfqs, acceptDialog: acceptDialog, timelineTable: timelineTable, kindShort: kindShort, nowText: nowText,
     dealtText: dealtText, accruedText: accruedText, asofBadge: asofBadge, modelBadge: modelBadge, QUOTE_SOURCE: QUOTE_SOURCE,
     /* FX_CCS_PLAN 1.0.6.1: the confirmation, the linked deals and an FX forward's pricing record, for the Derivatives page's drawer */
     confRows: confRows, linkedText: linkedText, recordRows: recordRows };

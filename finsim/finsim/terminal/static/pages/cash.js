@@ -359,14 +359,14 @@
         if (!banks.length) { lender.appendChild(T.h('option', { value: '' }, 'no bank in the directory')); }
         fillBank();
       }, function (e) { T.clear(lender); lender.appendChild(T.h('option', { value: '' }, 'banks unavailable')); msg.textContent = T.api.fail(e, 'bank directory'); });
-      var btn = T.h('button', { class: 'btn', onclick: function () {
+      var btn = T.h('button', { class: 'btn', onclick: T.guard.on('cash.loan:' + acct, { label: 'Borrow', act: 'draw the loan' }, function () {
         btn.disabled = true; msg.textContent = '';
         var body = { account_id: acct, currency: ccy.value, amount: amt.value.trim().replace(/,/g, ''), counterparty_id: lender.value || null, tenor: tenor.value || null };
-        T.api.post('/api/credit/loans', body).then(function (r) {
+        return T.api.post('/api/credit/loans', body).then(function (r) {
           btn.disabled = false; amt.value = '';
           T.ui.toast('loan ' + (r.loan && r.loan.loan_id || '') + ' drawn at ' + loanRateText(r.rate), 'ok', 6000); load(); T.poll.kick('account_detail');
         }, function (e) { btn.disabled = false; msg.textContent = failText(e, 'loan'); });
-      } }, 'Draw loan');
+      }) }, 'Draw loan');
       f.appendChild(T.form([T.field('lender', lender), T.field('currency', ccy), T.field('tenor', tenor), T.field('principal', amt), ['', btn]]));
       f.appendChild(terms); f.appendChild(msg);
       return f;
@@ -387,15 +387,16 @@
           sw.disabled = false; T.ui.toast('PB financing ' + (want ? 'switched on' : 'switched off'), 'ok'); T.poll.kick('accounts'); load();
         }, function (e) { sw.disabled = false; sw.checked = !want; msg.textContent = failText(e, 'PB financing switch'); });
       });
+      /* simplify round 10 (the guard): Draw and Repay act through T.guard, each its own control (one request in flight) */
       function go(kind) {
-        return function () {
+        return T.guard.on('cash.pb.' + kind + ':' + acct, { label: kind === 'draw' ? 'Draw' : 'Repay', not: 'not ' + (kind === 'draw' ? 'drawn' : 'repaid'), act: kind }, function () {
           msg.textContent = '';
-          T.api.post('/api/credit/pb/' + encodeURIComponent(acct) + '/' + kind, { amount: amt.value.trim().replace(/,/g, '') }).then(function (r) {
+          return T.api.post('/api/credit/pb/' + encodeURIComponent(acct) + '/' + kind, { amount: amt.value.trim().replace(/,/g, '') }).then(function (r) {
             amt.value = '';
             var res = (r && r.result) || r || {};
             T.ui.toast('PB financing ' + (kind === 'draw' ? 'drawn ' : 'repaid ') + T.money(res, 'amount') + ' . financed now ' + T.money(res, res.financed != null || res.financed_c != null ? 'financed' : 'financed_left'), 'ok', 5000); load(); T.poll.kick('account_detail'); T.poll.kick('accounts');
           }, function (e) { msg.textContent = failText(e, 'PB ' + kind); });
-        };
+        });
       }
       f.appendChild(state);
       f.appendChild(T.form([T.field('switch', swLab), T.field('amount', amt), ['', T.h('span', { class: 'row' }, T.h('button', { class: 'btn', onclick: go('draw') }, 'Draw'), T.h('button', { class: 'btn', onclick: go('repay') }, 'Repay'))]]));
@@ -435,7 +436,7 @@
         actions: [{ label: 'Cancel' }, { label: 'Repay', cls: 'primary', onClick: function (m, b) {
           b.disabled = true; msg.textContent = '';
           var body = full.checked ? { full: true } : { amount: amt.value.trim().replace(/,/g, '') };
-          T.api.post('/api/credit/loans/' + encodeURIComponent(loan.loan_id) + '/repay', body).then(function (r) {
+          return T.api.post('/api/credit/loans/' + encodeURIComponent(loan.loan_id) + '/repay', body).then(function (r) {
             m.close();
             T.ui.toast('repaid ' + loan.loan_id + ': interest ' + T.money(r, 'paid_interest') + ', principal ' + T.money(r, 'paid_principal') + (r.closed ? ' - loan closed' : ''), 'ok', 6000);
             load(); T.poll.kick('account_detail');

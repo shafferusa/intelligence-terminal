@@ -839,16 +839,21 @@ class DeskSourceTests(unittest.TestCase):
     def test_the_own_desks_take_a_click_of_their_own_and_hold_after_a_booking(self):
         fx = _read(os.path.join(STATIC, "components", "fxdesk.js"))
         bond = _read(os.path.join(STATIC, "components", "bondticket.js"))
-        for src, btn, at, mine in ((fx, "confirm", "confirmAt", FX_ALONE), (bond, "submit", "submitAt", BOND_ALONE)):
-            handler = src[src.index(btn + ".addEventListener('click', function (e) {"):]
-            handler = handler[:handler.index("});")]
-            self.assertIn("if (e && e.detail > 1) {", handler)
-            self.assertIn("if (Date.now() - st.%s > 5000) {" % at, handler)
-            self.assertIn("setStatus('%s', 'err');" % mine, handler)
-            self.assertIn("st.holdUntil = Date.now() + 20000;", handler)              # the 10 s refresh paints no 'ready' over it
-            self.assertIn("st.%s = Date.now(); doSubmit();" % at, handler)
-            self.assertEqual(2, src.count("if (!e.repeat) { doSubmit(); }"), "the box's submit key and the desk's own")
+        # simplify round 10: each desk's button, its box's submit key and the desk's own key act through the shared guard (core.js
+        # T.guard) as one control: a second click of a double click / a key repeat / a press while the deal is in flight never books; a
+        # refusal that began elsewhere is said on the desk (FX_ALONE / BOND_ALONE: the guard's words) and held readable 20 s
+        for src, btn, fn, key, words in ((fx, "confirm", "guardedDeal", "fx.confirm", "{ label: 'Confirm', not: 'not booked', act: 'book the deal',"),
+                                         (bond, "submit", "guardedTrade", "bond.submit", "{ label: 'Submit', not: 'not traded', act: 'trade',")):
+            self.assertIn(btn + ".addEventListener('click', function (e) { %s(e); });" % fn, src)
+            guard = src[src.index("function %s(e) {" % fn):]
+            guard = guard[:guard.index("\n  }\n")]
+            self.assertIn("return T.guard('%s', e || null, doSubmit, %s" % (key, words), guard)
+            self.assertIn("say: function (m) { if (me && me === st) { setStatus(m, 'err'); st.holdUntil = Date.now() + 20000; } } });", guard)
+            self.assertEqual(2, src.count("{ e.preventDefault(); e.stopPropagation(); %s(e); }" % fn), "the box's submit key and the desk's own")
+            self.assertNotIn("doSubmit(); }", src.replace("function doSubmit() {", ""))       # nothing books but through the guard
             self.assertNotIn("invalidate(); runPreview(true);", src)                     # no preview of the same deal after a booking
+        self.assertTrue(FX_ALONE.startswith("not booked: Confirm takes a click of its own") and FX_ALONE.endswith("click Confirm once to book the deal"))
+        self.assertTrue(BOND_ALONE.startswith("not traded: Submit takes a click of its own") and BOND_ALONE.endswith("click Submit once to trade"))
         self.assertIn("if (!document.hidden && st && !st.booked && document.body.contains(root)", fx)
         self.assertIn("if (!st || seq !== st.seq || st.booked) { return; }", fx)
         self.assertIn("if (st.booked) { setStatus('not booked again: '", fx)
@@ -868,13 +873,16 @@ class DeskSourceTests(unittest.TestCase):
         self.assertIn("disabled: !canSubmit || !!spec.$sent", hedge)
         fn = ticket[ticket.index("function submitPackage(body, spec, click) {"):]
         fn = fn[:fn.index("\n  }\n")]
-        self.assertIn("if (click && click.detail > 1) {", fn)
-        self.assertIn(PKG_ALONE, fn)
-        self.assertIn("return send(body, rid, 'package');", fn)
-        self.assertLess(fn.index("packageClickAt = Date.now();"), fn.index("return send(body, rid, 'package');"))
-        # the order ticket's submit key: a repeat never sends (the ticket's own keys and the page-wide one)
-        self.assertIn("if (K.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { submit(); } return; }", ticket)
-        self.assertIn("if (T.keys.is(e, 'ticket.submit') && !ui.root.contains(e.target)) { e.preventDefault(); if (!e.repeat) { submit(); } }", ticket)
+        # simplify round 10: Submit package goes through the shared guard (core.js T.guard; PKG_ALONE: the guard's words)
+        self.assertIn("T.guard('ticket.package', click || null, function () {", fn)
+        self.assertIn("var call = send(body, rid, 'package');", fn)
+        self.assertIn("}, PACKAGE_GUARD);", fn)
+        self.assertIn("return sent;", fn)
+        self.assertIn("var PACKAGE_GUARD = { label: 'Submit package', say: function (m) { paintStatus(m, 'err'); } };", ticket)
+        self.assertTrue(PKG_ALONE.startswith("not sent: Submit package takes a click of its own"))
+        # the order ticket's submit key: a repeat never sends (the ticket's own keys and the page-wide one: the guard refuses ev.repeat)
+        self.assertIn("if (K.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); guardedSubmit(e); return; }", ticket)
+        self.assertIn("if (T.keys.is(e, 'ticket.submit') && !ui.root.contains(e.target)) { e.preventDefault(); guardedSubmit(e); }", ticket)
 
 
 if __name__ == "__main__":

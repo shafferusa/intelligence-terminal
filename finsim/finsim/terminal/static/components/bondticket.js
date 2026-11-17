@@ -83,7 +83,7 @@
     T.clear(body);
     if (st && st.timer) { clearInterval(st.timer); }
     st = { body: body, account_id: account_id, instrument_id: null, inst: null, side: 'BUY', seq: 0, deal: 0, preview: null, previewAt: 0, deb: null, busy: false, ui: {}, timer: null,
-           filled: null, submitAt: 0 };           /* simplify round 9: the trade just filled (Submit held until an edit or Preview); Submit's last click of its own */
+           filled: null };                        /* simplify round 9: the trade just filled (Submit held until an edit or Preview) */
     var root = T.h('div', { class: 'bt', tabindex: '-1' });
     var acct = T.h('div', { class: 'meta', title: account_id }, 'account ' + (T.accountName ? T.accountName(account_id) : account_id));   /* V104R2-BW-02 (f): the name; the id in the hover */
     var inst = T.h('input', { type: 'text', id: 'ticket-instrument', placeholder: 'CUSIP, coupon or maturity (e.g. 912810 or 2035)', autocomplete: 'off', 'aria-label': 'bond' });
@@ -118,23 +118,15 @@
     /* the registry's ticket keys (keys.js; Settings > Keyboard): the face box submits / previews itself; simplify round 9 (R-1): the
        submit key held down trades once - its repeats never trade */
     face.addEventListener('keydown', function (e) {
-      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
+      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); guardedTrade(e); }
       else if (T.keys.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); previewNow(); }
     });
     previewBtn.addEventListener('click', function () { previewNow(); });
     /* simplify round 9 (R-1): Submit takes a click of its own, as the order ticket's Submit does - the second click of a double click (a
-       third ...) never trades.  After a click on Submit it is that Submit's double click (filled or said already: nothing more); else the
-       click before it was not on an armed Submit (it handed a trade over, or Submit came under the pointer since): not traded, said */
-    submit.addEventListener('click', function (e) {
-      if (e && e.detail > 1) {
-        if (Date.now() - st.submitAt > 5000) {
-          setStatus('not traded: Submit takes a click of its own (that was the second click of a double click) - click Submit once to trade', 'err');
-          st.holdUntil = Date.now() + 20000;                     /* readable: the 10 s refresh paints no 'ready' over it */
-        }
-        return;
-      }
-      st.submitAt = Date.now(); doSubmit();
-    });
+       third ...) never trades.  Round 10: through the guard (guardedTrade, T.guard in core.js) - after a click of its own it is that
+       Submit's double click (filled already: said in a toast, never over its answer); else the click before it was not on Submit (it handed
+       a trade over, or Submit came under the pointer since): not traded, said on the ticket; one trade in flight */
+    submit.addEventListener('click', function (e) { guardedTrade(e); });
     clear.addEventListener('click', function () { st.instrument_id = null; st.inst = null; inst.value = ''; face.value = ''; meta.textContent = 'pick a bond'; invalidate(); T.clear(pv); T.clear(result); });
     root.addEventListener('keydown', function (e) {
       var typing = e.target && (e.target.tagName === 'INPUT');
@@ -142,7 +134,7 @@
       if (typing) { return; }                                      /* the face box submits itself: no second submit here */
       if (T.keys.is(e, 'ticket.buy')) { setSide('BUY'); schedule(); e.preventDefault(); e.stopPropagation(); }
       else if (T.keys.is(e, 'ticket.sell')) { setSide('SELL'); schedule(); e.preventDefault(); e.stopPropagation(); }
-      else if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
+      else if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); guardedTrade(e); }
     });
     st.paintKeys = function () {
       meta.textContent = st.instrument_id ? meta.textContent : 'pick a bond from the list' + rowKeysParen() + ' or search here';
@@ -288,6 +280,13 @@
     ['positions', 'account_detail', 'accounts', 'orders'].forEach(function (n) { T.poll.kick(n); });
   }
   function unseenTrade(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while the ticket was out of sight: ' + msg, cls, 15000); } }
+  /* simplify round 10 (the guard): Submit, the face box's submit key and the ticket's own act through T.guard as one control - a refusal
+     that began elsewhere is said on the ticket and held readable (the 10 s refresh paints no 'ready' over it) */
+  function guardedTrade(e) {
+    var me = st;
+    return T.guard('bond.submit', e || null, doSubmit, { label: 'Submit', not: 'not traded', act: 'trade',
+      say: function (m) { if (me && me === st) { setStatus(m, 'err'); st.holdUntil = Date.now() + 20000; } } });
+  }
   function doSubmit() {
     if (!st || st.busy) { return; }
     if (st.filled) { setStatus('not traded again: ' + st.filled + ' filled - change the bond, the side or the face, or press Preview, to trade again', 'err'); return; }
@@ -296,7 +295,7 @@
     if (!same(f, st.previewFields) || Date.now() - st.previewAt > PREVIEW_TTL_MS) { setStatus('the preview is stale - previewing again', 'err'); runPreview(); return; }
     var me = st, deal = st.deal, bond = (st.inst && st.inst.symbol) || String(st.instrument_id || '').replace(/^UST-/, ''), words = tradeWords(f, bond);
     st.busy = true; st.ui.submit.disabled = true; setStatus('submitting ...', '');
-    T.api.post('/api/bonds/trade', { account_id: f.account_id, instrument_id: f.instrument_id, side: f.side, qty: Number(f.face) }).then(function (r) {
+    return T.api.post('/api/bonds/trade', { account_id: f.account_id, instrument_id: f.instrument_id, side: f.side, qty: Number(f.face) }).then(function (r) {
       var fill = (r && r.fill) || {};
       var eco = (r && r.economics) || {};
       var head = (r && r.replayed ? 'already submitted: ' : 'filled: ') + fill.side + ' ' + T.fmt.qty(fill.qty) + ' ' + bond + ' @ ' + fill.price;

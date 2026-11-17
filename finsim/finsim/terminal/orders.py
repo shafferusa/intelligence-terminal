@@ -94,7 +94,7 @@ from typing import Dict, Iterable, List, Optional
 
 from . import config, execution
 from .books import account_kind_for, account_row, lifetime_row
-from .commands import Command, ConflictError, RejectError, TxContext
+from .commands import AnsweredAs, Command, ConflictError, RejectError, TxContext, first_use
 from .db import dumps, next_id
 from .clock import ny_of
 from .instruments import Instrument
@@ -447,6 +447,21 @@ def _suspend(ctx: TxContext, orow: OrderRow, e: RejectError, rec: Optional[Quote
 
 
 # ---- order.submit ----------------------------------------------------------------------------------------------------------
+def _preview_used(ctx: TxContext, services, payload: dict) -> None:
+    """1.0.7.2 simplify round 10 (the guard): a preview id is single-use for its order kind while the preview lives - a second order command
+    of this kind (a submit, a package, an amend, a replace) carrying the id that a committed one used (a double click, a resubmission after
+    a lost answer, under another request id) is answered as that command (``commands.AnsweredAs``: its stored answer, replayed) and never
+    placed again.  Read first, before the order is checked again (the first may have filled it, used the cash or the shares, or ended the
+    order an amend or a replace was for: the same order is that answer, not a refusal).  Only a committed command uses the id: a refusal
+    (CONFIRM_REQUIRED, PREVIEW_STALE ...) leaves it free; an unknown or expired preview is left to the route's own answer (PREVIEW_STALE)."""
+    pid = payload.get("preview_id")
+    if not isinstance(pid, str) or not pid or preview_store(services).get(pid, ctx.ts) is None:
+        return
+    first = first_use(ctx.conn, ctx.kind, "preview_id", pid, ctx.ts - config.PREVIEW_TTL_S, exclude_id=ctx.command_id)
+    if first is not None:
+        raise AnsweredAs(first, f"the preview {pid} was used by an earlier {ctx.kind or 'order'} command: the same order")
+
+
 def _check_preview_and_confirm(ctx: TxContext, services, vo: ValidatedOrder, payload: dict) -> None:
     pid = payload.get("preview_id")
     if pid:
@@ -793,6 +808,7 @@ def _fill_package(ctx: TxContext, services, pkg, legs: List[OrderRow], recs: Dic
 
 def h_submit(ctx: TxContext, payload: dict) -> dict:
     services = _services(ctx)
+    _preview_used(ctx, services, payload)          # simplify round 10: an order's / a package's preview id is single-use
     if isinstance(payload.get("package"), dict):
         return _submit_package(ctx, services, payload)
     vo = validate(services, payload, snapshot=ctx.marks, conn=ctx.conn, now=ctx.ts, queue_unfunded=True)     # funding alone queues (FUNDS_WAIT); PRIVATE / BOND / FX / OTC: USE_OWN_TICKET there
@@ -1314,6 +1330,7 @@ def h_amend(ctx: TxContext, payload: dict) -> dict:
     51.00 it reserves 100 x 51.00 + 1.00 = 5,101.00 (the 5,001.00 it held is released into the check), event "AMENDED limit 50.00 -> 51.00"."""
     services = _services(ctx)
     conn = ctx.conn
+    _preview_used(ctx, services, payload)          # simplify round 10: an amend's preview id is single-use
     oid = str(payload.get("order_id") or "")
     if conn.execute("SELECT 1 FROM orders WHERE order_id=?", (oid,)).fetchone() is None:
         raise RejectError("NOT_FOUND", f"order {oid} does not exist")
@@ -1426,6 +1443,7 @@ def h_replace(ctx: TxContext, payload: dict) -> dict:
     returned."""
     services = _services(ctx)
     conn = ctx.conn
+    _preview_used(ctx, services, payload)          # simplify round 10: a replace's preview id is single-use
     oid = str(payload.get("order_id") or "")
     if conn.execute("SELECT 1 FROM orders WHERE order_id=?", (oid,)).fetchone() is None:
         raise RejectError("NOT_FOUND", f"order {oid} does not exist")

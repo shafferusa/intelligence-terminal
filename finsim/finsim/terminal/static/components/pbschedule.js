@@ -328,7 +328,7 @@
         body: T.h('div', null, T.h('div', { class: 'hint' }, rel.close_rule || ''), T.kv([['account', account], ['agreements', rel.agreements_line || '']])),
         actions: [{ label: 'Cancel' }, { label: 'Close relationship', cls: 'primary', onClick: function (m, btn) {
           btn.disabled = true;
-          T.api.post(relPath, {}).then(function () {
+          return T.api.post(relPath, {}).then(function () {
             m.close();
             T.ui.toast(rel.name + ' relationship closed (' + account + '); its history stays readable', 'ok', 6000);
             ['accounts', 'books', 'account_detail'].forEach(function (n) { if (T.poll && T.poll.kick) { T.poll.kick(n); } });
@@ -371,7 +371,7 @@
           { label: 'Cancel' },
           { label: 'Apply', cls: 'primary', onClick: function (m, btn) {
             btn.disabled = true;
-            T.api.patch(path, c.patch).then(function (r) {
+            return T.api.patch(path, c.patch).then(function (r) {
               m.close();
               if (state.dead) { return; }
               var after = {};

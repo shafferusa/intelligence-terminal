@@ -268,8 +268,13 @@
 
   /* ---------------------------------------------------------------- state ----------------------------------------- */
   var orderGen = 0;                                  /* the number of the order the ticket shows (st.gen); see the header */
-  var submitClickAt = 0;                             /* simplify round 8: when Submit last took a click of its own (see wire) */
-  var packageClickAt = 0;                            /* simplify round 9: when Submit package last took one (see submitPackage) */
+  /* simplify round 10 (the guard): the ticket's sends act through T.guard (core.js) - Submit, its submit key (in the ticket and page-wide),
+     Accept & submit and the exported submit share one control ('ticket.submit': one order in flight), Submit package has its own; a
+     refusal that began elsewhere is said on the status line in the words of rounds 8 and 9 */
+  var SUBMIT_GUARD = { label: 'Submit', say: function (m) { paintStatus(m, 'err'); } };
+  var PACKAGE_GUARD = { label: 'Submit package', say: function (m) { paintStatus(m, 'err'); } };
+  var ACCEPT_GUARD = { label: 'Accept & submit', say: function (m) { paintStatus(m, 'err'); } };
+  function guardedSubmit(ev) { return T.guard('ticket.submit', ev || null, function () { return submit(); }, SUBMIT_GUARD); }
   function fresh(account_id) {
     return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
              hedge_pos: null, hedge_for: null, fx_convert: false,
@@ -291,7 +296,7 @@
     apply(fields);
     return handle();
   }
-  function handle() { return { state: function () { return st; }, preview: function () { runPreview(true); }, submit: function () { submit(); }, clear: clear, el: ui && ui.root }; }
+  function handle() { return { state: function () { return st; }, preview: function () { runPreview(true); }, submit: function () { return guardedSubmit(null); }, clear: clear, el: ui && ui.root }; }
   function build(body, acct) {
     clearTimers();
     var pseq = st ? st.pseq : 0;
@@ -375,8 +380,8 @@
       document.addEventListener('keydown', function (e) {
         if (!ui || !ui.root.isConnected || !T.dock.visible()) { return; }
         if (T.ui && T.ui.dialogs && T.ui.dialogs()) { return; }
-        /* simplify round 9: the key held down submits once - its repeats never send */
-        if (T.keys.is(e, 'ticket.submit') && !ui.root.contains(e.target)) { e.preventDefault(); if (!e.repeat) { submit(); } }
+        /* simplify round 9: the key held down submits once - its repeats never send (round 10: through the guard) */
+        if (T.keys.is(e, 'ticket.submit') && !ui.root.contains(e.target)) { e.preventDefault(); guardedSubmit(e); }
       });
       T.state.on('keybinds', function () { if (ui && ui.root.isConnected) { paintKeyHints(); } });
       T.state.on('route', function (r) { if (ui && ui.root.isConnected && r && r.account && st && r.account !== st.account_id) { reset(r.account); } });
@@ -708,16 +713,11 @@
     ui.covered.addEventListener('change', function () { st.covered = !!ui.covered.checked && coveredOk(); paintFields(); fieldChanged(); });
     ui.hedgeBtn.addEventListener('click', function () { toggleHedge(); });
     ui.previewBtn.addEventListener('click', function () { runPreview(true); });
-    /* simplify round 8 (R-1): Submit takes a click of its own - the second click of a double click (a third ...) never sends.  After a
-       click on this Submit it is that Submit's double click (sent or said already: nothing more); else the click before it was not on an
-       armed Submit (it handed an order over, or this button came under the pointer since): not sent, said */
-    ui.submitBtn.addEventListener('click', function (e) {
-      if (e && e.detail > 1) {
-        if (Date.now() - submitClickAt > 5000) { paintStatus('not sent: Submit takes a click of its own (that was the second click of a double click) - click Submit once to send', 'err'); }
-        return;
-      }
-      submitClickAt = Date.now(); submit();
-    });
+    /* simplify round 8 (R-1): Submit takes a click of its own - the second click of a double click (a third ...) never sends.  Round 10:
+       through the guard (T.guard, core.js): after a click of its own it is that Submit's double click (sent already; said in a toast, never
+       over its answer); else the click before it was not on this Submit (it handed an order over, or this button came under the pointer
+       since): not sent, said on the status line; a click while its order is in flight or inside the double-click time: not sent, said */
+    ui.submitBtn.addEventListener('click', function (e) { guardedSubmit(e); });
     ui.clearBtn.addEventListener('click', clear);
     ui.root.addEventListener('keydown', onKey);
   }
@@ -942,7 +942,7 @@
     var P = T.components.preview;
     T.clear(ui.preview);
     if (!P) { T.notBuilt(ui.preview, 'components/preview.js'); return; }
-    if (st.stale) { ui.preview.appendChild(P.diff(st.stale.diff, { onAccept: acceptStale, onCancel: function () { st.stale = null; st.dirty = true; paintPreview(); paintSubmit(); paintStatus('cancelled; taking a fresh preview ...'); runPreview(false); } })); }
+    if (st.stale) { ui.preview.appendChild(P.diff(st.stale.diff, { onAccept: function (ev) { T.guard('ticket.submit', ev || null, acceptStale, ACCEPT_GUARD); }, onCancel: function () { st.stale = null; st.dirty = true; paintPreview(); paintSubmit(); paintStatus('cancelled; taking a fresh preview ...'); runPreview(false); } })); }
     if (st.submit_err) { var b = P.errorAsBlocker(st.submit_err); ui.preview.appendChild(T.h('div', { class: 'section pv-blocked' }, T.h('h2', null, 'Submit refused'), P.blockers([b]))); }
     if (st.preview_err) { var pb = P.errorAsBlocker(st.preview_err); ui.preview.appendChild(T.h('div', { class: 'section pv-blocked' }, T.h('h2', null, 'Preview failed'), P.blockers([pb]))); }
     if (st.preview) {
@@ -992,22 +992,23 @@
     var body = st.mode ? modeBody() : previewBody();
     body.preview_id = opts.preview_id || (st.preview && st.preview.preview_id) || null;
     body.confirm_large = !!opts.confirm_large;
-    send(body, rid, st.mode || 'single');
+    return send(body, rid, st.mode || 'single');
   }
   /* the hedge panel's Submit package (hedge.js hands its click along); true when the package was sent.  Simplify round 9 (R-3): it takes
-     a click of its own, as Submit does - the second click of a double click (a third ...) never sends; after a click of its own it is that
-     button's double click (sent or said already: nothing more), else the click before it was elsewhere: not sent, said */
+     a click of its own, as Submit does - the second click of a double click (a third ...) never sends; round 10: through the guard
+     (T.guard, core.js: its own control 'ticket.package'), said as Submit's refusals are */
   function submitPackage(body, spec, click) {
-    if (click && click.detail > 1) {
-      if (Date.now() - packageClickAt > 5000) { paintStatus('not sent: Submit package takes a click of its own (that was the second click of a double click) - click Submit package once to send', 'err'); }
-      return false;
-    }
-    packageClickAt = Date.now();
-    if (st.submitting) { return false; }
-    var rid = T.uuid();
-    body = Object.assign({}, body, { confirm_large: false });
-    st.package_spec = spec || null;
-    return send(body, rid, 'package');
+    var sent = false;
+    T.guard('ticket.package', click || null, function () {
+      if (st.submitting) { return null; }
+      var rid = T.uuid();
+      body = Object.assign({}, body, { confirm_large: false });
+      st.package_spec = spec || null;
+      var call = send(body, rid, 'package');
+      sent = !!call;
+      return call;
+    }, PACKAGE_GUARD);
+    return sent;
   }
   /* 1.0.7.2 sixth review: what an amend / replace of a shares order did to its hedge legs (the answer's hedge_legs_follow: the legs still
      waiting take its time in force; hedge_legs_longer: legs already released for shares bought now work as long as it - never shortened) */
@@ -1040,7 +1041,7 @@
   function send(body, rid, kind) {
     /* simplify round 7: every send (a submit, a package, the large order's confirmation, a reviewed diff) - never while the box names
        another symbol than the order filled in; true only when the request went out (simplify round 9: the package button is held then) */
-    var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return; }
+    var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return null; }
     var gen = st.gen, words = orderWords(kind);
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
     clearTimeout(st.reprev);
@@ -1049,7 +1050,7 @@
     var call = kind === 'amend' ? T.api.patch('/api/orders/' + encodeURIComponent(oidm), body, { request_id: rid })
       : (kind === 'replace' ? T.api.post('/api/orders/' + encodeURIComponent(oidm) + '/replace', body, { request_id: rid })
         : T.api.post('/api/orders', body, { request_id: rid, reconcile: st.account_id }));
-    call.then(function (res) {
+    return call.then(function (res) {
       if (gen !== st.gen) {
         lateAnswer(words, (res && res.replayed ? 'already submitted . ' : '') + 'order ' + ((res && res.order && res.order.order_id) || (res && res.package && res.package.package_id) || '') + ' ' +
           ((res && res.order && res.order.status) || (res && res.package && res.package.status) || '') + ' (see Pending Trades)', 'ok');
@@ -1112,30 +1113,35 @@
         paintStatus('needs your confirmation: ' + (d.reason || 'a large order'), 'err'); paintSubmit();
         /* simplify round 6: the question comes with an answer, not with a click of the owner's: the focus is on Cancel, so a key pressed
            for something else (an Enter typed in a box) answers no - Confirm is a click (or Tab to it) */
-        T.ui.confirm(txt, { title: 'Confirm large order', ok: 'Confirm', focus: 'cancel' }).then(function (yes) {
+        return T.ui.confirm(txt, { title: 'Confirm large order', ok: 'Confirm', focus: 'cancel' }).then(function (yes) {
           if (gen !== st.gen) { if (yes) { T.ui.toast(words + ' was NOT sent: the ticket moved on to another order before your confirmation - open it again', 'err', 15000); } return; }
           if (!yes) { paintStatus('not confirmed; nothing was submitted'); scheduleReprev(); return; }
           var again = Object.assign({}, body, { confirm_large: true });
           if (d.preview && d.preview.preview_id) { again.preview_id = d.preview.preview_id; }
-          send(again, rid, kind);
+          return send(again, rid, kind);
         });
-        return;
       }
       st.submit_err = e; paintPreview(); paintSubmit();
       paintStatus('refused: ' + T.api.describe(e), 'err');
       unseenAnswer(away, words, 'refused: ' + T.api.describe(e), 'err');
       if (e.status === 409 && (e.code === 'QUOTE_STALE' || e.code === 'INSUFFICIENT_FUNDS')) { scheduleReprev(); }
     });
-    return true;
   }
+  /* PREVIEW_STALE's Accept & submit (simplify round 10: through the guard, as the ticket's Submit control - one order in flight; the fresh
+     preview it may wait for keeps that control busy until the resubmit is answered) */
   function acceptStale() {
-    var s = st.stale; if (!s) { return; }
+    var s = st.stale; if (!s) { return null; }
     st.stale = null;
-    if (s.fresh && s.fresh.preview_id) { send(Object.assign({}, s.body, { preview_id: s.fresh.preview_id }), s.rid, s.kind); return; }
-    if (s.kind === 'package') { send(Object.assign({}, s.body, { preview_id: null }), s.rid, s.kind); return; }
+    if (s.fresh && s.fresh.preview_id) { return send(Object.assign({}, s.body, { preview_id: s.fresh.preview_id }), s.rid, s.kind); }
+    if (s.kind === 'package') { return send(Object.assign({}, s.body, { preview_id: null }), s.rid, s.kind); }
     paintStatus('taking a fresh preview before resubmitting ...');
     st.dirty = true;
-    runPreview(true, function (pv) { if (pv && pv.ok !== false && !(pv.blockers || []).length) { submit({ force: true, rid: s.rid, preview_id: pv.preview_id }); } else { paintStatus('the fresh preview has blockers; not resubmitted', 'err'); } });
+    return new Promise(function (done) {
+      runPreview(true, function (pv) {
+        if (pv && pv.ok !== false && !(pv.blockers || []).length) { done(submit({ force: true, rid: s.rid, preview_id: pv.preview_id })); }
+        else { paintStatus('the fresh preview has blockers; not resubmitted', 'err'); done(null); }
+      });
+    });
   }
   function paintResult() {
     var P = T.components.preview; T.clear(ui.result);
@@ -1156,7 +1162,7 @@
   var QTY_STEP = { 'ticket.qty_up': 1, 'ticket.qty_up_10': 10, 'ticket.qty_down': -1, 'ticket.qty_down_10': -10 };
   function onKey(e) {
     var K = T.keys;
-    if (K.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { submit(); } return; }   /* round 9: a repeat never sends */
+    if (K.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); guardedSubmit(e); return; }   /* round 9: a repeat never sends (round 10: the guard) */
     if (K.is(e, 'ticket.clear')) { e.preventDefault(); e.stopPropagation(); if (!ui.dd.hidden) { ui.dd.hidden = true; return; } clear(); return; }
     if (K.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); if (e.target === ui.inst) { resolveTyped(); } else { runPreview(true); } return; }
     var id = K.action(e, 'ticket'); if (!id) { return; }                 /* a single-character key never matches while typing */
@@ -1174,6 +1180,6 @@
     e.preventDefault(); e.stopPropagation();
   }
 
-  T.components.ticket = { open: open, mount: function (el, opts) { return open(el, opts); }, state: function () { return st; }, handle: handle, submit: function () { submit(); }, preview: function () { runPreview(true); }, clear: clear, SIDES: SIDES, TYPES: TYPES };
+  T.components.ticket = { open: open, mount: function (el, opts) { return open(el, opts); }, state: function () { return st; }, handle: handle, submit: function () { return guardedSubmit(null); }, preview: function () { runPreview(true); }, clear: clear, SIDES: SIDES, TYPES: TYPES };
   if (T.keys && typeof T.keys.uses === 'function') { T.keys.uses('components/ticket.js'); }     /* its keys follow Settings > Keyboard from now on */
 })();

@@ -58,10 +58,17 @@
   function sub(text, title) { return '<span class="sub"' + (title ? ' title="' + T.esc(title) + '"' : '') + '>' + T.esc(text == null ? '' : text) + '</span>'; }
   var TYPE_SHORT = { BANK: 'bank', REPO_DEALER: 'primary dealer', AGENT_LENDER: 'agent lender', PRIME_BROKER: 'prime broker', PRIVATE_BORROWER: 'private-credit borrower' };
   /* a grid's onClick: the row's action button -> fn(action, row) (the grid hands the row it drew; a disabled button never fires) */
+  /* a row's action button (Roll / Close a repo, Recall a loan of shares, Return a borrow ...); simplify round 10 (the guard): each acts
+     through T.guard as that row's own control - the second click of a double click, a request still in flight or a second press inside
+     the double-click time does nothing, said; fn returns its request's promise */
   function clicker(fn) {
     return function (row, e) {
       var b = e && e.target && e.target.closest ? e.target.closest('button[data-act]') : null;
-      if (b && !b.disabled && row) { fn(b.dataset.act, row); }
+      if (b && !b.disabled && row) {
+        var act = b.dataset.act;
+        T.guard('credit.' + act + ':' + (row.repo_id || row.loan_id || row.borrow_id || row.counterparty_id || ''), e, function () { return fn(act, row); },
+                { label: String(b.textContent || act).trim(), not: 'not done', act: 'go ahead' });
+      }
     };
   }
 
@@ -100,18 +107,18 @@
       if (lt.max_usd) { line.appendChild(T.h('div', null, 'facility maximum USD ' + T.fmt.money(lt.max_usd, 0) + ' (all open loans from this bank in this book)')); }
     }
     bankSel.addEventListener('change', fillBank); ccySel.addEventListener('change', function () { T.store.set('credit.ccy', ccySel.value); quoteLine(); });
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', T.guard.on('credit.loan:' + ctx.account_id, { label: 'Borrow', act: 'draw the loan' }, function () {
       var b = bank(); if (!b) { return; }
       var a = amountText(amount); if (!/^\d+(\.\d{1,2})?$/.test(a) || Number(a) <= 0) { T.clear(res).appendChild(T.h('div', { class: 'error' }, 'amount must be a positive number with at most 2 decimals')); return; }
       btn.disabled = true; T.clear(res);
-      T.api.post('/api/credit/loans', { account_id: ctx.account_id, currency: ccySel.value, amount: a, counterparty_id: b.counterparty_id, tenor: tenorSel.value }).then(function (r) {
+      return T.api.post('/api/credit/loans', { account_id: ctx.account_id, currency: ccySel.value, amount: a, counterparty_id: b.counterparty_id, tenor: tenorSel.value }).then(function (r) {
         btn.disabled = false; var ln = r.loan || {}; var rt = r.rate || {};
         T.ui.toast('loan ' + (ln.loan_id || '') + ' drawn: ' + ln.currency + ' ' + m(ln.principal) + ' from ' + (ln.lender_label || ln.lender) + ' at ' + rate(rt.all_in), 'ok', 6000);
         res.appendChild(T.h('div', { class: 'pv' }, T.kv([['loan', ln.loan_id], ['lender', ln.lender_label || ln.lender], ['principal', ln.currency + ' ' + m(ln.principal)],
           ['rate', (rt.index || '') + ' ' + pctOf(rt.value) + ' (' + (rt.as_of || '') + ') + ' + rate(rt.spread) + ' = ' + rate(rt.all_in)], ['maturity', ln.maturity_date || 'open']])));
         load(); T.poll.kick('account_detail');
       }, function (e) { btn.disabled = false; err(res, e, 'loan draw'); });
-    });
+    }));
     var gEl = T.h('div'); right.appendChild(gEl);
     var foot = T.h('div', { class: 'hint' }); right.appendChild(foot);
     var grid = T.components.grid.mount(gEl, { tools: false, rows: [], rowKey: function (r) { return r.loan_id; }, empty: 'no open loans in this book',
@@ -135,7 +142,7 @@
           var body = full ? { full: true } : { amount: amountText(amt) };
           if (!full && !/^\d+(\.\d{1,2})?$/.test(body.amount)) { box.hidden = false; box.textContent = 'amount must be a positive number with at most 2 decimals'; return; }
           b.disabled = true;
-          T.api.post('/api/credit/loans/' + encodeURIComponent(row.loan_id) + '/repay', body).then(function (r) {
+          return T.api.post('/api/credit/loans/' + encodeURIComponent(row.loan_id) + '/repay', body).then(function (r) {
             mh.close(); T.ui.toast(row.loan_id + ': paid interest ' + T.money(r, 'paid_interest') + ', principal ' + T.money(r, 'paid_principal') + (r.closed ? ' - loan closed' : ''), 'ok', 6000); load(); T.poll.kick('account_detail');
           }, function (e) { b.disabled = false; box.hidden = false; box.textContent = T.api.fail(e, 'loan repay'); });
         } }] });
@@ -219,14 +226,14 @@
         bookBtn.disabled = false;
       }, function (e) { pvBtn.disabled = false; err(pvBox, e, 'repo preview'); });
     });
-    bookBtn.addEventListener('click', function () {
+    bookBtn.addEventListener('click', T.guard.on('credit.repo.book', { label: 'Book', act: 'book the repo' }, function () {
       if (!last) { return; }
       bookBtn.disabled = true;
-      T.api.post('/api/credit/repos', last).then(function (r) {
+      return T.api.post('/api/credit/repos', last).then(function (r) {
         T.ui.toast((r.repo && r.repo.side === 'REVERSE' ? 'reverse repo ' : 'repo ') + r.repo_id + ' booked: ' + m((r.repo || {}).principal) + ' at ' + ((r.preview || {}).rate_text || ''), 'ok', 7000);
         T.clear(pvBox); load(); T.poll.kick('account_detail');
       }, function (e) { bookBtn.disabled = false; err(pvBox, e, 'repo'); });
-    });
+    }));
     var gEl = T.h('div'); right.appendChild(gEl); var foot = T.h('div', { class: 'hint' }); right.appendChild(foot);
     var grid = T.components.grid.mount(gEl, { tools: false, rows: [], rowKey: function (r) { return r.repo_id; }, empty: 'no open repos in this book',
       onClick: clicker(repoAct),
@@ -242,9 +249,9 @@
     function repoAct(act, row) {
       var what = act === 'roll' ? 'Roll ' + row.repo_id + ' into the same term at today\'s SOFR + the dealer spread? The interest owed (' + m(row.interest_owed) + ') is paid now.'
         : 'Close ' + row.repo_id + ' now? ' + (row.side === 'REPO' ? 'You repay ' : 'You receive ') + m(row.payoff) + ' (cash + interest owed).';
-      T.ui.confirm(what).then(function (ok) {
+      return T.ui.confirm(what).then(function (ok) {
         if (!ok) { return; }
-        T.api.post('/api/credit/repos/' + encodeURIComponent(row.repo_id) + '/' + act, {}).then(function (r) {
+        return T.api.post('/api/credit/repos/' + encodeURIComponent(row.repo_id) + '/' + act, {}).then(function (r) {
           T.ui.toast(row.repo_id + (act === 'roll' ? ' rolled to ' + r.maturity_date + ' at ' + r.rate_pct : ' closed: principal ' + m(r.principal) + ', interest ' + m(r.interest)), 'ok', 6000); load();
         }, function (e) { T.api.fail(e, 'repo ' + act); });
       });
@@ -313,11 +320,11 @@
           if (!p.ledger_ready) { out.appendChild(T.h('div', { class: 'why' }, p.ledger_note)); } else { go.disabled = false; }
         }, function (e) { pvBtn.disabled = false; err(out, e, 'lend preview'); });
       });
-      go.addEventListener('click', function () {
+      go.addEventListener('click', T.guard.on('credit.lend:' + row.account_id + ':' + row.instrument_id, { label: 'Lend', act: 'lend the shares' }, function () {
         go.disabled = true;
-        T.api.post('/api/credit/lending', body()).then(function (r) { T.ui.toast('lent ' + T.fmt.qty((r.loan || {}).qty) + ' ' + (r.loan || {}).symbol + ' through ' + (r.loan || {}).agent + ' (' + r.loan_id + ')', 'ok', 6000); T.clear(pvBox); load(); },
+        return T.api.post('/api/credit/lending', body()).then(function (r) { T.ui.toast('lent ' + T.fmt.qty((r.loan || {}).qty) + ' ' + (r.loan || {}).symbol + ' through ' + (r.loan || {}).agent + ' (' + r.loan_id + ')', 'ok', 6000); T.clear(pvBox); load(); },
           function (e) { go.disabled = false; err(out, e, 'lend'); });
-      });
+      }));
     }
     var grid = T.components.grid.mount(gEl, { tools: false, rows: [], rowKey: function (r) { return r.loan_id; }, empty: 'no shares on loan',
       onClick: clicker(recallAct),
@@ -331,9 +338,9 @@
         { key: 'areb', label: 'rebate owed', title_h: 'rebate accrued on the cash collateral, paid at recall', text: function (r) { return m(r.accrued_rebate); } }
       ] });
     function recallAct(act, row) {
-      T.ui.confirm('Recall ' + T.fmt.qty(row.outstanding) + ' ' + row.symbol + ' from ' + row.agent + '? The collateral ' + m(row.collateral) + ' goes back to the borrower; the fee and rebate accrued are settled.').then(function (ok) {
+      return T.ui.confirm('Recall ' + T.fmt.qty(row.outstanding) + ' ' + row.symbol + ' from ' + row.agent + '? The collateral ' + m(row.collateral) + ' goes back to the borrower; the fee and rebate accrued are settled.').then(function (ok) {
         if (!ok) { return; }
-        T.api.post('/api/credit/lending/' + encodeURIComponent(row.loan_id) + '/recall', {}).then(function (r) {
+        return T.api.post('/api/credit/lending/' + encodeURIComponent(row.loan_id) + '/recall', {}).then(function (r) {
           T.ui.toast('recalled ' + T.fmt.qty(r.qty) + ' ' + row.symbol + ': collateral returned ' + m(r.collateral_returned) + ', fee received ' + m(r.fee_received) + ', rebate paid ' + m(r.rebate_paid), 'ok', 7000); load();
         }, function (e) { T.api.fail(e, 'recall'); });
       });
@@ -377,12 +384,12 @@
         bBtn.disabled = !q.available;
       }, function (e) { locBtn.disabled = false; err(out, e, 'locate'); });
     });
-    bBtn.addEventListener('click', function () {
+    bBtn.addEventListener('click', T.guard.on('credit.borrow', { label: 'Borrow', act: 'borrow the shares' }, function () {
       if (!loc) { return; }
       bBtn.disabled = true;
-      T.api.post('/api/credit/borrows', loc).then(function (r) { var b = r.borrow || {}; T.ui.toast('borrowed ' + T.fmt.qty(b.qty) + ' ' + b.instrument_id + ' from ' + b.lender + ' (' + b.borrow_id + ')', 'ok', 6000); T.clear(out); load(); },
+      return T.api.post('/api/credit/borrows', loc).then(function (r) { var b = r.borrow || {}; T.ui.toast('borrowed ' + T.fmt.qty(b.qty) + ' ' + b.instrument_id + ' from ' + b.lender + ' (' + b.borrow_id + ')', 'ok', 6000); T.clear(out); load(); },
         function (e) { bBtn.disabled = false; err(out, e, 'borrow'); });
-    });
+    }));
     var gEl = T.h('div'); right.appendChild(gEl); var foot = T.h('div', { class: 'hint' }); right.appendChild(foot);
     var grid = T.components.grid.mount(gEl, { tools: false, rows: [], rowKey: function (r) { return r.borrow_id; }, empty: 'no open stock borrows in this book',
       onClick: clicker(returnAct),
@@ -396,9 +403,9 @@
         { key: 'notice', label: 'recall', cls: 'l', html: function (r) { return r.recall_notice ? '<span class="why" title="' + T.esc(r.recall_notice) + '">notice</span>' : '<small class="muted">none</small>'; }, text: function (r) { return r.recall_notice ? 'notice' : 'none'; } }
       ] });
     function returnAct(act, row) {
-      T.ui.confirm('Return ' + T.fmt.qty(row.returnable_qty) + ' ' + row.symbol + ' to ' + row.lender + '? The collateral comes back and the accrued fee and rebate are settled.').then(function (ok) {
+      return T.ui.confirm('Return ' + T.fmt.qty(row.returnable_qty) + ' ' + row.symbol + ' to ' + row.lender + '? The collateral comes back and the accrued fee and rebate are settled.').then(function (ok) {
         if (!ok) { return; }
-        T.api.post('/api/credit/borrows/' + encodeURIComponent(row.borrow_id) + '/return', { qty: row.returnable_qty }).then(function () { T.ui.toast('borrow ' + row.borrow_id + ' returned', 'ok'); load(); }, function (e) { T.api.fail(e, 'return borrow'); });
+        return T.api.post('/api/credit/borrows/' + encodeURIComponent(row.borrow_id) + '/return', { qty: row.returnable_qty }).then(function () { T.ui.toast('borrow ' + row.borrow_id + ' returned', 'ok'); load(); }, function (e) { T.api.fail(e, 'return borrow'); });
       });
     }
     function load() {
@@ -494,12 +501,12 @@
       if (t.lending) { add('lending', 'owner_split', null, 'your share of the fee (0-1)', t.lending.owner_split); add('lending', 'rebate_spread', null, 'rebate spread to SOFR', t.lending.rebate_spread); }
       var box = T.h('div', { class: 'error', hidden: true });
       T.ui.modal({ title: 'Terms of ' + row.name, body: T.h('div', null, T.h('div', { class: 'hint' }, 'Assumed model inputs (fractions: 0.0060 = 0.60 %). A change applies to new trades; open ones keep the terms they were booked at.'), T.form(rows), box),
-        actions: [{ label: 'Cancel' }, { label: 'Reset to the seed', onClick: function (mh, b) { b.disabled = true; T.api.patch('/api/credit/counterparties/' + encodeURIComponent(row.counterparty_id), { reset: true }).then(function () { mh.close(); T.ui.toast(row.name + ': terms reset', 'ok'); load(); }, function (e) { b.disabled = false; box.hidden = false; box.textContent = T.api.fail(e, 'terms'); }); } },
+        actions: [{ label: 'Cancel' }, { label: 'Reset to the seed', onClick: function (mh, b) { b.disabled = true; return T.api.patch('/api/credit/counterparties/' + encodeURIComponent(row.counterparty_id), { reset: true }).then(function () { mh.close(); T.ui.toast(row.name + ': terms reset', 'ok'); load(); }, function (e) { b.disabled = false; box.hidden = false; box.textContent = T.api.fail(e, 'terms'); }); } },
           { label: 'Save', cls: 'primary', onClick: function (mh, b) {
             var terms = {};
             inputs.forEach(function (x) { var v = String(x.el.value || '').trim(); if (v === '') { return; } terms[x.section] = terms[x.section] || {}; if (x.sub) { terms[x.section][x.field] = terms[x.section][x.field] || {}; terms[x.section][x.field][x.sub] = v; } else { terms[x.section][x.field] = v; } });
             b.disabled = true;
-            T.api.patch('/api/credit/counterparties/' + encodeURIComponent(row.counterparty_id), { terms: terms }).then(function (r) { mh.close(); T.ui.toast(row.name + ': terms saved (' + (r.note || '') + ')', 'ok', 6000); load(); },
+            return T.api.patch('/api/credit/counterparties/' + encodeURIComponent(row.counterparty_id), { terms: terms }).then(function (r) { mh.close(); T.ui.toast(row.name + ': terms saved (' + (r.note || '') + ')', 'ok', 6000); load(); },
               function (e) { b.disabled = false; box.hidden = false; box.textContent = T.api.fail(e, 'terms'); });
           } }] });
     }

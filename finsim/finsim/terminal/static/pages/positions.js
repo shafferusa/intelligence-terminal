@@ -390,7 +390,7 @@
       T.ui.toast(r.instrument_id + ': private shares are sold through the negotiated ticket on the Private Markets page', '', 4500);
       T.router.go(T.router.account(acct, 'markets'));
     }
-    function act(kind, r) {
+    function act(kind, r, ev) {
       var k = kindOf(r);
       if (kind === 'close') {
         if (!r.qty) { T.ui.toast('nothing to close: ' + r.instrument_id + ' has no open quantity', 'err'); return; }
@@ -402,12 +402,13 @@
       /* the hedge panel lives in the order ticket: the pseudo kind POSITION_HEDGE has no ticket of its own, so a bond (whose kind opens
          the bond ticket) reaches the panel too; the instrument's real kind travels as inst_kind */
       else if (kind === 'hedge') { T.ticket.open({ account_id: acct, instrument_id: r.instrument_id, kind: 'POSITION_HEDGE', inst_kind: r.kind, hedge: 'position', position_qty: r.qty }); }
-      else if (kind === 'exercise') { exercise(r); }
+      /* simplify round 10 (the guard): Exercise and Return act through T.guard, each that position's own control */
+      else if (kind === 'exercise') { T.guard('position.exercise:' + acct + ':' + r.instrument_id, ev, function () { return exercise(r); }, { label: 'Exercise', not: 'not exercised', act: 'exercise' }); }
       else if (kind === 'return') {
-        T.ui.confirm('Return borrow ' + r.borrow.borrow_id + ' (' + T.fmt.qty(r.borrow.qty || Math.abs(r.qty)) + ' ' + r.instrument_id + ')? The short must be covered first.', { ok: 'Return' }).then(function (yes) {
+        T.guard('position.return:' + r.borrow.borrow_id, ev, function () { return T.ui.confirm('Return borrow ' + r.borrow.borrow_id + ' (' + T.fmt.qty(r.borrow.qty || Math.abs(r.qty)) + ' ' + r.instrument_id + ')? The short must be covered first.', { ok: 'Return' }).then(function (yes) {
           if (!yes) { return; }
-          T.api.post('/api/credit/borrows/' + encodeURIComponent(r.borrow.borrow_id) + '/return', { qty: r.borrow.qty || Math.abs(r.qty) }).then(function () { T.ui.toast('borrow returned', 'ok'); T.poll.kick('positions'); T.poll.kick('account_detail'); }, function (e) { T.api.fail(e, 'return borrow'); });
-        });
+          return T.api.post('/api/credit/borrows/' + encodeURIComponent(r.borrow.borrow_id) + '/return', { qty: r.borrow.qty || Math.abs(r.qty) }).then(function () { T.ui.toast('borrow returned', 'ok'); T.poll.kick('positions'); T.poll.kick('account_detail'); }, function (e) { T.api.fail(e, 'return borrow'); });
+        }); }, { label: 'Return', not: 'not returned', act: 'return the borrow' });
       }
       else if (kind === 'terminate') {
         var sw = T.components.swapticket;
@@ -422,7 +423,7 @@
        the option's mark, and a warning when it is out of the money */
     function exercise(r) {
       var o = occ(r.instrument_id) || {};
-      T.api.get('/api/instruments/' + encodeURIComponent(r.instrument_id)).then(function (d) {
+      return T.api.get('/api/instruments/' + encodeURIComponent(r.instrument_id)).then(function (d) {
         var i = (d && (d.instrument || d)) || {};
         var und = i.underlying_id || o.root;
         return T.api.get('/api/quotes', { ids: und }).then(function (qr) { return { i: i, und: und, uq: ((qr && qr.quotes) || {})[und] || null }; }, function () { return { i: i, und: und, uq: null }; });
@@ -452,9 +453,9 @@
         } else { lines.push('The underlying price is not available right now: the intrinsic value cannot be shown.'); }
         var body = T.h('div', null, T.h('div', null, 'Exercise ' + T.fmt.qty(n) + ' x ' + r.instrument_id + ' now? (commission-free)'), lines.map(function (l) { return T.h('div', { class: 'hint', style: 'margin-top:4px' }, l); }),
           warn ? T.h('div', { class: cls, style: 'margin-top:6px' }, warn) : null);
-        T.ui.confirm(body, { title: 'Exercise ' + (right === 'P' ? 'put' : (right === 'C' ? 'call' : 'option')), ok: warn && cls === 'error-box' ? 'Exercise anyway' : 'Exercise' }).then(function (yes) {
+        return T.ui.confirm(body, { title: 'Exercise ' + (right === 'P' ? 'put' : (right === 'C' ? 'call' : 'option')), ok: warn && cls === 'error-box' ? 'Exercise anyway' : 'Exercise' }).then(function (yes) {
           if (!yes) { return; }
-          T.api.post('/api/options/exercise', { account_id: acct, instrument_id: r.instrument_id, qty: r.qty }).then(function () { T.ui.toast('exercised ' + r.instrument_id, 'ok'); T.poll.kick('positions'); T.poll.kick('account_detail'); }, function (e) { T.api.fail(e, 'exercise'); });
+          return T.api.post('/api/options/exercise', { account_id: acct, instrument_id: r.instrument_id, qty: r.qty }).then(function () { T.ui.toast('exercised ' + r.instrument_id, 'ok'); T.poll.kick('positions'); T.poll.kick('account_detail'); }, function (e) { T.api.fail(e, 'exercise'); });
         });
       }, function (e) { T.api.fail(e, 'exercise'); });
     }
@@ -477,7 +478,7 @@
             body = { amount: v };
           }
           b.disabled = true;
-          T.api.post('/api/credit/private/' + encodeURIComponent(r.instrument_id) + '/repay', body).then(function (res) {
+          return T.api.post('/api/credit/private/' + encodeURIComponent(r.instrument_id) + '/repay', body).then(function (res) {
             m.close(); T.ui.toast(r.instrument_id + (res && res.partial ? ' prepaid' : ' repaid'), 'ok', 5000); T.poll.kick('positions'); T.poll.kick('account_detail');
           }, function (e) { b.disabled = false; err.hidden = false; err.textContent = T.api.fail(e, 'private credit repay'); });
         } }] });
@@ -494,7 +495,7 @@
       subtotal: function (rows, g) { var mv = 0, u = 0, d = 0, any = false; rows.forEach(function (r) { var a = T.num(r, 'mv'), b = T.num(r, 'unrealised'), c = T.num(r, 'day_pnl'); if (a != null) { mv += a; any = true; } if (b != null) { u += b; } if (c != null) { d += c; } }); return any ? { symbol: 'subtotal ' + T.esc(g), mv: T.esc(T.fmt.money(mv.toFixed(2))), day_pnl: two(T.esc(T.fmt.money(d.toFixed(2))), T.esc(T.fmt.money(u.toFixed(2)))) } : { symbol: 'subtotal ' + T.esc(g) }; },
       onEnter: function (r) { if (isDeskFwd(r)) { act('fxdesk', r); return; } detail(r); },
       /* PORTFOLIO-05: a single click on a row opens its drawer; a click on an action button runs that action */
-      onClick: function (r, e) { var b = e.target.closest('button[data-act]'); if (b) { act(b.dataset.act, r); return; } if (e.target.closest('a')) { return; } if (!isDeskFwd(r)) { detail(r); } },
+      onClick: function (r, e) { var b = e.target.closest('button[data-act]'); if (b) { act(b.dataset.act, r, e); return; } if (e.target.closest('a')) { return; } if (!isDeskFwd(r)) { detail(r); } },
       onKey: function (k, r) {
         if (k !== 'b' && k !== 's') { return false; }
         var kk = kindOf(r);

@@ -147,14 +147,16 @@
       if (!/^\d+$/.test(b.term_months) || Number(b.term_months) < 1) { return 'term must be a whole number of months'; }
       return null;
     }
-    function onCommit() {
+    /* simplify round 10 (the guard): Commit loan acts through T.guard - one commitment in flight, never two for one double click */
+    function onCommit(e) { return T.guard('pcredit.commit', e && e.type ? e : null, commitNow, { label: 'Commit loan', not: 'not committed', act: 'commit the loan' }); }
+    function commitNow() {
       if (state.busy) { return; }
       var b = body();
       var bad = localCheck(b);
       T.clear(result);
       if (bad) { result.appendChild(T.h('div', { class: 'error' }, bad)); return; }
       state.busy = true; commitBtn.disabled = true;
-      T.api.post(PATH, b).then(function (r) {
+      return T.api.post(PATH, b).then(function (r) {
         state.busy = false; commitBtn.disabled = false;
         if (state.dead) { return; }
         showCommitResult(r);
@@ -253,7 +255,7 @@
           var c = toCents(amount.value);
           if (c == null || c <= 0) { err.hidden = false; err.textContent = 'amount must be a positive USD amount with at most 2 decimals'; return; }
           b.disabled = true;
-          T.api.post(PATH + '/' + encodeURIComponent(loan.loan_id) + '/fee', { amount: fromCents(c).replace(/,/g, ''), memo: memo.value.trim() }).then(function () {
+          return T.api.post(PATH + '/' + encodeURIComponent(loan.loan_id) + '/fee', { amount: fromCents(c).replace(/,/g, ''), memo: memo.value.trim() }).then(function () {
             m.close(); T.ui.toast('fee ' + fromCents(c) + ' recorded on ' + loan.loan_id, 'ok'); load();
           }, function (e) { b.disabled = false; err.hidden = false; err.textContent = T.api.fail(e, 'private credit fee'); });
         } }] });
@@ -276,7 +278,7 @@
             body = { amount: fromCents(c).replace(/,/g, '') };
           }
           b.disabled = true;
-          T.api.post(PATH + '/' + encodeURIComponent(loan.loan_id) + '/repay', body).then(function (r) {
+          return T.api.post(PATH + '/' + encodeURIComponent(loan.loan_id) + '/repay', body).then(function (r) {
             m.close();
             T.ui.toast(loan.loan_id + (r.partial ? ' prepaid: face now ' + T.money(r, 'face_left') : ' repaid') + '; realised ' + T.money(r, 'realised'), 'ok', 6000); load();
           }, function (e) { b.disabled = false; err.hidden = false; err.textContent = T.api.fail(e, 'private credit repay'); });

@@ -154,7 +154,7 @@
        Book is enabled (a fresh preview without blockers) - the deal is booked only from that dialog; the preview key is on
        every box of the form (bind below) */
     root.addEventListener('keydown', function (ev) {
-      if (T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.bookBtn && !ui.bookBtn.disabled) { onRequest(); } }
+      if (T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.bookBtn && !ui.bookBtn.disabled) { onRequest(ev); } }
     });
 
     function kind() { return state.product[state.mode]; }
@@ -168,7 +168,7 @@
       ui.products = T.h('div'); root.appendChild(ui.products);
       ui.form = T.h('div', { class: 'ot-form' }); root.appendChild(ui.form);
       ui.previewBtn = T.h('button', { class: 'btn primary', onclick: function () { onPreview(0); } }, 'Preview');
-      ui.bookBtn = T.h('button', { class: 'btn', onclick: function () { onRequest(); }, disabled: true }, 'Request quote');
+      ui.bookBtn = T.h('button', { class: 'btn', onclick: function (ev) { onRequest(ev); }, disabled: true }, 'Request quote');
       ui.resetBtn = T.h('button', { class: 'btn small', title: 'put this form back to its defaults', onclick: function () {
         state.values[kind()] = copy(DEFAULTS[kind()]); state.previews[kind()] = null; state.error = null; state.errorField = null;
         renderForm(); renderPreview(); } }, 'Reset terms');
@@ -591,14 +591,16 @@
 
     /* ---- the quote request (C14): the previewed terms go to the simulated dealer; its quote is accepted under Quote requests (an option or
        forward is re-priced at the acceptance: when the price moved it is refused and a new quote is asked) ---- */
-    function onRequest() {
+    /* simplify round 10 (the guard): Request quote and the submit key act through T.guard as this ticket's own control (one request in flight) */
+    function onRequest(ev) { return T.guard('rfq.request:otc:' + account, ev && ev.type ? ev : null, requestNow, { label: 'Request quote', not: 'not requested', act: 'request a quote' }); }
+    function requestNow() {
       var k = kind();
       var p = state.previews[k];
       if (!p || p.stale || state.blocked) { return; }
       var sw = T.components.swapticket;
       if (!sw || typeof sw.rfqRequest !== 'function') { setError('the quote requests are not available in this build (components/swapticket.js)', null); return; }
       ui.bookBtn.disabled = true;
-      sw.rfqRequest(account, k, p.terms).then(function (r) {
+      return sw.rfqRequest(account, k, p.terms).then(function (r) {
         ui.bookBtn.disabled = false;
         var text = 'Quote requested (' + (r.rfq_id || '') + '): ' + p.pv.side_text + ' - the simulated dealer answers within about 30 s; accept or decline it under' +
           ' Quote requests';

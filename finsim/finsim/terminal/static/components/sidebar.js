@@ -239,7 +239,7 @@
       actions: [{ label: 'Cancel' }, { label: 'Open', cls: 'primary', id: 'pb-open', onClick: function (h, btn) {
         if (open[picked]) { T.ui.toast('already open: ' + (open[picked].name || picked), '', 3000); return; }
         btn.disabled = true;
-        T.api.post('/api/books/' + encodeURIComponent(book.book_code) + '/onboard', { broker: picked }, { nobook: true }).then(function (r) {
+        return T.api.post('/api/books/' + encodeURIComponent(book.book_code) + '/onboard', { broker: picked }, { nobook: true }).then(function (r) {
           h.close();
           var acc = r && r.account; var name = acc && (acc.name || acc.account_id) || picked;
           if (r && r.created === false) { T.ui.toast('already open: ' + name + ' (nothing new was signed)', '', 4000); }

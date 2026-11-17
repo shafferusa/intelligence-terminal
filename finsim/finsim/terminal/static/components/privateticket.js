@@ -69,6 +69,7 @@
     return { names: names.concat(gone.filter(function (c) { return heldQty(c) > 0; })), listed: gone };
   }
   var _lists = {};                                             /* account -> {at, names, listed} (the dock's companies) */
+  var guardSeq = 0;                                            /* simplify round 10: each mounted ticket's own Submit control (T.guard) */
   function loadList(acct, force) {
     var c = _lists[acct];
     if (!force && c && Date.now() - c.at < LIST_TTL_MS) { return Promise.resolve(c); }
@@ -271,13 +272,20 @@
       return 'the private ' + b.side + ' ' + T.fmt.qty(Number(b.qty)) + ' ' + ((c && c.name) || b.company_id) + ' @ ' + b.price + ' in ' + (T.accountName ? T.accountName(opts.account_id) : opts.account_id);
     }
     function outOfSight() { return (opts.docked && !(T.dock && T.dock.visible && T.dock.visible())) || !root.isConnected; }
+    /* simplify round 10 (the guard): Submit and the submit key act through T.guard as one control - one trade in flight per ticket; a
+       second click of a double click, a key held down or a second press inside the double-click time trades nothing, said */
+    var tradeKey = 'private.submit:' + (++guardSeq);
+    function guardedTrade(e) {
+      return T.guard(tradeKey, e && e.type ? e : null, doSubmit, { label: 'Submit', not: 'not traded', act: 'trade',
+        say: function (m) { T.clear(result); result.appendChild(T.h('div', { class: 'error' }, m)); } });
+    }
     function doSubmit() {
       if (submit.disabled) { return; }
       var rf = refusal(current(), side.value);
       if (rf) { submit.disabled = true; state.preview = null; paintRefusal(rf); return; }
       var b = body(), mine = state.trade, words = tradeWords(b);
       state.busy = true; submit.disabled = true; T.clear(result);
-      T.api.post('/api/private/trades', b).then(function (r) {
+      return T.api.post('/api/private/trades', b).then(function (r) {
         var done = 'done: ' + (((r && r.fill) || {}).fill_id || '') + ' ' + ((r && (r.side || (r.fill || {}).side)) || '') + ' ' + T.fmt.qty(((r && r.fill) || {}).qty) + ' @ ' + T.fmt.px(((r && r.fill) || {}).price);
         if (mine !== state.trade) {                            /* a fresh hand-off since: never painted under the trade shown now */
           T.ui.toast('the answer for ' + words + ' came after the ticket moved on to another trade: ' + done, 'ok', 15000);
@@ -327,10 +335,10 @@
     price.addEventListener('input', function () { syncFromPrice(); schedule(); });
     disc.addEventListener('input', function () { syncFromDisc(); schedule(); });
     previewBtn.addEventListener('click', doPreview);
-    submit.addEventListener('click', doSubmit);
+    submit.addEventListener('click', guardedTrade);
     clearBtn.addEventListener('click', clearPreview);
     root.addEventListener('keydown', function (e) {
-      if (keyIs(e, 'ticket.submit', function (x) { return x.key === 'Enter' && x.ctrlKey; })) { e.preventDefault(); e.stopPropagation(); doSubmit(); }
+      if (keyIs(e, 'ticket.submit', function (x) { return x.key === 'Enter' && x.ctrlKey; })) { e.preventDefault(); e.stopPropagation(); guardedTrade(e); }
       else if (keyIs(e, 'ticket.preview', function (x) { return x.key === 'Enter' && !x.ctrlKey; })) { e.preventDefault(); e.stopPropagation(); doPreview(); }
       else if (keyIs(e, 'ticket.clear', function (x) { return x.key === 'Escape'; })) { e.stopPropagation(); clearPreview(); }
     });

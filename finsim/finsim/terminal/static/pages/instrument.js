@@ -258,14 +258,16 @@
         pp.cancelOrder(Object.assign({}, o, { side_words: o.side_words || String(o.side || '').replace(/_/g, ' '), symbol: o.symbol || o.instrument_id }), after);
         return;
       }
-      T.ui.confirm('Cancel order ' + o.order_id + ' (' + o.side + ' ' + o.qty + ' ' + o.instrument_id + ')?', { ok: 'Cancel order', cancel: 'Keep' }).then(function (yes) {
+      T.guard('order.cancel:' + o.order_id, null, function () {
+      return T.ui.confirm('Cancel order ' + o.order_id + ' (' + o.side + ' ' + o.qty + ' ' + o.instrument_id + ')?', { ok: 'Cancel order', cancel: 'Keep' }).then(function (yes) {
         if (!yes) { return; }
-        T.api.del('/api/orders/' + encodeURIComponent(o.order_id), {}).then(function (res) {
+        return T.api.del('/api/orders/' + encodeURIComponent(o.order_id), {}).then(function (res) {
           var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];
           T.ui.toast('order cancelled' + (ended.length ? ' . ended with it: ' + ended.map(function (l) { return l.order_id; }).join(', ') : ''), 'ok', ended.length ? 6000 : undefined);
           after();
         }, function (e) { T.api.fail(e, 'cancel'); });
       });
+      }, { label: 'Cancel ' + o.order_id, not: 'not cancelled', act: 'cancel it' });   /* simplify round 10: through the guard */
     }
     /* ---- chart (USX-06): the session's 1-minute bars; a 202 is asked again; refreshed while the session is open ---- */
     function sessionOpen() { var s = (inst && inst.session) || {}; var live = T.state.sessions && (T.state.sessions.sessions || T.state.sessions); var g = live && s.group ? live[s.group] : null; return !!((g && g.open) || s.open); }

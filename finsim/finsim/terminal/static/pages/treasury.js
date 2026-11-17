@@ -45,7 +45,7 @@
     return null;
   }
   /* submit a dialog with Enter from any of its inputs (BM-21) */
-  function enterSubmits(inputs, fn) { inputs.forEach(function (i) { i.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fn(); } }); }); }
+  function enterSubmits(inputs, fn) { inputs.forEach(function (i) { i.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); fn(e); } }); }); }
   function bookName() { return (T.book.current() || {}).name || 'this book'; }
   function render(el) {
     var data = null, dead = false;
@@ -176,7 +176,9 @@
       var memo = T.h('input', { type: 'text', placeholder: 'memo (optional)' });
       var msg = T.h('div', { class: 'hint', style: 'min-height:1.2em' });
       var handle = null, busy = false;
-      function submit() {
+      /* simplify round 10 (the guard): the dialog's button and Enter in its boxes act through T.guard as one control (one request in flight) */
+      function submit(ev) { return T.guard('treasury.' + kind, ev && ev.type ? ev : null, submitNow, { label: dep ? 'Add' : 'Withdraw', not: dep ? 'not added' : 'not withdrawn', act: dep ? 'add the funds' : 'withdraw' }); }
+      function submitNow() {
         if (busy) { return; }
         var v = amt.value.trim();
         var bad = amountProblem(v);
@@ -184,9 +186,9 @@
         var shown = ccy.value + ' ' + T.fmt.money(v, 2);
         var question = dep ? 'Add ' + shown + ' to ' + bookName() + '?' : 'Withdraw ' + shown + ' from ' + bookName() + '?';
         busy = true;
-        T.ui.confirm(question, { title: dep ? 'Add funds' : 'Withdraw', ok: dep ? 'Add ' + shown : 'Withdraw ' + shown }).then(function (yes) {
+        return T.ui.confirm(question, { title: dep ? 'Add funds' : 'Withdraw', ok: dep ? 'Add ' + shown : 'Withdraw ' + shown }).then(function (yes) {
           if (!yes) { busy = false; try { amt.focus(); } catch (e) { /* ignore */ } return; }
-          T.api.post('/api/treasury/' + kind, { currency: ccy.value, amount: v, memo: memo.value.trim() || null, book: T.book.code }).then(function (r) {
+          return T.api.post('/api/treasury/' + kind, { currency: ccy.value, amount: v, memo: memo.value.trim() || null, book: T.book.code }).then(function (r) {
             busy = false; if (handle) { handle.close(); }
             T.ui.toast((dep ? 'deposit' : 'withdrawal') + ' recorded: ' + shown + ((r && r.transfer && r.transfer.transfer_id) ? ' (' + r.transfer.transfer_id + ')' : ''), 'ok');
             load(); T.poll.kick('books'); T.poll.kick('accounts');
@@ -198,7 +200,7 @@
         body: T.h('div', null, T.form([T.field('amount', amt), T.field('currency', ccy), T.field('memo', memo)]), msg,
           T.h('div', { class: 'hint' }, dep ? 'A capital deposit: it is never P&L and is the only way new money enters the lifetime. Digits with at most two decimals; you confirm the amount next.'
                                             : 'A capital withdrawal from settled Treasury cash (refused when the Treasury does not hold it). You confirm the amount next.')),
-        actions: [{ label: 'Cancel' }, { label: dep ? 'Add' : 'Withdraw', cls: 'primary', onClick: function () { submit(); } }] });
+        actions: [{ label: 'Cancel' }, { label: dep ? 'Add' : 'Withdraw', cls: 'primary', onClick: function (m, b, ev) { return submit(ev); } }] });
       try { amt.focus(); } catch (e) { /* focus is a convenience */ }
     }
     function transferModal() {
@@ -224,13 +226,14 @@
       var msg = T.h('div', { class: 'hint', style: 'min-height:1.2em' });
       var handle = null, busy = false;
       function fail(text) { msg.textContent = text; msg.style.color = 'var(--down)'; }
-      function submit() {
+      function submit(ev) { return T.guard('treasury.transfer', ev && ev.type ? ev : null, submitNow, { label: 'Transfer', not: 'not transferred', act: 'transfer' }); }
+      function submitNow() {
         if (busy) { return; }
         if (!from.value || !to.value || from.value === to.value) { fail('pick two different accounts'); return; }
         var v = amt.value.trim(); var bad = amountProblem(v);
         if (bad) { fail(bad); try { amt.focus(); } catch (e) { /* ignore */ } return; }
         busy = true;
-        T.api.post('/api/transfers', { from_account: from.value, to_account: to.value, currency: ccy.value, amount: v, memo: memo.value.trim() || null }).then(function () {
+        return T.api.post('/api/transfers', { from_account: from.value, to_account: to.value, currency: ccy.value, amount: v, memo: memo.value.trim() || null }).then(function () {
           busy = false; if (handle) { handle.close(); }
           T.ui.toast('transfer done: ' + ccy.value + ' ' + T.fmt.money(v, 2) + ' ' + T.accountName(from.value) + ' -> ' + T.accountName(to.value), 'ok');
           load(); T.poll.kick('accounts'); T.poll.kick('account_detail');
@@ -239,7 +242,7 @@
       enterSubmits([amt, memo], submit);
       handle = T.ui.modal({ title: 'Internal transfer . ' + bookName(), body: T.h('div', null, T.form([T.field('from', from), T.field('to', to), T.field('amount', amt), T.field('currency', ccy), T.field('memo', memo)]), msg,
         T.h('div', { class: 'hint' }, 'Within this book only (books never transfer to each other). Settled cash moves at once.')),
-        actions: [{ label: 'Cancel' }, { label: 'Transfer', cls: 'primary', onClick: function () { submit(); } }] });
+        actions: [{ label: 'Cancel' }, { label: 'Transfer', cls: 'primary', onClick: function (m, b, ev) { return submit(ev); } }] });
       try { amt.focus(); } catch (e) { /* focus is a convenience */ }
     }
     T.poll.page('treasury', 20000, load);

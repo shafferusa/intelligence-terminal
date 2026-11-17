@@ -253,7 +253,7 @@
       S.pFace = T.h('input', { type: 'text', id: 'pledge-face', inputmode: 'numeric', placeholder: 'face', style: 'width:140px' });
       S.pMsg = T.h('div', { class: 'msg' });
       var btn = T.h('button', { class: 'btn', id: 'pledge-submit' }, 'Pledge');
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', T.guard.on('collateral.pledge', { label: 'Pledge', not: 'not pledged', act: 'pledge it' }, function () {
         var hold = S.pHold.value ? JSON.parse(S.pHold.value) : null;
         S.pMsg.textContent = '';
         if (!hold) { S.pMsg.textContent = 'pick a Treasury you hold'; return; }
@@ -261,13 +261,13 @@
         var face = S.pFace.value.trim().replace(/,/g, '');
         if (!/^\d+$/.test(face) || Number(face) <= 0) { S.pMsg.textContent = 'face: a whole positive amount, e.g. 1000000'; return; }
         btn.disabled = true;
-        T.api.post('/api/collateral/pledges', { account_id: hold.account_id, instrument_id: hold.instrument_id, face: face, pledged_to: S.pTo.value }).then(function (r) {
+        return T.api.post('/api/collateral/pledges', { account_id: hold.account_id, instrument_id: hold.instrument_id, face: face, pledged_to: S.pTo.value }).then(function (r) {
           btn.disabled = false; S.pFace.value = '';
           var p = (r && r.pledge) || {};
           T.ui.toast('pledged ' + T.fmt.qty(p.face) + ' ' + (p.symbol || '') + ': eligible ' + T.money(p, 'eligible') + ' after a ' + (p.haircut_text || '') + ' haircut', 'ok', 6000);
           load();
         }, function (e) { btn.disabled = false; S.pMsg.textContent = T.api.describe(e); });
-      });
+      }));
       f.appendChild(T.form([T.field('holding', S.pHold, 'US Treasuries held in the book, with the face free to pledge (settled, not pledged in a repo or a CSA)'),
         T.field('prime broker', S.pTo), T.field('face', S.pFace), ['', btn]]));
       f.appendChild(S.pMsg);
@@ -296,7 +296,7 @@
       T.ui.modal({ title: 'Release pledge ' + r.pledge_id, body: T.h('div', null, T.h('div', { class: 'line' }, T.fmt.qty(r.face) + ' ' + r.symbol + ' pledged to ' + (r.pledged_to_name || r.pledged_to) + ' (eligible ' + m(r, 'eligible') + ') becomes free to sell or pledge again. Nothing moves in the ledger.')),
         actions: [{ label: 'Cancel' }, { label: 'Release', cls: 'primary', onClick: function (mod, b) {
           b.disabled = true;
-          T.api.post('/api/collateral/pledges/' + encodeURIComponent(r.pledge_id) + '/release', {}).then(function () { mod.close(); T.ui.toast('pledge ' + r.pledge_id + ' released', 'ok'); load(); },
+          return T.api.post('/api/collateral/pledges/' + encodeURIComponent(r.pledge_id) + '/release', {}).then(function () { mod.close(); T.ui.toast('pledge ' + r.pledge_id + ' released', 'ok'); load(); },
             function (e) { b.disabled = false; T.api.fail(e, 'release'); });
           return false;
         } }] });

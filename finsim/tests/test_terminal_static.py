@@ -642,7 +642,9 @@ class SmartTicketShellTests(unittest.TestCase):
         self.assertEqual(["onClick"], callers("runAction"))
         self.assertIn("page.addEventListener('click', onClick);", src)
         # one card at a time: Open in ticket opens the card its button names, never a walk over the cards
-        self.assertIn("if (act === 'open') { if (c) { openCard(S, c); } return; }", src)
+        # (1.0.7.2 simplify round 10: through the hand-off's guard, T.guard('smart.handoff:' + the button, ...): one hand-off per press of a button)
+        self.assertIn("if (act === 'open') { if (c) { handOff(e, b, function () { openCard(S, c); }); } return; }", src)
+        self.assertIn("return T.guard('smart.handoff:' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,", src)
         self.assertNotIn("S.cards", src[src.index("function openCard("):src.index("function openStrategies(")])
 
     def test_open_in_ticket_has_every_gate(self):
@@ -793,7 +795,9 @@ class SmartTicketShellTests(unittest.TestCase):
             self.assertIn(s, src, s)
         # the one-order cancel and its x key stay as they were
         self.assertIn("T.api.del('/api/orders/' + encodeURIComponent(r.order_id), {})", src)
-        self.assertIn("onKey: function (k, r) { if (k === 'x' && r && r.actions && r.actions.cancel) { cancelOrder(r, function () { load(false); }); return true; } return false; } });", src)
+        # (1.0.7.2 simplify round 10: the key event goes to the cancel's guard, T.guard('order.cancel:' + id, ...): a held x cancels once)
+        self.assertIn("onKey: function (k, r, e) { if (k === 'x' && r && r.actions && r.actions.cancel) { cancelOrder(r, function () { load(false); }, e); return true; } return false; } });", src)
+        self.assertIn("return T.guard('order.cancel:' + r.order_id, ev && ev.type ? ev : null, function () { return cancelNow(r, after); },", src)
         # third review: a ticked leg is listed before its primary, a waiting leg of a ticked primary right after it (it ends with it, never by
         # a cancel of its own); "kept" is counted and said; the x reads the primary's legs before its confirm and its toast names the ended ones
         for s in ("rows = batchOrder(rows, linked.extra, linked.head);", "rows.forEach(function (r) { (kidsOf[r.order_id] || []).forEach(put); put(r); (linkedOf[r.order_id] || []).forEach(put); });",

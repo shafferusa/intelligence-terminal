@@ -748,8 +748,8 @@
     var c = w.charAt(0) === 'c' ? S.cards[Number(w.slice(1))] : null;
     var g = w.charAt(0) === 'g' ? groupOf(S, w.slice(1)) : (c ? c.group : null);
     if (act === 'rebook') { parse(null, T.book.code || null); return; }
-    if (act === 'open') { if (c) { openCard(S, c); } return; }
-    if (act === 'strategies') { if (g) { openStrategies(S, strategiesActionOf(g), g); } return; }
+    if (act === 'open') { if (c) { handOff(e, b, function () { openCard(S, c); }); } return; }
+    if (act === 'strategies') { if (g) { handOff(e, b, function () { openStrategies(S, strategiesActionOf(g), g); }); } return; }
     if (act === 'flag') {
       var fx = b.dataset.f;
       S.expand = S.expand && S.expand.w === w && String(S.expand.f) === String(fx) ? null : { w: w, f: fx };
@@ -762,7 +762,15 @@
       if (ch) { choose(S, f, ch, span); }
       return;
     }
-    if (act === 'action' && f.action) { runAction(S, c, f.action, w.charAt(0) === 'g' ? g : null); }
+    if (act === 'action' && f.action) { handOff(e, b, function () { runAction(S, c, f.action, w.charAt(0) === 'g' ? g : null); }); }
+  }
+  /* simplify round 10 (the guard): each hand-off button (a card's Open in ticket, a group's Strategies tab, a flag's Open the FX desk /
+     the bond or private ticket) acts through T.guard as its own control - a second activation of it inside the double-click time (an Enter
+     pressed twice on it, a key held down) hands nothing over again, said; another card's button is its own; it sends nothing itself (the
+     ticket it fills has its own Submit) */
+  function handOff(e, b, run) {
+    return T.guard('smart.handoff:' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,
+                   { label: String(b.textContent || 'the hand-off').trim(), not: 'not handed over', act: 'open it' });
   }
 
   /* ---------------------------------------------------------------- the page -------------------------------------- */

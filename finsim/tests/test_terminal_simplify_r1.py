@@ -533,6 +533,14 @@ CARDS = r"""(function () {
 })()"""
 
 
+def guard_source() -> str:
+    """core.js's ``T.guard = (function () { ... })();`` block (simplify round 10): the stub T gets the real guard."""
+    with open(os.path.join(os.path.dirname(PAGE), "..", "core.js"), encoding="utf-8") as f:
+        core = f.read()
+    at = core.index("  T.guard = (function () {")
+    return core[at:core.index("\n  })();\n", at) + len("\n  })();\n")]
+
+
 def _parse(rt, text, book="P"):
     return st.parse_view(rt, {"text": text, "book": book})
 
@@ -544,6 +552,7 @@ class _Page:
         self.b = browser
         self.s = browser.page("about:blank")
         self.b.js(self.s, STUB)
+        self.b.js(self.s, guard_source() + "\n;true")          # simplify round 10: the page's hand-off runs through core.js's T.guard
         with open(PAGE, encoding="ascii") as f:
             self.b.js(self.s, f.read() + "\n;true")
         self.render()

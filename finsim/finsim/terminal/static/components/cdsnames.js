@@ -288,7 +288,7 @@
       title: 'Simulate a credit event on ' + s(c.contract_id), sticky: true, body: body,
       actions: [{ label: 'Cancel' }, { label: 'Simulate credit event', cls: 'primary', onClick: function (m, btn) {
         btn.disabled = true; err.hidden = true;
-        T.api.post(R_CONTRACTS + encodeURIComponent(c.contract_id) + '/credit-event', { event_type: typ.value, recovery_pct: clean(rec.value), event_date: dt.value })
+        return T.api.post(R_CONTRACTS + encodeURIComponent(c.contract_id) + '/credit-event', { event_type: typ.value, recovery_pct: clean(rec.value), event_date: dt.value })
           .then(function (r) {
             m.close();
             r = r || {};
@@ -486,7 +486,7 @@
     T.clear(el).appendChild(root);
     var ui = {};
     root.addEventListener('keydown', function (ev) {
-      if (T.keys && T.keys.is && T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.quoteBtn && !ui.quoteBtn.disabled) { onRequest(); } }
+      if (T.keys && T.keys.is && T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.quoteBtn && !ui.quoteBtn.disabled) { onRequest(ev); } }
     });
 
     function alive() { return !state.dead && document.body.contains(root); }
@@ -873,7 +873,7 @@
           (dflt ? ' (' + dflt + ' bp)' : '') + '; choose 100 or 500 bp to override it.'));
       }
       ui.previewBtn = T.h('button', { class: 'btn primary', onclick: function () { onPreview(); } }, 'Preview');
-      ui.quoteBtn = T.h('button', { class: 'btn', disabled: true, onclick: function () { onRequest(); } }, 'Request quote');
+      ui.quoteBtn = T.h('button', { class: 'btn', disabled: true, onclick: function (ev) { onRequest(ev); } }, 'Request quote');
       ui.midBtn = T.h('button', { class: 'btn small', title: 'set your negotiated mid for this name in this account (stored as a basis to the model)', onclick: function () { midDialog(); } }, 'Negotiated mid ...');
       ui.modelBtn = T.h('button', { class: 'btn small', title: 'confirm dealing at the MODEL for this name in this account - no market level known', onclick: function () { modelDialog(); } }, 'Deal at the MODEL ...');
       ui.resetBtn = T.h('button', { class: 'btn small', title: 'put this form back to its defaults', onclick: function () {
@@ -1099,13 +1099,15 @@
     }
 
     /* ---- the quote request: the previewed terms go to the simulated dealer; its firm quote is accepted under Quote requests ---- */
-    function onRequest() {
+    /* simplify round 10 (the guard): Request quote and the submit key act through T.guard as this ticket's own control (one request in flight) */
+    function onRequest(ev) { return T.guard('rfq.request:cds:' + account, ev && ev.type ? ev : null, requestNow, { label: 'Request quote', not: 'not requested', act: 'request a quote' }); }
+    function requestNow() {
       var p = state.preview;
       if (!p || p.stale || state.blocked || !p.pv || p.pv.bookable === false) { return; }
       var sw = T.components.swapticket;
       if (!sw || typeof sw.rfqRequest !== 'function') { setError('the quote requests are not available in this build', null); return; }
       ui.quoteBtn.disabled = true;
-      sw.rfqRequest(account, 'CDS', p.terms).then(function (r) {
+      return sw.rfqRequest(account, 'CDS', p.terms).then(function (r) {
         paintButtons();
         var text = 'Quote requested (' + s(r && r.rfq_id) + '): ' + s(p.pv.side_text || sideText(p.pv.side)) + ' USD ' + money(p.pv, 'notional') + ' - the simulated dealer answers within' +
           ' about 30 s with a firm spread, coupon, maturity and tier; accept or decline it under Quote requests';
@@ -1254,12 +1256,12 @@
         actions: [{ label: 'Cancel' },
           { label: 'Clear the level ...', id: 'cn-mid-clear', onClick: function (mm, btn) {
             if (st.action !== 'clear') { st.action = 'clear'; loadEffect(); return; }
-            btn.disabled = true; post({ clear: true }, 'Dealing level cleared for ' + s(sel.ticker || sel.name) + ': a new deal needs a level again');
+            btn.disabled = true; return post({ clear: true }, 'Dealing level cleared for ' + s(sel.ticker || sel.name) + ': a new deal needs a level again');
           } },
           { label: 'Save mid', id: 'cn-mid-save', cls: 'primary', onClick: function (mm, btn) {
             var w = want();
             if (!w || !w.negotiated_mid_bp) { return; }
-            btn.disabled = true; post({ negotiated_mid_bp: w.negotiated_mid_bp }, 'Negotiated mid ' + bp(w.negotiated_mid_bp) + ' saved for ' + s(sel.ticker || sel.name));
+            btn.disabled = true; return post({ negotiated_mid_bp: w.negotiated_mid_bp }, 'Negotiated mid ' + bp(w.negotiated_mid_bp) + ' saved for ' + s(sel.ticker || sel.name));
           } }],
         onClose: function () { if (st.timer) { clearTimeout(st.timer); } st.seq++; }
       });
@@ -1288,7 +1290,7 @@
         actions: [{ label: 'Cancel' }, { label: 'Confirm: deal at the MODEL', id: 'cn-model-ok', cls: 'primary', onClick: function (mm, btn) {
           if (!st.eff) { return; }
           btn.disabled = true; err.hidden = true;
-          T.api.post(R_BASIS, Object.assign({ account_id: account, cik: sel.cik, deal_at_model: true }, sel.cik == null ? { ticker: sel.ticker } : {})).then(function (r) {
+          return T.api.post(R_BASIS, Object.assign({ account_id: account, cik: sel.cik, deal_at_model: true }, sel.cik == null ? { ticker: sel.ticker } : {})).then(function (r) {
             mm.close();
             afterLevelSaved(savedWords(r, 'Dealing at the MODEL confirmed for ' + s(sel.ticker || sel.name)));
           }, function (e) { btn.disabled = false; err.textContent = describe(e); err.title = (e && e.code) || ''; err.hidden = false; });

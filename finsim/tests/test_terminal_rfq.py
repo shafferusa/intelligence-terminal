@@ -154,11 +154,13 @@ class RfqTests(unittest.TestCase):
         self.assertEqual(("ACCEPTED", cid, at("14:01:00")), (rfq(rt)["status"], rfq(rt)["contract_id"], rfq(rt)["closed_ts"]))
         self.assertEqual(swaps.PENDING_CONFIRM_LABEL, a.body["contract"]["confirm_label"])
         self.assertEqual([], swaps.rfq_rows(rt, f"{T1}:ALL"))                    # nothing open any more
-        # a replay of the same accept is the stored answer; a new accept is refused - the quote is consumed
+        # a replay of the same accept is the stored answer; a new accept is the same booking - the quote is consumed (1.0.7.2 simplify
+        # round 10: a quote's id is single-use - a second acceptance under another request id is answered as the one that booked it,
+        # replayed, never booked again; before, 409 RFQ_NOT_QUOTED)
         again = execute(rt, "otc.rfq.accept", {"rfq_id": "RFQ-000001"}, "ui:rfq-accept-0001")
         self.assertTrue(again.replayed)
         r2 = execute(rt, "otc.rfq.accept", {"rfq_id": "RFQ-000001"}, "ui:rfq-accept-0002")
-        self.assertEqual((409, "RFQ_NOT_QUOTED"), (r2.http, r2.code))
+        self.assertEqual((200, True, cid), (r2.http, r2.replayed, r2.body["contract_id"]))
         self.assertEqual(1, len(q(rt, "SELECT 1 FROM otc_contracts")))
         # the simulated confirmation: not before 17:05 ET of the business day, then CONFIRMED once
         self.assertEqual([], keys(rt, swaps.confirm_keys, rt.cal))

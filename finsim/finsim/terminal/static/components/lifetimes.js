@@ -171,7 +171,7 @@
         title: 'Reset lifetime ' + lt.lifetime_id, body: body, sticky: true,
         actions: [
           { label: 'Cancel' },
-          { id: 'lifetimes-reset-go', label: 'Reset lifetime', cls: 'danger', onClick: function (m, btn) { submit(m, btn); } }
+          { id: 'lifetimes-reset-go', label: 'Reset lifetime', cls: 'danger', onClick: function (m, btn) { return submit(m, btn); } }
         ]
       });
       var go = handle.el.querySelector('#lifetimes-reset-go');
@@ -187,7 +187,7 @@
         btn.disabled = true; err.hidden = true;
         var payload = { confirm: 'RESET', starting_capital: amount };
         if (name.value.trim()) { payload.name = name.value.trim(); }
-        T.api.post('/api/books/' + encodeURIComponent(code) + '/reset', payload, { nobook: true }).then(function (r) {
+        return T.api.post('/api/books/' + encodeURIComponent(code) + '/reset', payload, { nobook: true }).then(function (r) {
           m.close();
           if (state.dead) { return; }
           state.last = r || {};

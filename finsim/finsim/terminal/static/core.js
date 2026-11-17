@@ -533,6 +533,60 @@
     }
   };
 
+  /* ---------------------------------------------------------------- the send guard -------------------------------- */
+  /* 1.0.7.2 simplify round 10 (the guard): rounds 8 and 9 found one class four times - one real double click on a ticket's Submit or
+     Confirm sent or booked two orders.  Every control that places, replaces, amends, cancels or books anything (a ticket's or a desk's
+     button and its submit key, a dialog's action, a row's Cancel / Resume / Exercise ..., the Smart Ticket's hand-off) acts through
+     this one guard:
+       T.guard(key, ev, run, opts) -> true when run() was called, false when the activation was refused (and said)
+         key   the control, one per control ('ticket.submit', 'fx.confirm', 'order.cancel:' + its order id ...);
+         ev    the activation (a click, a key press) or null (the control's own code, a dialog's answer);
+         run   function () -> the request's promise: the control is busy until it settles (anything else: free at once);
+         opts  {label: the control in words ('Submit'), not: the refusal's first words ('not sent'), act: what one click does ('send'),
+                say: function (msg) - the control's own status line (else a toast)}.
+     Refused, run() never called, and said why:
+       - a key held down (ev.repeat): one press acts once;
+       - the second click of a double click (ev.detail > 1);
+       - this control's request still in flight (one request at a time per control);
+       - inside the double-click window: DOUBLE_MS after this control's last activation (acted or refused) or its last answer (an
+         Enter pressed twice, a key held down, a second click that comes once an answer armed the control again).
+     A refusal that follows an activation of the same control that acted in the last OWN_MS is that control's own double click or held
+     key: its first activation acted and its answer stands, so the refusal is said in a toast, never painted over that answer; any
+     other refusal (a double click begun elsewhere - a dialog's button, a card's Open in ticket, a row) is said on the control.  The
+     server keeps its own rule: a preview id is single-use for its order kind (commands.SINGLE_USE). */
+  T.guard = (function () {
+    var DOUBLE_MS = 500, OWN_MS = 5000, busy = {}, seen = {}, own = {};
+    function guard(key, ev, run, opts) {
+      opts = opts || {};
+      var now = Date.now(), label = opts.label || 'this button', not = opts.not || 'not sent', act = opts.act || 'send';
+      var last = seen[key] || 0, mine = now - (own[key] || 0) <= OWN_MS, msg = null;
+      seen[key] = Math.max(last, now);
+      if (ev && ev.repeat) { msg = not + ': ' + label + ' acts once per press (that was the key held down) - press it again to ' + act; }
+      else if (ev && ev.detail > 1) { msg = not + ': ' + label + ' takes a click of its own (that was the second click of a double click) - click ' + label + ' once to ' + act; }
+      else if (busy[key]) { msg = not + ': ' + label + ' is waiting for the answer to its request - one request at a time'; }
+      else if (now - last < DOUBLE_MS) { msg = not + ': ' + label + ' was pressed again inside the double-click time (' + DOUBLE_MS + ' ms) - press it once to ' + act; }
+      if (msg !== null) {
+        if (mine || !opts.say) { T.ui.toast(mine ? msg + ' (its first ' + (ev && ev.repeat ? 'press' : 'click') + ' acted: see its answer)' : msg, 'err guard', 6000); }
+        else { opts.say(msg); }
+        guard.refused.push({ key: key, msg: msg, at: now });
+        if (guard.refused.length > 50) { guard.refused.shift(); }
+        return false;
+      }
+      own[key] = now; busy[key] = true;
+      function free() { busy[key] = false; seen[key] = Math.max(seen[key] || 0, Date.now()); }
+      var r;
+      try { r = run(); } catch (e) { free(); throw e; }
+      if (r && typeof r.then === 'function') { r.then(free, free); } else { free(); }
+      return true;
+    }
+    guard.DOUBLE_MS = DOUBLE_MS; guard.OWN_MS = OWN_MS;
+    guard.refused = [];                                        /* the last refusals (newest last): what was said, for the keyboard help and the tests */
+    guard.busy = function (key) { return !!busy[key]; };
+    /* an event handler for a control: T.guard.on('credit.loan', {label: 'Borrow'}, function (ev) { ... return promise; }) */
+    guard.on = function (key, opts, run) { return function (ev) { return guard(key, ev, function () { return run(ev); }, opts); }; };
+    return guard;
+  })();
+
   /* ---------------------------------------------------------------- conventions ----------------------------------- */
   T.conv = function (key) { var c = T.state.conventions || {}; return c[key] || ''; };
   /* V104R1-04: trader wording for an internal code ('OTC_IM' -> 'OTC initial margin', 'BUY_CCY' -> 'currency bought', 'SWEEP_IN' ->
@@ -628,7 +682,7 @@
   /* ---------------------------------------------------------------- ui: toast / modal / confirm / help ------------- */
   var TOAST_MAX = 220, TOAST_KEEP = 4;
   /* the open dialogs, newest last: the 'close a dialog' key (Esc by default; keys section) closes the newest one */
-  var _modals = [];
+  var _modals = [], _dialogSeq = 0;
   function helpOpen() { var el = T.q('#help'); return !!(el && !el.hidden); }
   function paintHelp(el) {
     var box = T.h('div', { class: 'keys' }, T.h('h1', null, 'Keyboard', T.h('span', { class: 'spacer' }),
@@ -675,9 +729,16 @@
       if (typeof spec.body === 'function') { spec.body(body, handle); } else if (spec.body instanceof Node) { body.appendChild(spec.body); } else if (spec.body != null) { body.innerHTML = spec.body; }
       box.appendChild(body);
       if (spec.actions && spec.actions.length) {
-        var acts = T.h('div', { class: 'modal-actions' });
-        spec.actions.forEach(function (a) {
-          var b = T.h('button', { class: 'btn ' + (a.cls || ''), onclick: function () { if (a.onClick) { a.onClick(handle, b); } else { handle.close(); } } }, a.label);
+        var acts = T.h('div', { class: 'modal-actions' }), dk = 'dialog:' + (++_dialogSeq) + ':';
+        /* simplify round 10 (the guard): every action of a dialog but its Cancel acts through T.guard - the second click of a double click
+           (the one that opened the dialog, or its own) never confirms, books or cancels anything, nor a key held on it, nor a second press
+           while its request is in flight (an onClick returns its request's promise) */
+        spec.actions.forEach(function (a, i) {
+          var b = T.h('button', { class: 'btn ' + (a.cls || ''), onclick: function (ev) {
+            if (!a.onClick) { handle.close(); return; }
+            if (/(^|\s)cancel(\s|$)/.test(a.cls || '')) { a.onClick(handle, b, ev); return; }
+            T.guard(dk + i, ev, function () { return a.onClick(handle, b, ev); }, { label: a.label, not: 'not done', act: 'go ahead' });
+          } }, a.label);
           if (a.id) { b.id = a.id; }
           acts.appendChild(b);
         });

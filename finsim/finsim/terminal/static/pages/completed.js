@@ -110,7 +110,7 @@
       b.appendChild(T.h('div', { style: 'margin-top:6px' }, reason));
     }, actions: [{ label: 'Keep it settling' }, { label: 'Simulate the fail', cls: 'primary', id: 'cmp-fail-go', onClick: function (h) {
       h.close();
-      T.api.post('/api/settlements/' + encodeURIComponent(s.settle_id) + '/fail', { reason: reason.value || null }).then(function () { T.ui.toast('settlement ' + s.settle_id + ': simulated counterparty fail', 'ok'); after(); },
+      return T.api.post('/api/settlements/' + encodeURIComponent(s.settle_id) + '/fail', { reason: reason.value || null }).then(function () { T.ui.toast('settlement ' + s.settle_id + ': simulated counterparty fail', 'ok'); after(); },
         function (e) { T.api.fail(e, 'settlement fail'); });
     } }] });
   }
@@ -126,7 +126,7 @@
       var body = { action: sel.value };
       if (sel.value === 'cash_compensation') { body.amount = amt.value; } else if (sel.value === 'buy_in') { body.cost = amt.value; }
       h.close();
-      T.api.post('/api/settlements/' + encodeURIComponent(s.settle_id) + '/resolve', body).then(function () { T.ui.toast('settlement ' + s.settle_id + ' resolved (' + sel.value.replace(/_/g, ' ') + ')', 'ok'); after(); },
+      return T.api.post('/api/settlements/' + encodeURIComponent(s.settle_id) + '/resolve', body).then(function () { T.ui.toast('settlement ' + s.settle_id + ' resolved (' + sel.value.replace(/_/g, ' ') + ')', 'ok'); after(); },
         function (e) { T.api.fail(e, 'settlement resolve'); });
     } }] });
   }

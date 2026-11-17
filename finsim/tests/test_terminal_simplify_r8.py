@@ -815,10 +815,16 @@ class TicketSourceTests(unittest.TestCase):
 
     def test_submit_takes_a_click_of_its_own_and_the_boxes_are_what_is_sent(self):
         src = _read(os.path.join(STATIC, "components", "ticket.js"))
-        at = src.index("ui.submitBtn.addEventListener('click', function (e) {")
-        body = src[at:src.index("\n    });", at)]
-        self.assertLess(body.index("if (e && e.detail > 1) {"), body.index("submitClickAt = Date.now(); submit();"))
-        self.assertIn("paintStatus(" + json.dumps(SUBMIT_ALONE).replace('"', "'") + ", 'err');", body)
+        # simplify round 10: Submit goes through the shared guard (core.js T.guard) - the second click of a double click never sends and
+        # says SUBMIT_ALONE (the guard's words for label 'Submit', 'not sent', 'send') on the ticket's status line
+        self.assertIn("ui.submitBtn.addEventListener('click', function (e) { guardedSubmit(e); });", src)
+        self.assertIn("function guardedSubmit(ev) { return T.guard('ticket.submit', ev || null, function () { return submit(); }, SUBMIT_GUARD); }", src)
+        self.assertIn("var SUBMIT_GUARD = { label: 'Submit', say: function (m) { paintStatus(m, 'err'); } };", src)
+        core = _read(os.path.join(STATIC, "core.js"))
+        for s in ("not = opts.not || 'not sent', act = opts.act || 'send';",
+                  "else if (ev && ev.detail > 1) { msg = not + ': ' + label + ' takes a click of its own (that was the second click of a double click) - click ' + label + ' once to ' + act; }"):
+            self.assertEqual(1, core.count(s), s)
+        self.assertEqual(SUBMIT_ALONE, "not sent: Submit takes a click of its own (that was the second click of a double click) - click Submit once to send")
         # the trail mode: the box's number becomes the trail of the mode chosen, the other mode's value dropped
         self.assertIn("if (st.trail_mode === 'pct') { st.trail_pct = v; st.trail_amt = ''; } else { st.trail_amt = v; st.trail_pct = ''; }", src)
         # a quantity typed that is not whole: never rounded into the order - validity holds it first, the box is never repainted over it

@@ -143,14 +143,15 @@
     function act(o, e) {
       var b = e.target.closest('button[data-act]'); if (!b) { return; }
       var a = b.dataset.act; var pp = P();
-      if (a === 'x') { if (pp.cancelOrder) { pp.cancelOrder(o, reloadAll); } }
-      else if (a === 'resume') { T.api.post('/api/orders/' + encodeURIComponent(o.order_id) + '/resume', {}).then(function () { T.ui.toast('resumed ' + o.order_id, 'ok'); T.poll.kick('orders'); reloadAll(); }, function (er) { T.api.fail(er, 'resume'); }); }
+      if (a === 'x') { if (pp.cancelOrder) { pp.cancelOrder(o, reloadAll, e); } }
+      else if (a === 'resume') { T.guard('order.resume:' + o.order_id, e, function () { return T.api.post('/api/orders/' + encodeURIComponent(o.order_id) + '/resume', {}).then(function () { T.ui.toast('resumed ' + o.order_id, 'ok'); T.poll.kick('orders'); reloadAll(); }, function (er) { T.api.fail(er, 'resume'); }); },
+                                                 { label: 'Resume ' + o.order_id, not: 'not resumed', act: 'resume it' }); }   /* simplify round 10: through the guard */
       else if (a === 'modify' || a === 'replace') { if (pp.editOrder) { pp.editOrder(o, a === 'modify' ? 'amend' : 'replace'); } }
       else if (a === 'review') { openOrder(o, 'review'); }
     }
     var wGrid = T.components.grid.mount(sW.g, { columns: ORDER_COLS, rows: [], focus: true, csv: 'orders-working.csv', empty: 'loading ...', sortKey: 'submitted_ts', sortAsc: false,
       rowKey: function (o) { return o.order_id; }, onClick: act, onEnter: function (o) { openOrder(o); },
-      onKey: function (k, o) { if (k === 'x' && o && o.actions && o.actions.cancel && P().cancelOrder) { P().cancelOrder(o, reloadAll); return true; } return false; } });
+      onKey: function (k, o, e) { if (k === 'x' && o && o.actions && o.actions.cancel && P().cancelOrder) { P().cancelOrder(o, reloadAll, e); return true; } return false; } });
     var hGrid = T.components.grid.mount(sH.g, { columns: HIST_COLS, rows: [], csv: 'orders-history.csv', empty: 'loading ...', sortKey: 'submitted_ts', sortAsc: false,
       rowKey: function (o) { return o.order_id; }, onEnter: function (o) { openOrder(o); } });
     var rGrid = T.components.grid.mount(sR.g, { columns: REJ_COLS, rows: [], tools: false, empty: 'loading ...', rowKey: function (r) { return r.order_id; } });

@@ -91,7 +91,7 @@
     T.clear(body);
     if (st && st.timer) { clearInterval(st.timer); }
     st = { body: body, account_id: acct, mode: 'SPOT', buy: 'EUR', sell: 'USD', unit: 'EUR', seq: 0, deal: 0, preview: null, previewAt: 0, previewFields: null, deb: null, busy: false, ui: {}, timer: null, holdUntil: 0,
-           booked: null, confirmAt: 0 };          /* simplify round 9: the deal just booked (Confirm held until an edit or Preview); Confirm's last click of its own */
+           booked: null };                        /* simplify round 9: the deal just booked (Confirm held until an edit or Preview) */
     var root = T.h('div', { class: 'fxd', tabindex: '-1' });
     var meta = T.h('div', { class: 'meta', title: acct }, 'account ' + (T.accountName ? T.accountName(acct) : acct));
     var spotB = T.h('button', { class: 'btn on', title: 'spot: value T+2 (USD/CAD T+1)' }, 'Spot');
@@ -135,30 +135,22 @@
     unitBuy.addEventListener('click', function () { st.unit = st.buy; paintUnits(); invalidate(); schedule(); });
     unitSell.addEventListener('click', function () { st.unit = st.sell; paintUnits(); invalidate(); schedule(); });
     amount.addEventListener('input', function () { invalidate(); schedule(); });
-    /* simplify round 9 (R-1): the submit key held down books once - its repeats never deal */
+    /* simplify round 9 (R-1): the submit key held down books once - its repeats never deal (round 10: through the guard) */
     amount.addEventListener('keydown', function (e) {
-      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
+      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); guardedDeal(e); }
       else if (T.keys.is(e, 'ticket.preview')) { e.preventDefault(); e.stopPropagation(); previewNow(); }
     });
     tenor.addEventListener('change', function () { showTenor(); invalidate(); schedule(); });
     vdate.addEventListener('change', function () { invalidate(); schedule(); });
     previewBtn.addEventListener('click', function () { previewNow(); });
     /* simplify round 9 (R-1): Confirm takes a click of its own, as the order ticket's Submit does - the second click of a double click (a
-       third ...) never books.  After a click on Confirm it is that Confirm's double click (booked or said already: nothing more); else the
-       click before it was not on an armed Confirm (it handed a deal over, or Confirm came under the pointer since): not booked, said */
-    confirm.addEventListener('click', function (e) {
-      if (e && e.detail > 1) {
-        if (Date.now() - st.confirmAt > 5000) {
-          setStatus('not booked: Confirm takes a click of its own (that was the second click of a double click) - click Confirm once to book the deal', 'err');
-          st.holdUntil = Date.now() + 20000;                     /* readable: the 10 s refresh paints no 'ready' over it */
-        }
-        return;
-      }
-      st.confirmAt = Date.now(); doSubmit();
-    });
+       third ...) never books.  Round 10: through the guard (guardedDeal, T.guard in core.js) - after a click of its own it is that
+       Confirm's double click (booked already: said in a toast, never over its answer); else the click before it was not on Confirm (it
+       handed a deal over, or Confirm came under the pointer since): not booked, said on the desk; one deal in flight */
+    confirm.addEventListener('click', function (e) { guardedDeal(e); });
     clear.addEventListener('click', function () { amount.value = ''; invalidate(); T.clear(pv).appendChild(T.h('div', { class: 'hint' }, 'enter an amount')); T.clear(result); setStatus('', ''); });
     root.addEventListener('keydown', function (e) {
-      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { doSubmit(); } }
+      if (T.keys.is(e, 'ticket.submit')) { e.preventDefault(); e.stopPropagation(); guardedDeal(e); }
     });
     st.paintKeys = function () { confirm.title = st.booked ? HELD_TITLE : 'book the deal' + kp('ticket.submit'); };
     fillCcys(DEFAULT_CCYS);
@@ -361,6 +353,13 @@
   function outOfSight(me) { return !(T.dock && T.dock.visible && T.dock.visible()) || !(me && me.ui.root && me.ui.root.isConnected); }
   function lateDeal(words, msg, cls) { T.ui.toast('the answer for ' + words + ' came after the desk moved on to another deal: ' + msg, cls, 15000); T.poll.kickAll(); }
   function unseenDeal(away, words, msg, cls) { if (away) { T.ui.toast('the answer for ' + words + ' came while the desk was out of sight: ' + msg, cls, 15000); } }
+  /* simplify round 10 (the guard): Confirm, the amount box's submit key and the desk's own act through T.guard as one control - a refusal
+     that began elsewhere is said on the desk and held readable (the 10 s refresh paints no 'ready' over it) */
+  function guardedDeal(e) {
+    var me = st;
+    return T.guard('fx.confirm', e || null, doSubmit, { label: 'Confirm', not: 'not booked', act: 'book the deal',
+      say: function (m) { if (me && me === st) { setStatus(m, 'err'); st.holdUntil = Date.now() + 20000; } } });
+  }
   function doSubmit() {
     if (!st || st.busy) { return; }
     if (st.booked) { setStatus('not booked again: ' + st.booked + ' was booked - change a field or press Preview to deal again', 'err'); return; }
@@ -369,7 +368,7 @@
     if (!same(f, st.previewFields) || Date.now() - st.previewAt > PREVIEW_TTL_MS) { setStatus('the preview is stale - previewing again', 'err'); runPreview(); return; }
     var me = st, deal = st.deal, words = dealWords(f);
     st.busy = true; st.ui.confirm.disabled = true; setStatus('booking ...', '');
-    T.api.post('/api/fx/deal', f).then(function (r) {
+    return T.api.post('/api/fx/deal', f).then(function (r) {
       var d = (r && r.deal) || {};
       var head = (r && r.replayed ? 'already submitted: ' : 'booked ') + (d.deal_id || '') + ': BUY ' + d.buy_ccy + ' ' + money(d.buy) + ' / SELL ' + d.sell_ccy + ' ' + money(d.sell) + ' @ ' + (d.rate_quoted || '') + ', value ' + (d.value_date || '');
       if (me !== st || deal !== me.deal) { lateDeal(words, head, 'ok'); if (me === st) { loadRecent(); } return; }

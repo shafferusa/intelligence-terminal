@@ -739,8 +739,8 @@ class TicketSourceTests(unittest.TestCase):
         for fn in ("function enterPositionMode(id, f) {", "function enterOrderMode(mode, o) {"):
             at = src.index(fn)
             self.assertIn("syncBox(id);", src[at:src.index("\n  function ", at + 10)], fn)
-        guard = "var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return; }"
-        self.assertEqual(2, src.count(guard))
+        guard = "var tp = typedPending(); if (tp !== null) { paintStatus('not sent: ' + typedWords(tp), 'err'); paintSubmit(); return"
+        self.assertEqual(2, src.count(guard))                   # (simplify round 10: send's "return null;" - nothing sent, nothing to wait for)
         sub, snd = src.index("function submit(opts) {"), src.index("function send(body, rid, kind) {")
         self.assertLess(src.index(guard, sub), src.index("if (!opts.force && !canSubmit())", sub))          # before a forced submit too
         self.assertLess(src.index(guard, snd), src.index("var gen = st.gen, words = orderWords(kind);", snd))

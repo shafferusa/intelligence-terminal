@@ -341,7 +341,7 @@
     else { txt = JSON.stringify(d); }
     box.appendChild(T.h('div', { class: 'row' }, badge('PREVIEW_STALE', 'amber'), T.h('b', { class: 'mono' }, txt)));
     box.appendChild(T.h('div', { class: 'hint' }, 'the fresh preview is shown below; Accept & submit sends the same request with the new preview id'));
-    box.appendChild(T.h('div', { class: 'row' }, T.h('button', { class: 'btn primary', id: 'pv-accept', onclick: function () { if (opts.onAccept) { opts.onAccept(); } } }, 'Accept & submit'),
+    box.appendChild(T.h('div', { class: 'row' }, T.h('button', { class: 'btn primary', id: 'pv-accept', onclick: function (ev) { if (opts.onAccept) { opts.onAccept(ev); } } }, 'Accept & submit'),
       T.h('button', { class: 'btn', id: 'pv-cancel', onclick: function () { if (opts.onCancel) { opts.onCancel(); } } }, 'Cancel')));
     return box;
   }

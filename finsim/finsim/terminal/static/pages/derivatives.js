@@ -271,7 +271,7 @@
       title: 'Simulate a credit event on ' + c.contract_id, sticky: true, body: body,
       actions: [{ label: 'Cancel' }, { label: 'Simulate credit event', cls: 'primary', onClick: function (m, btn) {
         btn.disabled = true; err.hidden = true;
-        T.api.post('/api/otc/contracts/' + encodeURIComponent(c.contract_id) + '/credit-event', { reference_entity: ent.value, recovery_pct: rec.value, event_date: dt.value })
+        return T.api.post('/api/otc/contracts/' + encodeURIComponent(c.contract_id) + '/credit-event', { reference_entity: ent.value, recovery_pct: rec.value, event_date: dt.value })
           .then(function (r) {
             m.close();
             var text = 'Simulated credit event on ' + c.contract_id + ': ' + (r.reference_entity || '') + ' at ' + r.recovery_pct + ' % recovery . defaulted ' + money(r, 'defaulted') +

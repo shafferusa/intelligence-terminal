@@ -225,7 +225,7 @@
           T.h('div', { class: 'hint' }, 'The mark becomes this round\'s price per share from its date. A valuation without a price per share leaves the mark unavailable (valuation only: the position is carried at cost). The source URL is mandatory: a number without a source is refused.')),
         actions: [{ label: 'Cancel' }, { label: 'Record', cls: 'primary', onClick: function (m, b) {
           b.disabled = true; T.clear(err);
-          T.api.post('/api/private/companies/' + encodeURIComponent(sel.value) + '/rounds', f.read()).then(function (r) {
+          return T.api.post('/api/private/companies/' + encodeURIComponent(sel.value) + '/rounds', f.read()).then(function (r) {
             m.close(); T.ui.toast('round recorded: ' + sel.value + (r && r.mark && r.mark.value != null ? ' mark ' + T.fmt.px(r.mark.value) : ''), 'ok'); load(); T.poll.kick('positions'); T.poll.kick('account_detail');
           }, function (e) { b.disabled = false; err.textContent = T.api.fail(e, 'record round'); });
         } }] });
@@ -258,7 +258,7 @@
           b.disabled = true; T.clear(err);
           var body = { status: status.value, source_url: src.value.trim() };
           if (status.value === 'PUBLIC') { body.ticker = ticker.value.trim().toUpperCase(); body.listed_on = on.value.trim(); body.exchange = ven.value || other.value.trim(); }
-          T.api.post('/api/private/companies/' + encodeURIComponent(sel.value) + '/status', body).then(function (r) {
+          return T.api.post('/api/private/companies/' + encodeURIComponent(sel.value) + '/status', body).then(function (r) {
             m.close();
             var line = r && r.listing && r.listing.message ? r.listing.message : (sel.value + ' ' + status.value.replace(/_/g, ' ').toLowerCase());
             T.ui.toast((r && r.name ? r.name + ': ' : '') + line, 'ok', 6000); load(); T.poll.kick('positions');
@@ -279,7 +279,7 @@
           b.disabled = true; T.clear(err);
           var body = { name: name.value.trim(), sector: sector.value.trim() || null, country: country.value.trim() || null, status: status.value, ticker: ticker.value.trim() || null, notes: notes.value.trim() || null };
           if (!f.empty()) { body.last_round = f.read(); }
-          T.api.post('/api/private/companies', body).then(function (r) {
+          return T.api.post('/api/private/companies', body).then(function (r) {
             m.close(); T.ui.toast('company added: ' + (r && r.company_id || body.name), 'ok'); load();
           }, function (e) { b.disabled = false; err.textContent = T.api.fail(e, 'add company'); });
         } }] });

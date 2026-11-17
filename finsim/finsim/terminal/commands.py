@@ -20,6 +20,14 @@ Build 2 (2026-10-21):
   FOREIGN KEY / CHECK / NOT NULL failure is a 500 with its own code (DB_FOREIGN_KEY / DB_CHECK / DB_NOT_NULL / DB_CONSTRAINT).
 - TX-3: the ERROR attention of a failed command (COMMAND_FAILED and the DB_* codes) is ONE open row per (kind, reference) - the
   order / package / contract / account the payload names - updated with the latest error and a count, never one per attempt.
+
+1.0.7.2 simplify round 10 (the guard): the id an order route takes for what the owner reviewed - an order's ``preview_id`` (a submit, a
+package, an amend, a replace) while its preview lives, a quote's ``rfq_id`` (its acceptance) - is single-use for that order kind: a second
+command of the kind carrying the same id under another request id (a double click, a resubmission after a lost answer) is answered as
+the command that used it (its stored answer, ``replayed=True``: X-Replayed) and never executed again.  The handler finds that command
+(``first_use``) and raises ``AnsweredAs``; the bus rolls the second one back and answers with the first's.  Only a command that committed
+uses an id (a refusal leaves no row, so the same id may be sent again once the cause is fixed); the answer a single command gets is
+unchanged.
 """
 from __future__ import annotations
 
@@ -40,6 +48,28 @@ from .ledger import DuplicatePosting, Entry, LedgerError, post as ledger_post
 from .units import qprice
 
 RID_RE = re.compile(r"^[A-Za-z0-9:_.-]{8,80}$")
+
+
+def first_use(conn: sqlite3.Connection, kind: str, key: str, token: str, since_ts: int, exclude_id: Optional[int] = None) -> Optional[int]:
+    """Simplify round 10: the id of the committed command of ``kind`` whose payload carried ``token`` under ``key`` (the newest first, back to
+    ``since_ts`` on the command clock; ``exclude_id``: the command asking, whose own row is already written), else None.  Read in the
+    writer's transaction."""
+    if not isinstance(token, str) or not token.strip():
+        return None
+    needle = json.dumps({key: token}, separators=(",", ":"), ensure_ascii=True)[1:-1]
+    for row in conn.execute("SELECT id, kind, started_ts, instr(payload_json, ?) AS hit FROM commands ORDER BY id DESC", (needle,)):
+        if int(row["started_ts"]) < since_ts:
+            break
+        if row["kind"] != kind or not row["hit"] or (exclude_id is not None and int(row["id"]) == int(exclude_id)):
+            continue
+        full = conn.execute("SELECT payload_json FROM commands WHERE id=?", (int(row["id"]),)).fetchone()
+        try:
+            stored = json.loads(full["payload_json"] or "{}")
+        except (TypeError, ValueError):
+            continue
+        if isinstance(stored, dict) and stored.get(key) == token:
+            return int(row["id"])
+    return None
 
 
 @dataclass(frozen=True)
@@ -84,6 +114,16 @@ class RejectError(Exception):
 class ConflictError(RejectError):
     """Stale quote, funds, reuse, hold -> HTTP 409."""
     http = 409
+
+
+class AnsweredAs(Exception):
+    """Simplify round 10 (raised by a handler): this command carries a single-use id (a live preview's, a quote's) that the committed command
+    ``command_id`` of its kind used - the bus rolls it back and answers with that command's stored answer, replayed; nothing is written."""
+
+    def __init__(self, command_id: int, why: str = ""):
+        super().__init__(why)
+        self.command_id = int(command_id)
+        self.why = why
 
 
 class IntegrityFailure(Exception):
@@ -372,6 +412,15 @@ class CommandBus:
                              (finished, int((_time.monotonic() - t0) * 1000), sv, command_id))
                 conn.execute("COMMIT")
                 committed = Result(True, 200, body, command_id=command_id)
+            except AnsweredAs as e:          # simplify round 10: a single-use id already used - the answer of the command that used it
+                self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
+                first = conn.execute("SELECT request_id, result_json, http_status FROM commands WHERE id=?", (e.command_id,)).fetchone()
+                if first is None:
+                    return Result(False, 409, _error_body("ALREADY_USED", e.why or "already used by another request", {"command_id": e.command_id}, request_id=rid))
+                if self.log:
+                    self.log.info("command %s %s answered as %s: %s", cmd.kind, rid, first["request_id"], e.why)
+                return Result(int(first["http_status"]) < 400, int(first["http_status"]), json.loads(first["result_json"] or "{}"), replayed=True,
+                              command_id=e.command_id)
             except RejectError as e:
                 self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
                 if self.log:

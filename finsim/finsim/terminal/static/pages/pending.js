@@ -197,8 +197,16 @@
     }, function () { return null; });
   }
   function legLine(l) { return (l.order_id || '') + ' (' + String(l.side || '').replace(/_/g, ' ') + ' ' + T.fmt.qty(l.qty) + ' ' + (l.symbol || l.instrument_id || '') + ')'; }
-  function cancelOrder(r, after) {
-    primaryLegs(r).then(function (lk) {
+  /* simplify round 10 (the guard): an order's Cancel - its row's button, the X key, the drawer's Cancel order, the Orders tab and the
+     instrument page (T.pages.pending.cancelOrder) - acts through T.guard as that order's own control ('order.cancel:<id>'): one cancel in
+     flight, its question asked once; a second click of a double click, a key held down or a second press inside the double-click time
+     cancels nothing, said.  ev: the activation when the caller has it */
+  function cancelOrder(r, after, ev) {
+    return T.guard('order.cancel:' + r.order_id, ev && ev.type ? ev : null, function () { return cancelNow(r, after); },
+                   { label: 'Cancel ' + r.order_id, not: 'not cancelled', act: 'cancel it' });
+  }
+  function cancelNow(r, after) {
+    return primaryLegs(r).then(function (lk) {
       var head = 'Cancel ' + r.order_id + ' (' + (r.side_words || '') + ' ' + T.fmt.qty(r.qty) + ' ' + (r.symbol || r.instrument_id) + ')?';
       if (!lk || (!lk.waiting.length && !lk.released.length)) { return T.ui.confirm(head, { ok: 'Cancel order', cancel: 'Keep' }); }
       var body = T.h('div', null, T.h('div', null, head));
@@ -212,15 +220,20 @@
       return T.ui.confirm(body, { ok: 'Cancel order', cancel: 'Keep' });
     }).then(function (yes) {
       if (!yes) { return; }
-      T.api.del('/api/orders/' + encodeURIComponent(r.order_id), {}).then(function (res) {
+      return T.api.del('/api/orders/' + encodeURIComponent(r.order_id), {}).then(function (res) {
         var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];
         T.ui.toast('cancelled ' + r.order_id + (ended.length ? ' . ended with it: ' + ended.map(function (l) { return l.order_id; }).join(', ') : ''), 'ok', ended.length ? 6000 : undefined);
         ['orders', 'account_detail', 'accounts'].forEach(function (p) { T.poll.kick(p); }); if (after) { after(); }
       }, function (e) { T.api.fail(e, 'cancel'); });
     });
   }
-  function resumeOrder(r, after) {
-    T.api.post('/api/orders/' + encodeURIComponent(r.order_id) + '/resume', {}).then(function () { T.ui.toast('resumed ' + r.order_id, 'ok'); T.poll.kick('orders'); if (after) { after(); } },
+  /* simplify round 10 (the guard): Resume acts through T.guard as that order's own control ('order.resume:<id>') */
+  function resumeOrder(r, after, ev) {
+    return T.guard('order.resume:' + r.order_id, ev && ev.type ? ev : null, function () { return resumeNow(r, after); },
+                   { label: 'Resume ' + r.order_id, not: 'not resumed', act: 'resume it' });
+  }
+  function resumeNow(r, after) {
+    return T.api.post('/api/orders/' + encodeURIComponent(r.order_id) + '/resume', {}).then(function () { T.ui.toast('resumed ' + r.order_id, 'ok'); T.poll.kick('orders'); if (after) { after(); } },
       function (e) { T.api.fail(e, 'resume'); });
   }
   /* the dock ticket in amend / replace mode, prefilled from the order (C7; components/ticket.js) */
@@ -411,8 +424,8 @@
       var a = d.actions || {}; var row = Object.assign({}, d, { account_id: d.account_id });
       if (a.modify) { head.appendChild(T.h('button', { class: 'btn small', onclick: function () { editOrder(row, 'amend'); } }, 'Modify')); }
       if (a.replace) { head.appendChild(T.h('button', { class: 'btn small', onclick: function () { editOrder(row, 'replace'); } }, 'Replace')); }
-      if (a.resume) { head.appendChild(T.h('button', { class: 'btn small', onclick: function () { resumeOrder(row, refresh); } }, 'Resume')); }
-      if (a.cancel) { head.appendChild(T.h('button', { class: 'btn small', onclick: function () { cancelOrder(row, refresh); } }, 'Cancel order')); }
+      if (a.resume) { head.appendChild(T.h('button', { class: 'btn small', onclick: function (ev) { resumeOrder(row, refresh, ev); } }, 'Resume')); }
+      if (a.cancel) { head.appendChild(T.h('button', { class: 'btn small', onclick: function (ev) { cancelOrder(row, refresh, ev); } }, 'Cancel order')); }
       head.appendChild(T.h('button', { class: 'btn small', title: 'close the drawer', onclick: close }, 'Close'));
     }
     function refresh() { load(tab === 'review'); if (opts.onChange) { opts.onChange(); } }
@@ -525,8 +538,8 @@
     var newBtn = T.h('button', { class: 'btn', title: 'open the order ticket for the chosen account', onclick: function () { if (st.account) { T.ticket.open({ account_id: st.account }); } else { venuePicker(); } } }, 'New order');
     var countsEl = T.h('span', { class: 'sub' });
     var cancelSelBtn = T.h('button', { class: 'btn', id: 'pending-cancel-selected', disabled: true, title: 'cancel the orders ticked in the table (listed first, then confirmed)',
-                                       onclick: function () { cancelSelected(); } }, 'Cancel selected (0)');
-    var cancelAllBtn = T.h('button', { class: 'btn', id: 'pending-cancel-all', title: 'cancel every open order of the book (listed first, then confirmed)', onclick: function () { cancelAllOpen(); } }, 'Cancel all open');
+                                       onclick: function (ev) { cancelSelected(ev); } }, 'Cancel selected (0)');
+    var cancelAllBtn = T.h('button', { class: 'btn', id: 'pending-cancel-all', title: 'cancel every open order of the book (listed first, then confirmed)', onclick: function (ev) { cancelAllOpen(ev); } }, 'Cancel all open');
     T.pageHead(el, 'Pending Trades', '', [countsEl, cancelSelBtn, cancelAllBtn, newBtn]);
     var statusSel = T.h('select', { 'aria-label': 'status' });
     STATUSES.forEach(function (s) { statusSel.appendChild(T.h('option', { value: s[0] }, s[1])); });
@@ -568,11 +581,11 @@
           if (r && r.order_id && r.actions && r.actions.cancel && b.checked) { st.selected[r.order_id] = r; } else if (r && r.order_id) { delete st.selected[r.order_id]; }
           paintMass(); grid.update(st.rows); return;
         }
-        if (act === 'x') { cancelOrder(r, function () { load(false); }); } else if (act === 'resume') { resumeOrder(r, function () { load(false); }); }
+        if (act === 'x') { cancelOrder(r, function () { load(false); }, e); } else if (act === 'resume') { resumeOrder(r, function () { load(false); }, e); }
         else if (act === 'modify') { editOrder(r, 'amend'); } else if (act === 'replace') { editOrder(r, 'replace'); }
         else if (act === 'review') { openDrawer(r, 'review'); } else if (act === 'desk') { openDesk(r); }
       },
-      onKey: function (k, r) { if (k === 'x' && r && r.actions && r.actions.cancel) { cancelOrder(r, function () { load(false); }); return true; } return false; } });
+      onKey: function (k, r, e) { if (k === 'x' && r && r.actions && r.actions.cancel) { cancelOrder(r, function () { load(false); }, e); return true; } return false; } });
     function params(offset) {
       var p = { status: st.status, limit: PAGE, offset: offset || 0 };
       if (st.account) { p.account = st.account; }
@@ -622,7 +635,7 @@
         /* the open orders of the book (or every book), to find what ends with the ticked ones before the confirm */
         var p = { status: 'open', limit: 5000 };
         if (st.all) { p.scope = 'ALL_BOOKS'; }
-        T.api.get('/api/blotter/pending', p).then(function (r) { if (!dead) { runMass(rows, title, (r && r.rows) || []); } },
+        return T.api.get('/api/blotter/pending', p).then(function (r) { if (!dead) { return runMass(rows, title, (r && r.rows) || []); } },
           function (e) { T.api.fail(e, 'pending trades: the open orders could not be read, nothing was cancelled'); });
         return;
       }
@@ -634,10 +647,10 @@
         return Object.keys(add).length ? Object.assign({}, r, add) : r;
       });
       rows = batchOrder(rows, linked.extra, linked.head);
-      massConfirm(rows, title, linked.keeps).then(function (yes) {
+      return massConfirm(rows, title, linked.keeps).then(function (yes) {
         if (!yes || dead) { return; }
         st.massBusy = true; paintMass();
-        massCancel(rows, 'cancelled by the owner (Pending Trades)').then(function (tot) {
+        return massCancel(rows, 'cancelled by the owner (Pending Trades)').then(function (tot) {
           var msg = massWordsOf(tot);
           T.ui.toast(msg, tot.failed || tot.errors.length ? 'err' : 'ok', 6000);
           ['orders', 'account_detail', 'accounts'].forEach(function (p) { T.poll.kick(p); });
@@ -648,18 +661,24 @@
         });
       });
     }
-    function cancelSelected() {
+    /* simplify round 10 (the guard): Cancel selected and Cancel all open act through T.guard, one control (one mass cancel in flight: its
+       list, its question and its batches) */
+    function massGuard(ev, run) { return T.guard('orders.mass-cancel', ev && ev.type ? ev : null, run, { label: 'the mass cancel', not: 'not cancelled', act: 'cancel them' }); }
+    function cancelSelected(ev) {
       var rows = Object.keys(st.selected).map(function (id) { return st.selected[id]; }).filter(function (x) { return x && x.actions && x.actions.cancel; });
-      runMass(rows, 'Cancel selected');
+      massGuard(ev, function () { return runMass(rows, 'Cancel selected'); });
     }
     /* every open order with a cancel of the selected book (or of every book with "all books"), whatever the other filters show */
-    function cancelAllOpen() {
+    function cancelAllOpen(ev) {
+      massGuard(ev, function () { return cancelAllNow(); });
+    }
+    function cancelAllNow() {
       var p = { status: 'open', limit: 5000 };
       if (st.all) { p.scope = 'ALL_BOOKS'; }
-      T.api.get('/api/blotter/pending', p).then(function (r) {
+      return T.api.get('/api/blotter/pending', p).then(function (r) {
         if (dead) { return; }
         var rows = (r.rows || []).filter(function (x) { return x && x.row_kind === 'order' && x.order_id && x.actions && x.actions.cancel; });
-        runMass(rows, 'Cancel all open in ' + (st.all ? 'every book' : (bookNameOf(T.book.code) || 'the book')), r.rows || []);
+        return runMass(rows, 'Cancel all open in ' + (st.all ? 'every book' : (bookNameOf(T.book.code) || 'the book')), r.rows || []);
       }, function (e) { T.api.fail(e, 'pending trades: cancel all open'); });
     }
     function changed() {
