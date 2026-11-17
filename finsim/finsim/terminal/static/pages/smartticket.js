@@ -36,6 +36,8 @@
  *   over (a double click's second click, its double click) is swallowed before the account page sees it - it never lands on that
  *   ticket's Submit or on a Markets row that would fill the ticket with another instrument.  Simplify round 10 fixes: nor does a second
  *   click of its own on the same point (slower than a double click) until the pointer has moved away or 2 s have passed - said.
+ *   Simplify round 11 fixes: nor does any press on the BUTTON that was clicked (its box and 4 px around it) until the pointer has left
+ *   it or 2 s have passed, nor any press at all inside the double-click time (500 ms) - said; a press's release goes with its press.
  * - A product's own ticket (the card's "Open the FX desk", "Open the bond ticket" ...: a new trade there, prefilled with the side, the
  *   amount and the account) opens on the same gates less the order ticket's own (simplify round 5): the reading holds, the instruction
  *   has no red flag and no unread word, the card has no red flag but the one naming its own ticket (and "how many?" when no amount was
@@ -99,30 +101,48 @@
      ...) would land there.  From a hand-off until the next press that starts a new gesture (a click count of 1), every press, release,
      click and double click with a click count above 1 is swallowed before any handler sees it (capture, on the window).
      Simplify round 10 fixes (R-1): a second click OF ITS OWN on the same point (a double click slower than the system's double-click
-     time, an impatient second click) is the rest of that gesture too.  After a hand-off by a click, a press on the account page it
-     opened within REST_PX of where that click was - whatever its click count - is swallowed with its release, click and double click
-     until the pointer has moved away from there or REST_MS have passed, and said: nothing that came up under the pointer acts (the
-     ticket's Submit armed there, a desk's Confirm, a Markets row).  A hand-off from the keyboard has no point: the next click is a gesture
-     of its own. */
-  var REST_MS = 2000, REST_PX = 4;
-  var handGesture = false, hand = null, handRest = null, restPress = null;
-  function nearRest(e) { return Math.abs(e.clientX - handRest.x) <= REST_PX && Math.abs(e.clientY - handRest.y) <= REST_PX; }
+     time, an impatient second click) is the rest of that gesture too.
+     Simplify round 11 fixes (R-1): the rest covers the BUTTON that was clicked, not the point of the click - a second click of its own a
+     few pixels from the first on the same button, or the second press of a double click that drifted out of the system's double-click
+     rectangle (a click count of 1 then), landed on the docked ticket's Submit armed there and sent the order.  After a hand-off by a click,
+     a press on the account page it opened - whatever its click count - is swallowed with its release, click and double click, and said,
+     when it comes
+       - within REST_ANY_MS (500 ms, T.guard's double-click time) of that click, wherever it is (the second press of a double click,
+         however far it drifted), or
+       - within REST_MS (2 s) of that click inside the box of the button that was clicked grown by REST_PX, the pointer not seen outside
+         that grown box since (a move or a press outside it ends this part: a click elsewhere is a gesture of its own).
+     Nothing that came up under the pointer acts (the ticket's Submit armed there, a desk's Confirm, a Markets row).  A press is decided at
+     its mousedown, and its release, click and double click follow that decision whatever their own click count (Edge / Chrome give the
+     release of a press on a scrollbar a click count of 0, and no click); only a click of count 0 - a click the keyboard makes - is never
+     part of a press.  A hand-off from the keyboard has no rest: the next click is a gesture of its own. */
+  var REST_MS = 2000, REST_PX = 4, REST_ANY_MS = 500;
+  var handGesture = false, hand = null, handRest = null, pressDrop = false, pressSay = null;
+  function inRestBox(e) {
+    var b = handRest.box;
+    return e.clientX >= b.left - REST_PX && e.clientX <= b.right + REST_PX && e.clientY >= b.top - REST_PX && e.clientY <= b.bottom + REST_PX;
+  }
   function dropGestureRest(e) {
-    if (e.type === 'mousemove') { if (handRest && !nearRest(e)) { handRest = null; } return; }
+    if (e.type === 'mousemove') { if (handRest && !inRestBox(e)) { handRest.out = true; } return; }
     if (e.type === 'mousedown') {
-      var r = T.router && T.router.current;
-      if (handRest && (Date.now() - handRest.at > REST_MS || (r && r.page !== 'smart' && r.account !== handRest.acct))) { handRest = null; }
-      restPress = handRest && r && r.account === handRest.acct && nearRest(e) ? handRest : null;   /* decided at the press, for its release, click and double click */
+      var r = T.router && T.router.current, now = Date.now();
+      if (handRest && (now - handRest.at > REST_MS || (r && r.page !== 'smart' && r.account !== handRest.acct))) { handRest = null; }
+      var on = !!(handRest && r && r.account === handRest.acct);
+      var inBox = on && !handRest.out && inRestBox(e), soon = on && now - handRest.at < REST_ANY_MS;
+      if (on && !inRestBox(e)) { handRest.out = true; }
       if (!(e.detail > 1)) { handGesture = false; }
+      /* decided at the press, for its release, click and double click */
+      pressDrop = inBox || soon || (handGesture && e.detail > 1);
+      pressSay = inBox ? 'not taken: that click came where "' + handRest.label + '" was just pressed, as its ticket came up under the pointer - nothing was sent' +
+                         ' or changed; move to the button you want and click it'
+        : (soon ? 'not taken: that click came right after "' + handRest.label + '" was pressed (inside the double-click time, ' + REST_ANY_MS + ' ms), as its' +
+                  ' ticket came up - nothing was sent or changed; look at the ticket, then click the button you want' : null);
     }
-    var rest = !!restPress && e.detail > 0;
-    if (!rest && !(handGesture && e.detail > 1)) { return; }
+    var drop = e.type === 'mousedown' || e.type === 'mouseup' ? pressDrop : pressDrop && e.detail > 0;
+    if (!drop) { return; }
     e.preventDefault(); e.stopImmediatePropagation();
-    if (rest && e.type === 'click') {
-      var msg = 'not taken: that click came where "' + restPress.label + '" was just pressed, as its ticket came up under the pointer - nothing was sent' +
-                ' or changed; move to the button you want and click it';
-      T.ui.toast(msg, 'err guard', 8000);
-      if (T.guard && T.guard.refused) { T.guard.refused.push({ key: 'smart.handoff.rest', msg: msg, at: Date.now() }); }
+    if (pressSay && e.type === 'click') {
+      T.ui.toast(pressSay, 'err guard', 8000);
+      if (T.guard && T.guard.refused) { T.guard.refused.push({ key: 'smart.handoff.rest', msg: pressSay, at: Date.now() }); }
     }
   }
   ['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });
@@ -443,8 +463,10 @@
     var f = Object.assign({}, fields || {}, { fresh: true, account_id: acct });
     var off = T.state.on('route', function (route) { off(); if (route && route.account === acct) { T.ticket.open(f); } });
     handGesture = true;                                       /* simplify round 8: the rest of this click's gesture never reaches that page */
-    var ev = hand && hand.ev;                                 /* round 10 fixes: nor a click of its own on the same point (above) */
-    handRest = ev && ev.type === 'click' && ev.detail > 0 ? { x: ev.clientX, y: ev.clientY, at: Date.now(), label: hand.label, acct: acct } : null;
+    var ev = hand && hand.ev, bx = hand && hand.box;          /* round 10 / 11 fixes: nor a press on the button clicked, nor one right after (above) */
+    handRest = ev && ev.type === 'click' && ev.detail > 0 && bx ? { box: { left: Math.min(bx.left, ev.clientX), top: Math.min(bx.top, ev.clientY),
+                                                                           right: Math.max(bx.right, ev.clientX), bottom: Math.max(bx.bottom, ev.clientY) },
+                                                                    out: false, at: Date.now(), label: hand.label, acct: acct } : null;
     T.router.go(T.router.account(acct, 'markets'));
   }
   function openCard(S, c) {
@@ -794,10 +816,11 @@
      pressed twice on it, a key held down) hands nothing over again, said; another card's button is its own; it sends nothing itself (the
      ticket it fills has its own Submit).  Round 10 fixes: a button is the reading's (S.pseq: each reading of the page load is a new one,
      the page shown again included) - a new reading's card is a new control, never refused for a press on the card of a reading before
-     it; the press is kept for the hand-off (handTicket) */
+     it; the press is kept for the hand-off (handTicket), with the button's box (round 11 fixes: the rest of a click covers the button) */
   function handOff(e, b, run) {
     var label = String(b.textContent || 'the hand-off').trim();
-    hand = { ev: e, label: label };
+    var q = b.getBoundingClientRect();
+    hand = { ev: e, label: label, box: { left: q.left, top: q.top, right: q.right, bottom: q.bottom } };
     try {
       return T.guard('smart.handoff:' + (st ? st.pseq : 0) + ':' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,
                      { label: label, not: 'not handed over', act: 'open it' });

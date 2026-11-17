@@ -20,7 +20,8 @@ and the real pages in a headless Edge / Chrome; the pointer is CDP's (Input.disp
     test_d  whatever lies under the pointer: after a one-click hand-off, the rest of a double click (click count 2) on the armed Submit,
             then on a Markets row: nothing sent, the order handed over kept (a and c without the layout);
     test_e  the control: one click hands the order over - Submit armed, nothing sent (test_a2) - and the next click, one of its own on
-            Submit, places it once;
+            Submit, places it once (simplify round 11 fixes: once the 2 s rest of the hand-off click is over - the docked Submit lies
+            under the button that click pressed);
     test_f  the order ticket's own rule: a second click (click count 2) on an armed Submit with no click on it before: not sent, said;
             then a click of its own sends it;
     test_g  the control: a double click on Submit itself places the order once and says nothing of its second click.
@@ -682,7 +683,9 @@ class PageTests(unittest.TestCase):
         self.click_xy(*_middle(self.open_rect(2)))
         self.wait(PREVIEWED % (json.dumps(gen0), json.dumps("WIDG")), timeout=20)
         self.assertTrue(self.armed(20), self.js(TICKET))
-        self.browser.pump(1.0)
+        # the owner reads the ticket and its preview: simplify round 11 fixes - for 2 s a press on the button the hand-off clicked (here
+        # the docked Submit lies under it) is the rest of that click, unless the pointer left the button first (test_terminal_simplify_r11_fix)
+        self.browser.pump(2.2)
         t = self.js(TICKET)
         self.assertEqual(("BUY", "12", "WIDG", "STOP_LIMIT", "251", "252", "GTD"), (t["side"], t["qty"], t["inst"], t["type"], t["stop"], t["limit"], t["tif"]), t)
         self.no_orders(start, before)
@@ -801,10 +804,11 @@ class PageTests(unittest.TestCase):
 class TicketSourceTests(unittest.TestCase):
     def test_the_rest_of_a_hand_off_gesture_is_dropped_and_a_click_acts_alone(self):
         src = _read(os.path.join(STATIC, "pages", "smartticket.js"))
-        # (simplify round 10 fixes: the same rule, beside the rest of a hand-off by a click on its own point - test_terminal_simplify_r10_fix)
-        for s in ("var handGesture = false, hand = null, handRest = null, restPress = null;",
+        # (simplify round 10 fixes: the same rule, beside the rest of a hand-off by a click on its own point - test_terminal_simplify_r10_fix;
+        # round 11 fixes: on the button clicked, decided at the press for its release - test_terminal_simplify_r11_fix)
+        for s in ("var handGesture = false, hand = null, handRest = null, pressDrop = false, pressSay = null;",
                   "if (!(e.detail > 1)) { handGesture = false; }",
-                  "if (!rest && !(handGesture && e.detail > 1)) { return; }",
+                  "pressDrop = inBox || soon || (handGesture && e.detail > 1);",
                   "e.preventDefault(); e.stopImmediatePropagation();",
                   "['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });"):
             self.assertEqual(1, src.count(s), s)

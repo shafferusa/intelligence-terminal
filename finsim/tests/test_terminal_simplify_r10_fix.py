@@ -13,7 +13,9 @@ count - until the pointer has moved away or 2 s have passed, with its release, c
           least 0.55 s later, once the ticket's Submit for that order is armed: nothing is sent, said;
   test_b  1366 x 768, the part of the button over the docked Submit (test_b): the same;
   test_c  the control (test_c): one click on Open in ticket, Submit clicked 2.5 s after it is armed: that one order is placed;
-  test_d  the control of the rule's end: the pointer moved away after the hand-off - a click on Submit then is a gesture of its own: placed.
+  test_d  the control of the rule's end: the pointer moved away after the hand-off - a click on Submit then is a gesture of its own: placed
+          (simplify round 11 fixes: moved off the BUTTON clicked, and the click once the double-click time is over -
+          tests/test_terminal_simplify_r11_fix.py).
 R10-T1 (property tester, major).  A key held on a focused button reaches the page as clicks of their own (Edge / Chrome: each repeat of
 Enter is a keydown with repeat: true, then a click with detail 0 and no repeat), so the question a press opened (its focus on its button)
 was answered yes by the key's first repeat - Pending's Cancel cancelled, Treasury's Add funds deposited - and a direct send whose answer
@@ -385,25 +387,30 @@ class PageTests(unittest.TestCase):
         self.assertEqual([], self.browser.errors(self.sid, start))
 
     def test_d_control_the_pointer_moved_away_a_click_on_submit_is_its_own(self):
-        """The rest ends when the pointer leaves the point: the hand-off clicked, Submit armed, the pointer moved 40 px away, then Submit
-        clicked (inside the rest's 2 s): placed once."""
+        """The rest ends when the pointer leaves the button clicked (simplify round 11 fixes: its box and 4 px around it; before, 4 px
+        around the point): the hand-off clicked, Submit armed, the pointer moved 30 px below the button, then - once the double-click time
+        (500 ms) is over, inside the rest's 2 s - Submit clicked: placed once, nothing refused."""
         self.tidy()
         self.browser.viewport(self.sid, 1280, 800)
         self.hand_once(R8.TEXT_C, 1, 0, "ACME")
         before, start = self.orders(), self.browser.mark()
+        n = len(self.js(REFUSED) or [])
         self.fresh_smart("P")
         self.read(R8.TEXT_C, 1)
-        x, y = R8._middle(self.open_rect(0))
+        r = self.open_rect(0)
+        x, y = R8._middle(r)
         gen0 = self.js(R8.GEN)
         t0 = time.monotonic()
         self.click_xy(x, y)
         self.wait(R8.PREVIEWED % (json.dumps(gen0), json.dumps("ACME")), timeout=20)
         self.wait(R8.ARMED, timeout=20)
-        self.mouse("mouseMoved", x - 40, y)
+        self.mouse("mouseMoved", x, r["bottom"] + 30)                  # off the button: out of its box and the 4 px around it
+        time.sleep(max(0.0, 0.6 - (time.monotonic() - t0)))           # the double-click time over
         self.click_xy(*R8._middle(self.js(R8.RECT % json.dumps("#ticket-submit-btn"))))
         clicked = time.monotonic() - t0
         placed = self.wait_rows(self.orders, before)
         self.assertEqual([("ACME", "BUY", 10, "LIMIT")], [(o[1], o[2], int(o[3]), o[4]) for o in placed], f"Submit clicked {clicked:.2f} s after the hand-off")
+        self.assertEqual([], [f for f in self.refused_since(n) if f.get("key") == "smart.handoff.rest"])
         self.assertEqual([], self.browser.errors(self.sid, start))
 
     # ---- R10-T1: a key held on a focused button ---------------------------------------------------------------------------------------
@@ -600,11 +607,13 @@ class SourceTests(unittest.TestCase):
 
     def test_the_rest_of_a_hand_off_by_a_click_and_each_readings_buttons(self):
         src = _read(os.path.join(STATIC, "pages", "smartticket.js"))
-        for s in ("var REST_MS = 2000, REST_PX = 4;",
-                  "if (e.type === 'mousemove') { if (handRest && !nearRest(e)) { handRest = null; } return; }",
-                  "restPress = handRest && r && r.account === handRest.acct && nearRest(e) ? handRest : null;",
-                  "var rest = !!restPress && e.detail > 0;",
-                  "handRest = ev && ev.type === 'click' && ev.detail > 0 ? { x: ev.clientX, y: ev.clientY, at: Date.now(), label: hand.label, acct: acct } : null;",
+        # simplify round 11 fixes: the rest covers the button clicked (its box) and any press inside the double-click time, and a press's
+        # release follows its press (test_terminal_simplify_r11_fix pins those lines)
+        for s in ("var REST_MS = 2000, REST_PX = 4, REST_ANY_MS = 500;",
+                  "if (e.type === 'mousemove') { if (handRest && !inRestBox(e)) { handRest.out = true; } return; }",
+                  "if (handRest && (now - handRest.at > REST_MS || (r && r.page !== 'smart' && r.account !== handRest.acct))) { handRest = null; }",
+                  "var inBox = on && !handRest.out && inRestBox(e), soon = on && now - handRest.at < REST_ANY_MS;",
+                  "handRest = ev && ev.type === 'click' && ev.detail > 0 && bx ? { box: { left: Math.min(bx.left, ev.clientX), top: Math.min(bx.top, ev.clientY),",
                   "var reads = 0;", "var seq = S.pseq = ++reads;", "S.pseq = ++reads; S.parsing = false;",
                   "return T.guard('smart.handoff:' + (st ? st.pseq : 0) + ':' + (b.dataset.act || '') + ':' + (b.dataset.w || '') + ':' + (b.dataset.f || ''), e, run,"):
             self.assertEqual(1, src.count(s), s)

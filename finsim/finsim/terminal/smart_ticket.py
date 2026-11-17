@@ -4418,7 +4418,6 @@ class Resolver:
                                 "prices": [c["mods"]["price"]] if c["mods"].get("price") is not None else []})
         for g in tree["groups"]:
             reps = max((len(insts[ci]) for ci in g["clauses"]), default=0)
-            names = [clauses[ci]["strategy"]["name"] for ci in g["clauses"] if clauses[ci]["kind"] == "strategy" and clauses[ci].get("strategy")]
             # second review: a price typed on a strategy, a roll, a collar or a covered call that buys its shares inside a group reaches
             # the group and is refused there like an ungrouped one (its legs are at market), never dropped.  Simplify round 6: every such
             # price of the group (two priced strategies in one group), never only the first
@@ -4428,8 +4427,14 @@ class Resolver:
             for r in range(reps):
                 members = [l for ci in g["clauses"] for inst in insts[ci] if inst["rep"] == r for l in inst["legs"]]
                 if members:
+                    # simplify round 11: the group's copy for one book ("in the Personal and Fund books") whose orders are ONE strategy's
+                    # alone - the group's other orders are in another book's copy - is that strategy, and offers its Strategies tab as the
+                    # strategy written alone does (``_has_template``); a copy that mixes orders stays "these orders", with no tab
+                    own = [ci for ci in g["clauses"] if any(inst["rep"] == r and inst["legs"] for inst in insts[ci])]
+                    one = clauses[own[0]] if len(own) == 1 else None
+                    name = one["strategy"]["name"] if one is not None and one["kind"] == "strategy" and one.get("strategy") else None
                     sources.append({"legs": members, "span": g["span"], "clauses": list(g["clauses"]), "kind": "group", "group": g,
-                                    "strategy": names[0] if len(names) == 1 and len(g["clauses"]) == 1 else None, "prices": gprices})
+                                    "strategy": name, "prices": gprices})
         combos = [self._group(s) for s in sources]
         combos.sort(key=lambda cb: min(cb["legs"]) if cb["legs"] else 0)
         for n, cb in enumerate(combos, 1):
