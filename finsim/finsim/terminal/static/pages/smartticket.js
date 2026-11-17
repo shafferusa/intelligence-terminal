@@ -22,6 +22,12 @@
  *   account").  Simplify round 2: a card's notes (the edits dropped on it, its "was" marks) stay - in the draft, across a navigation
  *   and through the next readings that read the card as before - until the owner edits that field or opens the card; the note above
  *   the cards stays through the next readings of the same text (a navigation's restore, Enter, a look-up, "Read for the <book>").
+ *   Simplify round 12 fixes: typing in a box is taken when the box is left (Tab, Enter, a click elsewhere: its change event).  Typing
+ *   in a box that still has the focus is never taken by itself: when the page reads the text again by itself (after a look-up or a
+ *   chain load the owner asked for) or is left (a page key, a reload) it is not kept, and said on its card ("your typing: ... - not
+ *   kept"), in the draft and through the next readings (above the cards when the card is gone), until that field is edited or the card
+ *   opened.  The change event such a box fires as the page's own repaint removes it is no edit and paints nothing (a repaint inside
+ *   that repaint threw when the page held one card or group, and the page stayed "reading ...").
  * - The reading's book: the text is read for the book of the last reading (an order that names no book stays in it) until New ticket,
  *   even when another book is selected since (opening an order of another book selects that book): the page says so, and "Read for
  *   the <selected book>" reads it for the selected book (its cards then say what changed).
@@ -86,6 +92,7 @@
   /* simplify round 1: an edit's repaint waits while a pointer is down, so the click that took the focus out of the box (Open in ticket
      right after typing) lands on the button it was pressed on, never on a repainted one */
   var pointerDown = false, repaintDue = null;
+  var repainting = false;                                      /* simplify round 12 fixes: the cards are being painted again (paintCards) */
   function pointerDone() {
     pointerDown = false;
     var S = repaintDue; repaintDue = null;
@@ -146,6 +153,9 @@
     }
   }
   ['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove'].forEach(function (t) { window.addEventListener(t, dropGestureRest, true); });
+  /* simplify round 12 fixes: the page left by the browser itself (a reload, the window closed) while a card's box still has the focus:
+     the typing is said on its card in the draft (not kept), as when a page key leaves the page (unmount) */
+  window.addEventListener('pagehide', function () { var S = st; if (S && !S.dead && noteTyping(S, 'left')) { saveState(S); } });
 
   /* ---------------------------------------------------------------- small helpers -------------------------------- */
   function esc(s) { return T.esc(s == null ? '' : s); }
@@ -247,19 +257,24 @@
       if (o.readSig === c.readSig) {
         if (e) { edits[c.key] = e; }
         c.dropped = clone(o.dropped || []); c.was = clone(o.was || {});
-      } else if (e) {
-        Object.keys(e).forEach(function (k) { c.dropped.push({ field: k, edit: e[k], now: c.read[k] }); });
+      } else {
+        if (e) { Object.keys(e).forEach(function (k) { c.dropped.push({ field: k, edit: e[k], now: c.read[k] }); }); }
+        c.dropped = c.dropped.concat(typedOf(o));             /* simplify round 12 fixes: typing not kept stays said, the card read otherwise */
       }
       var now = effWith(c, edits[c.key]);
       var op = oldOpened[o.key]; if (op && op.sig === sigOf(now)) { opened[c.key] = op; }
       FIELDS.forEach(function (k) { if (!same(seen[k], now[k])) { c.was[k] = seen[k] == null ? '' : seen[k]; } });
     });
     old.forEach(function (o, k) {
-      var e = oldEdits[o.key]; if (used[k] || !e) { return; }
+      if (used[k]) { return; }
+      var e = oldEdits[o.key] || {};
       Object.keys(e).forEach(function (f) { lost.push({ n: o.n, clause: String(o.leg.clause || ''), field: f, edit: e[f] }); });
+      typedOf(o).forEach(function (d) { lost.push({ n: o.n, clause: String(o.leg.clause || ''), field: d.field, edit: d.edit, typed: d.typed }); });
     });
     S.cards = cards; S.edits = edits; S.opened = opened; S.lost = (again ? S.lost || [] : []).concat(lost);
   }
+  /* simplify round 12 fixes: the notes of a card that say typing in one of its boxes was not kept (noteTyping) */
+  function typedOf(c) { return clone((c.dropped || []).filter(function (d) { return d && d.typed; })); }
   function sidesOf(c) { return SIDES[kindGroup(instOf(c.leg).kind)] || SIDES.CASH; }
   function orderValidity(c, r) {
     if (!r.side || sidesOf(c).indexOf(r.side) < 0) { return 'choose the side'; }
@@ -396,6 +411,9 @@
     if (T.modulesKnown() && !T.hasModule('smart_ticket')) { say(S, 'the Smart Ticket\'s reader is not in this build: nothing can be read', 'err'); return; }
     var seq = S.pseq = ++reads;
     var book = forBook || (S.parsed && S.parsed.selected_book) || T.book.code || null;
+    /* simplify round 12 fixes: the cards are painted again at once (read only while reading), so typing in a box that still has the
+       focus - the page reading again by itself, after a look-up or a chain load the owner asked for - is said on its card, never taken */
+    if (noteTyping(S, 'read')) { saveState(S); }
     S.parsing = true; say(S, 'reading ...'); paint(S);
     var body = { text: text }; if (book) { body.book = book; }
     T.api.post(PARSE + bookQ(book), body, { retries: 0 }).then(function (ans) {
@@ -512,15 +530,12 @@
   }
 
   /* ---------------------------------------------------------------- in-place edits -------------------------------- */
-  function onEdit(e) {
-    var t = e.target; var S = st;
-    if (!S || S.dead || !t || !t.dataset || !t.dataset.edit) { return; }
-    var el = t.closest('[data-i]'); var c = el ? S.cards[Number(el.dataset.i)] : null;
-    if (!c || !canEdit(S, c)) { paint(S); return; }
-    var f = t.dataset.edit; var v = t.type === 'checkbox' ? !!t.checked : String(t.value == null ? '' : t.value).trim();
-    var x = Object.assign({}, S.edits[c.key] || {});
+  /* what a box of card c (its data-edit f) holding v sets on the order (null: nothing it can set) - one reading of a box, for an edit
+     (onEdit) and for typing that was not taken (noteTyping) */
+  function editOf(c, f, v) {
+    var x = {};
     if (f === 'side') {
-      if (sidesOf(c).indexOf(v) < 0) { paint(S); return; }
+      if (sidesOf(c).indexOf(v) < 0) { return null; }
       x.side = v;
     } else if (f === 'qty') { x.qty = /^\d+$/.test(v) ? Number(v) : v; }
     else if (f === 'order_type') { x.order_type = v; }
@@ -531,7 +546,44 @@
     } else if (f === 'tif') { x.tif = v; }
     else if (f === 'gtd_date') { x.gtd_date = v; }
     else if (f === 'covered') { x.covered = v; }
-    else { paint(S); return; }
+    else { return null; }
+    return x;
+  }
+  function boxValue(t) { return t.type === 'checkbox' ? !!t.checked : String(t.value == null ? '' : t.value).trim(); }
+  /* simplify round 12 fixes (R-3): typing in a card's box is taken when the box is left - Tab, Enter, a click elsewhere: its change
+     event (onEdit).  A box that still has the focus is never read by itself: when the page reads the text again by itself (parse: after
+     a look-up or a chain load the owner asked for, the cards are painted again at once) or is left (unmount: a page key; pagehide: a
+     reload, the window closed), what a text box holds that the card's order does not is said on that card - not kept - and the order
+     stays as it was (no edit is made, no opened mark moves).  The note is in the draft, stays through the next readings (above the
+     cards when the card is gone) until the owner edits that field or opens the card: typing is never dropped unsaid.  (A list or the
+     covered tick takes its change at once.)  Returns whether a note was made. */
+  var TYPED_WHY = { read: 'the text was read again before you left the box', left: 'the page was left before you left the box' };
+  function noteTyping(S, why) {
+    var t = document.activeElement;
+    if (!S || !ui || !t || t.tagName !== 'INPUT' || t.type === 'checkbox' || !t.dataset || !t.dataset.edit || !ui.cards.contains(t)) { return false; }
+    var el = t.closest('[data-i]'); var c = el ? S.cards[Number(el.dataset.i)] : null;
+    if (!c) { return false; }
+    var f = t.dataset.edit, v = boxValue(t), y = editOf(c, f, v), now = effOf(S, c);
+    if (y && Object.keys(y).every(function (k) { return same(y[k], now[k]); })) { return false; }      /* the box holds the card's order */
+    c.dropped = c.dropped.filter(function (d) { return !(d.typed && d.field === f); }).concat([{ field: f, edit: v, typed: TYPED_WHY[why] ? why : 'left' }]);
+    return true;
+  }
+  function typedSaid(d) {
+    return 'your typing: ' + (FIELD_WORDS[d.field] || d.field) + ' ' + (d.edit === '' ? '(empty)' : String(d.edit)) + ' - not kept: ' +
+      (TYPED_WHY[d.typed] || TYPED_WHY.left) + ' (Tab, Enter or a click elsewhere takes what you type)';
+  }
+  function onEdit(e) {
+    var t = e.target; var S = st;
+    /* simplify round 12 fixes: a text box with the focus and typing not left fires its change event as the page's own repaint of the
+       cards removes it (Chrome: no blur, the change) - parse painting them at once after a look-up or a chain load.  That is no edit (the
+       owner did not leave the box; parse said the typing on its card first, noteTyping) and no repaint inside that repaint (the page's
+       one card or group replaced under it threw, and the page stayed "reading ..." with nothing asked) */
+    if (repainting || !S || S.dead || !t || !t.dataset || !t.dataset.edit) { return; }
+    var el = t.closest('[data-i]'); var c = el ? S.cards[Number(el.dataset.i)] : null;
+    if (!c || !canEdit(S, c)) { paint(S); return; }
+    var f = t.dataset.edit; var y = editOf(c, f, boxValue(t));
+    if (!y) { paint(S); return; }
+    var x = Object.assign({}, S.edits[c.key] || {}, y);
     Object.keys(x).forEach(function (k) { if (same(x[k], c.read[k])) { delete x[k]; } });   /* back to what was read: no edit */
     if (Object.keys(x).length) { S.edits[c.key] = x; } else { delete S.edits[c.key]; }
     (f === 'trail' ? ['trail_amt', 'trail_pct'] : [f]).forEach(function (k) { delete c.was[k]; });
@@ -685,6 +737,7 @@
     h += '<div class="smart-clause muted" title="' + esc(leg.clause || '') + '">you wrote "' + esc(short(leg.clause || '', 90)) + '"</div>';
     h += '<div class="smart-fields">' + fieldsHtml(S, c, o) + '</div>';
     c.dropped.forEach(function (d) {
+      if (d.typed) { h += '<div class="smart-dropped">' + esc(typedSaid(d)) + '</div>'; return; }      /* simplify round 12 fixes: typing not kept */
       h += '<div class="smart-dropped">your edit: ' + esc(FIELD_WORDS[d.field] || d.field) + ' ' + esc(valWords(d.field, d.edit)) + ' - dropped, read again as ' + esc(valWords(d.field, d.now)) + '</div>';
     });
     var chips = chipsHtml(bySeverity(leg.flags), 'c' + c.i);
@@ -724,9 +777,15 @@
     var lost = S.lost || [];
     ui.lost.hidden = !lost.length;
     ui.lost.textContent = lost.length ? 'dropped with the new reading: ' + lost.map(function (d) {
+      if (d.typed) {                                           /* simplify round 12 fixes: typing that was not kept, its card gone */
+        return 'your typing on #' + d.n + ' ("' + short(d.clause, 60) + '"): ' + (FIELD_WORDS[d.field] || d.field) + ' ' + (d.edit === '' ? '(empty)' : String(d.edit)) + ' (not kept)';
+      }
       return 'your edit on #' + d.n + ' ("' + short(d.clause, 60) + '"): ' + (FIELD_WORDS[d.field] || d.field) + ' ' + valWords(d.field, d.edit);
     }).join('; ') + ' - no order of the new reading reads as that one did, nor has its words' : '';
-    ui.cards.innerHTML = h || '<div class="empty">' + esc(S.parsed ? 'nothing to fill: the text named no order' : 'nothing read yet: type what you want to trade above and press Enter') + '</div>';
+    repainting = true;                                        /* simplify round 12 fixes: the change a removed box fires is no edit (onEdit) */
+    try {
+      ui.cards.innerHTML = h || '<div class="empty">' + esc(S.parsed ? 'nothing to fill: the text named no order' : 'nothing read yet: type what you want to trade above and press Enter') + '</div>';
+    } finally { repainting = false; }
     S.gate = readBlock(S);
   }
   function paintHead(S) {
@@ -891,7 +950,7 @@
   }
   function unmount() {
     var S = st; if (!S) { return; }
-    if (ui) { S.text = ui.bar.value; }
+    if (ui) { S.text = ui.bar.value; noteTyping(S, 'left'); }     /* simplify round 12 fixes: a page key while typing in a card's box */
     saveState(S);
     S.dead = true;
     st = null; ui = null;
