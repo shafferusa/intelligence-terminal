@@ -1,8 +1,8 @@
 {
  "system": "cfa1",
- "version": 4,
+ "version": 5,
  "created": "2026-11-15",
- "revised": "2026-11-16",
+ "revised": "2026-11-17",
  "start": "2026-11-16",
  "exam": {
   "date": "2027-05-15",
@@ -39,6 +39,12 @@
    "date": "2026-11-16",
    "summary": "Plan v4 (Nov 16 evening): Logan said he will study Module 3 on Tue Nov 17, and his corrected workbook shows only Module 1's learning outcomes and introduction finished and Module 2 not started. Modules 3-6 move one day later (Nov 17-20, using the Nov 20 buffer); Module 1's remaining sections move to the Dec 4 buffer and Module 2 to the Dec 11 buffer. Nov 21 onward is unchanged and the first pass still ends by Apr 19. His workbook's Daily Plan rows and Lesson Checklist planned dates were updated to match.",
    "snapshot": "state/cfa1/plan-history/v3.json"
+  },
+  {
+   "version": 5,
+   "date": "2026-11-17",
+   "summary": "Plan v5 (Nov 17 evening): Logan is skipping Tue Nov 17 and will study Modules 3 and 4 together on Wed Nov 18. Module 3 moves from Nov 17 to Nov 18, joining Module 4; Nov 17 becomes a buffer day. Thu Nov 19 onward is unchanged (Module 5 on Thursday is light enough to take any overflow). His workbook's Daily Plan rows and Lesson Checklist planned dates were updated to match.",
+   "snapshot": "state/cfa1/plan-history/v4.json"
   }
  ],
  "days": [
@@ -143,14 +149,33 @@
    "date": "2026-11-17",
    "dow": "Tue",
    "lesson": 2,
+   "kind": "buffer",
+   "phase": "Buffer",
+   "course": null,
+   "assignment": "Skipped. Module 3 moved to Wed Nov 18, with Module 4.",
+   "core_hours": 0,
+   "psm_hours": 0,
+   "questions_target": 0,
+   "content_pages": 0,
+   "reading": [],
+   "online_only": [],
+   "psm_items": [],
+   "les_ids": [],
+   "workbook_status": "Not started",
+   "revision_note": "Plan v5: Logan skipped Tue Nov 17, so Module 3 moved to Wed Nov 18."
+  },
+  {
+   "date": "2026-11-18",
+   "dow": "Wed",
+   "lesson": 3,
    "kind": "study",
    "phase": "Prerequisite overview",
    "course": "Economics prerequisite",
-   "assignment": "Module 3: Aggregate Output, Prices, and Economic Growth",
-   "core_hours": 2,
+   "assignment": "Module 3: Aggregate Output, Prices, and Economic Growth; Module 4: Introduction to Business Cycles",
+   "core_hours": 4,
    "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 65,
+   "questions_target": 16,
+   "content_pages": 97,
    "reading": [
     {
      "module": "PRE-ECON-LM03",
@@ -246,51 +271,7 @@
        "why": "Explains calculations"
       }
      ]
-    }
-   ],
-   "online_only": [
-    "Glossary: Aggregate Output, Prices, and Economic Growth",
-    "Flashcards: Aggregate Output, Prices, and Economic Growth"
-   ],
-   "psm_items": [],
-   "les_ids": [
-    28,
-    29,
-    30,
-    31,
-    32,
-    33,
-    34,
-    35,
-    36
-   ],
-   "workbook_status": "Not started",
-   "practice_picks": [
-    4,
-    7,
-    10,
-    13,
-    15,
-    21,
-    25,
-    28
-   ],
-   "note": "Overloaded: 65 pages, 30 problems, 14 worked examples in 2 h. Stop rule: if time runs out before Growth (printed p.110), the rest moves to Thu Nov 19, when Module 5 is only 17 pages. Lesson 1 (Nov 16) already taught this module's overview: build on it, going deeper on aggregate demand and supply (what shifts each curve, short- and long-run equilibrium, the output gaps, stagflation), and point back to Lesson 1 for GDP and growth accounting rather than repeating them.",
-   "revision_note": "Plan v4: Module 3 moved here from Mon Nov 16 at Logan's request."
-  },
-  {
-   "date": "2026-11-18",
-   "dow": "Wed",
-   "lesson": 3,
-   "kind": "study",
-   "phase": "Prerequisite overview",
-   "course": "Economics prerequisite",
-   "assignment": "Module 4: Introduction to Business Cycles",
-   "core_hours": 2,
-   "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 32,
-   "reading": [
+    },
     {
      "module": "PRE-ECON-LM04",
      "book": "PRE-ECON",
@@ -408,11 +389,22 @@
     }
    ],
    "online_only": [
+    "Glossary: Aggregate Output, Prices, and Economic Growth",
+    "Flashcards: Aggregate Output, Prices, and Economic Growth",
     "Glossary: Introduction to Business Cycles",
     "Flashcards: Introduction to Business Cycles"
    ],
    "psm_items": [],
    "les_ids": [
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
     37,
     38,
     39,
@@ -426,7 +418,20 @@
     47
    ],
    "workbook_status": "Not started",
-   "revision_note": "Plan v4: Module 4 moved here from Tue Nov 17."
+   "practice_picks": {
+    "PRE-ECON-LM03": [
+     4,
+     7,
+     10,
+     13,
+     15,
+     21,
+     25,
+     28
+    ]
+   },
+   "note": "Heavy night, Logan's choice: Module 3 (65 pages) and Module 4 (32 pages), about 4 h. Lessons 1 and 2 already taught Module 3 (its overview, then aggregate demand and supply in depth), so do not teach it a third time. Part 1: no new study is recorded since Nov 16, so recap briefly the Module 3 ideas Module 4 builds on (aggregate demand and supply, the output gaps) and point to Lessons 1 and 2. Part 2: teach Module 4 in full. References list both modules. Stop rule: if time runs out, stop at a section break; the rest moves to Thu Nov 19, when Module 5 is only 17 pages.",
+   "revision_note": "Plan v5: Module 3 moved here from Tue Nov 17, which Logan skipped; he plans Modules 3 and 4 together tonight."
   },
   {
    "date": "2026-11-19",
