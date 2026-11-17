@@ -70,7 +70,8 @@ write to `/tmp/cfa1/workbook.key` first (or `CFA1_WORKBOOK_KEY`, if set). Never 
 could not be read this morning (reason); progress below is as last confirmed on DATE.") and uses
 `workbook.last_confirmed` (the statuses copied at the last lesson); invent no completion.
 
-If available, Read `/tmp/cfa1/notes.json` (his recent notes and marks, last 14 days). From the
+If available, Read `/tmp/cfa1/notes.json` (his recent notes and marks, last 14 days: the Daily
+Plan's nightly notes and the Lesson Checklist's "Your notes", where he also writes). From the
 facts in `today.json` (`sessions_recent`, `last_done_session`, `refresher`, `behind`, `flags`,
 `modules_started`, `changed_since_last_lesson`) and his notes, work out:
 - what he explicitly finished (a session marked Done, checklist items Done);
@@ -124,12 +125,18 @@ Read the brief for today's modules and for the refresher module; consult `module
   `headlines`: `Lesson N · <course>: <module title> (printed pp.A–B)`, `Refresher: <topic>`, and the
   single most useful idea. Track line: `Lesson N · Module M of T · <module title> · D days to the
   exam` (course, M and T from `modules_info`).
+- **Today's plan notes.** `today.revision_note` (set when the plan moved this day's work) goes in
+  "Where you are" in one sentence: what moved, from when, why. `today.note` is guidance for this
+  lesson (a stop rule for a heavy day, what an earlier lesson already covered): follow it. When an
+  earlier lesson (`last_lesson`, or `lessons.json`) already taught today's module or refresher
+  topic, build on it: link that lesson once and teach what it left out instead of repeating it.
 - **Where you are** (box): the workbook facts per Step 2; tonight's assignment in one line (module
   and pages); any plan change. If the assignment looks heavy, one sentence on where to stop and
   where the rest can go.
 - **1 · Refresher: <topic>** — the most recent completed studying: `workbook.refresher` (yesterday
-  if marked Done, else the latest confirmed). Never refresh material the workbook does not show
-  finished; if nothing is confirmed yet, refresh the prerequisite ideas today builds on and say so.
+  if marked Done, else the latest confirmed); when it lists `sections`, refresh only those. Never
+  refresh material the workbook does not show finished; if nothing is confirmed yet, refresh the
+  prerequisite ideas today builds on and say so.
   Key principles, vocabulary and formulas, with a short Memorize list. If his notes show confusion,
   add "Clearing up": the idea explained another way, in your own words.
 - **2 · Today: <topic>** — the essential content of today's assigned sections, self-contained: he

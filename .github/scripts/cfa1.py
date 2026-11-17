@@ -271,6 +271,17 @@ def workbook_facts(wb, plan, date, mindex):
     past = [s for s in sessions if s["date"] < date]
     done_sessions = [s for s in past if s["status"] == "Done"]
     last_done = done_sessions[-1] if done_sessions else None
+    # A module split over several days (plan les_ids) is judged day by day: the items planned for
+    # that day, not the whole module. Kept checklist rows include every row with a status.
+    lc_rows = lc.get("rows") or []
+    done_ids = set()
+    for r in lc_rows:
+        if r.get("Status") in ("Done", "Needs review"):
+            try:
+                done_ids.add(int(r.get("ID")))
+            except (TypeError, ValueError):
+                pass
+    by_ids = any("ID" in r for r in lc_rows)
     flags, behind = [], []
     for s in past:
         if s["written_in"] and s["status"] in ("", "Not started"):
@@ -279,6 +290,21 @@ def workbook_facts(wb, plan, date, mindex):
                                                            s["status"] or "empty"))
         if isinstance(s.get("accuracy"), str) and s["accuracy"] in ("Check inputs", "Add correct"):
             flags.append("%s: the Accuracy cell says %r (Attempted and Correct do not fit)" % (s["date"], s["accuracy"]))
+        ids = set((by_date.get(s["date"]) or {}).get("les_ids") or [])
+        if by_ids and ids and s["plan_modules"]:
+            n = len(ids & done_ids)
+            mods = ", ".join(s["plan_modules"])
+            if s["status"] == "Done" and n < len(ids):
+                flags.append("%s: the session is marked Done, but the Lesson Checklist has %d of that day's %d "
+                             "items done (%s)" % (s["date"], n, len(ids), mods))
+            elif s["status"] != "Done" and n == len(ids):
+                flags.append("%s: the Lesson Checklist has that day's items (%s) complete, but the session status "
+                             "is %s" % (s["date"], mods, s["status"] or "empty"))
+            if s["status"] != "Done" and n < len(ids) and (d(date) - d(s["date"])).days <= 21:
+                for k in s["plan_modules"]:
+                    behind.append({"date": s["date"], "module": k, "session": s["status"] or "empty",
+                                   "checklist": "%d of that day's %d items done" % (n, len(ids))})
+            continue
         for k in s["plan_modules"]:
             m = modules.get(k)
             if m is None:
@@ -295,7 +321,10 @@ def workbook_facts(wb, plan, date, mindex):
     refresher = None
     if last_done:
         refresher = {"basis": "session marked Done on %s" % last_done["date"], "date": last_done["date"],
-                     "modules": last_done["plan_modules"]}
+                     "modules": last_done["plan_modules"],
+                     # the sections that day covered: only part of a module when the plan split it
+                     "sections": {r["module"]: [x.get("title") for x in r.get("sections", [])]
+                                  for r in (by_date.get(last_done["date"]) or {}).get("reading", [])}}
     else:
         done_mods = sorted(((m["completed"] or [""])[-1], k) for k, m in modules.items() if m["state"] == "done")
         if done_mods:
@@ -310,6 +339,8 @@ def workbook_facts(wb, plan, date, mindex):
         "last_done_session": last_done, "refresher": refresher, "behind": behind, "flags": flags,
         "modules_started": {k: m for k, m in modules.items() if m["state"] != "not_started"},
         "dates_with_writing": [s["date"] for s in sessions if s["written_in"]][-14:],
+        # he also writes in the Lesson Checklist's notes column; those notes are in notes.json too
+        "checklist_items_with_writing": sum(1 for r in lc_rows if his_writing(r, boilerplate(lc_rows))),
         "_modules_all": modules, "_sessions_all": sessions,
     }
 
@@ -522,8 +553,9 @@ def cmd_today(a):
             facts["saved_at"], facts["extracted_at"], facts["changed_since_last_lesson"]))
         print("  last session marked Done: %s; refresher candidate: %s" % (
             (facts["last_done_session"] or {}).get("date"), json.dumps(facts["refresher"])))
-        print("  flags: %d, behind: %d, dates with writing (last 14): %s" % (
-            len(facts["flags"]), len(facts["behind"]), facts["dates_with_writing"]))
+        print("  flags: %d, behind: %d, dates with writing (last 14): %s, checklist items with notes: %d" % (
+            len(facts["flags"]), len(facts["behind"]), facts["dates_with_writing"],
+            facts["checklist_items_with_writing"]))
         print("  his recent notes and marks (private, never quote or commit): %s" % notes_file)
     else:
         print("workbook UNAVAILABLE: %s -- use workbook.last_confirmed and say so in one line" % why)
