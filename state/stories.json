@@ -1,6 +1,86 @@
 {
  "stories": [
   {
+   "id": "pa-senate-lameduck-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "PA Senate reconvened Nov 17: nominations confirmed 46-2 incl. PHFA, SB 481 milk hauling passed (caucus report); session ends Nov 30",
+   "status": "New",
+   "rationale": "Local PA",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "ms-ignite-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Microsoft Ignite: Copilot Workspaces, Microsoft IQ (350+ connectors), Agent 365 Business Analytics (50M+ agents), Defender agent runtime protection, Code 2 coding models; MSFT -2.27%",
+   "status": "New",
+   "rationale": "AI & tech",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "spcx-bond-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "SPCX +3.16% to $141.70 on reported ~$4B bond sale (Goldman, Apollo) in $40B AI-compute financing plan; unconfirmed by company",
+   "status": "New",
+   "rationale": "Space/markets",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "disney-q4-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Disney FQ4 adj EPS $1.77 vs $1.68, rev $25.95B (53-week qtr); dividend $2 (+33%); $3B savings by FY29; shares -1.48% on 2.4x volume",
+   "status": "New",
+   "rationale": "Earnings",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "musalem-williams-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Musalem: several hikes likely before spring 2027, policy up to 1pt too low (non-voter); Williams: further hike likely, no 'dramatic action'",
+   "status": "New",
+   "rationale": "Fed path",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "unh-warren-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "UNH -5.42% to $389.68 after Warren's Nov 16 post naming UNH/CVS/Cigna; Break Up Big Medicine Act S.4509 (Warren-Hawley) no committee action",
+   "status": "New",
+   "rationale": "Dow drag; policy tail risk",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "software-selloff-anthropic-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Software slide before Anthropic pricing: CRM -9.45%, NOW -6.51%, HubSpot ~-7%, Workday ~-5%; narratives = IPO cash raising, seat-pricing fears",
+   "status": "New",
+   "rationale": "Market: sector move tied to largest IPO",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
+   "id": "broad-selloff-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "S&P 500 -1.03% to 7,340.53 (lowest close since July), Dow -848.75 to 50,759.42, Nasdaq -0.74%; all 11 sectors down, RSP underperforms SPY, SPY at 200-DMA; VIX 25.46, front inverted",
+   "status": "New",
+   "rationale": "Market-wide: selling broadened beyond chips",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
+  },
+  {
    "id": "pa-ifo-deficit-nov16",
    "first_seen": "2026-11-17",
    "headline": "IFO: PA structural deficit could top $7B by 2030; Senate reconvenes Nov 17, House Nov 19; session ends Nov 30; counties certify by Nov 23",
@@ -33,32 +113,32 @@
   {
    "id": "kerch-bridge-nov17",
    "first_seen": "2026-11-17",
-   "headline": "Ukraine strikes Kerch Bridge two nights (Nov 16, 17); road span arch collapsed (CNN-verified image); Russia: traffic halted; Berlin CoW Thu Nov 19",
-   "status": "New",
+   "headline": "SBU: Kerch Bridge metal arch and road span destroyed (7-stage operation); Russia: rail resumed on one track",
+   "status": "Developing",
    "rationale": "War",
    "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "home-depot-q3-nov17",
    "first_seen": "2026-11-17",
-   "headline": "HD Q3 sales $43.4B +4.9%, comps +2.2% vs ~1.8%, adj EPS 3.86 vs 3.84; ticket +3.0%, transactions -0.5%; FY sales ~4.5%, comps ~1.4%; CNBC headline CEO change (McPhail) unconfirmed",
-   "status": "New",
+   "headline": "Home Depot Q3 comps +2.2%, adj EPS $3.86; CEO change confirmed: McPhail CEO eff. Nov 23, Decker chair, Campbell COO, Broggi CFO; shares -2.45%",
+   "status": "Materially changed",
    "rationale": "Earnings/housing",
    "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "retail-sales-oct-nov17",
    "first_seen": "2026-11-17",
-   "headline": "Retail sales Oct 8:30: cons +0.2% / control +0.4%, prior +0.8%; Dec hike ~95% (CNBC FedWatch); Waller, Musalem, Williams speak",
-   "status": "Scheduled",
+   "headline": "Oct retail sales +0.2% (in line), control +0.6% vs +0.4%, Sep control revised to +0.5%; IP -0.4% (mfg +0.3%, utilities -4.3%), capacity 76.4%",
+   "status": "Materially changed",
    "rationale": "Consumer before minutes",
    "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "nasdaq-correction-nov17",
@@ -83,22 +163,22 @@
   {
    "id": "iran-bahrain-hormuz-nov16",
    "first_seen": "2026-11-16",
-   "headline": "IRGC claims Nov 17 drone attack on US radar at Sheikh Isa AB, Bahrain says intercepted; UKMTO: On Phoenix hit by projectile Nov 16, attack N of Khasab w/ engine fire; IRGC mine claims unconfirmed; Araghchi in Muscat; Brent $92.85 06:26",
-   "status": "Disputed",
+   "headline": "IRGC claims drone strike on US radar at Sheikh Isa (Bahrain says intercepted); UKMTO: tanker crew unaccounted for after attack north of Khasab; Araghchi-Oman talks; US blockade maintained",
+   "status": "Developing",
    "rationale": "Oil/escalation",
    "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "watch-nvda-q3-nov17",
    "first_seen": "2026-11-15",
-   "headline": "TONIGHT: Nvidia Q3 FY27 ~16:20, call 17:00; guide $108B +/-2%; cons $109.0-109.2B / $2.47-2.49; implied 8-9.6%; Kress first call; CNBC: board not considering Huang return; Trump 'open to' it; 13F: Intel stake cut 25%",
-   "status": "Scheduled",
+   "headline": "Nvidia Q3 FY27: rev $115.8B vs ~$109B, DC ~$107.6B, adj EPS $2.68; Q4 guide $130B +/-3% (no China DC), adj GM guide 71-72% vs 74.9%; ~+2.3% AH at 4:40 PM",
+   "status": "Materially changed",
    "rationale": "Week's main market event",
    "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "anthropic-ipo-nov12",
@@ -273,32 +353,32 @@
   {
    "id": "watch-fomc-minutes-nov18",
    "first_seen": "2026-11-15",
-   "headline": "WATCH: FOMC minutes Wed 2 PM; retail sales Tue 8:30; Warsh Mon noon",
-   "status": "Scheduled",
+   "headline": "FOMC minutes Nov 18 2:00 PM; 20-year $16B auction 1:00 PM",
+   "status": "Continuing",
    "rationale": "Dec hike ~90% priced",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "watch-apec-shenzhen-nov19",
    "first_seen": "2026-11-15",
-   "headline": "WATCH: APEC Shenzhen; Trump-Xi bilateral + Trump-Xi-Putin Nov 19",
-   "status": "Scheduled",
+   "headline": "APEC Nov 18-19 Shenzhen; Trump-Xi Thu at Kylin Villa; no progress on $60B tariff package per US official; truce to Jan 10 2027; Beijing promises countermeasures to chip rule 'if needed'",
+   "status": "Continuing",
    "rationale": "Chips/trade/Iran",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "watch-anthropic-ipo-nov18",
    "first_seen": "2026-11-15",
-   "headline": "WATCH: Anthropic IPO pricing Wed Nov 18, trading Thu Nov 19 (ANT, $70-78)",
-   "status": "Scheduled",
+   "headline": "Anthropic prices Nov 18 evening (825M sh at $70-78; CNBC sources: likely above range, unconfirmed), trades Nov 19 as ANT",
+   "status": "Continuing",
    "rationale": "Largest AI listing",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "scotus-asylum-nov13",
@@ -519,87 +599,7 @@
    "last_seen": "2026-11-13",
    "last_report": "reports/2026/11/2026-11-13-pm.html",
    "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "iran-centcom-prep-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Kan: CENTCOM told Israel/Gulf to prepare for renewed war; CENTCOM denies ('speculation'); WSJ Cooper briefed Trump; Trump: strikes 'without hesitation'; Brent $96.07",
-   "status": "Disputed",
-   "rationale": "Oil/geopolitics",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-am.html",
-   "updated": "2026-11-13-am"
-  },
-  {
-   "id": "msft-outage-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Cause: issue during earlier network capacity upgrade, not cyber; near normal; MSFT +0.17% $523.88",
-   "status": "Resolved",
-   "rationale": "Tech/infrastructure",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "ukraine-dublin-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Zelenskyy met Witkoff/Kushner in Dublin; another round set, no date; Ushakov downplays Europe role",
-   "status": "Developing",
-   "rationale": "War/diplomacy",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-am.html",
-   "updated": "2026-11-13-am"
-  },
-  {
-   "id": "breadth-weak-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Nov 12 breadth 1,107 adv / 4,249 dec; 38.9% above 50-EMA; RUT -1.66%",
-   "status": "New",
-   "rationale": "Market internals",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-am.html",
-   "updated": "2026-11-13-am"
-  },
-  {
-   "id": "alaska-count-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Peltola first-choice lead ~5,800 (49.1-46.8); counting ends Nov 18, cert Nov 25; AK gov Kreiss-Tomkins leads",
-   "status": "Developing",
-   "rationale": "US politics",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-am.html",
-   "updated": "2026-11-13-am"
-  },
-  {
-   "id": "pa-senate-dem-leaders-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "PA Senate Dems: Collett majority leader, Santarsiero whip, Hughes approps, Costa pro tem nominee (Jan vote); 26-24 D",
-   "status": "New",
-   "rationale": "Local PA",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-am.html",
-   "updated": "2026-11-13-am"
-  },
-  {
-   "id": "prt-bus-refresh-vote",
-   "first_seen": "2026-11-13",
-   "headline": "PRT Bus Line Refresh (+14/-20/~56 changed) final vote Nov 20 (single source); changes 2H 2027",
-   "status": "Developing",
-   "rationale": "Local transit",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-am.html",
-   "updated": "2026-11-13-am"
-  },
-  {
-   "id": "vulcan-starship-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Vulcan scrubbed 8:41 AM (Air Liquide GN2 plant power); new NET Sat Nov 14 12:32 PM; Starship Flight 15 window 5:45-7:00 PM Nov 13, outcome after press",
-   "status": "Materially changed",
-   "rationale": "Space",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
   }
  ],
- "updated": "2026-11-17-am"
+ "updated": "2026-11-17-pm"
 }

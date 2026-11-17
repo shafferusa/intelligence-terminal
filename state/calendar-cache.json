@@ -1,183 +1,87 @@
 {
- "fetched": "2026-11-16T16:55:00-05:00",
+ "fetched": "2026-11-17T16:46:22-05:00",
  "earnings_fetched": "2026-11-15",
  "earnings_fetched_note": "2026-11-15 sun: Finnhub Nov 16-20 fetched; Alpha Vantage 3-month CSV fetched. Conflicts: NVDA Finnhub $111.2B/$2.52 vs Benzinga/LSEG ~$109.2B/$2.48; WMT EPS 0.64 (Finnhub/Zacks) vs 0.74 (one preview); HD Finnhub $3.96/$44.1B vs Kiplinger/Zacks $3.84-3.87/$42.7-42.8B.",
  "events": [
   {
-   "ts_et": "2026-11-17T07:00",
-   "type": "earnings",
-   "name": "Home Depot, Disney (bmo)",
-   "importance": "Medium",
-   "reason": "Housing/consumer; HD cons ~$3.84-3.87 / ~$42.8B",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-17T08:30",
-   "type": "data",
-   "name": "Retail sales (Oct)",
-   "importance": "High",
-   "reason": "Bloomberg cons +0.2%, control +0.4%; prior +0.8%; DB flat",
-   "source": "Newsquawk/calendars"
-  },
-  {
-   "ts_et": "2026-11-17T11:30",
-   "type": "auction",
-   "name": "6-week $100B bill",
-   "importance": "Low",
-   "reason": "Supply",
-   "source": "TreasuryDirect"
-  },
-  {
-   "ts_et": "2026-11-17T12:00",
-   "type": "health",
-   "name": "PAHO formal word on US measles-elimination status (expected)",
-   "importance": "Low",
-   "reason": "Public health",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-17T13:00",
-   "type": "tech",
-   "name": "Microsoft Ignite keynote (Nadella)",
-   "importance": "Low",
-   "reason": "AI agents/Copilot",
-   "source": "Microsoft"
-  },
-  {
-   "ts_et": "2026-11-17T16:20",
-   "type": "earnings",
-   "name": "Nvidia Q3 FY27 (call 17:00)",
-   "importance": "Critical",
-   "reason": "Interim CEO Kress's first; ~$109.2B/$2.48; implied ~9%",
-   "source": "Nvidia IR, Benzinga"
-  },
-  {
-   "ts_et": "2026-11-18T00:00",
-   "type": "politics",
-   "name": "Alaska ranked-choice tabulation (Senate, House)",
-   "importance": "Low",
-   "reason": "Senate margin",
-   "source": "research"
-  },
-  {
    "ts_et": "2026-11-18T07:00",
    "type": "earnings",
-   "name": "Target, Lowe's, TJX (bmo); Palo Alto (amc)",
-   "importance": "Medium",
-   "reason": "Consumer",
+   "name": "Target, Lowe's, TJX (before open)",
+   "importance": "High",
+   "reason": "Holiday retail read",
    "source": "Finnhub"
   },
   {
    "ts_et": "2026-11-18T08:30",
    "type": "data",
-   "name": "Housing starts/permits (Oct)",
+   "name": "Housing starts / permits (Oct)",
    "importance": "Medium",
-   "reason": "Prior 1.40M",
-   "source": "calendars"
+   "reason": "Housing vs 5% 10-year",
+   "source": "Census schedule"
+  },
+  {
+   "ts_et": "2026-11-18T13:00",
+   "type": "auction",
+   "name": "20-year bond $16B (new)",
+   "importance": "High",
+   "reason": "Long-end demand after tailing refunding auctions",
+   "source": "TreasuryDirect"
   },
   {
    "ts_et": "2026-11-18T14:00",
    "type": "fed",
    "name": "FOMC minutes (Oct 27-28)",
-   "importance": "High",
-   "reason": "Hike path, 50bp talk",
-   "source": "federalreserve.gov"
+   "importance": "Critical",
+   "reason": "Half-point debate before Dec 9",
+   "source": "Federal Reserve"
+  },
+  {
+   "ts_et": "2026-11-18T16:05",
+   "type": "earnings",
+   "name": "Palo Alto Networks (after close)",
+   "importance": "Medium",
+   "reason": "Software sentiment",
+   "source": "Finnhub"
   },
   {
    "ts_et": "2026-11-18T18:00",
    "type": "ipo",
-   "name": "Anthropic IPO pricing expected (ANT, $70-78, 825M sh)",
+   "name": "Anthropic IPO pricing",
    "importance": "High",
-   "reason": "Largest AI listing",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-18T22:00",
-   "type": "launch",
-   "name": "Falcon 9 USSF-317 (Vandenberg; thespacedevs NET Nov 19 03:00Z)",
-   "importance": "Low",
-   "reason": "SPCX",
-   "source": "thespacedevs"
+   "reason": "Largest AI listing; trades Nov 19 as ANT",
+   "source": "CNBC"
   },
   {
    "ts_et": "2026-11-19T00:00",
-   "type": "summit",
-   "name": "APEC Shenzhen: Trump-Xi bilateral + lunch; Trump-Xi-Putin",
+   "type": "politics",
+   "name": "Trump-Xi and Trump-Xi-Putin meetings, Shenzhen (APEC)",
    "importance": "High",
-   "reason": "Trade/chips/Iran",
-   "source": "White House as reported"
+   "reason": "Chips, tariffs, arms control",
+   "source": "White House/Kremlin as reported"
   },
   {
-   "ts_et": "2026-11-19T07:00",
-   "type": "earnings",
-   "name": "Walmart, Alibaba, NetEase (bmo); Intuit (amc)",
-   "importance": "High",
-   "reason": "Consumer bellwether",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-19T08:30",
-   "type": "data",
-   "name": "Jobless claims",
-   "importance": "Medium",
-   "reason": "Prior 200K",
-   "source": "DOL"
-  },
-  {
-   "ts_et": "2026-11-19T09:30",
-   "type": "ipo",
-   "name": "Anthropic (ANT) first trade, Nasdaq",
-   "importance": "High",
-   "reason": "AI appetite",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-20T00:00",
+   "ts_et": "2026-11-19T13:00",
    "type": "auction",
-   "name": "20Y $16B bond and 10Y $19B reopening this period (day unconfirmed; settle Nov 30)",
+   "name": "10-year TIPS reopening $19B",
    "importance": "Medium",
-   "reason": "Weak long-end demand",
+   "reason": "Real-yield demand",
    "source": "TreasuryDirect"
   },
   {
-   "ts_et": "2026-11-20T10:00",
-   "type": "data",
-   "name": "UMich sentiment final (Nov)",
-   "importance": "Medium",
-   "reason": "Prelim 51.0, 1y infl exp 4.3%",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-21T07:30",
+   "ts_et": "2026-11-19T21:46",
    "type": "launch",
-   "name": "Falcon 9 NROL-136 (Vandenberg)",
+   "name": "Falcon 9 USSF-317 (Vandenberg)",
    "importance": "Low",
-   "reason": "SPCX",
-   "source": "thespacedevs"
+   "reason": "National-security launch cadence",
+   "source": "Launch Library 2"
   },
   {
-   "ts_et": "2026-11-29T00:00",
-   "type": "energy",
-   "name": "OPEC+ ministerial (2027 framework)",
-   "importance": "High",
-   "reason": "2027 quotas",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-12-09T14:00",
-   "type": "fomc",
-   "name": "FOMC decision",
-   "importance": "Critical",
-   "reason": "~90% hike priced (Nov 13, as reported)",
-   "source": "federalreserve.gov"
-  },
-  {
-   "ts_et": "2026-12-11T00:00",
-   "type": "fiscal",
-   "name": "Federal funding expires",
-   "importance": "High",
-   "reason": "Shutdown risk",
-   "source": "P.L. 119-103"
+   "ts_et": "2026-11-23T06:09",
+   "type": "launch",
+   "name": "Ariane 64 Amazon Leo LE-04 (Kourou)",
+   "importance": "Medium",
+   "reason": "First Amazon Leo flight after Vulcan loss",
+   "source": "Launch Library 2"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

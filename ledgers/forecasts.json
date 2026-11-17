@@ -7712,6 +7712,26 @@
    "probability": "20-30%",
    "basis": "Consensus +0.4%; card-spending data mixed; firm month already assumed",
    "status": "open"
+  },
+  {
+   "id": "2026-11-17-pm-1",
+   "date": "2026-11-17",
+   "slot": "pm",
+   "forecast": "Anthropic prices its IPO at or above $78, the top of its $70-78 range, on Nov 18, 2026.",
+   "horizon": "2026-11-18",
+   "probability": "60-75%",
+   "basis": "CNBC sources: book covered across range and likely to price above; one investor described heavy oversubscription; software sell-off may cool demand",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-17-pm-2",
+   "date": "2026-11-17",
+   "slot": "pm",
+   "forecast": "Nvidia closes the Nov 18, 2026 regular session above its Nov 17 close of $155.46.",
+   "horizon": "2026-11-18",
+   "probability": "55-70%",
+   "basis": "Beat and $130B guide vs ~$125B; ~+2-3% after hours; lower margin guide and stock fell after 3 of last 4 reports",
+   "status": "open"
   }
  ]
 }
