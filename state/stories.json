@@ -1,21 +1,121 @@
 {
  "stories": [
   {
+   "id": "pa-ifo-deficit-nov16",
+   "first_seen": "2026-11-17",
+   "headline": "IFO: PA structural deficit could top $7B by 2030; Senate reconvenes Nov 17, House Nov 19; session ends Nov 30; counties certify by Nov 23",
+   "status": "New",
+   "rationale": "Local PA",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "pgh-budget-pension-nov16",
+   "first_seen": "2026-11-17",
+   "headline": "Controller Heisler: 2027 budget 'honest' but questions pension contribution cut $112M->$105M (PublicSource); $872.6M total, no tax hike, $26-28M reserve draw",
+   "status": "New",
+   "rationale": "Local Pittsburgh",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "deutsche-bank-leak-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "DB -5 to -6% Europe on leaked-documents media reports (oligarchs, reportedly Trump/Epstein); bank: no meaningful financial impact",
+   "status": "New",
+   "rationale": "Europe banks",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "kerch-bridge-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Ukraine strikes Kerch Bridge two nights (Nov 16, 17); road span arch collapsed (CNN-verified image); Russia: traffic halted; Berlin CoW Thu Nov 19",
+   "status": "New",
+   "rationale": "War",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "home-depot-q3-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "HD Q3 sales $43.4B +4.9%, comps +2.2% vs ~1.8%, adj EPS 3.86 vs 3.84; ticket +3.0%, transactions -0.5%; FY sales ~4.5%, comps ~1.4%; CNBC headline CEO change (McPhail) unconfirmed",
+   "status": "New",
+   "rationale": "Earnings/housing",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "retail-sales-oct-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Retail sales Oct 8:30: cons +0.2% / control +0.4%, prior +0.8%; Dec hike ~95% (CNBC FedWatch); Waller, Musalem, Williams speak",
+   "status": "Scheduled",
+   "rationale": "Consumer before minutes",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "nasdaq-correction-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Nasdaq 24,509.76 Mon = 11.6% below 52w high (correction); Kospi -2.59% 4,968 first close <5,000 since Jan; Taiex -2.31%, Nikkei -1.34%; ES -0.19% 7,425, NQ flat 06:27 ET; breadth 1,196/4,202, 34.3% >50EMA",
+   "status": "New",
+   "rationale": "Lead am Nov 17",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "bis-ai-chip-rule-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "BIS interim rule: licences for BR/ID/MY/SG/TH + DCs serving China-HQ firms (~750 H100 threshold); 90-day transition, 60-day comments; awaiting FR publication; China MFA 'economic coercion'; Thune 'high probability' NDAA chip limits",
+   "status": "Developing",
+   "rationale": "Export policy",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "iran-bahrain-hormuz-nov16",
+   "first_seen": "2026-11-16",
+   "headline": "IRGC claims Nov 17 drone attack on US radar at Sheikh Isa AB, Bahrain says intercepted; UKMTO: On Phoenix hit by projectile Nov 16, attack N of Khasab w/ engine fire; IRGC mine claims unconfirmed; Araghchi in Muscat; Brent $92.85 06:26",
+   "status": "Disputed",
+   "rationale": "Oil/escalation",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "watch-nvda-q3-nov17",
+   "first_seen": "2026-11-15",
+   "headline": "TONIGHT: Nvidia Q3 FY27 ~16:20, call 17:00; guide $108B +/-2%; cons $109.0-109.2B / $2.47-2.49; implied 8-9.6%; Kress first call; CNBC: board not considering Huang return; Trump 'open to' it; 13F: Intel stake cut 25%",
+   "status": "Scheduled",
+   "rationale": "Week's main market event",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "anthropic-ipo-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "Anthropic IPO $70-78, 825M sh; CNBC: book covered across range; Yahoo: banks weigh >$78 (unconfirmed); prices Wed eve, trades Thu (ANT)",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
    "id": "tech-selloff-nov16",
    "first_seen": "2026-11-16",
    "headline": "S&P -1.92% 7,416.59, Nasdaq -2.49% 24,509.76, Dow -739 51,608.17 (CNBC/AP); SMH -5.11%, MU -7.62, MRVL -7.27, INTC -7.02, TSM -6.34, ASML -5.91, AMD -5.58, NVDA -4.12% $156.14 lowest close since Jul 2025; RSP -1.01 vs SPY -1.91; only XLP/XLU up",
    "status": "New",
    "rationale": "Lead pm Nov 16: chip rout broadens to big tech before NVDA",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "bis-ai-chip-rule-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "BIS interim rule: licences for advanced AI chips to Brazil, Indonesia, Malaysia, Singapore, Thailand; targets Chinese remote compute; rescinds AI Diffusion Rule; effective on Federal Register publication (date unconfirmed); CNBC (single): chip limits unlikely in final NDAA",
-   "status": "New",
-   "rationale": "Export policy moves from talk to rule",
    "last_seen": "2026-11-16",
    "last_report": "reports/2026/11/2026-11-16-pm.html",
    "updated": "2026-11-16-pm"
@@ -86,16 +186,6 @@
    "headline": "WTAE: PIT cancellations/delays continue Mon after FAA ground stop; L3Harris router diagnostics w/ FBI; Duffy seeks 'tens of billions' for FAA",
    "status": "Developing",
    "rationale": "Local/infrastructure",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "iran-bahrain-hormuz-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "3rd carrier now CENTCOM-confirmed (Theodore Roosevelt); IRGC mine claims up to 6 tankers (unconfirmed); Bahrain says all drones intercepted; GCC condemns",
-   "status": "Disputed",
-   "rationale": "Oil/escalation",
    "last_seen": "2026-11-16",
    "last_report": "reports/2026/11/2026-11-16-pm.html",
    "updated": "2026-11-16-pm"
@@ -211,14 +301,24 @@
    "updated": "2026-11-16-am"
   },
   {
-   "id": "watch-nvda-q3-nov17",
-   "first_seen": "2026-11-15",
-   "headline": "WATCH: Nvidia Q3 FY27 Tue Nov 17 ~16:20, call 17:00; guide $108B +/-2%; cons $109.0-109.4B / $2.47-2.49; implied ~9%",
-   "status": "Scheduled",
-   "rationale": "Week's main market event",
+   "id": "scotus-asylum-nov13",
+   "first_seen": "2026-11-14",
+   "headline": "SCOTUS grants administration appeal on border asylum restrictions (lower courts ruled against); no argument date",
+   "status": "New",
+   "rationale": "Weekend news; legal stage: cert granted",
    "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
+  },
+  {
+   "id": "bond-rout-williams-nov13",
+   "first_seen": "2026-11-13",
+   "headline": "Week Nov 6-13: 2Y 4.51->4.88 (+37), 10Y 4.86->5.15 (+29), 30Y +21; 10Y real 2.63->2.91, breakeven flat 2.24; three tailing auctions",
+   "status": "Continuing",
+   "rationale": "Keep on watchlist: real yields, 10Y >=5% call",
+   "last_seen": "2026-11-16",
+   "last_report": "reports/2026/11/2026-11-16-am.html",
+   "updated": "2026-11-16-am"
   },
   {
    "id": "iran-bahrain-drones-nov15",
@@ -258,16 +358,6 @@
    "rationale": "Result for Monday",
    "last_seen": "2026-11-15",
    "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "scotus-asylum-nov13",
-   "first_seen": "2026-11-14",
-   "headline": "SCOTUS grants administration appeal on border asylum restrictions (lower courts ruled against); no argument date",
-   "status": "New",
-   "rationale": "Weekend news; legal stage: cert granted",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
    "updated": "2026-11-16-am"
   },
   {
@@ -311,16 +401,6 @@
    "updated": "2026-11-14-sat"
   },
   {
-   "id": "bond-rout-williams-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Week Nov 6-13: 2Y 4.51->4.88 (+37), 10Y 4.86->5.15 (+29), 30Y +21; 10Y real 2.63->2.91, breakeven flat 2.24; three tailing auctions",
-   "status": "Continuing",
-   "rationale": "Keep on watchlist: real yields, 10Y >=5% call",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
    "id": "bitcoin-below-70k-nov13",
    "first_seen": "2026-11-13",
    "headline": "BTC $66,435 Sat ~9:30 AM ET (-4.1% 24h), ETH $1,871; total cap $2.26T; liquidations ~$1.3-1.4B; IBIT -9.2% wk",
@@ -346,16 +426,6 @@
    "headline": "Week: NVDA -12.75% to $162.85 (52w low); Huang resigned Nov 12, Kress interim, Jones chair; Reuters (single) second relationship; Senate Banking asks Huang/Lutnick Dec 3; earnings Tue Nov 17 (cons ~$109.2B/$2.48)",
    "status": "Continuing",
    "rationale": "Keep on watchlist: CEO search, export controls, earnings",
-   "last_seen": "2026-11-14",
-   "last_report": "reports/2026/11/2026-11-14-sat.html",
-   "updated": "2026-11-14-sat"
-  },
-  {
-   "id": "anthropic-ipo-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Anthropic IPO $70-78, 825M shares, Nasdaq ANT; pricing expected Nov 18, trading Nov 19; above-range call 55-70%; private until listing",
-   "status": "Continuing",
-   "rationale": "Keep on watchlist",
    "last_seen": "2026-11-14",
    "last_report": "reports/2026/11/2026-11-14-sat.html",
    "updated": "2026-11-14-sat"
@@ -529,77 +599,7 @@
    "last_seen": "2026-11-13",
    "last_report": "reports/2026/11/2026-11-13-pm.html",
    "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "ust-30y-auction-tail-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "30Y $25B 5.441% (WI 5.437, 0.4bp tail), btc 2.36 lowest since June, indirects 68.1%, dealers 11.4%; par 2Y 4.86 / 10Y 5.10 / 30Y 5.43; 10Y real 2.86",
-   "status": "New",
-   "rationale": "Third tail of refunding; real-yield driven sell-off",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "fed-hawks-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Daly: further tightening needed; Hammack gradual hikes; Goolsbee CPI 'borderline disturbing'; Dec hike ~100% priced, 50bp ~9%",
-   "status": "Continuing",
-   "rationale": "Pre-December Fed signal",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "claims-ehs-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Claims 200K (cons 195K), prior rev 191K; continuing 1.697M; existing-home sales 3.75M SAAR lowest since Aug 2010, median $416,700 +0.4% y/y",
-   "status": "New",
-   "rationale": "Labour still tight; housing turnover freezing",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "oil-trump-iran-post-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Trump: US doesn't 'need a deal with Iran', tells Vance to focus elsewhere; Brent ~$95.96 +3.45% late (settle unconfirmed); EIA +4.66M build; gold -3% one-year low; DXY 52w high; USDJPY 159.9",
-   "status": "Materially changed",
-   "rationale": "War premium reversal; IRGC mine claims still unconfirmed",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "csco-amat-beat-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Cisco FQ1 rev $18.52B vs 18.14, EPS 1.40, FY guide raised 74.8-75.8B; AMAT rev $10.41B, EPS 4.16, guide $11.1B/$4.35 above cons; Nebius -16.8% on low-end guide",
-   "status": "New",
-   "rationale": "AI supply chain demand check",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "ukraine-kremlin-envoys-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Witkoff/Kushner met Putin ~2h; Peskov: Europe must name single rep; Witkoff says new trilateral round; envoys flew to Ireland to meet Zelenskyy (no readout)",
-   "status": "Developing",
-   "rationale": "Peace-track continuation",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
-  },
-  {
-   "id": "pgh-budget-hearings-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Pittsburgh council budget hearings begin: ~$727M operating + $145M capital, no tax hike, ~$27-28M reserve draw, reserves exhausted by 2031; fund-balance rule suspension hearing Dec 10",
-   "status": "Continuing",
-   "rationale": "Local: city finances",
-   "last_seen": "2026-11-12",
-   "last_report": "reports/2026/11/2026-11-12-pm.html",
-   "updated": "2026-11-12-pm"
   }
  ],
- "updated": "2026-11-16-pm"
+ "updated": "2026-11-17-am"
 }
