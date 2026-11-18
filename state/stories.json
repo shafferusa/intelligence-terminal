@@ -1,14 +1,114 @@
 {
  "stories": [
   {
+   "id": "allegheny-budget-2027",
+   "first_seen": "2026-11-18",
+   "headline": "Innamorato $1.25B 2027 county budget, no tax hike, 150 vacancies closed ($9M); council hearings",
+   "status": "New",
+   "rationale": "Local",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "uk-cpi-oct-nov18",
+   "first_seen": "2026-11-18",
+   "headline": "UK Oct CPI 3.6% (Sep 3.5%), core 2.8%, services 3.7%",
+   "status": "New",
+   "rationale": "Global inflation",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "iran-kuwait-qeshm-nov18",
+   "first_seen": "2026-11-18",
+   "headline": "US strike on IRGC site Qeshm (AP); Iran targets Ali Al Salem Kuwait (intercepted); Bahrain intercepts again; GCC asks UNSC; ADNOC tanker 1 missing 11 injured",
+   "status": "Materially changed",
+   "rationale": "Gulf escalation",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "metals-slide-nov18",
+   "first_seen": "2026-11-18",
+   "headline": "Gold fut -2.5% $3,768.60 (1-yr low), silver -3.4%, copper -3.9%; DXY 103.77 near high; Brent -3.5% $89.87 after API +5.28M bbl build",
+   "status": "New",
+   "rationale": "Cross-asset",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "target-lowes-q3-nov18",
+   "first_seen": "2026-11-18",
+   "headline": "TGT Q3 EPS $2.65 incl $0.50 IEEPA refund, comps +5.6% (verify), FY guide $10.65-11.40; LOW adj $3.10 vs 2.88-2.91, comps +1.8%, sales guide ~$92.5B, op margin ~11.1%",
+   "status": "New",
+   "rationale": "Earnings",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
    "id": "pa-senate-lameduck-nov17",
    "first_seen": "2026-11-17",
-   "headline": "PA Senate reconvened Nov 17: nominations confirmed 46-2 incl. PHFA, SB 481 milk hauling passed (caucus report); session ends Nov 30",
-   "status": "New",
+   "headline": "SB 1150 Sunshine fix to Shapiro (House 182-21); SB 1273 46-2; SB 481 48-0; House Nov 19; session end disputed (Nov 17 vs Nov 30)",
+   "status": "Materially changed",
    "rationale": "Local PA",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "broad-selloff-nov17",
+   "first_seen": "2026-11-17",
+   "headline": "Nov 17 breadth 1,251/4,248, 27.1% >50EMA; all sectors down; RSP lagged SPY",
+   "status": "Continuing",
+   "rationale": "Market-wide: selling broadened beyond chips",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "watch-nvda-q3-nov17",
+   "first_seen": "2026-11-15",
+   "headline": "Nvidia Q3 FY27 rev $115.84B, adj EPS $2.68; Q4 guide $130B +/-3% no China DC; GM 71-72%; +$150B buyback ($227.3B avail); board won't reinstate Huang; WSJ: SEC civil probe (unconfirmed); premarket +3.7% $161.19",
+   "status": "Materially changed",
+   "rationale": "Week's main market event",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "measles-elimination-lost-nov13",
+   "first_seen": "2026-11-16",
+   "headline": "PAHO Nov 17: US, Mexico, Bolivia lost measles elimination; KFF 5,412 cases Jan 2025-Nov 13",
+   "status": "Resolved",
+   "rationale": "Public health",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "watch-apec-shenzhen-nov19",
+   "first_seen": "2026-11-15",
+   "headline": "APEC opens Shenzhen; Xi greets Trump at airport; Xi-Putin multipolar pledge; Trump-Xi + trilateral Thu",
+   "status": "Developing",
+   "rationale": "Chips/trade/Iran",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "watch-anthropic-ipo-nov18",
+   "first_seen": "2026-11-15",
+   "headline": "Anthropic prices Nov 18 eve, 825M sh $70-78; Bloomberg ~6-7x covered, at/above top; WSJ may top $80; $26B placement; trades Nov 19 ANT",
+   "status": "Continuing",
+   "rationale": "Largest AI listing",
+   "last_seen": "2026-11-18",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
   },
   {
    "id": "ms-ignite-nov17",
@@ -66,16 +166,6 @@
    "headline": "Software slide before Anthropic pricing: CRM -9.45%, NOW -6.51%, HubSpot ~-7%, Workday ~-5%; narratives = IPO cash raising, seat-pricing fears",
    "status": "New",
    "rationale": "Market: sector move tied to largest IPO",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "broad-selloff-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "S&P 500 -1.03% to 7,340.53 (lowest close since July), Dow -848.75 to 50,759.42, Nasdaq -0.74%; all 11 sectors down, RSP underperforms SPY, SPY at 200-DMA; VIX 25.46, front inverted",
-   "status": "New",
-   "rationale": "Market-wide: selling broadened beyond chips",
    "last_seen": "2026-11-17",
    "last_report": "reports/2026/11/2026-11-17-pm.html",
    "updated": "2026-11-17-pm"
@@ -171,16 +261,6 @@
    "updated": "2026-11-17-pm"
   },
   {
-   "id": "watch-nvda-q3-nov17",
-   "first_seen": "2026-11-15",
-   "headline": "Nvidia Q3 FY27: rev $115.8B vs ~$109B, DC ~$107.6B, adj EPS $2.68; Q4 guide $130B +/-3% (no China DC), adj GM guide 71-72% vs 74.9%; ~+2.3% AH at 4:40 PM",
-   "status": "Materially changed",
-   "rationale": "Week's main market event",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
    "id": "anthropic-ipo-nov12",
    "first_seen": "2026-11-12",
    "headline": "Anthropic IPO $70-78, 825M sh; CNBC: book covered across range; Yahoo: banks weigh >$78 (unconfirmed); prices Wed eve, trades Thu (ANT)",
@@ -189,6 +269,16 @@
    "last_seen": "2026-11-17",
    "last_report": "reports/2026/11/2026-11-17-am.html",
    "updated": "2026-11-17-am"
+  },
+  {
+   "id": "watch-fomc-minutes-nov18",
+   "first_seen": "2026-11-15",
+   "headline": "FOMC minutes Nov 18 2:00 PM; 20-year $16B auction 1:00 PM",
+   "status": "Continuing",
+   "rationale": "Dec hike ~90% priced",
+   "last_seen": "2026-11-17",
+   "last_report": "reports/2026/11/2026-11-17-pm.html",
+   "updated": "2026-11-17-pm"
   },
   {
    "id": "tech-selloff-nov16",
@@ -281,16 +371,6 @@
    "updated": "2026-11-16-am"
   },
   {
-   "id": "measles-elimination-lost-nov13",
-   "first_seen": "2026-11-16",
-   "headline": "PAHO committee decision reported (US News, NPR, Forbes); formal announcement expected Tue Nov 17; 5,412 cases thru Nov 12",
-   "status": "New",
-   "rationale": "Public health",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
    "id": "faa-router-cause-nov15",
    "first_seen": "2026-11-16",
    "headline": "FAA ground stop traced to L3Harris-installed router flooding FTI network (>1,000 attempts / 4-5 s); function disabled on ~60 routers; no cyber; Juniper says device didn't fail",
@@ -349,36 +429,6 @@
    "last_seen": "2026-11-16",
    "last_report": "reports/2026/11/2026-11-16-am.html",
    "updated": "2026-11-16-am"
-  },
-  {
-   "id": "watch-fomc-minutes-nov18",
-   "first_seen": "2026-11-15",
-   "headline": "FOMC minutes Nov 18 2:00 PM; 20-year $16B auction 1:00 PM",
-   "status": "Continuing",
-   "rationale": "Dec hike ~90% priced",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "watch-apec-shenzhen-nov19",
-   "first_seen": "2026-11-15",
-   "headline": "APEC Nov 18-19 Shenzhen; Trump-Xi Thu at Kylin Villa; no progress on $60B tariff package per US official; truce to Jan 10 2027; Beijing promises countermeasures to chip rule 'if needed'",
-   "status": "Continuing",
-   "rationale": "Chips/trade/Iran",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "watch-anthropic-ipo-nov18",
-   "first_seen": "2026-11-15",
-   "headline": "Anthropic prices Nov 18 evening (825M sh at $70-78; CNBC sources: likely above range, unconfirmed), trades Nov 19 as ANT",
-   "status": "Continuing",
-   "rationale": "Largest AI listing",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
   },
   {
    "id": "scotus-asylum-nov13",
@@ -549,57 +599,7 @@
    "last_seen": "2026-11-13",
    "last_report": "reports/2026/11/2026-11-13-pm.html",
    "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "europe-ukraine-group-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Dublin: France/Germany/UK/Italy/Poland + EU + NATO via NSAs represent Europe at next round; Coalition of the Willing summit Nov 19 Germany; SBU claims Baltic strike on Naro-Fominsk corvette (Nov 11)",
-   "status": "Developing",
-   "rationale": "Ukraine diplomacy",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "cisco-amat-react-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "CSCO -6.24% $95.64 despite beat/raise; AMAT -2.74% $370.50; Summit cuts AMAT to Hold; Modine +28-31% on Samsung talks reports",
-   "status": "New",
-   "rationale": "Beats sold; AI infra pull-back",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "ppi-oct-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Oct PPI +0.3% m/m vs 0.4% cons; 6.5% y/y (most since Nov 2022); core x F&E +0.3%; x F,E,trade +0.5%; Sep rev 1.4%; FedWatch Dec 25bp ~87-90%, 50bp 10-13%",
-   "status": "New",
-   "rationale": "Last inflation print before Dec FOMC",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "chip-selloff-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "AMD -8.75% $534.06, AVGO -4.76, MRVL -4.68, ANET -4.52, SMH -3.02%, XLK -2.03%; RSP +0.19 vs SPY -0.38; S&P -0.40% 7,561.67, Nasdaq -0.91% 25,136.27, Dow +0.10% 52,347.55 (CNBC); week S&P ~+2.5%",
-   "status": "New",
-   "rationale": "Lead pm Nov 13: chip sell-off spreads, export-control read",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
-  },
-  {
-   "id": "nvidia-interim-day2-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "NVDA -2.01% $162.85 (Finnhub) after +1.8% premarket; board has no search firm (CNBC); Bessent backs Megaspeed blacklist, Commerce 'has the pen'; earnings Tue Nov 17 amc",
-   "status": "Materially changed",
-   "rationale": "AI bellwether leadership",
-   "last_seen": "2026-11-13",
-   "last_report": "reports/2026/11/2026-11-13-pm.html",
-   "updated": "2026-11-13-pm"
   }
  ],
- "updated": "2026-11-17-pm"
+ "updated": "2026-11-18-am"
 }
