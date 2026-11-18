@@ -1,56 +1,8 @@
 {
- "fetched": "2026-11-17T16:46:22-05:00",
+ "fetched": "2026-11-18T16:46:11-05:00",
  "earnings_fetched": "2026-11-15",
  "earnings_fetched_note": "2026-11-15 sun: Finnhub Nov 16-20 fetched; Alpha Vantage 3-month CSV fetched. Conflicts: NVDA Finnhub $111.2B/$2.52 vs Benzinga/LSEG ~$109.2B/$2.48; WMT EPS 0.64 (Finnhub/Zacks) vs 0.74 (one preview); HD Finnhub $3.96/$44.1B vs Kiplinger/Zacks $3.84-3.87/$42.7-42.8B.",
  "events": [
-  {
-   "ts_et": "2026-11-18T07:00",
-   "type": "earnings",
-   "name": "Target, Lowe's, TJX (before open)",
-   "importance": "High",
-   "reason": "Holiday retail read",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-18T08:30",
-   "type": "data",
-   "name": "Housing starts / permits (Oct)",
-   "importance": "Medium",
-   "reason": "Housing vs 5% 10-year",
-   "source": "Census schedule"
-  },
-  {
-   "ts_et": "2026-11-18T13:00",
-   "type": "auction",
-   "name": "20-year bond $16B (new)",
-   "importance": "High",
-   "reason": "Long-end demand after tailing refunding auctions",
-   "source": "TreasuryDirect"
-  },
-  {
-   "ts_et": "2026-11-18T14:00",
-   "type": "fed",
-   "name": "FOMC minutes (Oct 27-28)",
-   "importance": "Critical",
-   "reason": "Half-point debate before Dec 9",
-   "source": "Federal Reserve"
-  },
-  {
-   "ts_et": "2026-11-18T16:05",
-   "type": "earnings",
-   "name": "Palo Alto Networks (after close)",
-   "importance": "Medium",
-   "reason": "Software sentiment",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-18T18:00",
-   "type": "ipo",
-   "name": "Anthropic IPO pricing",
-   "importance": "High",
-   "reason": "Largest AI listing; trades Nov 19 as ANT",
-   "source": "CNBC"
-  },
   {
    "ts_et": "2026-11-19T00:00",
    "type": "politics",
@@ -58,6 +10,30 @@
    "importance": "High",
    "reason": "Chips, tariffs, arms control",
    "source": "White House/Kremlin as reported"
+  },
+  {
+   "ts_et": "2026-11-19T07:00",
+   "type": "earnings",
+   "name": "Walmart, Alibaba, NetEase (before open)",
+   "importance": "High",
+   "reason": "Largest consumer read",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-19T08:30",
+   "type": "data",
+   "name": "Initial jobless claims (wk to Nov 14); Philly Fed (Nov)",
+   "importance": "Medium",
+   "reason": "Labor/factory read",
+   "source": "DOL/Philadelphia Fed schedule"
+  },
+  {
+   "ts_et": "2026-11-19T09:30",
+   "type": "ipo",
+   "name": "Anthropic first trade (ANT, Nasdaq)",
+   "importance": "Critical",
+   "reason": "AI-trade demand test; reported $83 pricing",
+   "source": "Bloomberg/CNBC"
   },
   {
    "ts_et": "2026-11-19T13:00",
@@ -68,11 +44,27 @@
    "source": "TreasuryDirect"
   },
   {
+   "ts_et": "2026-11-19T16:05",
+   "type": "earnings",
+   "name": "Intuit, Keysight (after close)",
+   "importance": "Medium",
+   "reason": "Software sentiment",
+   "source": "Finnhub"
+  },
+  {
    "ts_et": "2026-11-19T21:46",
    "type": "launch",
    "name": "Falcon 9 USSF-317 (Vandenberg)",
    "importance": "Low",
    "reason": "National-security launch cadence",
+   "source": "Launch Library 2"
+  },
+  {
+   "ts_et": "2026-11-21T07:30",
+   "type": "launch",
+   "name": "Falcon 9 NROL-136 (Vandenberg)",
+   "importance": "Low",
+   "reason": "NRO cadence",
    "source": "Launch Library 2"
   },
   {
@@ -82,6 +74,14 @@
    "importance": "Medium",
    "reason": "First Amazon Leo flight after Vulcan loss",
    "source": "Launch Library 2"
+  },
+  {
+   "ts_et": "2026-11-23T00:00",
+   "type": "politics",
+   "name": "PA counties certify Nov 3 results",
+   "importance": "Low",
+   "reason": "Local: certification deadline",
+   "source": "PA Department of State"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
