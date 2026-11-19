@@ -1,6 +1,116 @@
 {
  "stories": [
   {
+   "id": "bridgeville-budget-2027",
+   "first_seen": "2026-11-19",
+   "headline": "Bridgeville 2027 budget + Ord. 1039 (millage) posted; adoption vote Dec 14 7 PM",
+   "status": "New",
+   "rationale": "Local",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "pa-house-lameduck-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "PA House returns Nov 19 noon; session ends Nov 30; SB 1273, SB 481 to governor; Alicia's Law signed Nov 17; SB 1150 status UNVERIFIED (Nov 18 am said passed House 182-21 - not reconfirmed)",
+   "status": "Materially changed",
+   "rationale": "Local PA",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "kerch-berlin-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Third Ukrainian strike in 4 days halts Kerch rail (AP); Berlin talks Nov 19 with Witkoff/Kushner/Zelenskyy/Europeans",
+   "status": "Developing",
+   "rationale": "World",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "dc-shutdown-risk-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Funding to Dec 11; Punchbowl: shutdown increasingly possible over Dem limits on Iran-war funding; defense reconciliation stalled; $50B ATC request",
+   "status": "New",
+   "rationale": "US politics",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "nvda-unh-nov18-close",
+   "first_seen": "2026-11-19",
+   "headline": "NVDA -2.89% $150.96 after +3.7% premarket; UNH -10.21% $349.91 (CMS MA audit proposal); XLY +1.79% best, XLE -3.27% worst; breadth 2,410/2,969, 28.4% >50EMA",
+   "status": "Continuing",
+   "rationale": "Market context",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "apec-trilateral-declaration-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Trump-Xi-Putin ~90 min at Kylin Villa; Chinese/Russian state media report 4-point 'Peace Declaration' (UN reform, energy flows, ICC, nuclear risk); no US readout; no tariffs/chips/Ukraine",
+   "status": "Materially changed",
+   "rationale": "World, energy read-through",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "walmart-alibaba-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "WMT Q3 due ~7 AM (cons $0.64/$187.2B, comps ~+3.2%); BABA rev RMB271.5B +10%, cloud +53%, adj NI RMB19.9B miss, FCF -69.1B; NTES miss, premarket -6%",
+   "status": "New",
+   "rationale": "Earnings / consumer",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "taiex-rout-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Taiex -4.40% to 38,426.89, chip/PCB limit-down; HSI -1.95%; Kospi direction disputed (Yahoo +1.39%); AI valuation + BIS rule cited",
+   "status": "New",
+   "rationale": "Global markets",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "panw-q1-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "PANW Q1 rev $3.44B +39%, adj EPS $1.05 vs 0.97; FY guide $14.52-14.57B; Applied Compute $4.5B stock; premarket ~+9%; CRWD +4.4% AH",
+   "status": "Materially changed",
+   "rationale": "Earnings",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "fomc-minutes-waller-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Minutes: almost all see further hikes, a couple >25bp; Waller: may need to 'shock' with 50bp; Dec hike ~93-96%, 50bp ~4-7%",
+   "status": "Materially changed",
+   "rationale": "Fed path",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
+   "id": "anthropic-ipo-priced-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Anthropic priced $83 (range $70-78), 980M sh (upsized from 825M), ~$81.3B, largest IPO; +$26B placement; ~$1.08T basic / ~$1.5T diluted; ANT trades Nov 19; grey mkt +20-26% (Bloomberg, single)",
+   "status": "Materially changed",
+   "rationale": "Lead: market-moving, record deal",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-am.html",
+   "updated": "2026-11-19-am"
+  },
+  {
    "id": "ust-20y-nov18",
    "first_seen": "2026-11-18",
    "headline": "20Y $16B 5.459% (Oct 5.469%), BTC 2.63, indirects 60.2%; no tail per commentary; 10Y 5.07, 30Y 5.41",
@@ -64,9 +174,9 @@
    "id": "anthropic-ipo",
    "first_seen": "2026-11-18",
    "headline": "Bloomberg: Anthropic priced at $83 (range $70-78), deal upsized; unconfirmed by company; trades Nov 19 as ANT",
-   "status": "Materially changed",
+   "status": "Resolved",
    "rationale": "Largest AI listing",
-   "last_seen": "2026-11-18",
+   "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-18-pm.html",
    "updated": "2026-11-18-pm"
   },
@@ -194,9 +304,9 @@
    "id": "watch-anthropic-ipo-nov18",
    "first_seen": "2026-11-15",
    "headline": "Anthropic prices Nov 18 eve, 825M sh $70-78; Bloomberg ~6-7x covered, at/above top; WSJ may top $80; $26B placement; trades Nov 19 ANT",
-   "status": "Continuing",
+   "status": "Resolved",
    "rationale": "Largest AI listing",
-   "last_seen": "2026-11-18",
+   "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-18-am.html",
    "updated": "2026-11-18-am"
   },
@@ -354,9 +464,9 @@
    "id": "anthropic-ipo-nov12",
    "first_seen": "2026-11-12",
    "headline": "Anthropic IPO $70-78, 825M sh; CNBC: book covered across range; Yahoo: banks weigh >$78 (unconfirmed); prices Wed eve, trades Thu (ANT)",
-   "status": "Continuing",
+   "status": "Resolved",
    "rationale": "Keep on watchlist",
-   "last_seen": "2026-11-17",
+   "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-17-am.html",
    "updated": "2026-11-17-am"
   },
@@ -489,117 +599,7 @@
    "last_seen": "2026-11-16",
    "last_report": "reports/2026/11/2026-11-16-am.html",
    "updated": "2026-11-16-am"
-  },
-  {
-   "id": "bessent-nvidia-nov15",
-   "first_seen": "2026-11-16",
-   "headline": "No Nvidia board response to Bessent found; CNBC: board not considering Huang return; FT (single): board approached Arm CEO Rene Haas",
-   "status": "New",
-   "rationale": "Policy pressure on AI bellwether before earnings",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "asia-chip-rout-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "Taiex -6.03% 41,040, Kospi -3.59% ~5,100 (SK Hynix -7.9%), Nikkei -2.42% 59,662 (Kioxia -7.7%); NQ fut -0.80%, ES -0.31% 06:27 ET",
-   "status": "New",
-   "rationale": "Lead am Nov 16: AI supply-chain selloff spreads to Asia before NVDA",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "van-hollen-schumer",
-   "first_seen": "2026-11-15",
-   "headline": "Van Hollen Sunday-show push vs Schumer for Democratic leader",
-   "status": "Developing",
-   "rationale": "Senate leadership",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "scotus-asylum-nov13",
-   "first_seen": "2026-11-14",
-   "headline": "SCOTUS grants administration appeal on border asylum restrictions (lower courts ruled against); no argument date",
-   "status": "New",
-   "rationale": "Weekend news; legal stage: cert granted",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "bond-rout-williams-nov13",
-   "first_seen": "2026-11-13",
-   "headline": "Week Nov 6-13: 2Y 4.51->4.88 (+37), 10Y 4.86->5.15 (+29), 30Y +21; 10Y real 2.63->2.91, breakeven flat 2.24; three tailing auctions",
-   "status": "Continuing",
-   "rationale": "Keep on watchlist: real yields, 10Y >=5% call",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "iran-bahrain-drones-nov15",
-   "first_seen": "2026-11-15",
-   "headline": "IRGC claims 6-drone attack on US radar at Al-Riffa, Bahrain; CENTCOM: 2 intercepted, no damage",
-   "status": "Disputed",
-   "rationale": "Escalation channel; strikes forecast 25-40%",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
-  },
-  {
-   "id": "btc-below-63k-nov15",
-   "first_seen": "2026-11-15",
-   "headline": "Bitcoin dips to ~$62-63K, lowest since August; ~$65.2K Sun morning; 6th weekly loss pending",
-   "status": "Developing",
-   "rationale": "Only market open; liquidations >$1B",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
-  },
-  {
-   "id": "starship-ship-catch-nov14",
-   "first_seen": "2026-11-15",
-   "headline": "SpaceX catches Starship Ship 42 with tower after orbit (first upper-stage catch); Booster 22 lost in Gulf",
-   "status": "New",
-   "rationale": "Weekend lead; reuse milestone, SPCX",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-15-sun"
-  },
-  {
-   "id": "electron-100-vulcan-nov14",
-   "first_seen": "2026-11-14",
-   "headline": "Electron 100th launch success; Vulcan LV-01 scrubbed Nov 13-14 (nitrogen plant), retry Nov 15 12:11 PM ET -> Nov 15: Vulcan launched and failed (see vulcan-lv01-failure-nov15)",
-   "status": "Resolved",
-   "rationale": "Result for Monday",
-   "last_seen": "2026-11-15",
-   "last_report": "reports/2026/11/2026-11-15-sun.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "apec-trilateral-nov19",
-   "first_seen": "2026-11-14",
-   "headline": "White House: Trump-Xi-Putin trilateral Nov 19 Shenzhen (nuclear arms); Trump-Xi bilateral + lunch; no agreement expected",
-   "status": "New",
-   "rationale": "Week-ahead catalyst for chips/trade",
-   "last_seen": "2026-11-14",
-   "last_report": "reports/2026/11/2026-11-14-sat.html",
-   "updated": "2026-11-14-sat"
-  },
-  {
-   "id": "hormuz-mines-nov14",
-   "first_seen": "2026-11-14",
-   "headline": "IRGC claims 2 more tankers hit mines Nov 14 (5 in <24h), unconfirmed/unnamed; Rubio: no further military action needed; blockade continues; Brent wk -2.5% to $95.84",
-   "status": "Developing",
-   "rationale": "Weekend news; oil risk",
-   "last_seen": "2026-11-14",
-   "last_report": "reports/2026/11/2026-11-14-sat.html",
-   "updated": "2026-11-14-sat"
   }
  ],
- "updated": "2026-11-18-am"
+ "updated": "2026-11-19-am"
 }
