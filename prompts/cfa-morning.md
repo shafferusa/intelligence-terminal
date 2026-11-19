@@ -130,6 +130,11 @@ Read the brief for today's modules and for the refresher module; consult `module
   lesson (a stop rule for a heavy day, what an earlier lesson already covered): follow it. When an
   earlier lesson (`last_lesson`, or `lessons.json`) already taught today's module or refresher
   topic, build on it: link that lesson once and teach what it left out instead of repeating it.
+  When `today.note` says otherwise (Logan asked for a module's principles again), the note wins.
+- **Video recaps.** When `today.videos` lists videos (checked in advance; Logan asked for them), end
+  each module's part with its video on one line: `Video recap: <a href="URL">title</a> (channel,
+  N min)`, then `about` in a few words and any `caveat`. Use only those links; never search for
+  or add other videos, and add none on days without `videos`.
 - **Where you are** (box): the workbook facts per Step 2; tonight's assignment in one line (module
   and pages); any plan change. If the assignment looks heavy, one sentence on where to stop and
   where the rest can go.

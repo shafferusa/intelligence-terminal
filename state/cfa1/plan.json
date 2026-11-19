@@ -1,8 +1,8 @@
 {
  "system": "cfa1",
- "version": 5,
+ "version": 6,
  "created": "2026-11-15",
- "revised": "2026-11-17",
+ "revised": "2026-11-18",
  "start": "2026-11-16",
  "exam": {
   "date": "2027-05-15",
@@ -45,6 +45,12 @@
    "date": "2026-11-17",
    "summary": "Plan v5 (Nov 17 evening): Logan is skipping Tue Nov 17 and will study Modules 3 and 4 together on Wed Nov 18. Module 3 moves from Nov 17 to Nov 18, joining Module 4; Nov 17 becomes a buffer day. Thu Nov 19 onward is unchanged (Module 5 on Thursday is light enough to take any overflow). His workbook's Daily Plan rows and Lesson Checklist planned dates were updated to match.",
    "snapshot": "state/cfa1/plan-history/v4.json"
+  },
+  {
+   "version": 6,
+   "date": "2026-11-18",
+   "summary": "Plan v6 (Nov 18 evening): Logan reported Modules 1-3 of the economics prerequisite worked through, and plans Modules 4 and 5 together on Thu Nov 19. Module 1 (all of it) and Module 2 go back to their original days, Sat Nov 14 and Sun Nov 15, and the Dec 4 and Dec 11 catch-up days become buffers again. Wed Nov 18 is Module 3 only; Module 4 moves to Nov 19 with Module 5. Fri Nov 20 onward is unchanged. His workbook's statuses, Daily Plan rows and Lesson Checklist planned dates were updated to match.",
+   "snapshot": "state/cfa1/plan-history/v5.json"
   }
  ],
  "days": [
@@ -55,11 +61,11 @@
    "kind": "study",
    "phase": "Prerequisite overview",
    "course": "Economics prerequisite",
-   "assignment": "Module 1: Topics in Demand and Supply Analysis (learning outcomes and introduction; the rest moved to Fri Dec 4)",
+   "assignment": "Module 1: Topics in Demand and Supply Analysis",
    "core_hours": 2,
    "psm_hours": 0,
    "questions_target": 0,
-   "content_pages": 1,
+   "content_pages": 31,
    "reading": [
     {
      "module": "PRE-ECON-LM01",
@@ -68,10 +74,10 @@
      "course": "Economics prerequisite",
      "module_num": 1,
      "title": "Topics in Demand and Supply Analysis",
-     "printed": "3",
+     "printed": "3–36",
      "pdf": [
       11,
-      11
+      44
      ],
      "sections": [
       {
@@ -93,37 +99,315 @@
        ],
        "priority": "SKIM",
        "why": "descriptive"
+      },
+      {
+       "title": "Demand Concepts",
+       "printed": "4–5",
+       "pdf": [
+        12,
+        13
+       ],
+       "priority": "STANDARD",
+       "why": "demand function mechanics"
+      },
+      {
+       "title": "Price Elasticity of Demand",
+       "printed": "6–8",
+       "pdf": [
+        14,
+        16
+       ],
+       "priority": "CLOSE",
+       "why": "core calculation"
+      },
+      {
+       "title": "Predicting Demand Elasticity, Price Elasticity, and Total Expenditure",
+       "printed": "9–10",
+       "pdf": [
+        17,
+        18
+       ],
+       "priority": "STANDARD",
+       "why": "determinants list"
+      },
+      {
+       "title": "Income Elasticity of Demand, Cross-Price Elasticity of Demand",
+       "printed": "11–13",
+       "pdf": [
+        19,
+        21
+       ],
+       "priority": "CLOSE",
+       "why": "three calculations, signs"
+      },
+      {
+       "title": "Substitution and Income Effects; Normal Goods, Inferior Goods, and Special Cases",
+       "printed": "14–16",
+       "pdf": [
+        22,
+        24
+       ],
+       "priority": "CLOSE",
+       "why": "LO taught only here"
+      },
+      {
+       "title": "Supply Analysis: Cost, Marginal Return, and Productivity",
+       "printed": "17–21",
+       "pdf": [
+        25,
+        29
+       ],
+       "priority": "SKIM",
+       "why": "intro paragraph only"
+      },
+      {
+       "title": "Marginal Revenue, Marginal Cost and Profit Maximization; Short-Run Cost Curves: Total, Variable, Fixed, and Marginal Costs",
+       "printed": "22–27",
+       "pdf": [
+        30,
+        35
+       ],
+       "priority": null,
+       "why": ""
+      },
+      {
+       "title": "Summary",
+       "printed": "28–30",
+       "pdf": [
+        36,
+        38
+       ],
+       "priority": "STANDARD",
+       "why": "only source of total expenditure rule and breakeven statements"
+      },
+      {
+       "title": "Practice Problems",
+       "printed": "31–33",
+       "pdf": [
+        39,
+        41
+       ],
+       "priority": "STANDARD",
+       "why": "14 questions"
+      },
+      {
+       "title": "Solutions",
+       "printed": "34–36",
+       "pdf": [
+        42,
+        44
+       ],
+       "priority": "STANDARD",
+       "why": "calculation patterns"
       }
      ]
     }
    ],
-   "online_only": [],
+   "online_only": [
+    "Glossary: Topics in Demand and Supply Analysis",
+    "Flashcards: Topics in Demand and Supply Analysis"
+   ],
    "psm_items": [],
    "les_ids": [
     1,
-    2
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
    ],
    "workbook_status": "Done",
-   "revision_note": "Plan v4: the workbook shows only Module 1's learning outcomes and introduction done, so its remaining sections moved to Fri Dec 4."
+   "revision_note": "Plan v6: Logan reported Modules 1-3 worked through on Nov 18, so all of Module 1 is back on its original day and Fri Dec 4 is a buffer again."
   },
   {
    "date": "2026-11-15",
    "dow": "Sun",
    "lesson": null,
-   "kind": "buffer",
-   "phase": "Buffer",
-   "course": null,
-   "assignment": "Module 2 moved to Fri Dec 11.",
-   "core_hours": 0,
+   "kind": "study",
+   "phase": "Prerequisite overview",
+   "course": "Economics prerequisite",
+   "assignment": "Module 2: Introduction to the Firm and Market Organization",
+   "core_hours": 2,
    "psm_hours": 0,
-   "questions_target": 0,
-   "content_pages": 0,
-   "reading": [],
-   "online_only": [],
+   "questions_target": 8,
+   "content_pages": 28,
+   "reading": [
+    {
+     "module": "PRE-ECON-LM02",
+     "book": "PRE-ECON",
+     "book_title": "CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics",
+     "course": "Economics prerequisite",
+     "module_num": 2,
+     "title": "Introduction to the Firm and Market Organization",
+     "printed": "37–66",
+     "pdf": [
+      45,
+      74
+     ],
+     "sections": [
+      {
+       "title": "Learning outcomes (module opening page)",
+       "printed": "37",
+       "pdf": [
+        45,
+        45
+       ],
+       "priority": "SKIM",
+       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
+      },
+      {
+       "title": "Analysis of Market Structures",
+       "printed": "37–39",
+       "pdf": [
+        45,
+        47
+       ],
+       "priority": null,
+       "why": ""
+      },
+      {
+       "title": "Perfect Competition",
+       "printed": "40–41",
+       "pdf": [
+        48,
+        49
+       ],
+       "priority": null,
+       "why": ""
+      },
+      {
+       "title": "Other Factors Affecting Demand",
+       "printed": "42",
+       "pdf": [
+        50,
+        50
+       ],
+       "priority": "STANDARD",
+       "why": "Elasticity signs and MR=P(1-1/e); partly repeats earlier supply/demand module"
+      },
+      {
+       "title": "Consumer Surplus: Value minus Expenditure",
+       "printed": "43–44",
+       "pdf": [
+        51,
+        52
+       ],
+       "priority": "STANDARD",
+       "why": "One area calculation; feeds price discrimination"
+      },
+      {
+       "title": "Supply Analysis, Optimal Price, and Output in Perfectly Competitive Markets",
+       "printed": "45–49",
+       "pdf": [
+        53,
+        57
+       ],
+       "priority": null,
+       "why": ""
+      },
+      {
+       "title": "Long-Run Equilibrium in Perfectly Competitive Markets",
+       "printed": "50–51",
+       "pdf": [
+        58,
+        59
+       ],
+       "priority": "CLOSE",
+       "why": "Zero economic profit, P=MC=min AC; tested"
+      },
+      {
+       "title": "Monopoly Markets: Demand/Supply and Optimal Price/Output",
+       "printed": "52–57",
+       "pdf": [
+        60,
+        65
+       ],
+       "priority": null,
+       "why": ""
+      },
+      {
+       "title": "Price Discrimination and Consumer Surplus",
+       "printed": "58–59",
+       "pdf": [
+        66,
+        67
+       ],
+       "priority": "STANDARD",
+       "why": "Three degrees plus two-part tariff calculation"
+      },
+      {
+       "title": "Monopoly Markets: Long-Run Equilibrium",
+       "printed": "60",
+       "pdf": [
+        68,
+        68
+       ],
+       "priority": "STANDARD",
+       "why": "Regulated pricing P=LRAC; Example 4"
+      },
+      {
+       "title": "Summary",
+       "printed": "61–62",
+       "pdf": [
+        69,
+        70
+       ],
+       "priority": "SKIM",
+       "why": "Repeats earlier sections; use as checklist"
+      },
+      {
+       "title": "Practice Problems",
+       "printed": "64–65",
+       "pdf": [
+        72,
+        73
+       ],
+       "priority": "CLOSE",
+       "why": "Seven items, all directly relevant"
+      },
+      {
+       "title": "Solutions",
+       "printed": "66",
+       "pdf": [
+        74,
+        74
+       ],
+       "priority": "CLOSE",
+       "why": "Item 3 and 6 calculations"
+      }
+     ]
+    }
+   ],
+   "online_only": [
+    "Glossary: Introduction to the Firm and Market Organization",
+    "Flashcards: Introduction to the Firm and Market Organization"
+   ],
    "psm_items": [],
-   "les_ids": [],
-   "workbook_status": "Not started",
-   "revision_note": "Plan v4: Module 2 (not started) moved to the Fri Dec 11 buffer."
+   "les_ids": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+   ],
+   "workbook_status": "Done",
+   "revision_note": "Plan v6: Logan reported Module 2 worked through on Nov 18, so it is back on its original day and Fri Dec 11 is a buffer again."
   },
   {
    "date": "2026-11-16",
@@ -171,11 +455,11 @@
    "kind": "study",
    "phase": "Prerequisite overview",
    "course": "Economics prerequisite",
-   "assignment": "Module 3: Aggregate Output, Prices, and Economic Growth; Module 4: Introduction to Business Cycles",
-   "core_hours": 4,
+   "assignment": "Module 3: Aggregate Output, Prices, and Economic Growth",
+   "core_hours": 2,
    "psm_hours": 0,
-   "questions_target": 16,
-   "content_pages": 97,
+   "questions_target": 8,
+   "content_pages": 65,
    "reading": [
     {
      "module": "PRE-ECON-LM03",
@@ -271,7 +555,50 @@
        "why": "Explains calculations"
       }
      ]
-    },
+    }
+   ],
+   "online_only": [
+    "Glossary: Aggregate Output, Prices, and Economic Growth",
+    "Flashcards: Aggregate Output, Prices, and Economic Growth"
+   ],
+   "psm_items": [],
+   "les_ids": [
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36
+   ],
+   "workbook_status": "Done",
+   "practice_picks": [
+    4,
+    7,
+    10,
+    13,
+    15,
+    21,
+    25,
+    28
+   ],
+   "revision_note": "Plan v6: Logan reported Modules 1-3 worked through on Nov 18; Module 4 moved to Thu Nov 19, where he plans it with Module 5."
+  },
+  {
+   "date": "2026-11-19",
+   "dow": "Thu",
+   "lesson": 4,
+   "kind": "study",
+   "phase": "Prerequisite overview",
+   "course": "Economics prerequisite",
+   "assignment": "Module 4: Introduction to Business Cycles; Module 5: Monetary and Fiscal Policy",
+   "core_hours": 4,
+   "psm_hours": 0,
+   "questions_target": 16,
+   "content_pages": 49,
+   "reading": [
     {
      "module": "PRE-ECON-LM04",
      "book": "PRE-ECON",
@@ -386,66 +713,7 @@
        "why": "Index calculations explained"
       }
      ]
-    }
-   ],
-   "online_only": [
-    "Glossary: Aggregate Output, Prices, and Economic Growth",
-    "Flashcards: Aggregate Output, Prices, and Economic Growth",
-    "Glossary: Introduction to Business Cycles",
-    "Flashcards: Introduction to Business Cycles"
-   ],
-   "psm_items": [],
-   "les_ids": [
-    28,
-    29,
-    30,
-    31,
-    32,
-    33,
-    34,
-    35,
-    36,
-    37,
-    38,
-    39,
-    40,
-    41,
-    42,
-    43,
-    44,
-    45,
-    46,
-    47
-   ],
-   "workbook_status": "Not started",
-   "practice_picks": {
-    "PRE-ECON-LM03": [
-     4,
-     7,
-     10,
-     13,
-     15,
-     21,
-     25,
-     28
-    ]
-   },
-   "note": "Heavy night, Logan's choice: Module 3 (65 pages) and Module 4 (32 pages), about 4 h. Lessons 1 and 2 already taught Module 3 (its overview, then aggregate demand and supply in depth), so do not teach it a third time. Part 1: no new study is recorded since Nov 16, so recap briefly the Module 3 ideas Module 4 builds on (aggregate demand and supply, the output gaps) and point to Lessons 1 and 2. Part 2: teach Module 4 in full. References list both modules. Stop rule: if time runs out, stop at a section break; the rest moves to Thu Nov 19, when Module 5 is only 17 pages.",
-   "revision_note": "Plan v5: Module 3 moved here from Tue Nov 17, which Logan skipped; he plans Modules 3 and 4 together tonight."
-  },
-  {
-   "date": "2026-11-19",
-   "dow": "Thu",
-   "lesson": 4,
-   "kind": "study",
-   "phase": "Prerequisite overview",
-   "course": "Economics prerequisite",
-   "assignment": "Module 5: Monetary and Fiscal Policy",
-   "core_hours": 2,
-   "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 17,
-   "reading": [
+    },
     {
      "module": "PRE-ECON-LM05",
      "book": "PRE-ECON",
@@ -543,11 +811,24 @@
     }
    ],
    "online_only": [
+    "Glossary: Introduction to Business Cycles",
+    "Flashcards: Introduction to Business Cycles",
     "Glossary: Monetary and Fiscal Policy",
     "Flashcards: Monetary and Fiscal Policy"
    ],
    "psm_items": [],
    "les_ids": [
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
     48,
     49,
     50,
@@ -559,7 +840,28 @@
     56
    ],
    "workbook_status": "Not started",
-   "revision_note": "Plan v4: Module 5 moved here from Wed Nov 18."
+   "practice_picks": {},
+   "note": "Shaped by Logan's own request (his Nov 18 nightly notes hold the details; never quote them). Part 1: a short refresher on the Modules 1-3 points those notes list as needing explanation. Treat them as not yet memorized: a sentence or two each, grouped by module, in plain English with a simple everyday example; no problem solving beyond a one-line illustration. Part 2: the important reading and principles for both modules, not page lists. Module 4 first: Lesson 3 (Nov 18) taught it before he read it, so give a compact walk-through of its key principles anyway and link Lesson 3 once for the longer version. Then Module 5 in full. End each module's part with its video from `videos`. A long day by his request: up to 1,300 words with --long-ok. Explain everything in your own words; the copied-text check refuses any 8-word run from his notes. Stop rule: if time runs out tonight, stop at a section break; the rest moves to Fri Nov 20 (Module 6, 24 pages).",
+   "videos": [
+    {
+     "module": "PRE-ECON-LM04",
+     "title": "Business Cycles- Macro Topic 2.7",
+     "channel": "Jacob Clifford",
+     "minutes": 5,
+     "url": "https://www.youtube.com/watch?v=he1l35tyDjs",
+     "about": "the phases of the cycle and why recessions are hard to predict"
+    },
+    {
+     "module": "PRE-ECON-LM05",
+     "title": "Fractional Reserve Banking and the Money Multiplier Made Simple",
+     "channel": "Marginal Revolution University",
+     "minutes": 7,
+     "url": "https://www.youtube.com/watch?v=93_Va7I7Lgg",
+     "about": "how banks create deposits from reserves, and why the multiplier is only a ceiling",
+     "caveat": "Made in 2017 with a 10% reserve requirement; the US cut its requirement to zero in March 2020, but the curriculum (and the exam) uses the textbook model."
+    }
+   ],
+   "revision_note": "Plan v6: Module 4 moved here from Wed Nov 18; Logan plans Modules 4 and 5 together tonight."
   },
   {
    "date": "2026-11-20",
@@ -2690,152 +2992,20 @@
    "date": "2026-12-04",
    "dow": "Fri",
    "lesson": 19,
-   "kind": "study",
-   "phase": "Prerequisite catch-up",
-   "course": "Economics prerequisite",
-   "assignment": "Module 1: Topics in Demand and Supply Analysis (remaining sections, moved from Nov 14)",
-   "core_hours": 2,
+   "kind": "buffer",
+   "phase": "Buffer",
+   "course": null,
+   "assignment": "Rest or recover unfinished lessons. From Dec 1, optional short Ethics recall; do not stack overdue work.",
+   "core_hours": 0,
    "psm_hours": 0,
    "questions_target": 0,
-   "content_pages": 30,
-   "reading": [
-    {
-     "module": "PRE-ECON-LM01",
-     "book": "PRE-ECON",
-     "book_title": "CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics",
-     "course": "Economics prerequisite",
-     "module_num": 1,
-     "title": "Topics in Demand and Supply Analysis",
-     "printed": "4–36",
-     "pdf": [
-      12,
-      44
-     ],
-     "sections": [
-      {
-       "title": "Demand Concepts",
-       "printed": "4–5",
-       "pdf": [
-        12,
-        13
-       ],
-       "priority": "STANDARD",
-       "why": "demand function mechanics"
-      },
-      {
-       "title": "Price Elasticity of Demand",
-       "printed": "6–8",
-       "pdf": [
-        14,
-        16
-       ],
-       "priority": "CLOSE",
-       "why": "core calculation"
-      },
-      {
-       "title": "Predicting Demand Elasticity, Price Elasticity, and Total Expenditure",
-       "printed": "9–10",
-       "pdf": [
-        17,
-        18
-       ],
-       "priority": "STANDARD",
-       "why": "determinants list"
-      },
-      {
-       "title": "Income Elasticity of Demand, Cross-Price Elasticity of Demand",
-       "printed": "11–13",
-       "pdf": [
-        19,
-        21
-       ],
-       "priority": "CLOSE",
-       "why": "three calculations, signs"
-      },
-      {
-       "title": "Substitution and Income Effects; Normal Goods, Inferior Goods, and Special Cases",
-       "printed": "14–16",
-       "pdf": [
-        22,
-        24
-       ],
-       "priority": "CLOSE",
-       "why": "LO taught only here"
-      },
-      {
-       "title": "Supply Analysis: Cost, Marginal Return, and Productivity",
-       "printed": "17–21",
-       "pdf": [
-        25,
-        29
-       ],
-       "priority": "SKIM",
-       "why": "intro paragraph only"
-      },
-      {
-       "title": "Marginal Revenue, Marginal Cost and Profit Maximization; Short-Run Cost Curves: Total, Variable, Fixed, and Marginal Costs",
-       "printed": "22–27",
-       "pdf": [
-        30,
-        35
-       ],
-       "priority": null,
-       "why": ""
-      },
-      {
-       "title": "Summary",
-       "printed": "28–30",
-       "pdf": [
-        36,
-        38
-       ],
-       "priority": "STANDARD",
-       "why": "only source of total expenditure rule and breakeven statements"
-      },
-      {
-       "title": "Practice Problems",
-       "printed": "31–33",
-       "pdf": [
-        39,
-        41
-       ],
-       "priority": "STANDARD",
-       "why": "14 questions"
-      },
-      {
-       "title": "Solutions",
-       "printed": "34–36",
-       "pdf": [
-        42,
-        44
-       ],
-       "priority": "STANDARD",
-       "why": "calculation patterns"
-      }
-     ]
-    }
-   ],
-   "online_only": [
-    "Glossary: Topics in Demand and Supply Analysis",
-    "Flashcards: Topics in Demand and Supply Analysis"
-   ],
+   "content_pages": 0,
+   "reading": [],
+   "online_only": [],
    "psm_items": [],
-   "les_ids": [
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13
-   ],
+   "les_ids": [],
    "workbook_status": "Not started",
-   "note": "Catch-up day. If the workbook already shows this work done, use the day as the buffer it was (refresher and a light review) and say so.",
-   "revision_note": "Plan v4: Module 1's remaining sections moved here from Sat Nov 14, using this buffer."
+   "revision_note": "Plan v6: Module 1 is done (reported Nov 18), so this catch-up day is a buffer again."
   },
   {
    "date": "2026-12-05",
@@ -3490,185 +3660,20 @@
    "date": "2026-12-11",
    "dow": "Fri",
    "lesson": 26,
-   "kind": "study",
-   "phase": "Prerequisite catch-up",
-   "course": "Economics prerequisite",
-   "assignment": "Module 2: Introduction to the Firm and Market Organization (moved from Nov 15)",
-   "core_hours": 2,
+   "kind": "buffer",
+   "phase": "Buffer",
+   "course": null,
+   "assignment": "Rest or recover unfinished lessons. From Dec 1, optional short Ethics recall; do not stack overdue work.",
+   "core_hours": 0,
    "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 28,
-   "reading": [
-    {
-     "module": "PRE-ECON-LM02",
-     "book": "PRE-ECON",
-     "book_title": "CFA Program Curriculum 2027, Prerequisite Reading, Volume 1: Economics",
-     "course": "Economics prerequisite",
-     "module_num": 2,
-     "title": "Introduction to the Firm and Market Organization",
-     "printed": "37–66",
-     "pdf": [
-      45,
-      74
-     ],
-     "sections": [
-      {
-       "title": "Learning outcomes (module opening page)",
-       "printed": "37",
-       "pdf": [
-        45,
-        45
-       ],
-       "priority": "SKIM",
-       "why": "The module's learning outcomes: read them first so you know what the reading must teach you."
-      },
-      {
-       "title": "Analysis of Market Structures",
-       "printed": "37–39",
-       "pdf": [
-        45,
-        47
-       ],
-       "priority": null,
-       "why": ""
-      },
-      {
-       "title": "Perfect Competition",
-       "printed": "40–41",
-       "pdf": [
-        48,
-        49
-       ],
-       "priority": null,
-       "why": ""
-      },
-      {
-       "title": "Other Factors Affecting Demand",
-       "printed": "42",
-       "pdf": [
-        50,
-        50
-       ],
-       "priority": "STANDARD",
-       "why": "Elasticity signs and MR=P(1-1/e); partly repeats earlier supply/demand module"
-      },
-      {
-       "title": "Consumer Surplus: Value minus Expenditure",
-       "printed": "43–44",
-       "pdf": [
-        51,
-        52
-       ],
-       "priority": "STANDARD",
-       "why": "One area calculation; feeds price discrimination"
-      },
-      {
-       "title": "Supply Analysis, Optimal Price, and Output in Perfectly Competitive Markets",
-       "printed": "45–49",
-       "pdf": [
-        53,
-        57
-       ],
-       "priority": null,
-       "why": ""
-      },
-      {
-       "title": "Long-Run Equilibrium in Perfectly Competitive Markets",
-       "printed": "50–51",
-       "pdf": [
-        58,
-        59
-       ],
-       "priority": "CLOSE",
-       "why": "Zero economic profit, P=MC=min AC; tested"
-      },
-      {
-       "title": "Monopoly Markets: Demand/Supply and Optimal Price/Output",
-       "printed": "52–57",
-       "pdf": [
-        60,
-        65
-       ],
-       "priority": null,
-       "why": ""
-      },
-      {
-       "title": "Price Discrimination and Consumer Surplus",
-       "printed": "58–59",
-       "pdf": [
-        66,
-        67
-       ],
-       "priority": "STANDARD",
-       "why": "Three degrees plus two-part tariff calculation"
-      },
-      {
-       "title": "Monopoly Markets: Long-Run Equilibrium",
-       "printed": "60",
-       "pdf": [
-        68,
-        68
-       ],
-       "priority": "STANDARD",
-       "why": "Regulated pricing P=LRAC; Example 4"
-      },
-      {
-       "title": "Summary",
-       "printed": "61–62",
-       "pdf": [
-        69,
-        70
-       ],
-       "priority": "SKIM",
-       "why": "Repeats earlier sections; use as checklist"
-      },
-      {
-       "title": "Practice Problems",
-       "printed": "64–65",
-       "pdf": [
-        72,
-        73
-       ],
-       "priority": "CLOSE",
-       "why": "Seven items, all directly relevant"
-      },
-      {
-       "title": "Solutions",
-       "printed": "66",
-       "pdf": [
-        74,
-        74
-       ],
-       "priority": "CLOSE",
-       "why": "Item 3 and 6 calculations"
-      }
-     ]
-    }
-   ],
-   "online_only": [
-    "Glossary: Introduction to the Firm and Market Organization",
-    "Flashcards: Introduction to the Firm and Market Organization"
-   ],
+   "questions_target": 0,
+   "content_pages": 0,
+   "reading": [],
+   "online_only": [],
    "psm_items": [],
-   "les_ids": [
-    14,
-    15,
-    16,
-    17,
-    18,
-    19,
-    20,
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    27
-   ],
+   "les_ids": [],
    "workbook_status": "Not started",
-   "note": "Catch-up day. If the workbook already shows this work done, use the day as the buffer it was (refresher and a light review) and say so.",
-   "revision_note": "Plan v4: Module 2 moved here from Sun Nov 15, using this buffer."
+   "revision_note": "Plan v6: Module 2 is done (reported Nov 18), so this catch-up day is a buffer again."
   },
   {
    "date": "2026-12-12",
