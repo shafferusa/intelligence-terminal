@@ -1,6 +1,66 @@
 {
  "stories": [
   {
+   "id": "tips-10y-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "10Y TIPS reopening $19B 2.903% (highest since 2002 per Tipswatch), BTC 2.43, indirect 68.6%; next week 2y $69B, 5y $70B, 7y $44B",
+   "status": "New",
+   "rationale": "Treasury",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
+  },
+  {
+   "id": "walmart-q3-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "WMT adj EPS $0.65, rev $188.8B, US comps ex-fuel +2.9%; FY guide raised to $2.84-2.89; stock -1.04% $126.04",
+   "status": "Materially changed",
+   "rationale": "Consumer read",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
+  },
+  {
+   "id": "philly-claims-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "Philly Fed Nov 6.3 (prior 20.9, cons ~20), prices paid 58.2; claims 203K (prior rev 202K); continuing 1.763M; Jefferson: AI adds to inflation",
+   "status": "New",
+   "rationale": "Macro data",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
+  },
+  {
+   "id": "intuit-q1-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "INTU beat ($2.91 adj EPS) but cut FY rev guide to $23.08-23.37B; sells Mailchimp to Bending Spoons $3.31B cash + $368M stock; ~-14% AH",
+   "status": "New",
+   "rationale": "Software guidance read",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
+  },
+  {
+   "id": "sixth-loss-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "S&P -2.02% 7,175.83 (6th straight loss; intraday +1.26% to 7,415.64); Nasdaq -2.25%; Dow -1,101 49,097 (<50K first since June); all sectors down; VIX 28.44, curve inverted",
+   "status": "New",
+   "rationale": "Market-wide reversal",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
+  },
+  {
+   "id": "anthropic-debut-nov19",
+   "first_seen": "2026-11-19",
+   "headline": "ANT opens $111.50 (+34%), high $115.10, low $92.72, closes $97.17 (+17.07%) on ~847M sh; mkt cap $1.27T basic / $1.75-1.78T diluted",
+   "status": "New",
+   "rationale": "Lead: record IPO trading debut; AI-trade read",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
+  },
+  {
    "id": "bridgeville-budget-2027",
    "first_seen": "2026-11-19",
    "headline": "Bridgeville 2027 budget + Ord. 1039 (millage) posted; adoption vote Dec 14 7 PM",
@@ -23,12 +83,12 @@
   {
    "id": "kerch-berlin-nov19",
    "first_seen": "2026-11-19",
-   "headline": "Third Ukrainian strike in 4 days halts Kerch rail (AP); Berlin talks Nov 19 with Witkoff/Kushner/Zelenskyy/Europeans",
-   "status": "Developing",
+   "headline": "Berlin coalition meeting: Merz: talks with Russia only after peace deal; Kushner: Russia accepts European format, Article 5-style guarantees (unconfirmed by Moscow); no communique",
+   "status": "Materially changed",
    "rationale": "World",
    "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-am.html",
-   "updated": "2026-11-19-am"
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
   },
   {
    "id": "dc-shutdown-risk-nov19",
@@ -53,12 +113,12 @@
   {
    "id": "apec-trilateral-declaration-nov19",
    "first_seen": "2026-11-19",
-   "headline": "Trump-Xi-Putin ~90 min at Kylin Villa; Chinese/Russian state media report 4-point 'Peace Declaration' (UN reform, energy flows, ICC, nuclear risk); no US readout; no tariffs/chips/Ukraine",
+   "headline": "Four-point US-Russia-China declaration released by all three governments (The Hill); non-binding; no trade/chips/Ukraine; Trump briefs press Fri",
    "status": "Materially changed",
    "rationale": "World, energy read-through",
    "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-am.html",
-   "updated": "2026-11-19-am"
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
   },
   {
    "id": "walmart-alibaba-nov19",
@@ -109,6 +169,46 @@
    "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-19-am.html",
    "updated": "2026-11-19-am"
+  },
+  {
+   "id": "anthropic-ipo",
+   "first_seen": "2026-11-18",
+   "headline": "Bloomberg: Anthropic priced at $83 (range $70-78), deal upsized; unconfirmed by company; trades Nov 19 as ANT",
+   "status": "Resolved",
+   "rationale": "Largest AI listing",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-18-pm.html",
+   "updated": "2026-11-18-pm"
+  },
+  {
+   "id": "watch-anthropic-ipo-nov18",
+   "first_seen": "2026-11-15",
+   "headline": "Anthropic prices Nov 18 eve, 825M sh $70-78; Bloomberg ~6-7x covered, at/above top; WSJ may top $80; $26B placement; trades Nov 19 ANT",
+   "status": "Resolved",
+   "rationale": "Largest AI listing",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-18-am.html",
+   "updated": "2026-11-18-am"
+  },
+  {
+   "id": "anthropic-ipo-nov12",
+   "first_seen": "2026-11-12",
+   "headline": "Anthropic IPO $70-78, 825M sh; CNBC: book covered across range; Yahoo: banks weigh >$78 (unconfirmed); prices Wed eve, trades Thu (ANT)",
+   "status": "Resolved",
+   "rationale": "Keep on watchlist",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-17-am.html",
+   "updated": "2026-11-17-am"
+  },
+  {
+   "id": "vulcan-lv01-failure-nov15",
+   "first_seen": "2026-11-16",
+   "headline": "ULA preliminary: BE-4 thrust loss from inadequate fuel supply from vehicle, not engine fault; no RTF date",
+   "status": "Materially changed",
+   "rationale": "Space/AMZN; NSSL recert delayed",
+   "last_seen": "2026-11-19",
+   "last_report": "reports/2026/11/2026-11-19-pm.html",
+   "updated": "2026-11-19-pm"
   },
   {
    "id": "ust-20y-nov18",
@@ -167,16 +267,6 @@
    "status": "New",
    "rationale": "Policy/market",
    "last_seen": "2026-11-18",
-   "last_report": "reports/2026/11/2026-11-18-pm.html",
-   "updated": "2026-11-18-pm"
-  },
-  {
-   "id": "anthropic-ipo",
-   "first_seen": "2026-11-18",
-   "headline": "Bloomberg: Anthropic priced at $83 (range $70-78), deal upsized; unconfirmed by company; trades Nov 19 as ANT",
-   "status": "Resolved",
-   "rationale": "Largest AI listing",
-   "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-18-pm.html",
    "updated": "2026-11-18-pm"
   },
@@ -297,16 +387,6 @@
    "status": "Developing",
    "rationale": "Chips/trade/Iran",
    "last_seen": "2026-11-18",
-   "last_report": "reports/2026/11/2026-11-18-am.html",
-   "updated": "2026-11-18-am"
-  },
-  {
-   "id": "watch-anthropic-ipo-nov18",
-   "first_seen": "2026-11-15",
-   "headline": "Anthropic prices Nov 18 eve, 825M sh $70-78; Bloomberg ~6-7x covered, at/above top; WSJ may top $80; $26B placement; trades Nov 19 ANT",
-   "status": "Resolved",
-   "rationale": "Largest AI listing",
-   "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-18-am.html",
    "updated": "2026-11-18-am"
   },
@@ -461,16 +541,6 @@
    "updated": "2026-11-17-pm"
   },
   {
-   "id": "anthropic-ipo-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Anthropic IPO $70-78, 825M sh; CNBC: book covered across range; Yahoo: banks weigh >$78 (unconfirmed); prices Wed eve, trades Thu (ANT)",
-   "status": "Resolved",
-   "rationale": "Keep on watchlist",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
-  },
-  {
    "id": "watch-fomc-minutes-nov18",
    "first_seen": "2026-11-15",
    "headline": "FOMC minutes Nov 18 2:00 PM; 20-year $16B auction 1:00 PM",
@@ -529,77 +599,7 @@
    "last_seen": "2026-11-16",
    "last_report": "reports/2026/11/2026-11-16-pm.html",
    "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "ukraine-online-talks-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "Zelenskyy: 'difficult' online talks with Witkoff/Kushner + full European delegation; Berlin CoW summit next (Nov 19 unconfirmed); Ushakov: Moscow hasn't agreed to Europe role; EU sanctions 113",
-   "status": "Developing",
-   "rationale": "Diplomacy",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "pa-trifecta-agenda-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "PA Dem trifecta from Jan: min wage first ($7.25 -> $15 push), transit funding (PRT), cannabis ($729M yr-1 proj.), on-time budget pledge",
-   "status": "New",
-   "rationale": "Local PA",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "pit-faa-disruption-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "WTAE: PIT cancellations/delays continue Mon after FAA ground stop; L3Harris router diagnostics w/ FBI; Duffy seeks 'tens of billions' for FAA",
-   "status": "Developing",
-   "rationale": "Local/infrastructure",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "bitcoin-64k-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "BTC $64,557 06:40 ET (Yahoo); low ~$62,006 last week; ETF outflows -$1.07B wk; Strategy avg cost ~$75,456",
-   "status": "Continuing",
-   "rationale": "Keep on watchlist; <$60K forecast open",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "faa-router-cause-nov15",
-   "first_seen": "2026-11-16",
-   "headline": "FAA ground stop traced to L3Harris-installed router flooding FTI network (>1,000 attempts / 4-5 s); function disabled on ~60 routers; no cyber; Juniper says device didn't fail",
-   "status": "Materially changed",
-   "rationale": "Infrastructure; LHX",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
-  },
-  {
-   "id": "vulcan-lv01-failure-nov15",
-   "first_seen": "2026-11-16",
-   "headline": "Space Force suspends Vulcan NSSL missions; out for months; ULA no specific data yet; Blue Origin assisting",
-   "status": "Materially changed",
-   "rationale": "Space/AMZN; NSSL recert delayed",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "china-japan-data-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "China Oct retail +0.4% (cons 0.8), IP +4.8% (5.3), FAI YTD -8.1% (-7.0); Japan Q3 GDP -0.1% ann. (poll +0.3)",
-   "status": "New",
-   "rationale": "Global growth; pre-APEC",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-am.html",
-   "updated": "2026-11-16-am"
   }
  ],
- "updated": "2026-11-19-am"
+ "updated": "2026-11-19-pm"
 }
