@@ -1,6 +1,106 @@
 {
  "stories": [
   {
+   "id": "asia-rout-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "Taiex -6.23%, Kospi -5.21% (program-sell halt), Nikkei -5.06%; Asia worst week since 2020 per Reuters; Stoxx 600 -1.26% ~06:23 ET",
+   "status": "New",
+   "rationale": "Lead: market-moving global equity rout",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "metals-selloff-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "Gold -2.58% to $3,590, silver -4.09% alongside equities; dollar near 52w high 103.85; Treasuries rallying",
+   "status": "New",
+   "rationale": "Cross-asset liquidation signal",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "ant-intu-premarket-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "ANT reported -6%+ premarket after $97.17 close; INTU -11% on FY EPS guide $22.88-23.12 cut + Mailchimp sale $3.68B to Bending Spoons; ROST -3.5%; GAP +2% AH",
+   "status": "Materially changed",
+   "rationale": "Corporate/AI trade",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "reversal-breadth-nov19",
+   "first_seen": "2026-11-20",
+   "headline": "Nov 19 breadth 925 adv / 4,606 dec; 22.1% >50EMA; S&P -2.02% 2.3% below 200d; NVDA new 52w low $145.98; UNH -5.55%",
+   "status": "Materially changed",
+   "rationale": "Market structure",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "poland-missiles-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "Two Russian missiles (Kh-101) and drone land in Lublin province, Poland, during large attack on Ukraine; no injuries; Tusk to investigate; Kushner says Russia accepted Article 5-like guarantees (US account)",
+   "status": "New",
+   "rationale": "High-risk security; two+ sources",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "shenzhen-briefing-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "Trump noon news conference on Shenzhen, Thailand/Philippines trade deals; WH gave little detail; declaration silent on tariffs/chips",
+   "status": "Developing",
+   "rationale": "Trade policy read-through",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "sb1150-act103",
+   "first_seen": "2026-11-20",
+   "headline": "SB 1150 Sunshine Act fix enacted as Act 103 of 2026 (signed late Oct), effective Dec 21; corrects Nov 18/19 am framing",
+   "status": "Corrected",
+   "rationale": "Local/PA; correction",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "allegheny-budget-committee-nov19",
+   "first_seen": "2026-11-20",
+   "headline": "County Budget & Finance Committee advanced 2027 budget with DA/PD amendments ($1.37M WESA vs ~$2.9M TribLive); full council by Dec 6",
+   "status": "Materially changed",
+   "rationale": "Local",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "dc-shutdown-stall-nov19",
+   "first_seen": "2026-11-20",
+   "headline": "Thune: funding talks stalled pending Schumer challenge; Van Hollen/Kaine want Iran-funding limits; Dec 11 deadline",
+   "status": "Continuing",
+   "rationale": "US politics",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
+   "id": "ussf317-scrub-nov19",
+   "first_seen": "2026-11-20",
+   "headline": "USSF-317 scrubbed Nov 19, retargeted Nov 20 21:32 ET; NROL-136 NET Nov 21 07:30 ET; Vulcan still grounded",
+   "status": "Developing",
+   "rationale": "Space",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-am.html",
+   "updated": "2026-11-20-am"
+  },
+  {
    "id": "tips-10y-nov19",
    "first_seen": "2026-11-19",
    "headline": "10Y TIPS reopening $19B 2.903% (highest since 2002 per Tipswatch), BTC 2.43, indirect 68.6%; next week 2y $69B, 5y $70B, 7y $44B",
@@ -499,107 +599,7 @@
    "last_seen": "2026-11-17",
    "last_report": "reports/2026/11/2026-11-17-pm.html",
    "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "retail-sales-oct-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "Oct retail sales +0.2% (in line), control +0.6% vs +0.4%, Sep control revised to +0.5%; IP -0.4% (mfg +0.3%, utilities -4.3%), capacity 76.4%",
-   "status": "Materially changed",
-   "rationale": "Consumer before minutes",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "nasdaq-correction-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "Nasdaq 24,509.76 Mon = 11.6% below 52w high (correction); Kospi -2.59% 4,968 first close <5,000 since Jan; Taiex -2.31%, Nikkei -1.34%; ES -0.19% 7,425, NQ flat 06:27 ET; breadth 1,196/4,202, 34.3% >50EMA",
-   "status": "New",
-   "rationale": "Lead am Nov 17",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
-  },
-  {
-   "id": "bis-ai-chip-rule-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "BIS interim rule: licences for BR/ID/MY/SG/TH + DCs serving China-HQ firms (~750 H100 threshold); 90-day transition, 60-day comments; awaiting FR publication; China MFA 'economic coercion'; Thune 'high probability' NDAA chip limits",
-   "status": "Developing",
-   "rationale": "Export policy",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
-  },
-  {
-   "id": "iran-bahrain-hormuz-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "IRGC claims drone strike on US radar at Sheikh Isa (Bahrain says intercepted); UKMTO: tanker crew unaccounted for after attack north of Khasab; Araghchi-Oman talks; US blockade maintained",
-   "status": "Developing",
-   "rationale": "Oil/escalation",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "watch-fomc-minutes-nov18",
-   "first_seen": "2026-11-15",
-   "headline": "FOMC minutes Nov 18 2:00 PM; 20-year $16B auction 1:00 PM",
-   "status": "Continuing",
-   "rationale": "Dec hike ~90% priced",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "tech-selloff-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "S&P -1.92% 7,416.59, Nasdaq -2.49% 24,509.76, Dow -739 51,608.17 (CNBC/AP); SMH -5.11%, MU -7.62, MRVL -7.27, INTC -7.02, TSM -6.34, ASML -5.91, AMD -5.58, NVDA -4.12% $156.14 lowest close since Jul 2025; RSP -1.01 vs SPY -1.91; only XLP/XLU up",
-   "status": "New",
-   "rationale": "Lead pm Nov 16: chip rout broadens to big tech before NVDA",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "warsh-ai-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "Warsh: AI possibly most transformational of adult life; productivity not 'definitively' broken out; downside scenario AI 'disappoint', valuations fall; no policy comment. Hammack: 'slow, steady' hikes",
-   "status": "New",
-   "rationale": "Fed framing of AI risk",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "empire-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "Empire State Nov 7.8 vs ~17-18 cons, prior 25.5; par 2Y 4.83 (-5), 10Y 5.12 (-3), 30Y 5.46; 10Y real 2.92; implied BE ~2.20",
-   "status": "New",
-   "rationale": "Growth data; bull steepener",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "oil-glut-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "Brent Jan $92.44 -3.6%, WTI $85.72 -3.2% at 15:41 (Rigzone) after Goldman 2027 glut note; IRGC claims 6 tankers mined since Sun (unconfirmed, Reuters can't confirm); CENTCOM confirms USS Theodore Roosevelt = 3rd carrier",
-   "status": "New",
-   "rationale": "Oil vs Hormuz claims",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
-  },
-  {
-   "id": "tyson-q4-nov16",
-   "first_seen": "2026-11-16",
-   "headline": "TSN +8.72% $63.95: adj EPS 0.61 vs 0.58; FY27 AOI $1.7-2.15B, beef -$300M to +$100M (vs -$654M); sales -3.5 to -5.5%",
-   "status": "New",
-   "rationale": "Earnings",
-   "last_seen": "2026-11-16",
-   "last_report": "reports/2026/11/2026-11-16-pm.html",
-   "updated": "2026-11-16-pm"
   }
  ],
- "updated": "2026-11-19-pm"
+ "updated": "2026-11-20-am"
 }

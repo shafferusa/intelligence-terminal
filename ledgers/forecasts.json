@@ -7812,6 +7812,36 @@
    "probability": "80-92%",
    "basis": "Closed $97.17 (+17%), day low $92.72; would need a further ~15% fall; risk is a broad AI-group selloff",
    "status": "open"
+  },
+  {
+   "id": "2026-11-20-am-1",
+   "date": "2026-11-20",
+   "slot": "am",
+   "forecast": "S&P 500 closes Fri Nov 20, 2026 above 7,175.83, ending a six-day losing streak.",
+   "horizon": "2026-11-20",
+   "probability": "30-45%",
+   "basis": "ES -0.59% at 06:28 ET; Taiex/Kospi/Nikkei -5 to -6%; offset by flat Dow/Russell futures and opex reversal risk",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-20-am-2",
+   "date": "2026-11-20",
+   "slot": "am",
+   "forecast": "VIX closes above 25 on Fri Nov 20, 2026.",
+   "horizon": "2026-11-20",
+   "probability": "70-85%",
+   "basis": "VIX 29.61 at ~06:23 ET with inverted 9D/1M/3M curve; holiday week ahead",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-20-am-3",
+   "date": "2026-11-20",
+   "slot": "am",
+   "forecast": "Anthropic (ANT) closes Fri Nov 20, 2026 above its $83 IPO price.",
+   "horizon": "2026-11-20",
+   "probability": "70-85%",
+   "basis": "Closed $97.17; reported -6%+ premarket (~$91), ~10% cushion",
+   "status": "open"
   }
  ]
 }
