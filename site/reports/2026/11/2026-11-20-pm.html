@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Fri, Nov 20, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-11-20",
+  "slot": "pm",
+  "title": "Closing Brief — Fri, Nov 20, 2026",
+  "path": "reports/2026/11/2026-11-20-pm.html",
+  "summary": "The AI sell-off that began in Asia hit Wall Street in full: Nvidia fell 14% and the chip fund 11%, the S&P 500 lost 3.7% for a seventh straight loss and a reported correction, the Nasdaq 5.3%, the VIX touched 40, and only Treasuries and defensive stocks rose.",
+  "headlines": [
+    "Nvidia −14%, chip fund −11% as the AI sell-off hits Wall Street",
+    "S&P 500 −3.7% for seventh straight loss, into a correction; VIX 35.9",
+    "Treasuries rally: 2-year yield falls 13bp to 4.63%; Anthropic −8.5%"
+  ],
+  "reading_minutes": 32,
+  "generated_at": "2026-11-20T16:46:00-05:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Chip stocks crash and the S&amp;P 500 falls 3.7% into a correction, its seventh straight loss</h1>
+      <p class="paper-dateline">
+        Friday, November 20, 2026 <span class="sep">&middot;</span> 32 min read
+      </p>
+      <p class="paper-standfirst">
+        The AI sell-off that began in Asia overnight hit Wall Street harder than futures had suggested: Nvidia fell 14% and the chip index 11%, the Nasdaq lost 5.3%, the VIX touched 40, and the only things that rose were Treasuries, consumer staples and a few drugmakers.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> The S&amp;P 500 fell 3.70% to 6,910.39, its seventh straight loss, which outlets say is the longest run since February 2020. The Nasdaq Composite fell 5.28% to 22,617.73, the Dow 1.93% (950 points) to 48,147.33 and the Russell 2000 2.76%. Several outlets report that the S&amp;P 500 and the Dow are now in a correction, more than 10% below their records. For the week the S&amp;P is down 8.6% and the Nasdaq 10.0%.</li>
+          <li><b>Chips.</b> Nvidia fell 14.0% to $125.53, a new 52-week low, on 610 million shares, nearly four times its average. Micron fell 13.9%, AMD 13.3%, Broadcom 12.2% and the VanEck chip fund (SMH) 10.6%. Anthropic lost 8.5% in its first full session, to $88.91, after touching $83.05, five cents above its offer price.</li>
+          <li><b>Rates, the Fed and the Treasury.</b> Treasuries had their best day in weeks. On the official curve, the 2-year fell 13 basis points to 4.63% and the 10-year 12 to 4.92%. Fed Governor Lisa Cook argued in Chile for further rate rises, and a quarter-point rise on December 9 is still priced at about 97%. Consumer sentiment rose to 51.5 in the University of Michigan’s final November reading.</li>
+          <li><b>Biggest risk.</b> Volatility is now feeding on itself. The VIX closed at 35.89, up 26%, after touching 40.03, its highest in a year. The 9-day measure closed at 40.72, far above the 3-month at 30.94. Gold fell 4.4% and bitcoin about 5% alongside stocks, which points to forced selling rather than a rotation.</li>
+          <li><b>Next week.</b> A short Thanksgiving week: markets shut Thursday and close at 1:00 PM Friday. October PCE inflation, the second estimate of third-quarter GDP and jobless claims are bunched into Wednesday, with $183 billion of 2-, 5- and 7-year notes for sale and Dell, Workday and Deere reporting.</li>
+          <li><b>Beyond markets.</b> President Trump, back from Shenzhen, said he would restrict U.S. companies from building data centres abroad; no order or text has followed. A U.S. official told CBS of limited strikes on Iran’s Qeshm Island, which Central Command denied. In Pittsburgh, the transit authority approved its countywide bus-network redesign, effective August 2027.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Nov 20, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Nov 20, 2026.</caption>
+            <thead>
+              <tr><th class="sym">Symbol</th><th>Price</th><th>Chg</th><th>%Chg</th><th>52-week range</th><th>Volume</th><th>Avg vol</th></tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr><td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td><td>689.81</td><td class="down">&minus;26.06</td><td class="down">&minus;3.64%</td><td class="range-cell"><span class="range-nums">629.28 &ndash; 781.62</span><span class="range-bar" style="--pos:40"><i></i></span></td><td>136M</td><td>47M</td></tr>
+              <tr><td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td><td>251.23</td><td class="down">&minus;14.41</td><td class="down">&minus;5.42%</td><td class="range-cell"><span class="range-nums">228.75 &ndash; 314.12</span><span class="range-bar" style="--pos:26"><i></i></span></td><td>14M</td><td>3.8M</td></tr>
+              <tr><td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td><td>481.08</td><td class="down">&minus;9.71</td><td class="down">&minus;1.98%</td><td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:32"><i></i></span></td><td>5.7M</td><td>3.6M</td></tr>
+              <tr><td class="sym">IWM<small>iShares Russell 2000 ETF</small></td><td>256.61</td><td class="down">&minus;7.61</td><td class="down">&minus;2.88%</td><td class="range-cell"><span class="range-nums">229.58 &ndash; 305.18</span><span class="range-bar" style="--pos:36"><i></i></span></td><td>53M</td><td>25M</td></tr>
+              <tr><td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td><td>61.66</td><td class="down">&minus;3.37</td><td class="down">&minus;5.18%</td><td class="range-cell"><span class="range-nums">55.09 &ndash; 74.78</span><span class="range-bar" style="--pos:33"><i></i></span></td><td>9.6M</td><td>4.7M</td></tr>
+              <tr><td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td><td>207.44</td><td class="down">&minus;4.19</td><td class="down">&minus;1.98%</td><td class="range-cell"><span class="range-nums">182.81 &ndash; 224.20</span><span class="range-bar" style="--pos:60"><i></i></span></td><td>17M</td><td>9.2M</td></tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr><td class="sym">SMH<small>VanEck Semiconductor ETF</small></td><td>400.06</td><td class="down">&minus;47.42</td><td class="down">&minus;10.60%</td><td class="range-cell"><span class="range-nums">315.05 &ndash; 671.83</span><span class="range-bar" style="--pos:24"><i></i></span></td><td>23M</td><td>9.4M</td></tr>
+              <tr><td class="sym">XLK<small>Technology Select Sector SPDR</small></td><td>149.01</td><td class="down">&minus;11.68</td><td class="down">&minus;7.27%</td><td class="range-cell"><span class="range-nums">126.68 &ndash; 203.25</span><span class="range-bar" style="--pos:29"><i></i></span></td><td>36M</td><td>10M</td></tr>
+              <tr><td class="sym">XLF<small>Financial Select Sector SPDR</small></td><td>54.57</td><td class="down">&minus;1.01</td><td class="down">&minus;1.82%</td><td class="range-cell"><span class="range-nums">47.67 &ndash; 60.04</span><span class="range-bar" style="--pos:56"><i></i></span></td><td>80M</td><td>37M</td></tr>
+              <tr><td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td><td>68.32</td><td class="down">&minus;0.94</td><td class="down">&minus;1.36%</td><td class="range-cell"><span class="range-nums">59.79 &ndash; 78.35</span><span class="range-bar" style="--pos:46"><i></i></span></td><td>21M</td><td>15M</td></tr>
+              <tr><td class="sym">XLE<small>Energy Select Sector SPDR</small></td><td>60.51</td><td class="down">&minus;0.38</td><td class="down">&minus;0.62%</td><td class="range-cell"><span class="range-nums">43.77 &ndash; 70.15</span><span class="range-bar" style="--pos:63"><i></i></span></td><td>47M</td><td>35M</td></tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr><td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td><td>4.32%</td><td class="down">&minus;2bp</td><td class="flat">&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr><td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td><td>4.92%</td><td class="down">&minus;12bp</td><td class="flat">&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr><td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td><td>81.45</td><td class="up">+1.10</td><td class="up">+1.37%</td><td class="range-cell"><span class="range-nums">76.43 &ndash; 90.86</span><span class="range-bar" style="--pos:35"><i></i></span></td><td>65M</td><td>42M</td></tr>
+              <tr><td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td><td>91.65</td><td class="up">+0.83</td><td class="up">+0.91%</td><td class="range-cell"><span class="range-nums">88.64 &ndash; 98.05</span><span class="range-bar" style="--pos:32"><i></i></span></td><td>13M</td><td>12M</td></tr>
+              <tr><td class="sym">TIP<small>iShares TIPS Bond ETF</small></td><td>105.74</td><td class="up">+0.71</td><td class="up">+0.68%</td><td class="range-cell"><span class="range-nums">103.76 &ndash; 111.98</span><span class="range-bar" style="--pos:24"><i></i></span></td><td>2.6M</td><td>2.2M</td></tr>
+              <tr><td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td><td>103.69</td><td class="up">+0.61</td><td class="up">+0.59%</td><td class="range-cell"><span class="range-nums">101.20 &ndash; 112.06</span><span class="range-bar" style="--pos:23"><i></i></span></td><td>35M</td><td>33M</td></tr>
+              <tr><td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td><td>76.33</td><td class="down">&minus;0.20</td><td class="down">&minus;0.26%</td><td class="range-cell"><span class="range-nums">76.27 &ndash; 81.24</span><span class="range-bar" style="--pos:1"><i></i></span></td><td>62M</td><td>53M</td></tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr><td class="sym">GLD<small>SPDR Gold Shares</small></td><td>322.87</td><td class="down">&minus;12.31</td><td class="down">&minus;3.67%</td><td class="range-cell"><span class="range-nums">320.95 &ndash; 509.70</span><span class="range-bar" style="--pos:1"><i></i></span></td><td>23M</td><td>8.8M</td></tr>
+              <tr><td class="sym">USO<small>United States Oil Fund</small></td><td>139.63</td><td class="up">+1.54</td><td class="up">+1.12%</td><td class="range-cell"><span class="range-nums">65.99 &ndash; 171.82</span><span class="range-bar" style="--pos:70"><i></i></span></td><td>4.5M</td><td>5.3M</td></tr>
+              <tr><td class="sym">DXY<small>U.S. Dollar Index</small></td><td>103.89</td><td class="down">&minus;0.01</td><td class="down">&minus;0.01%</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr><td class="sym">VIX<small>Cboe Volatility Index</small></td><td>35.89</td><td class="up">+7.45</td><td class="up">+26.20%</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr><td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td><td>53.84</td><td class="down">&minus;2.91</td><td class="down">&minus;5.13%</td><td class="range-cell"><span class="range-nums">52.38 &ndash; 71.57</span><span class="range-bar" style="--pos:8"><i></i></span></td><td>63M</td><td>24M</td></tr>
+              <tr><td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td><td>82.61</td><td class="down">&minus;1.96</td><td class="down">&minus;2.32%</td><td class="range-cell"><span class="range-nums">78.34 &ndash; 93.29</span><span class="range-bar" style="--pos:29"><i></i></span></td><td>3.1M</td><td>2.6M</td></tr>
+              <tr><td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td><td>25.78</td><td class="down">&minus;1.62</td><td class="down">&minus;5.91%</td><td class="range-cell"><span class="range-nums">25.49 &ndash; 43.36</span><span class="range-bar" style="--pos:2"><i></i></span></td><td>4.8M</td><td>1.7M</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">Closes, 52-week ranges and volume are Yahoo Finance’s 4:00 PM figures; average volume is the prior 50 sessions. Yields are the Treasury par curve for Nov 20, with the change in basis points from Nov 19. The VIX and dollar index are index levels and have no volume.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Nvidia falls 14% as the chip sell-off drags the S&amp;P 500 into a correction</h3>
+          <p class="story-deck">The losses that began in Taipei and Seoul overnight reached Wall Street in full. The chip index had its worst week since 2001, one outlet reports, and the S&amp;P 500 has lost 8.6% in five days.</p>
+          <div class="story-body">
+            <p>The S&amp;P 500 closed at 6,910.39, down 3.70%, after trading barely above Thursday’s close in the first minutes of the session (Yahoo Finance; CNBC and Reuters give the same close). The Nasdaq Composite fell 5.28% to 22,617.73, which outlets say erases its gain for the year, and the Nasdaq-100 fund QQQ fell 5.67% on three times its usual volume. The Dow fell 1.93% to 48,147.33. It was cushioned by health care and staples: UnitedHealth rose 2.8%, Johnson &amp; Johnson 1.3% and Walmart 1.5%. CNBC, NBC, CNN and Yahoo all report that the S&amp;P 500 and the Dow have closed more than 10% below their records, the usual definition of a correction. On Yahoo’s data the S&amp;P is 11.9% below its 52-week high.</p>
+            <p>Chips did the damage. Nvidia lost 14.01% to $125.53, Micron 13.89%, AMD 13.25%, Broadcom 12.19%, Marvell 11.69% and Arista 11.59%, and TSMC’s U.S. shares fell 9.48%. SMH, the chip fund, fell 10.60% to $400.06; it has lost 17.8% since last Friday, and Benzinga reports that the sector’s week was its worst since 2001. The technology sector fund fell 7.27%. The broader AI trade went with it: the Roundhill Magnificent Seven fund fell 5.18%, Meta 5.9%, Tesla 7.6%, Palantir 6.6%, and the AI-power names Vertiv (&minus;10.1%), Vistra (&minus;7.2%) and Constellation (&minus;5.8%) all fell sharply.</p>
+            <p>The outlets we read gave no single catalyst. They pointed to doubts about the returns on AI spending, Anthropic’s weak second day and the hawkish Fed, much as they did on Thursday. NBC said Nvidia’s drop followed a Reuters report about questions over its accounting. <span class="flag">We could not read that report, found no second outlet describing it in detail, and found no comment from Nvidia.</span> The stock has been without a permanent chief executive since Jensen Huang resigned on November 12. Midday it was down about 7%; the second half of the fall came in the afternoon, and we cannot say which piece of news, if any, drove it.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              In a single week, the companies that carried the market for two years have become the source of its losses. Nvidia is down 48% from its 52-week high, and the S&amp;P is now 6.0% below its 200-day average. Credit has not followed: high-yield bond funds fell only about 0.3%. While that holds, this is an equity repricing rather than a financial-stress event.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              Losing streaks this long have usually ended with sharp rebounds, and the market is oversold on most short-term measures. But the S&amp;P closed within 0.4% of its low for the day, and the next test is a holiday week with thin trading and a heavy data day on Wednesday.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (closes, volume, ranges, data) &middot; CNBC, Reuters (closes, streak) &middot; CNBC, NBC, CNN, Yahoo (correction) &middot; Benzinga (chip week, single source) &middot; NBC citing Reuters (Nvidia accounting report, not independently confirmed).</p>
+        </article>
+
+        <article class="story">
+          <h3>Anthropic falls 8.5% on its second day, ending just above its offer price</h3>
+          <p class="story-deck">The shares touched $83.05 in the afternoon, five cents above what IPO buyers paid, before recovering to $88.91.</p>
+          <div class="story-body">
+            <p>ANT opened lower, as premarket trading had suggested, and was about $87 at midday (Fortune). It reached its low of $83.05 later in the session and closed at $88.91, down $8.26, on about 395 million shares, less than half Thursday’s volume (Yahoo Finance; CNBC also reports &minus;8.5%). One data site gave a close of $84.54. That figure does not match the exchange-fed prices we use, so we set it aside. From the $111.50 first trade, the shares have lost 20% in a day and a half.</p>
+            <p>The bounce from $83.05 is the kind of move often attributed to underwriters supporting a new issue at its offer price. One crypto-news site reported that Morgan Stanley bought shares at $83. <span class="flag">That is a single, unverified report.</span> Banks do have a standard tool for this, an over-allotment option, but we have found no disclosure of its use.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The offer price is now the line the market will watch. A close below $83 would mean IPO buyers had lost money within three sessions, in the largest IPO on record. Nvidia, which committed $10 billion to a private placement at the IPO price, is already showing a paper gain of only about 7% on it.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (prices and volume, data) &middot; CNBC, Fortune (intraday) &middot; BeInCrypto (Morgan Stanley purchase, unverified) &middot; Anthropic and Fortune (Nvidia placement, as reported). This newspaper is written by an Anthropic model; we cover the stock on the same terms as any other.</p>
+        </article>
+
+        <article class="story">
+          <h3>Treasuries rally hard; the 2-year yield drops 13 basis points</h3>
+          <p class="story-deck">Bonds were the one big market that rose. Yields have fallen about a quarter of a point in a week, while the Fed is still expected to raise rates.</p>
+          <div class="story-body">
+            <p>On Treasury’s official par curve, the 2-year yield fell to 4.63% from 4.76%, the 5-year to 4.71% from 4.86% and the 10-year to 4.92% from 5.04%, back below 5%. The 30-year fell 9 basis points to 5.31%. Short bills barely moved: the 3-month bill slipped to 4.32%. Since last Friday, the 2-year is down 25 basis points and the 10-year 23. TLT, the long-bond fund, rose 1.37%.</p>
+            <p>The rally did not come from a softer Fed. Governor Lisa Cook, speaking in Santiago, argued for more rate rises, said each additional day adds risk that inflation expectations move higher, and estimated October’s PCE inflation at 3.8% (Reuters, as carried by Investing.com and Yahoo). CME FedWatch still put a quarter-point rise on December 9 at about 97%, with the rest on a half point (FXStreet, Friday). So the market is pricing a rise next month and buying bonds anyway. That is consistent with investors starting to expect the Fed to stop sooner, or simply wanting safety, and today’s data cannot tell those apart.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A curve falling across the board while the Fed talks tough is a bet that the Fed will not be able to keep raising rates into a falling stock market. If November’s payrolls and prices come in hot, that bet will be tested quickly.
+            </div>
+          </div>
+          <p class="story-sourceline">U.S. Treasury daily par yield curve (data) &middot; Reuters via Investing.com and Yahoo (Cook) &middot; CME FedWatch via FXStreet.</p>
+        </article>
+
+        <article class="story">
+          <h3>Intuit falls another 13% after cutting its revenue outlook</h3>
+          <p class="story-deck">The fall extended Thursday’s after-hours loss, and the stock is now 60% below its 52-week high.</p>
+          <div class="story-body">
+            <p>Intuit closed at $270.44, down 12.77%, on three times its usual volume (Yahoo Finance). It had cut its full-year revenue guide to $23.08&ndash;23.37 billion and agreed to sell Mailchimp to Bending Spoons for about $3.68 billion including stock, while keeping its adjusted earnings guide of $22.88&ndash;23.12 a share. Reports this morning attributed the revenue cut to Credit Karma, not to the Mailchimp sale. Morgan Stanley and Bank of America cut their price targets to $310 and Jefferies to $445, as reported. Software fell broadly with it: Palo Alto Networks lost 5.1%, giving back most of Thursday’s gain.</p>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (close, data) &middot; Intuit release as reported &middot; analyst actions as reported by financial news sites.</p>
+        </article>
+
+        <article class="story">
+          <h3>Gold falls 4.4% and silver 8% as investors sell what they can</h3>
+          <p class="story-deck">The haven metals fell with stocks for a second day. Gold is at its lowest since September 2025, according to Reuters as reported.</p>
+          <div class="story-body">
+            <p>Gold futures ended near $3,523, down 4.4%, after a low of $3,502.90 (Yahoo Finance, delayed). The week’s loss is about 9%. Silver fell 7.9% to $40.84, and the gold fund GLD closed at $322.87, a new 52-week low. Bitcoin was about $58,800 late in the day, down roughly 5%, and ether fell nearly 8%. The dollar index was flat at 103.89, just below its 52-week high, and the yen gained about 0.5%.</p>
+            <p>Oil was the exception. The expiring December WTI contract settled at $83.98, up 77 cents, and Brent for January rose about 0.6% to $92.57 late in the day (Bloomberg, EnergyNow, as reported). Brent still lost about 3.4% on the week.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              When gold falls alongside stocks, it usually means investors are raising cash, for instance to meet margin calls, rather than moving into havens. That kind of selling tends to be sharp and short. It is also why bonds are the only hedge that worked this week.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (gold, silver, crypto, dollar, delayed) &middot; Reuters via Investing.com (gold low) &middot; Bloomberg, EnergyNow (oil settlements, as reported).</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump says he will restrict U.S. data centres abroad; no order has followed</h3>
+          <p class="story-deck">The remark came at a news conference on his return from Shenzhen. It would cut across the Commerce Department’s new rule, which exempts American firms.</p>
+          <div class="story-body">
+            <p>At the White House, the president said he would stop U.S. companies building data centres in other countries, and that he and President Xi had agreed on AI “guardrails” (CNN and NBC live coverage). No executive order, fact sheet or text has been published on either, and NBC reported that his own team had not been briefed on the data-centre idea. The Commerce Department’s interim rule of November 16 does something narrower: it requires licences, within 90 days, for overseas data centres that supply significant computing power to Chinese-headquartered companies, and it exempts U.S.-headquartered operators. The president also said Iran was negotiating in bad faith.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Microsoft, Amazon, Alphabet and Oracle are building abroad on a large scale. A restriction would hit their capital plans, the chip demand those plans support and the countries hosting the sites. Until there is a document, treat it as a statement.
+            </div>
+          </div>
+          <p class="story-sourceline">CNN, NBC (news conference live coverage) &middot; Bureau of Industry and Security rule as reported by the Boston Globe, Al Jazeera and Tom’s Hardware.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-moved">
+      <h2 id="s-moved">What Moved Markets</h2>
+      <div class="story-body">
+        <p><b>Open (9:30&ndash;10:30).</b> Futures had pointed to a weaker Nasdaq and a flat Dow, after Taiwan fell 6.2%, Korea 5.2% and Japan 5.1% overnight. The S&amp;P 500 traded briefly above Thursday’s close, reaching 7,198.67, then fell steadily. By mid-morning it was down about 2% at 7,032, with the Nasdaq down 3.3% and ANT down 11% (TradingNews snapshot). <span class="chip">Likely contributor</span> The overnight chip rout in Asia and Europe, where the Euro Stoxx 50 closed down 2.8% and the DAX 2.6%. The 10:00 sentiment data, a little better than expected, made no visible difference.</p>
+        <p><b>Morning to midday.</b> Chips led the fall. Benzinga had SMH down about 8% and the Nasdaq-100 down more than 3% by midday; Nvidia was down 7.2% at $135.44 at 12:50 PM. Defensive sectors held up. <span class="chip">Market narrative</span> Doubts about returns on AI spending, cited by Reuters, CNBC and NBC. It is the same story outlets have told all week, and it explains the direction better than it explains the speed.</p>
+        <p><b>Afternoon.</b> The selling sped up. Nvidia’s loss doubled to 14%, and the S&amp;P was down 3% at about 2:35 PM (Yahoo). ANT touched $83.05 and bounced. <span class="chip">Market narrative</span> The reported questions about Nvidia’s accounting. We could not confirm the report or when it was published, so we cannot tie it to the timing.</p>
+        <p><b>Close.</b> The S&amp;P closed at 6,910.39, 0.4% above its low. The VIX touched 40.03 before closing at 35.89. <span class="chip">Unexplained</span> Monthly options expiry may have added to the late volatility; we have no data on the flows. <b>Rates:</b> the 2-year fell 13 basis points and the 10-year 12. <b>Dollar:</b> flat at 103.89. <b>Commodities:</b> gold &minus;4.4%, silver &minus;7.9%, copper &minus;2.9%; WTI rose 0.6% on Yahoo’s late quote.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="story-body">
+        <p><b>Winners.</b> UnitedHealth +2.84% to $339.85 on twice its average volume, a partial rebound after a 20% fall in three days. Walmart +1.52% and Costco +0.76%, the same defensive buying that put consumer staples (+0.67%) at the top of the sector table. Johnson &amp; Johnson +1.25%, AbbVie +0.94% and Merck +0.69%. Home Depot (+0.70%) and Lowe’s (+0.78%). India’s country fund rose 1.71%, one of the few equity funds up on the day.</p>
+        <p><b>Losers.</b> Nvidia &minus;14.01%, Micron &minus;13.89%, AMD &minus;13.25%, Intuit &minus;12.77%, Broadcom &minus;12.19%, Marvell &minus;11.69%, Arista &minus;11.59% (above). The Taiwan country fund fell 10.95% and the Korea fund 8.42%. Space and defence technology names fell hard: Rocket Lab &minus;10.92%, Intuitive Machines &minus;10.28%, AeroVironment &minus;9.51%, Kratos &minus;9.31% and AST SpaceMobile &minus;8.92%, to a new 52-week low. SpaceX (SPCX) fell 7.69% to $127.79. Brokers and crypto names fell with the risk mood: Robinhood &minus;9.44%, Coinbase &minus;6.34%, Goldman Sachs &minus;6.71%. Alphabet closed at $265.29, just above a new 52-week low set during the session.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><b>The losing streak.</b> <i>This morning:</i> S&amp;P futures were down 0.6%, and we put a 30&ndash;45% chance on the streak ending (Thursday evening, 45&ndash;60%). <i>Now:</i> the index fell 3.7%, and the streak is seven sessions. <i>Why it matters:</i> futures again understated the cash session’s fall. That is now the pattern of the week. <i>Confidence:</i> high.</p>
+        <p><b>Volatility.</b> <i>This morning:</i> VIX 29.6, and we put a 70&ndash;85% chance on a close above 25. <i>Now:</i> it closed at 35.89. <i>Confidence:</i> high.</p>
+        <p><b>Anthropic.</b> <i>This morning:</i> down about 6% premarket, with a 70&ndash;85% chance in our view of closing above $83. <i>Now:</i> it closed at $88.91, but only after trading within five cents of the offer price. <i>Why it matters:</i> the cushion is now 7%, not 17%. <i>Confidence:</i> high on prices.</p>
+        <p><b>Nvidia.</b> <i>This morning:</i> a stock at a 52-week low without a permanent chief executive. <i>Now:</i> down another 14%, with an unconfirmed report of accounting questions. <i>Confidence:</i> low on the report, high on the price.</p>
+        <p><b>The Shenzhen follow-up.</b> <i>This morning:</i> a noon news conference was expected to add detail on trade. <i>Now:</i> it produced the data-centre remark and the AI-guardrails claim, but nothing on tariffs or the January 10 truce deadline. <i>Confidence:</i> moderate; read through live coverage.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p><b>Today’s data.</b> The University of Michigan’s final November sentiment index rose to 51.5 from the preliminary 51.0 and October’s 48.0, against a consensus of about 51.5&ndash;51.6 (university release, as reported by Bloomberg and Kitco). Expectations were 52.9 and current conditions 49.4. Year-ahead inflation expectations were reported at 3.7%, down from 4.7%, a large one-month drop. Survey director Joanne Hsu pointed to better expected business conditions after the election, and said sentiment is still 9% below February, before the conflict with Iran began. Interviews ran from October 20 to November 16, so they mostly predate this week’s market fall.</p>
+        <p><b>The Fed.</b> Cook joins Waller (who floated a half point on Wednesday) and Musalem in arguing for more rises; New York Fed President John Williams said this week that conditions do not call for “dramatic action.” The policy rate is 3.75&ndash;4.00%. The question for December 9 is the size of the rise, and that turns on next Wednesday’s PCE prices and the November payroll and price reports due before the meeting. SOFR was 3.91% on Thursday (FRED). The Fed also published its survey of senior bank financial officers on reserve-management practices today.</p>
+        <p><b>Treasury.</b> No auction today. Next week’s supply is heavy for a short week: $69 billion of 2-year, $70 billion of 5-year and $44 billion of 7-year notes, a $28 billion 2-year floating-rate note, and 6-, 13-, 26- and 52-week bills (TreasuryDirect). With yields down a quarter of a point in a week, the notes will be sold at much lower yields than investors expected a week ago. That tests whether buyers want duration at these prices or were only seeking safety.</p>
+        <p><b>Rates and credit.</b> The curve rallied in parallel, so the 2s10s spread barely moved, widening a point to +29 basis points, while the 3-month/10-year spread narrowed 10 points to +60. The 10-year real yield was 2.88% and the 10-year breakeven 2.16% on Thursday (FRED), so most of the nominal yield is real yield rather than expected inflation. High-yield spreads widened for a fifth straight session, to 3.52 percentage points on Thursday (ICE BofA via FRED), and HYG closed 6 cents above its 52-week low. Spreads are wider by 32 basis points in a week but still low by history.</p>
+        <p><b>Abroad.</b> European stocks fell more than on Thursday: Euro Stoxx 50 &minus;2.81%, DAX &minus;2.60%, CAC 40 &minus;1.89%, FTSE 100 &minus;1.02% (Yahoo closes). Emerging-market equities (EEM) fell 5.13%. The ECB’s reference rate put the euro at $1.0990.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><b>Before the open.</b> Finnhub records BJ’s Wholesale earnings of $1.73 a share on $6.28 billion of revenue, against estimates of $1.29 and $6.14 billion. We found no news coverage to confirm the figures or what they include, so we report them as the data vendor’s record only.</p>
+        <p><b>After the close.</b> We found no material after-hours results or company news at press time.</p>
+        <p><b>Read for the market.</b> The week’s rule has been that only results with guidance well above forecasts are rewarded. On Friday, even that did not help. Palo Alto Networks, which rose on its raised outlook, fell 5.1%. Investors were selling the groups they owned most, regardless of company news. Financials joined in: Goldman fell 6.7%, Morgan Stanley 5.3% and the private-capital firms Blackstone, KKR and Apollo 3.9&ndash;4.5%.</p>
+        <p><b>Filings.</b> We could not search SEC filings directly; filing news comes from company releases and reporting.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>The weekend and the Thanksgiving week of Nov 23. All times ET. Consensus from compiled calendars and Finnhub.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Fri 11:20 PM</td><td class="txt">Falcon 9 USSF-317, Vandenberg</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Sun 7:16 AM</td><td class="txt">Falcon 9 NROL-136, Vandenberg</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Mon</td><td class="txt">Pennsylvania counties certify Nov 3 results</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Mon 6:09 AM</td><td class="txt">Ariane 64, 36 Amazon Leo satellites</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Mon after close</td><td class="txt">HP Enterprise, Agilent, Jacobs, Amentum; Dick’s, Kohl’s, Burlington, Urban Outfitters also due Monday</td><td>HPE $1.29 / $14.6B</td><td>&mdash;</td></tr>
+            <tr><td>Tue before open</td><td class="txt">Best Buy, Medtronic, Analog Devices, Smucker</td><td>ADI $3.92 / $4.35B</td><td>&mdash;</td></tr>
+            <tr><td>Tue after close</td><td class="txt">Dell, HP, Workday, Autodesk</td><td>Dell $6.71 / $50.2B</td><td>&mdash;</td></tr>
+            <tr><td>Mon&ndash;Wed</td><td class="txt">Treasury: 2Y $69B, 2Y FRN $28B, 5Y $70B, 7Y $44B notes; bills</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Wed before open</td><td class="txt">Deere</td><td>$4.17 / $10.7B</td><td>&mdash;</td></tr>
+            <tr><td>Wed 8:30</td><td class="txt"><strong>October PCE prices and spending; Q3 GDP (second estimate); jobless claims; durable goods</strong></td><td>Core PCE +0.3% m/m</td><td>&mdash;</td></tr>
+            <tr><td>Wed 2:00</td><td class="txt">Fed Beige Book</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Thu</td><td class="txt">Thanksgiving: U.S. markets closed</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Fri 1:00 PM</td><td class="txt">Early close for stocks</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="story-body">
+        <p><b>The market lens.</b> Most calendars put the PCE, GDP and claims reports on Wednesday; one lists PCE and GDP for Tuesday, so check Monday’s edition. Seven straight losses, a VIX near 36 and an oversold market make a sharp rebound possible on any day. A thin holiday week can magnify moves in either direction. We put the chance that the S&amp;P 500 closes Monday above Friday’s 6,910.39 at 45&ndash;60%. Basis: after streaks this long, bounces are slightly more likely than not, but the index closed near its low and Asia opens first. We put the chance that the VIX closes Monday above 30 at 55&ndash;70%. Basis: it closed at 35.89 with the 9-day measure at 40.72; it can fall fast, but rarely by more than a sixth in one session without a clear catalyst.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>Spending.</b> Government funding runs out after December 11, and Reuters reports that the president’s request for about $350 billion in new Pentagon money tied to the Iran war is dividing both parties. A bipartisan bill needs 60 Senate votes, and both sides are weighing a stopgap into early 2027, when the new Congress elected on November 3 takes office. <span class="flag">The $350 billion figure comes from one wire report and has not been confirmed in a budget document.</span> Congress is out next week for Thanksgiving. The same report says Speaker Mike Johnson will not seek to remain House Republican leader. We found no statement from Johnson confirming that, so we note it and will report it when confirmed.</p>
+        <p><b>The White House.</b> Beyond the data-centre remark (Top Stories), NBC reported that national cyber director Sean Cairncross is leaving. Its live coverage differs on whether he resigned or was asked to go.</p>
+        <p><b>Courts.</b> The Supreme Court held a private conference and issued no rulings. On Thursday the administration withdrew its emergency application over protected status for Venezuelan nationals (SCOTUSblog). The court’s next sitting begins November 30.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>Iran.</b> Accounts conflict. A senior U.S. official told CBS that U.S. forces carried out limited strikes on Qeshm Island after Iran fired on a U.S. aircraft. Central Command denied any new strikes on Qeshm on Friday. Iran’s Tasnim agency reported a missile impact and blamed a later blast on munitions disposal. <span class="flag">Disputed; we cannot establish what happened.</span> The Revolutionary Guard claimed on Thursday that two more tankers struck mines near Hormuz (reported by Reuters); there is no independent confirmation. The president said Iran wants a deal but not on terms he would accept. Oil barely reacted: WTI rose 0.6%.</p>
+        <p><b>Ukraine.</b> Russia’s overnight missile and drone attack, which it had promised after Ukraine’s strikes on the Kerch Bridge, killed at least eight people and hit road and rail bridges around Kyiv and energy sites, with Ukraine’s grid operator reporting “significant damage” (Al Jazeera). Poland’s defence minister said this morning that two Russian missiles and a drone came down in Lublin province, with no injuries; Warsaw called it a provocation. The coalition of countries backing Ukraine urged a winter truce on energy infrastructure.</p>
+        <p><b>Asia’s markets.</b> No security incident lay behind the falls in Taiwan and Korea; the coverage we read put them down to the same AI and chip worries as in New York. Bloomberg reports that the Taiex’s weekly loss of about 18% was its worst since 1991, while CNBC’s LSEG-based figures give a smaller weekly loss. The figures differ, but on either one it was a historic week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>The sell-off</b> leads the paper. Of the large AI names, Apple (&minus;1.9%) and Microsoft (&minus;2.8%) fell least; Nvidia, Micron, AMD and Broadcom fell most. The data-centre property owners Equinix (&minus;4.9%) and Digital Realty (&minus;6.6%) fell with them.</p>
+        <p><b>Nvidia’s leadership.</b> Colette Kress remains interim chief executive as well as finance chief, and Harvey Jones chairs the board. The search for a permanent chief executive has no timeline. The president has said the FBI is investigating matters connected to Jensen Huang’s departure; Nvidia has not commented on that, and AP could not confirm reports about its background.</p>
+        <p><b>Policy.</b> The president’s data-centre remark and his claim of AI “guardrails” agreed with Xi have no published text. In September, the two countries’ AI commitments amounted to an incident-reporting channel. Treasury Secretary Scott Bessent told CNBC he does not expect a change to the export threshold for Nvidia’s H200 chips. That comes from a transcript summary, so we do not quote him directly.</p>
+        <p>We found no confirmed major model release or cyber incident today. One newsletter reported an OpenAI release this week that we could not confirm with the company.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science</h2>
+      <div class="story-body">
+        <p><b>A slow cosmic metronome.</b> A team from ICRAR and Curtin University reports in <i>Nature Astronomy</i> that a radio source pulsing every eight minutes is a white dwarf orbiting a Sun-like star more than 5,000 light-years away. Astronomers have found a growing number of these “long-period radio transients” and have argued over whether they come from white dwarfs or from slow neutron stars. This is a peer-reviewed identification for one of them. It does not settle the question for the whole class.</p>
+        <p><b>Feeding the Milky Way’s black hole.</b> Max Planck researchers link compact gas clouds near Sagittarius A* to winds from two massive nearby stars that may help supply it (ScienceDaily summary). It is a proposed mechanism from modelling and observations, not a measurement of the flow.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>Launches.</b> A Falcon 9 carrying the classified USSF-317 mission is set for 11:20 PM tonight from Vandenberg, a day after its first window, followed by NROL-136 on Sunday morning. On Monday an Ariane 64 is due to carry 36 Amazon Leo satellites from Kourou, Amazon’s first launch since Sunday’s Vulcan failure destroyed 40 of them. ULA has not set a return-to-flight date. Later in the week: a Progress cargo ship to the space station just after midnight on Tuesday and China’s Shenzhou 24 crew launch on Tuesday evening, Eastern time (Launch Library 2).</p>
+        <p><b>Space stocks.</b> The group fell with the market. SpaceX (SPCX) lost 7.69% to $127.79, down 8.1% on the week. Rocket Lab fell 10.92%, Redwire 13.21%, Voyager 14.90% and Firefly 9.38%. The only gainer on our space list was YSS (+1.96%); Globalstar was nearly flat (&minus;0.56%).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Transit board approves a countywide bus-route overhaul</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit’s board approved its Bus Line Refresh, the largest redesign of the county’s routes in decades, with changes taking effect in August 2027 (WESA). Chief executive Katharine Kelleman said it will create better connections across the county. A transit advocacy group urged the authority to keep adjusting the plan to reduce the number of communities that lose service. <span class="flag">Only one outlet’s report was available, and we could not read it in full.</span> We could not confirm the vote count or which South Hills routes change. Riders on the Bridgeville-area routes should check PRT’s route maps before next summer.</p>
+        </div>
+        <p class="story-sourceline">WESA (single source, read via search summary).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>A second daily train to New York is now running</h3>
+        <div class="story-body">
+          <p>Amtrak’s second daily Pennsylvanian round trip between Pittsburgh and New York, via Harrisburg and Philadelphia, began on Wednesday, the first added passenger service out of Pittsburgh in decades (PennDOT and the governor’s office; WPXI, Railway Age). Eastbound trains leave Pittsburgh at 7:10 AM and 1:00 PM, as reported. The extra train is funded by the state. Meanwhile, the city’s 2027 budget, with no tax rise and a draw of about $27&ndash;28 million from reserves, is before council, which must adopt it by December 31.</p>
+        </div>
+        <p class="story-sourceline">PennDOT and Governor’s office releases &middot; WPXI, Railway Age, Penn Capital-Star &middot; WESA, WPXI, The Tartan (city budget).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Counties certify on Monday; the session ends November 30</h3>
+        <div class="story-body">
+          <p>Counties must certify the November 3 results by Monday. Democrats say they won control of both chambers, which would give Governor Shapiro a Democratic legislature when the new session begins in January. The legislature’s own site still lists the current Senate as 27 Republicans and 23 Democrats, and the new Senate split will be settled by certification. Penn Capital-Star reports that gun, transit-funding and energy and data-centre bills are now expected to move in 2027. We could not confirm any bill that passed this week. The current session ends November 30.</p>
+        </div>
+        <p class="story-sourceline">Pennsylvania Department of State &middot; Spotlight PA, Penn Capital-Star &middot; palegis.us.</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, capitulation-like</span> <b>Supporting:</b> seven straight S&amp;P 500 losses and an 8.6% weekly fall; reported correction in the S&amp;P and the Dow; SPY 5.9% below its 200-day average and RSP now below its own (&minus;0.9%); VIX 35.89 with an intraday 40.03, its 52-week high, and a steeply inverted curve (9-day 40.72 &gt; 30-day &gt; 3-month 30.94); gold, silver and bitcoin falling with stocks; Nvidia, GLD, ASTS and others at 52-week lows; high-yield spreads wider five days running. <b>Contradicting:</b> Treasuries rallied strongly; staples and parts of health care rose; equal-weight (&minus;1.98%) fell far less than the Nasdaq; high-yield funds fell only about 0.3% and spreads remain low by history; the dollar did not spike. Changed from this morning: the fall widened from tech to almost everything except bonds and defensives. Confidence: moderate-to-high.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Futures, commodities, FX &amp; crypto</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance v8 &middot; futures <em>Delayed (+10 min)</em> about 4:27 PM ET Nov 20, change vs prior settlement; European indices <em>EOD official</em> Nov 20; FX and crypto <em>Delayed</em> about 4:37 PM ET, change vs prior daily bar.</caption>
+<thead><tr><th>Instrument</th><th>Level</th><th>Chg %</th></tr></thead><tbody>
+<tr><td class="txt">S&amp;P 500 fut (ES)</td><td>6,965.25</td><td class="down">&minus;3.22</td></tr>
+<tr><td class="txt">Nasdaq-100 fut (NQ)</td><td>25,270.50</td><td class="down">&minus;5.00</td></tr>
+<tr><td class="txt">Dow fut (YM)</td><td>48,378.00</td><td class="down">&minus;1.63</td></tr>
+<tr><td class="txt">Russell 2000 fut (RTY)</td><td>2,595.50</td><td class="down">&minus;2.55</td></tr>
+<tr><td class="txt">Brent (BZ)</td><td>90.01</td><td class="down">&minus;2.14</td></tr>
+<tr><td class="txt">WTI (CL)</td><td>83.72</td><td class="up">+0.61</td></tr>
+<tr><td class="txt">Gold (GC)</td><td>3,523.40</td><td class="down">&minus;4.40</td></tr>
+<tr><td class="txt">Silver (SI)</td><td>40.84</td><td class="down">&minus;7.86</td></tr>
+<tr><td class="txt">Copper (HG)</td><td>5.462</td><td class="down">&minus;2.91</td></tr>
+<tr><td class="txt">Nat gas (NG)</td><td>3.774</td><td class="up">+15.48</td></tr>
+<tr><td class="txt">Dollar index (DXY)</td><td>103.89</td><td class="down">&minus;0.01</td></tr>
+<tr><td class="txt">Euro Stoxx 50 (close)</td><td>5,941.95</td><td class="down">&minus;2.81</td></tr>
+<tr><td class="txt">DAX (close)</td><td>24,802.78</td><td class="down">&minus;2.60</td></tr>
+<tr><td class="txt">FTSE 100 (close)</td><td>10,346.34</td><td class="down">&minus;1.02</td></tr>
+<tr><td class="txt">CAC 40 (close)</td><td>7,927.75</td><td class="down">&minus;1.89</td></tr>
+<tr><td class="txt">EUR/USD</td><td>1.0965</td><td class="down">&minus;0.06</td></tr>
+<tr><td class="txt">USD/JPY</td><td>158.60</td><td class="down">&minus;0.49</td></tr>
+<tr><td class="txt">Bitcoin</td><td>58,794.71</td><td class="down">&minus;5.02</td></tr>
+<tr><td class="txt">Ether</td><td>1,617.84</td><td class="down">&minus;7.83</td></tr>
+</tbody></table></div>
+          <p class="small muted">Brent and natural gas on Yahoo reflect contract rolls: Yahoo’s Brent quote (&minus;2.1%) conflicts with Bloomberg’s January Brent (+0.6% to $92.57), and the 15% natural-gas jump may be partly a roll. We could not confirm either against the exchange. Crypto from Yahoo Finance; CoinGecko’s total market cap and bitcoin dominance were unavailable.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance v8 &middot; <em>EOD official</em> Fri Nov 20, 4:00 PM ET (single-venue free-tier quotes) &middot; moving averages are simple averages of daily closes including today.</caption>
+<thead><tr><th>Fund / index</th><th>Close</th><th>1D %</th><th>vs 20-day</th><th>vs 50-day</th><th>vs 200-day</th></tr></thead><tbody>
+<tr><td class="txt">SPY</td><td>689.81</td><td class="down">&minus;3.64</td><td class="down">&minus;7.8%</td><td class="down">&minus;9.3%</td><td class="down">&minus;5.9%</td></tr>
+<tr><td class="txt">QQQ</td><td>608.45</td><td class="down">&minus;5.67</td><td class="down">&minus;10.3%</td><td class="down">&minus;14.4%</td><td class="down">&minus;10.9%</td></tr>
+<tr><td class="txt">DIA</td><td>481.08</td><td class="down">&minus;1.98</td><td class="down">&minus;6.8%</td><td class="down">&minus;6.9%</td><td class="down">&minus;5.2%</td></tr>
+<tr><td class="txt">IWM</td><td>256.61</td><td class="down">&minus;2.88</td><td class="down">&minus;7.1%</td><td class="down">&minus;7.8%</td><td class="down">&minus;8.2%</td></tr>
+<tr><td class="txt">RSP</td><td>207.44</td><td class="down">&minus;1.98</td><td class="down">&minus;4.9%</td><td class="down">&minus;3.4%</td><td class="down">&minus;0.9%</td></tr>
+<tr><td class="txt">MAGS</td><td>61.66</td><td class="down">&minus;5.18</td><td class="down">&minus;9.6%</td><td class="down">&minus;12.6%</td><td class="down">&minus;7.3%</td></tr>
+<tr><td class="txt">SMH</td><td>400.06</td><td class="down">&minus;10.60</td><td class="down">&minus;19.1%</td><td class="down">&minus;26.9%</td><td class="down">&minus;23.8%</td></tr>
+<tr><td class="txt">S&amp;P 500</td><td>6,910.39</td><td class="down">&minus;3.70</td><td class="down">&minus;7.9%</td><td class="down">&minus;9.4%</td><td class="down">&minus;6.0%</td></tr>
+<tr><td class="txt">Nasdaq Comp.</td><td>22,617.73</td><td class="down">&minus;5.28</td><td class="down">&minus;9.9%</td><td class="down">&minus;13.4%</td><td class="down">&minus;10.1%</td></tr>
+<tr><td class="txt">Dow</td><td>48,147.33</td><td class="down">&minus;1.93</td><td class="down">&minus;6.8%</td><td class="down">&minus;6.9%</td><td class="down">&minus;5.2%</td></tr>
+<tr><td class="txt">Russell 2000</td><td>2,581.79</td><td class="down">&minus;2.76</td><td class="down">&minus;7.1%</td><td class="down">&minus;7.8%</td><td class="down">&minus;8.2%</td></tr>
+</tbody></table></div>
+          <p>Since the Nov 13 close: S&amp;P 500 &minus;8.61%, Nasdaq Composite &minus;10.02%, Dow &minus;8.02%, Russell 2000 &minus;7.48%, RSP &minus;6.20%. The S&amp;P is 11.9% and the Nasdaq Composite 18.4% below their 52-week highs. SPY volume was 136 million shares, nearly three times its average.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>The whole-market breadth file is updated once a session, from the morning run. The latest entry is Thursday’s: 925 advancers and 4,606 decliners, with 22.1% of liquid stocks above their 50-session average. Friday’s full count will appear in Monday’s morning edition. On Friday the equal-weight S&amp;P fund fell 1.98% against SPY’s 3.64%, so the average stock did much better than the index: the selling was concentrated in the largest names. Daily short volume on Thursday was 48.6% of reported volume (FINRA, <em>EOD official</em> Nov 19); daily short volume is not short interest, which is reported with a two- to three-week lag.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>SPDR sector funds &middot; Yahoo Finance v8 &middot; <em>EOD official</em> Fri Nov 20, ranked by 1-day change.</caption>
+<thead><tr><th>Sector</th><th>Close</th><th>1D %</th><th>vs 50-day</th><th>vs 200-day</th></tr></thead><tbody>
+<tr><td class="txt">Cons. staples (XLP)</td><td>90.46</td><td class="up">+0.67</td><td class="up">+4.7%</td><td class="up">+6.4%</td></tr>
+<tr><td class="txt">Health care (XLV)</td><td>177.24</td><td class="down">&minus;0.12</td><td class="up">+0.4%</td><td class="up">+10.2%</td></tr>
+<tr><td class="txt">Energy (XLE)</td><td>60.51</td><td class="down">&minus;0.62</td><td class="down">&minus;6.5%</td><td class="up">+1.3%</td></tr>
+<tr><td class="txt">Utilities (XLU)</td><td>42.69</td><td class="down">&minus;0.74</td><td class="up">+1.8%</td><td class="down">&minus;3.7%</td></tr>
+<tr><td class="txt">Real estate (XLRE)</td><td>42.46</td><td class="down">&minus;0.98</td><td class="down">&minus;0.3%</td><td class="down">&minus;2.5%</td></tr>
+<tr><td class="txt">Financials (XLF)</td><td>54.57</td><td class="down">&minus;1.82</td><td class="down">&minus;2.3%</td><td class="up">+1.0%</td></tr>
+<tr><td class="txt">Materials (XLB)</td><td>48.34</td><td class="down">&minus;2.19</td><td class="down">&minus;4.8%</td><td class="down">&minus;5.7%</td></tr>
+<tr><td class="txt">Communications (XLC)</td><td>100.03</td><td class="down">&minus;2.66</td><td class="down">&minus;7.9%</td><td class="down">&minus;10.7%</td></tr>
+<tr><td class="txt">Cons. discretionary (XLY)</td><td>112.46</td><td class="down">&minus;2.95</td><td class="down">&minus;1.5%</td><td class="down">&minus;2.5%</td></tr>
+<tr><td class="txt">Industrials (XLI)</td><td>156.37</td><td class="down">&minus;3.09</td><td class="down">&minus;6.9%</td><td class="down">&minus;9.8%</td></tr>
+<tr><td class="txt">Technology (XLK)</td><td>149.01</td><td class="down">&minus;7.27</td><td class="down">&minus;19.2%</td><td class="down">&minus;13.0%</td></tr>
+</tbody></table></div>
+          <p>Staples rose; health care was nearly flat; energy and utilities fell less than 1%. Technology fell 7.3%, more than twice as much as any other sector, and is now 19% below its 50-day average.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlist</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance v8 &middot; <em>EOD official</em> Fri Nov 20, 4:00 PM ET (single-venue free-tier quotes) &middot; moving averages from daily closes; ANT and SPCX lack the history for some averages (listed Nov 19 and Jun 12, 2026).</caption>
+<thead><tr><th>Stock</th><th>Close</th><th>1D %</th><th>vs 50-day</th><th>vs 200-day</th></tr></thead><tbody>
+<tr><td class="txt">UNH</td><td>339.85</td><td class="up">+2.84</td><td class="down">&minus;12.6%</td><td class="down">&minus;7.8%</td></tr>
+<tr><td class="txt">WMT</td><td>127.95</td><td class="up">+1.52</td><td class="up">+9.7%</td><td class="up">+7.5%</td></tr>
+<tr><td class="txt">JNJ</td><td>270.47</td><td class="up">+1.25</td><td class="up">+1.1%</td><td class="up">+7.8%</td></tr>
+<tr><td class="txt">LOW</td><td>220.84</td><td class="up">+0.78</td><td class="up">+9.3%</td><td class="down">&minus;0.7%</td></tr>
+<tr><td class="txt">COST</td><td>1,102.15</td><td class="up">+0.76</td><td class="up">+11.7%</td><td class="up">+12.6%</td></tr>
+<tr><td class="txt">HD</td><td>339.04</td><td class="up">+0.70</td><td class="up">+7.6%</td><td class="up">+2.2%</td></tr>
+<tr><td class="txt">MRK</td><td>133.72</td><td class="up">+0.69</td><td class="down">&minus;8.0%</td><td class="up">+3.5%</td></tr>
+<tr><td class="txt">MCD</td><td>273.24</td><td class="up">+0.33</td><td class="up">+8.3%</td><td class="down">&minus;2.5%</td></tr>
+<tr><td class="txt">LLY</td><td>1,347.11</td><td class="down">&minus;0.30</td><td class="up">+6.3%</td><td class="up">+20.5%</td></tr>
+<tr><td class="txt">TGT</td><td>165.83</td><td class="down">&minus;0.97</td><td class="up">+5.7%</td><td class="up">+20.1%</td></tr>
+<tr><td class="txt">LMT</td><td>565.50</td><td class="down">&minus;1.11</td><td class="up">+1.2%</td><td class="down">&minus;0.4%</td></tr>
+<tr><td class="txt">NOC</td><td>534.31</td><td class="down">&minus;1.48</td><td class="up">+2.1%</td><td class="down">&minus;8.0%</td></tr>
+<tr><td class="txt">BKNG</td><td>144.91</td><td class="down">&minus;1.64</td><td class="down">&minus;9.4%</td><td class="down">&minus;16.6%</td></tr>
+<tr><td class="txt">GD</td><td>341.50</td><td class="down">&minus;1.68</td><td class="down">&minus;2.1%</td><td class="down">&minus;3.8%</td></tr>
+<tr><td class="txt">RTX</td><td>190.17</td><td class="down">&minus;1.69</td><td class="down">&minus;1.2%</td><td class="down">&minus;2.6%</td></tr>
+<tr><td class="txt">AAPL</td><td>342.56</td><td class="down">&minus;1.90</td><td class="up">+0.2%</td><td class="up">+13.0%</td></tr>
+<tr><td class="txt">ISRG</td><td>399.05</td><td class="down">&minus;2.01</td><td class="down">&minus;5.8%</td><td class="down">&minus;6.7%</td></tr>
+<tr><td class="txt">SCHW</td><td>90.16</td><td class="down">&minus;2.13</td><td class="down">&minus;5.4%</td><td class="down">&minus;6.8%</td></tr>
+<tr><td class="txt">WFC</td><td>78.62</td><td class="down">&minus;2.47</td><td class="down">&minus;5.7%</td><td class="down">&minus;5.5%</td></tr>
+<tr><td class="txt">LHX</td><td>249.89</td><td class="down">&minus;2.59</td><td class="down">&minus;0.8%</td><td class="down">&minus;16.3%</td></tr>
+<tr><td class="txt">NVO</td><td>37.82</td><td class="down">&minus;2.70</td><td class="down">&minus;4.5%</td><td class="down">&minus;11.8%</td></tr>
+<tr><td class="txt">GOOGL</td><td>265.29</td><td class="down">&minus;2.70</td><td class="down">&minus;17.7%</td><td class="down">&minus;21.3%</td></tr>
+<tr><td class="txt">MSFT</td><td>484.52</td><td class="down">&minus;2.77</td><td class="down">&minus;6.8%</td><td class="up">+9.2%</td></tr>
+<tr><td class="txt">BA</td><td>155.89</td><td class="down">&minus;2.88</td><td class="down">&minus;15.3%</td><td class="down">&minus;26.3%</td></tr>
+<tr><td class="txt">BLK</td><td>1,101.72</td><td class="down">&minus;3.00</td><td class="down">&minus;1.7%</td><td class="up">+3.1%</td></tr>
+<tr><td class="txt">JPM</td><td>310.53</td><td class="down">&minus;3.03</td><td class="down">&minus;8.0%</td><td class="down">&minus;4.5%</td></tr>
+<tr><td class="txt">BAC</td><td>47.04</td><td class="down">&minus;3.15</td><td class="down">&minus;10.7%</td><td class="down">&minus;14.0%</td></tr>
+<tr><td class="txt">KKR</td><td>88.54</td><td class="down">&minus;3.90</td><td class="down">&minus;5.8%</td><td class="down">&minus;9.0%</td></tr>
+<tr><td class="txt">C</td><td>110.62</td><td class="down">&minus;4.04</td><td class="down">&minus;12.0%</td><td class="down">&minus;12.9%</td></tr>
+<tr><td class="txt">AMZN</td><td>246.82</td><td class="down">&minus;4.10</td><td class="down">&minus;3.2%</td><td class="up">+0.7%</td></tr>
+<tr><td class="txt">APO</td><td>111.16</td><td class="down">&minus;4.41</td><td class="down">&minus;5.9%</td><td class="down">&minus;9.0%</td></tr>
+<tr><td class="txt">BX</td><td>110.80</td><td class="down">&minus;4.47</td><td class="down">&minus;5.3%</td><td class="down">&minus;9.2%</td></tr>
+<tr><td class="txt">PWR</td><td>559.03</td><td class="down">&minus;4.83</td><td class="down">&minus;10.3%</td><td class="down">&minus;12.0%</td></tr>
+<tr><td class="txt">EQIX</td><td>968.22</td><td class="down">&minus;4.89</td><td class="down">&minus;4.8%</td><td class="down">&minus;5.8%</td></tr>
+<tr><td class="txt">PANW</td><td>343.32</td><td class="down">&minus;5.09</td><td class="down">&minus;6.6%</td><td class="up">+22.0%</td></tr>
+<tr><td class="txt">MS</td><td>165.67</td><td class="down">&minus;5.32</td><td class="down">&minus;12.3%</td><td class="down">&minus;14.8%</td></tr>
+<tr><td class="txt">CEG</td><td>237.41</td><td class="down">&minus;5.80</td><td class="down">&minus;10.8%</td><td class="down">&minus;14.7%</td></tr>
+<tr><td class="txt">ETN</td><td>311.33</td><td class="down">&minus;5.82</td><td class="down">&minus;20.7%</td><td class="down">&minus;21.6%</td></tr>
+<tr><td class="txt">META</td><td>560.84</td><td class="down">&minus;5.93</td><td class="down">&minus;17.1%</td><td class="down">&minus;10.8%</td></tr>
+<tr><td class="txt">COIN</td><td>101.97</td><td class="down">&minus;6.34</td><td class="down">&minus;37.7%</td><td class="down">&minus;40.9%</td></tr>
+<tr><td class="txt">PLTR</td><td>143.49</td><td class="down">&minus;6.63</td><td class="down">&minus;21.7%</td><td class="down">&minus;6.8%</td></tr>
+<tr><td class="txt">ASML</td><td>1,266.22</td><td class="down">&minus;6.63</td><td class="down">&minus;22.1%</td><td class="down">&minus;20.9%</td></tr>
+<tr><td class="txt">DLR</td><td>162.46</td><td class="down">&minus;6.64</td><td class="down">&minus;8.9%</td><td class="down">&minus;11.9%</td></tr>
+<tr><td class="txt">GS</td><td>790.69</td><td class="down">&minus;6.71</td><td class="down">&minus;12.6%</td><td class="down">&minus;17.1%</td></tr>
+<tr><td class="txt">VST</td><td>115.25</td><td class="down">&minus;7.17</td><td class="down">&minus;18.1%</td><td class="down">&minus;23.8%</td></tr>
+<tr><td class="txt">TSLA</td><td>345.82</td><td class="down">&minus;7.64</td><td class="down">&minus;7.9%</td><td class="down">&minus;9.4%</td></tr>
+<tr><td class="txt">SPCX</td><td>127.79</td><td class="down">&minus;7.69</td><td class="down">&minus;13.5%</td><td>&mdash;</td></tr>
+<tr><td class="txt">ANT</td><td>88.91</td><td class="down">&minus;8.50</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td class="txt">ASTS</td><td>23.27</td><td class="down">&minus;8.92</td><td class="down">&minus;49.5%</td><td class="down">&minus;67.5%</td></tr>
+<tr><td class="txt">KTOS</td><td>26.89</td><td class="down">&minus;9.31</td><td class="down">&minus;33.4%</td><td class="down">&minus;54.0%</td></tr>
+<tr><td class="txt">HOOD</td><td>62.17</td><td class="down">&minus;9.44</td><td class="down">&minus;36.9%</td><td class="down">&minus;31.7%</td></tr>
+<tr><td class="txt">TSM</td><td>318.71</td><td class="down">&minus;9.48</td><td class="down">&minus;24.5%</td><td class="down">&minus;21.0%</td></tr>
+<tr><td class="txt">AVAV</td><td>86.79</td><td class="down">&minus;9.51</td><td class="down">&minus;33.5%</td><td class="down">&minus;49.2%</td></tr>
+<tr><td class="txt">VRT</td><td>166.24</td><td class="down">&minus;10.14</td><td class="down">&minus;25.5%</td><td class="down">&minus;38.8%</td></tr>
+<tr><td class="txt">LUNR</td><td>8.78</td><td class="down">&minus;10.28</td><td class="down">&minus;29.5%</td><td class="down">&minus;54.1%</td></tr>
+<tr><td class="txt">RKLB</td><td>45.42</td><td class="down">&minus;10.92</td><td class="down">&minus;26.0%</td><td class="down">&minus;41.6%</td></tr>
+<tr><td class="txt">KRMN</td><td>29.25</td><td class="down">&minus;11.34</td><td class="down">&minus;18.1%</td><td class="down">&minus;50.2%</td></tr>
+<tr><td class="txt">ANET</td><td>167.62</td><td class="down">&minus;11.59</td><td class="down">&minus;12.7%</td><td class="down">&minus;0.6%</td></tr>
+<tr><td class="txt">MRVL</td><td>122.28</td><td class="down">&minus;11.69</td><td class="down">&minus;44.5%</td><td class="down">&minus;35.2%</td></tr>
+<tr><td class="txt">AVGO</td><td>304.41</td><td class="down">&minus;12.19</td><td class="down">&minus;11.2%</td><td class="down">&minus;17.2%</td></tr>
+<tr><td class="txt">INTU</td><td>270.44</td><td class="down">&minus;12.77</td><td class="down">&minus;14.7%</td><td class="down">&minus;22.1%</td></tr>
+<tr><td class="txt">RDW</td><td>5.65</td><td class="down">&minus;13.21</td><td class="down">&minus;38.2%</td><td class="down">&minus;47.6%</td></tr>
+<tr><td class="txt">AMD</td><td>424.39</td><td class="down">&minus;13.25</td><td class="down">&minus;23.3%</td><td class="down">&minus;1.3%</td></tr>
+<tr><td class="txt">MU</td><td>594.51</td><td class="down">&minus;13.89</td><td class="down">&minus;34.8%</td><td class="down">&minus;23.0%</td></tr>
+<tr><td class="txt">NVDA</td><td>125.53</td><td class="down">&minus;14.01</td><td class="down">&minus;39.4%</td><td class="down">&minus;38.3%</td></tr>
+<tr><td class="txt">VOYG</td><td>18.74</td><td class="down">&minus;14.90</td><td class="down">&minus;33.3%</td><td class="down">&minus;39.9%</td></tr>
+</tbody></table></div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap"><table class="data-table">
+            <caption>U.S. Treasury daily par yield curve &middot; <em>EOD official</em> Nov 20 vs Nov 19; spreads computed.</caption>
+            <thead><tr><th>Tenor</th><th>Nov 20</th><th>Nov 19</th><th>Chg (bp)</th></tr></thead>
+            <tbody>
+              <tr><td class="txt">1-month</td><td>4.19</td><td>4.20</td><td class="down">&minus;1</td></tr>
+              <tr><td class="txt">3-month</td><td>4.32</td><td>4.34</td><td class="down">&minus;2</td></tr>
+              <tr><td class="txt">6-month</td><td>4.38</td><td>4.42</td><td class="down">&minus;4</td></tr>
+              <tr><td class="txt">1-year</td><td>4.51</td><td>4.62</td><td class="down">&minus;11</td></tr>
+              <tr><td class="txt">2-year</td><td>4.63</td><td>4.76</td><td class="down">&minus;13</td></tr>
+              <tr><td class="txt">3-year</td><td>4.65</td><td>4.81</td><td class="down">&minus;16</td></tr>
+              <tr><td class="txt">5-year</td><td>4.71</td><td>4.86</td><td class="down">&minus;15</td></tr>
+              <tr><td class="txt">7-year</td><td>4.80</td><td>4.94</td><td class="down">&minus;14</td></tr>
+              <tr><td class="txt">10-year</td><td>4.92</td><td>5.04</td><td class="down">&minus;12</td></tr>
+              <tr><td class="txt">20-year</td><td>5.34</td><td>5.43</td><td class="down">&minus;9</td></tr>
+              <tr><td class="txt">30-year</td><td>5.31</td><td>5.40</td><td class="down">&minus;9</td></tr>
+              <tr><td class="txt">2s10s</td><td>+29</td><td>+28</td><td class="up">+1</td></tr>
+              <tr><td class="txt">3m10y</td><td>+60</td><td>+70</td><td class="down">&minus;10</td></tr>
+              <tr><td class="txt">5s30s</td><td>+60</td><td>+54</td><td class="up">+6</td></tr>
+            </tbody>
+          </table></div>
+          <p class="small muted">FRED, <em>EOD official</em>: 10-year TIPS real yield 2.88% and 10-year breakeven 2.16% (Nov 19); SOFR 3.91% (Nov 19). Fed funds target range 3.75&ndash;4.00%. The belly (3- to 7-year) led the rally, consistent with markets trimming the expected length of the rate-rise cycle.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA U.S. high-yield option-adjusted spread: 3.52 percentage points on Nov 19, from 3.47 on Nov 18, 3.43 on Nov 17 and 3.20 on Nov 12 (FRED, <em>EOD official</em>, one-day lag). HYG &minus;0.26% to $76.33, 6 cents above its 52-week low; JNK &minus;0.34%. Investment grade rose with Treasuries: LQD +0.59%, VCIT +0.56%. Leveraged loans (BKLN &minus;0.20%) were steady. Spreads are moving the wrong way, but slowly; equity volatility at 36 has not yet shown up in credit.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance v8 &middot; <em>EOD official</em> Fri Nov 20 (index levels, about 4:15 PM ET).</caption>
+<thead><tr><th>Measure</th><th>Close</th><th>Day high</th><th>1D %</th></tr></thead><tbody>
+<tr><td class="txt">VIX9D (9-day)</td><td>40.72</td><td>46.21</td><td class="up">+39.17</td></tr>
+<tr><td class="txt">VIX (30-day)</td><td>35.89</td><td>40.03</td><td class="up">+26.20</td></tr>
+<tr><td class="txt">VIX3M (3-month)</td><td>30.94</td><td>33.31</td><td class="up">+14.47</td></tr>
+</tbody></table></div>
+          <p>The curve is steeply inverted: the 9-day measure is 32% above the 3-month. Inversions this steep usually mark periods of acute stress that tend to resolve within days or weeks, in either direction. The VIX has risen 86% in a week. The MOVE index has no allowlisted source, and dealer gamma is not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>ECB reference rates, <em>EOD official</em> Nov 20 (per U.S. dollar): EUR 0.9099 (EUR/USD 1.0990), JPY 158.64, GBP 0.7619, CNY 6.6777, CHF 0.8392, CAD 1.4307, AUD 1.5002, MXN 19.067, BRL 5.938, INR 92.68. Against Thursday’s fix, the dollar rose most against the Australian dollar (+0.7%), the Mexican peso (+0.8%) and the real (+0.8%), and fell against the yen (&minus;0.8%) and the franc (&minus;0.4%): the classic risk-off pattern. The ICE dollar index ended flat at 103.89 (Yahoo, delayed).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p><b>Today:</b> BJ’s Wholesale ($1.73 vs ~$1.29; $6.28B vs ~$6.14B, Finnhub record, unconfirmed) before the open. <b>Next week (Finnhub estimates):</b> Mon HP Enterprise ($1.29, $14.6B), Agilent, Jacobs, Amentum, Dick’s ($1.42), Kohl’s, Burlington, Urban Outfitters; Tue Dell ($6.71, $50.2B), HP ($0.76, $15.6B), Workday ($2.80), Autodesk ($3.13), Best Buy ($1.50), Medtronic ($1.34), Analog Devices ($3.92), Smucker; Wed Deere ($4.17, $10.7B).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No coupon auctions today. Week of Nov 23 (TreasuryDirect, announced): 13- and 26-week bills ($95B, $82B), 52-week ($54B), 6-week ($90B), 2-year ($69B), 2-year FRN ($28B), 5-year ($70B) and 7-year ($44B) notes, plus 4-, 8- and 17-week bills to be sized. Thursday’s 10-year TIPS reopening sold $19B at 2.903% with a bid-to-cover of 2.43; the week’s 20-year bond reopening sold $16B at 5.459% (bid-to-cover 2.63). The Fed published its senior financial officer survey on banks’ reserve management today.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Yahoo Finance (closes, volume, intraday ranges, futures, FX and crypto), the U.S. Treasury par yield curve and TreasuryDirect, FRED (Federal Reserve Bank of St. Louis), ECB reference rates via Frankfurter, FINRA short-volume files, Finnhub (earnings calendar and estimates), Launch Library 2, and the Federal Reserve’s press releases. The University of Michigan survey and company releases as reported. Reporting from Reuters, CNBC, NBC, CNN, CBS, Bloomberg, AP, Fortune, Benzinga, Kitco, FXStreet, Al Jazeera, SCOTUSblog, WESA, WPXI, Penn Capital-Star, Spotlight PA and others as cited. Most of today’s reporting was read through search summaries rather than full articles. SEC filings could not be checked directly.</p>
+      <p><strong>Corrections.</strong> None in this edition. Both of this week’s expectations that the S&amp;P 500’s losing streak would end on Friday were wrong (What Changed Today).</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. All times Eastern. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-20-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

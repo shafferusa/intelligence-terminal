@@ -7842,6 +7842,26 @@
    "probability": "70-85%",
    "basis": "Closed $97.17; reported -6%+ premarket (~$91), ~10% cushion",
    "status": "open"
+  },
+  {
+   "id": "2026-11-20-pm-1",
+   "date": "2026-11-20",
+   "slot": "pm",
+   "forecast": "S&P 500 closes Mon Nov 23, 2026 above 6,910.39, ending a seven-day losing streak.",
+   "horizon": "2026-11-23",
+   "probability": "45-60%",
+   "basis": "Seven-day streaks usually see a bounce and market oversold; offset by close 0.4% above day low, VIX 35.89 with inverted curve, thin holiday week",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-20-pm-2",
+   "date": "2026-11-20",
+   "slot": "pm",
+   "forecast": "VIX closes above 30 on Mon Nov 23, 2026.",
+   "horizon": "2026-11-23",
+   "probability": "55-70%",
+   "basis": "Closed 35.89 (high 40.03), VIX9D 40.72; would need a >16% one-day drop",
+   "status": "open"
   }
  ]
 }

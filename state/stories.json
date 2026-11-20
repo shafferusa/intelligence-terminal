@@ -1,6 +1,86 @@
 {
  "stories": [
   {
+   "id": "prt-bus-refresh-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "PRT board approves Bus Line Refresh, effective Aug 2027 (WESA, single source)",
+   "status": "New",
+   "rationale": "Local",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "qeshm-disputed-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "US official to CBS: limited strikes on Qeshm Island; CENTCOM denies; IRGC claims two tankers hit mines (unconfirmed)",
+   "status": "Disputed",
+   "rationale": "High-risk; disputed",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "datacenter-abroad-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "Trump says he will restrict US firms building data centers abroad; no order/text; AI 'guardrails' with Xi claimed, no text",
+   "status": "New",
+   "rationale": "Tech policy read-through",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "intu-guide-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "INTU -12.77% to $270.44 after FY revenue guide cut and Mailchimp sale",
+   "status": "Materially changed",
+   "rationale": "Corporate/software",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "treasury-rally-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "Par curve: 2Y 4.63 (-13bp), 10Y 4.92 (-12bp), 30Y 5.31; Cook argues for more hikes; Dec 9 +25bp ~97% (FXStreet)",
+   "status": "New",
+   "rationale": "Rates/Fed",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "ant-day2-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "ANT -8.50% to $88.91, low $83.05 (5c above $83 offer); vol 395M; Morgan Stanley support report unverified",
+   "status": "Materially changed",
+   "rationale": "IPO price is key level",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "nvda-accounting-report-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "NBC says NVDA drop followed a Reuters report on accounting questions; not independently confirmed; no company comment",
+   "status": "Unconfirmed",
+   "rationale": "High-risk single-source; watch for confirmation",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
+   "id": "chip-crash-nov20",
+   "first_seen": "2026-11-20",
+   "headline": "S&P 500 -3.70% to 6,910.39 (7th straight loss, longest since Feb 2020; reported correction); Nasdaq -5.28%; NVDA -14.01% to $125.53 (52w low); SMH -10.60%; MU/AMD/AVGO -12 to -14%",
+   "status": "New",
+   "rationale": "Lead: market-moving equity rout",
+   "last_seen": "2026-11-20",
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
+  },
+  {
    "id": "asia-rout-nov20",
    "first_seen": "2026-11-20",
    "headline": "Taiex -6.23%, Kospi -5.21% (program-sell halt), Nikkei -5.06%; Asia worst week since 2020 per Reuters; Stoxx 600 -1.26% ~06:23 ET",
@@ -13,12 +93,12 @@
   {
    "id": "metals-selloff-nov20",
    "first_seen": "2026-11-20",
-   "headline": "Gold -2.58% to $3,590, silver -4.09% alongside equities; dollar near 52w high 103.85; Treasuries rallying",
-   "status": "New",
+   "headline": "Gold -4.4% to ~$3,523, silver -7.9%, BTC ~-5%; WTI Dec settled $83.98 (+0.77)",
+   "status": "Materially changed",
    "rationale": "Cross-asset liquidation signal",
    "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-am.html",
-   "updated": "2026-11-20-am"
+   "last_report": "reports/2026/11/2026-11-20-pm.html",
+   "updated": "2026-11-20-pm"
   },
   {
    "id": "ant-intu-premarket-nov20",
@@ -516,86 +596,6 @@
    "headline": "Disney FQ4 adj EPS $1.77 vs $1.68, rev $25.95B (53-week qtr); dividend $2 (+33%); $3B savings by FY29; shares -1.48% on 2.4x volume",
    "status": "New",
    "rationale": "Earnings",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "musalem-williams-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "Musalem: several hikes likely before spring 2027, policy up to 1pt too low (non-voter); Williams: further hike likely, no 'dramatic action'",
-   "status": "New",
-   "rationale": "Fed path",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "unh-warren-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "UNH -5.42% to $389.68 after Warren's Nov 16 post naming UNH/CVS/Cigna; Break Up Big Medicine Act S.4509 (Warren-Hawley) no committee action",
-   "status": "New",
-   "rationale": "Dow drag; policy tail risk",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "software-selloff-anthropic-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "Software slide before Anthropic pricing: CRM -9.45%, NOW -6.51%, HubSpot ~-7%, Workday ~-5%; narratives = IPO cash raising, seat-pricing fears",
-   "status": "New",
-   "rationale": "Market: sector move tied to largest IPO",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "pa-ifo-deficit-nov16",
-   "first_seen": "2026-11-17",
-   "headline": "IFO: PA structural deficit could top $7B by 2030; Senate reconvenes Nov 17, House Nov 19; session ends Nov 30; counties certify by Nov 23",
-   "status": "New",
-   "rationale": "Local PA",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
-  },
-  {
-   "id": "pgh-budget-pension-nov16",
-   "first_seen": "2026-11-17",
-   "headline": "Controller Heisler: 2027 budget 'honest' but questions pension contribution cut $112M->$105M (PublicSource); $872.6M total, no tax hike, $26-28M reserve draw",
-   "status": "New",
-   "rationale": "Local Pittsburgh",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
-  },
-  {
-   "id": "deutsche-bank-leak-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "DB -5 to -6% Europe on leaked-documents media reports (oligarchs, reportedly Trump/Epstein); bank: no meaningful financial impact",
-   "status": "New",
-   "rationale": "Europe banks",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
-  },
-  {
-   "id": "kerch-bridge-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "SBU: Kerch Bridge metal arch and road span destroyed (7-stage operation); Russia: rail resumed on one track",
-   "status": "Developing",
-   "rationale": "War",
-   "last_seen": "2026-11-17",
-   "last_report": "reports/2026/11/2026-11-17-pm.html",
-   "updated": "2026-11-17-pm"
-  },
-  {
-   "id": "home-depot-q3-nov17",
-   "first_seen": "2026-11-17",
-   "headline": "Home Depot Q3 comps +2.2%, adj EPS $3.86; CEO change confirmed: McPhail CEO eff. Nov 23, Decker chair, Campbell COO, Broggi CFO; shares -2.45%",
-   "status": "Materially changed",
-   "rationale": "Earnings/housing",
    "last_seen": "2026-11-17",
    "last_report": "reports/2026/11/2026-11-17-pm.html",
    "updated": "2026-11-17-pm"

@@ -1,50 +1,18 @@
 {
- "fetched": "2026-11-19T17:30:00-05:00",
+ "fetched": "2026-11-20T16:46:00-05:00",
  "earnings_fetched": "2026-11-15",
  "earnings_fetched_note": "2026-11-15 sun: Finnhub Nov 16-20 fetched; Alpha Vantage 3-month CSV fetched. Conflicts: NVDA Finnhub $111.2B/$2.52 vs Benzinga/LSEG ~$109.2B/$2.48; WMT EPS 0.64 (Finnhub/Zacks) vs 0.74 (one preview); HD Finnhub $3.96/$44.1B vs Kiplinger/Zacks $3.84-3.87/$42.7-42.8B.",
  "events": [
   {
-   "ts_et": "2026-11-20T07:00",
-   "type": "earnings",
-   "name": "BJ's Wholesale, Moog, IES Holdings (before open); Webull release dated Nov 20",
-   "importance": "Medium",
-   "reason": "Consumer/membership read",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-20T09:30",
-   "type": "market",
-   "name": "Monthly options expiration; ANT second session",
-   "importance": "High",
-   "reason": "Hedging flows after inverted VIX curve",
-   "source": "Exchange calendar (third Friday)"
-  },
-  {
-   "ts_et": "2026-11-20T10:00",
-   "type": "data",
-   "name": "UMich sentiment (Nov final)",
-   "importance": "Medium",
-   "reason": "Inflation expectations",
-   "source": "Compiled calendars"
-  },
-  {
-   "ts_et": "2026-11-20T00:00",
-   "type": "politics",
-   "name": "Trump press briefing on return from Shenzhen",
-   "importance": "Medium",
-   "reason": "Trade/chips detail absent from declaration",
-   "source": "CNN/Fox"
-  },
-  {
-   "ts_et": "2026-11-20T21:46",
+   "ts_et": "2026-11-20T23:20",
    "type": "launch",
-   "name": "Falcon 9 USSF-317 (Vandenberg) window opened Nov 19 21:46 ET",
+   "name": "Falcon 9 USSF-317 (Vandenberg)",
    "importance": "Low",
    "reason": "National-security launch cadence",
    "source": "Launch Library 2"
   },
   {
-   "ts_et": "2026-11-21T07:30",
+   "ts_et": "2026-11-22T07:16",
    "type": "launch",
    "name": "Falcon 9 NROL-136 (Vandenberg)",
    "importance": "Low",
@@ -68,23 +36,95 @@
    "source": "PA Department of State"
   },
   {
+   "ts_et": "2026-11-23T16:05",
+   "type": "earnings",
+   "name": "HPE, Agilent, Jacobs, Amentum (AMC); Dick's, Kohl's, Burlington, Urban Outfitters (Mon)",
+   "importance": "Medium",
+   "reason": "AI hardware read (HPE)",
+   "source": "Finnhub"
+  },
+  {
    "ts_et": "2026-11-23T11:00",
    "type": "auction",
-   "name": "Week of Nov 23: 13/26-wk bills $95B/$82B, 52-wk $54B, 6-wk $90B, 2Y $69B, 2Y FRN $28B, 5Y $70B, 7Y $44B (dates per TreasuryDirect)",
-   "importance": "Medium",
-   "reason": "Heavy coupon supply in holiday week",
+   "name": "Week of Nov 23: 13/26-wk bills $95B/$82B, 52-wk $54B, 6-wk $90B, 2Y $69B, 2Y FRN $28B, 5Y $70B, 7Y $44B",
+   "importance": "High",
+   "reason": "Heavy duration supply after 25bp weekly rally",
    "source": "TreasuryDirect"
+  },
+  {
+   "ts_et": "2026-11-24T07:00",
+   "type": "earnings",
+   "name": "Best Buy, Medtronic, Analog Devices, Smucker (BMO)",
+   "importance": "Medium",
+   "reason": "Consumer and analog-chip read",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-24T16:05",
+   "type": "earnings",
+   "name": "Dell, HP, Workday, Autodesk (AMC)",
+   "importance": "High",
+   "reason": "AI server demand (Dell) in chip rout",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-24T00:03",
+   "type": "launch",
+   "name": "Soyuz Progress MS-36; Shenzhou 24 Tue 19:18 ET",
+   "importance": "Low",
+   "reason": "Station logistics / China crew",
+   "source": "Launch Library 2"
+  },
+  {
+   "ts_et": "2026-11-25T07:00",
+   "type": "earnings",
+   "name": "Deere (BMO)",
+   "importance": "Medium",
+   "reason": "Industrial/ag cycle",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-25T08:30",
+   "type": "data",
+   "name": "Oct PCE/personal income, Q3 GDP 2nd est, jobless claims, durable goods (one calendar lists PCE/GDP Tue)",
+   "importance": "Critical",
+   "reason": "Decides size of Dec 9 hike",
+   "source": "Compiled calendars"
+  },
+  {
+   "ts_et": "2026-11-25T14:00",
+   "type": "fed",
+   "name": "Beige Book",
+   "importance": "Medium",
+   "reason": "Regional conditions before FOMC",
+   "source": "Compiled calendars"
+  },
+  {
+   "ts_et": "2026-11-26T00:00",
+   "type": "market",
+   "name": "Thanksgiving: US markets closed",
+   "importance": "High",
+   "reason": "Holiday",
+   "source": "data/nyse-holidays.json"
+  },
+  {
+   "ts_et": "2026-11-27T13:00",
+   "type": "market",
+   "name": "Early close 13:00 ET",
+   "importance": "Medium",
+   "reason": "Holiday early close",
+   "source": "data/nyse-holidays.json"
   },
   {
    "ts_et": "2026-12-09T14:00",
    "type": "fed",
    "name": "FOMC decision",
    "importance": "Critical",
-   "reason": "Hike priced ~90-97%; 50bp risk",
+   "reason": "+25bp ~97% priced (FXStreet Nov 20); 50bp risk",
    "source": "Federal Reserve"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
  "fomc_next": "2026-12-09",
- "holiday_note": "Week of 2026-11-16: no NYSE holiday or early close (data/nyse-holidays.json); Thanksgiving Nov 26, early close Nov 27."
+ "holiday_note": "Week of 2026-11-23: Thanksgiving Nov 26 (closed), early close Nov 27 13:00 ET."
 }
