@@ -1,8 +1,8 @@
 {
  "system": "cfa1",
- "version": 6,
+ "version": 7,
  "created": "2026-11-15",
- "revised": "2026-11-18",
+ "revised": "2026-11-20",
  "start": "2026-11-16",
  "exam": {
   "date": "2027-05-15",
@@ -51,6 +51,12 @@
    "date": "2026-11-18",
    "summary": "Plan v6 (Nov 18 evening): Logan reported Modules 1-3 of the economics prerequisite worked through, and plans Modules 4 and 5 together on Thu Nov 19. Module 1 (all of it) and Module 2 go back to their original days, Sat Nov 14 and Sun Nov 15, and the Dec 4 and Dec 11 catch-up days become buffers again. Wed Nov 18 is Module 3 only; Module 4 moves to Nov 19 with Module 5. Fri Nov 20 onward is unchanged. His workbook's statuses, Daily Plan rows and Lesson Checklist planned dates were updated to match.",
    "snapshot": "state/cfa1/plan-history/v5.json"
+  },
+  {
+   "version": 7,
+   "date": "2026-11-20",
+   "summary": "Plan v7 (Nov 20 evening): Logan said he did not study on Fri Nov 20 and will finish the economics prerequisite on Sat Nov 21. His workbook shows no study logged since Nov 18 (the Nov 19 session and every Module 4-7 checklist item are Not started). Modules 4 and 5 (from Thu Nov 19) and Module 6 (from Fri Nov 20) move to Sat Nov 21, joining Module 7 (about 8 h, 90 pages); Nov 19 and Nov 20 become buffer days. Sun Nov 22 onward is unchanged. His workbook's Daily Plan rows and Lesson Checklist planned dates were updated to match.",
+   "snapshot": "state/cfa1/plan-history/v6.json"
   }
  ],
  "days": [
@@ -590,14 +596,52 @@
    "date": "2026-11-19",
    "dow": "Thu",
    "lesson": 4,
+   "kind": "buffer",
+   "phase": "Buffer",
+   "course": null,
+   "assignment": "Nothing logged. Modules 4 and 5 moved to Sat Nov 21, with Modules 6 and 7.",
+   "core_hours": 0,
+   "psm_hours": 0,
+   "questions_target": 0,
+   "content_pages": 0,
+   "reading": [],
+   "online_only": [],
+   "psm_items": [],
+   "les_ids": [],
+   "workbook_status": "Not started",
+   "revision_note": "Plan v7: nothing was logged for Thu Nov 19, so Modules 4 and 5 moved to Sat Nov 21, when Logan plans to finish the economics prerequisite."
+  },
+  {
+   "date": "2026-11-20",
+   "dow": "Fri",
+   "lesson": 5,
+   "kind": "buffer",
+   "phase": "Buffer",
+   "course": null,
+   "assignment": "Skipped. Module 6 moved to Sat Nov 21, with Modules 4, 5 and 7.",
+   "core_hours": 0,
+   "psm_hours": 0,
+   "questions_target": 0,
+   "content_pages": 0,
+   "reading": [],
+   "online_only": [],
+   "psm_items": [],
+   "les_ids": [],
+   "workbook_status": "Not started",
+   "revision_note": "Plan v7: Logan did not study on Fri Nov 20, so Module 6 moved to Sat Nov 21."
+  },
+  {
+   "date": "2026-11-21",
+   "dow": "Sat",
+   "lesson": 6,
    "kind": "study",
    "phase": "Prerequisite overview",
    "course": "Economics prerequisite",
-   "assignment": "Module 4: Introduction to Business Cycles; Module 5: Monetary and Fiscal Policy",
-   "core_hours": 4,
+   "assignment": "Module 4: Introduction to Business Cycles; Module 5: Monetary and Fiscal Policy; Module 6: International Trade and Capital Flows; Module 7: Currency Exchange Rates",
+   "core_hours": 8,
    "psm_hours": 0,
-   "questions_target": 16,
-   "content_pages": 49,
+   "questions_target": 32,
+   "content_pages": 90,
    "reading": [
     {
      "module": "PRE-ECON-LM04",
@@ -808,74 +852,7 @@
        "why": "Answer key; Q5 and Q9 add reasoning"
       }
      ]
-    }
-   ],
-   "online_only": [
-    "Glossary: Introduction to Business Cycles",
-    "Flashcards: Introduction to Business Cycles",
-    "Glossary: Monetary and Fiscal Policy",
-    "Flashcards: Monetary and Fiscal Policy"
-   ],
-   "psm_items": [],
-   "les_ids": [
-    37,
-    38,
-    39,
-    40,
-    41,
-    42,
-    43,
-    44,
-    45,
-    46,
-    47,
-    48,
-    49,
-    50,
-    51,
-    52,
-    53,
-    54,
-    55,
-    56
-   ],
-   "workbook_status": "Not started",
-   "practice_picks": {},
-   "note": "Shaped by Logan's own request (his Nov 18 nightly notes hold the details; never quote them). Part 1: a short refresher on the Modules 1-3 points those notes list as needing explanation. Treat them as not yet memorized: a sentence or two each, grouped by module, in plain English with a simple everyday example; no problem solving beyond a one-line illustration. Part 2: the important reading and principles for both modules, not page lists. Module 4 first: Lesson 3 (Nov 18) taught it before he read it, so give a compact walk-through of its key principles anyway and link Lesson 3 once for the longer version. Then Module 5 in full. End each module's part with its video from `videos`. A long day by his request: up to 1,300 words with --long-ok. Explain everything in your own words; the copied-text check refuses any 8-word run from his notes. Stop rule: if time runs out tonight, stop at a section break; the rest moves to Fri Nov 20 (Module 6, 24 pages).",
-   "videos": [
-    {
-     "module": "PRE-ECON-LM04",
-     "title": "Business Cycles- Macro Topic 2.7",
-     "channel": "Jacob Clifford",
-     "minutes": 5,
-     "url": "https://www.youtube.com/watch?v=he1l35tyDjs",
-     "about": "the phases of the cycle and why recessions are hard to predict"
     },
-    {
-     "module": "PRE-ECON-LM05",
-     "title": "Fractional Reserve Banking and the Money Multiplier Made Simple",
-     "channel": "Marginal Revolution University",
-     "minutes": 7,
-     "url": "https://www.youtube.com/watch?v=93_Va7I7Lgg",
-     "about": "how banks create deposits from reserves, and why the multiplier is only a ceiling",
-     "caveat": "Made in 2017 with a 10% reserve requirement; the US cut its requirement to zero in March 2020, but the curriculum (and the exam) uses the textbook model."
-    }
-   ],
-   "revision_note": "Plan v6: Module 4 moved here from Wed Nov 18; Logan plans Modules 4 and 5 together tonight."
-  },
-  {
-   "date": "2026-11-20",
-   "dow": "Fri",
-   "lesson": 5,
-   "kind": "study",
-   "phase": "Prerequisite overview",
-   "course": "Economics prerequisite",
-   "assignment": "Module 6: International Trade and Capital Flows",
-   "core_hours": 2,
-   "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 24,
-   "reading": [
     {
      "module": "PRE-ECON-LM06",
      "book": "PRE-ECON",
@@ -990,42 +967,7 @@
        "why": "Q4 and Q6 add explanation; footnotes 1-12 also here"
       }
      ]
-    }
-   ],
-   "online_only": [
-    "Glossary: International Trade and Capital Flows",
-    "Flashcards: International Trade and Capital Flows"
-   ],
-   "psm_items": [],
-   "les_ids": [
-    57,
-    58,
-    59,
-    60,
-    61,
-    62,
-    63,
-    64,
-    65,
-    66,
-    67
-   ],
-   "workbook_status": "Not started",
-   "revision_note": "Plan v4: Module 6 moved here from Thu Nov 19. This was the week's buffer."
-  },
-  {
-   "date": "2026-11-21",
-   "dow": "Sat",
-   "lesson": 6,
-   "kind": "study",
-   "phase": "Prerequisite overview",
-   "course": "Economics prerequisite",
-   "assignment": "Module 7: Currency Exchange Rates",
-   "core_hours": 2,
-   "psm_hours": 0,
-   "questions_target": 8,
-   "content_pages": 17,
-   "reading": [
+    },
     {
      "module": "PRE-ECON-LM07",
      "book": "PRE-ECON",
@@ -1123,12 +1065,49 @@
     }
    ],
    "online_only": [
+    "Glossary: Introduction to Business Cycles",
+    "Flashcards: Introduction to Business Cycles",
+    "Glossary: Monetary and Fiscal Policy",
+    "Flashcards: Monetary and Fiscal Policy",
+    "Glossary: International Trade and Capital Flows",
+    "Flashcards: International Trade and Capital Flows",
     "Glossary: Currency Exchange Rates",
     "Flashcards: Currency Exchange Rates",
     "Glossary: Economics"
    ],
    "psm_items": [],
    "les_ids": [
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
     68,
     69,
     70,
@@ -1140,7 +1119,29 @@
     76,
     77
    ],
-   "workbook_status": "Not started"
+   "workbook_status": "Not started",
+   "practice_picks": {},
+   "note": "Heavy day by Logan's choice: he finishes the economics prerequisite today, Modules 4-7 (about 8 h, 90 pages). As of Fri Nov 20 evening nothing was logged since Nov 18, and he did not study on Nov 20; this morning's workbook facts take precedence (the Nov 20 workbook save only aligned it with this plan). Lessons 3-5 already taught three of today's modules: Lesson 3 (Nov 18) Module 4 in full, Lesson 4 (Nov 19) Module 4 compactly and Module 5 in full, Lesson 5 (Nov 20) Module 6 in full. Do not re-teach them in full. Part 1, short and aimed at Module 7: the two earlier ideas it builds on, own-price elasticity (Module 1) and the saving identity (Module 3), a few sentences each on how Module 7 uses them, linking Lesson 4 once instead of repeating its refresher. Part 2: first a compact roadmap for Modules 4, 5 and 6, two or three sentences each on their key principles in your own words (not a list of topics), linking Lesson 3 once for Module 4, Lesson 4 once for Module 5 and Lesson 5 once for Module 6, with Module 4's and Module 5's videos from `videos`; then teach Module 7 in full, since no lesson has taught it. Length: aim for 500-800 words by keeping Part 1 and the roadmap compact, but keep Module 7 complete; if that still runs past 1,000 words, pass --long-ok \"four modules today; Module 7 taught in full\". References list all four modules. Stop rule: if time runs out, stop at a module break; the rest moves to the Fri Dec 4 buffer.",
+   "videos": [
+    {
+     "module": "PRE-ECON-LM04",
+     "title": "Business Cycles- Macro Topic 2.7",
+     "channel": "Jacob Clifford",
+     "minutes": 5,
+     "url": "https://www.youtube.com/watch?v=he1l35tyDjs",
+     "about": "the phases of the cycle and why recessions are hard to predict"
+    },
+    {
+     "module": "PRE-ECON-LM05",
+     "title": "Fractional Reserve Banking and the Money Multiplier Made Simple",
+     "channel": "Marginal Revolution University",
+     "minutes": 7,
+     "url": "https://www.youtube.com/watch?v=93_Va7I7Lgg",
+     "about": "how banks create deposits from reserves, and why the multiplier is only a ceiling",
+     "caveat": "Made in 2017 with a 10% reserve requirement; the US cut its requirement to zero in March 2020, but the curriculum (and the exam) uses the textbook model."
+    }
+   ],
+   "revision_note": "Plan v7: Modules 4 and 5 (from Thu Nov 19) and Module 6 (from Fri Nov 20) moved here, joining Module 7; Logan plans to finish the economics prerequisite today."
   },
   {
    "date": "2026-11-22",
