@@ -1,6 +1,39 @@
 {
  "stories": [
   {
+   "id": "nvidia-sec-probe-nov21",
+   "first_seen": "2026-11-20",
+   "headline": "Reuters and WSJ report SEC inquiry into Nvidia accounting/disclosures; SEC no comment, Nvidia silent; 10-Q delayed",
+   "status": "Materially changed",
+   "rationale": "Market-moving regulatory; two independent outlets",
+   "last_seen": "2026-11-21",
+   "last_report": "reports/2026/11/2026-11-21-sat.html",
+   "updated": "2026-11-21-sat",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "sp500-correction-nov20",
+   "first_seen": "2026-11-16",
+   "headline": "S&P 500 -8.6% on the week, seven straight losses, correction; VIX 35.89",
+   "status": "Continuing",
+   "rationale": "Market regime",
+   "last_seen": "2026-11-21",
+   "last_report": "reports/2026/11/2026-11-21-sat.html",
+   "updated": "2026-11-21-sat",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "ant-offer-price-watch",
+   "first_seen": "2026-11-19",
+   "headline": "Anthropic (ANT) $88.91 vs $83 offer; Nov 20 low $83.05",
+   "status": "Continuing",
+   "rationale": "Largest IPO; offer-price test",
+   "last_seen": "2026-11-21",
+   "last_report": "reports/2026/11/2026-11-21-sat.html",
+   "updated": "2026-11-21-sat",
+   "keep_on_watchlist": true
+  },
+  {
    "id": "prt-bus-refresh-nov20",
    "first_seen": "2026-11-20",
    "headline": "PRT board approves Bus Line Refresh, effective Aug 2027 (WESA, single source)",
@@ -601,5 +634,5 @@
    "updated": "2026-11-17-pm"
   }
  ],
- "updated": "2026-11-20-am"
+ "updated": "2026-11-21-sat"
 }

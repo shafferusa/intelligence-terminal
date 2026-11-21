@@ -3436,7 +3436,10 @@
    "horizon": "2026-11-17",
    "probability": "25-35%",
    "basis": "Iran's SNSC secretary Rezaei publicly rejected talks days ago and the naval blockade continues, though Vance's 'different phase' language is vague enough to also describe continued lower-intensity conflict rather than negotiation.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No overtly diplomatic track by Nov 17: Araghchi held talks in Muscat, but mediation stalled on sequencing and strikes and drone attacks continued.",
+   "graded": "2026-11-21",
+   "lesson": "Vance's timeline was not a reliable guide; talks stayed indirect."
   },
   {
    "id": "2026-09-17-am-3",
@@ -3482,7 +3485,10 @@
    "horizon": "2026-11-15",
    "probability": "25-40%",
    "basis": "Israel's historical objections to Gulf F-35 sales and expected bipartisan pushback, weighed against the administration's clear intent to proceed and a Republican-controlled Congress.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No delay or block found: the review window passed with no disapproval resolution adopted (search found none).",
+   "graded": "2026-11-21",
+   "lesson": "Veto-proof majorities make blocking arms sales rare; low range was right."
   },
   {
    "id": "2026-09-18-am-3",
@@ -7257,7 +7263,10 @@
    "horizon": "2026-11-20",
    "probability": "45-65%",
    "basis": "Multiple outlets report the board is preparing to oust Huang, has met on it and has worked with an outside firm on successors; no decision after the Nov 11 meeting; earnings due next week.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Colette Kress was named interim CEO when Jensen Huang resigned on Nov 12.",
+   "graded": "2026-11-21",
+   "lesson": "A resignation announcement usually names an interim the same day."
   },
   {
    "id": "2026-11-12-am-3",
@@ -7371,7 +7380,10 @@
    "horizon": "2026-11-15",
    "probability": "25-45%",
    "basis": "No FAA license announced as of Nov 12; dual-catch needs modified license",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Starship Flight 15 launched Nov 13 about 5:47 PM ET, reached orbit; the ship was caught by the tower Nov 14.",
+   "graded": "2026-11-21",
+   "lesson": "Launch Library dates held this time."
   },
   {
    "id": "2026-11-13-pm-1",
@@ -7381,7 +7393,10 @@
    "horizon": "2026-11-16",
    "probability": "75-88%",
    "basis": "Friday par close 5.15%; hawkish Fed chorus all week; 2Y +37bp on the week",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 10-year par yield 5.12% on Nov 16 (Treasury).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-13-pm-2",
@@ -7391,7 +7406,10 @@
    "horizon": "2026-11-17",
    "probability": "60-75%",
    "basis": "Consensus +0.2% (Newsquawk), NRF Retail Monitor +0.2%; FXStreet expects flat",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. October retail sales +0.2% m/m (Census, as reported).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-13-pm-3",
@@ -7401,7 +7419,10 @@
    "horizon": "2026-11-20",
    "probability": "20-35%",
    "basis": "USD/JPY 160.00 ECB fix; Katayama 'one-sided and rapid', coordinating with US Treasury; no official signal of imminent action",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. Japan did not confirm any intervention Nov 16-20; the yen strengthened to about 158.6.",
+   "graded": "2026-11-21",
+   "lesson": "Risk-off flows helped the yen, removing the need to intervene."
   },
   {
    "id": "2026-11-14-sat-1",
@@ -7411,7 +7432,10 @@
    "horizon": "2026-11-20",
    "probability": "20-35%",
    "basis": "USD/JPY 160.00 at the Nov 13 ECB fix; Katayama 'one-sided and rapid' and coordinating with US Treasury; no signal of imminent action",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No intervention confirmed by Nov 20.",
+   "graded": "2026-11-21",
+   "lesson": "Same as above."
   },
   {
    "id": "2026-11-14-sat-2",
@@ -7421,7 +7445,10 @@
    "horizon": "2026-11-20",
    "probability": "70-85%",
    "basis": "5.15% on Nov 13 after a 29bp weekly rise and a hawkish Fed chorus; needs a 15bp+ rally on weak retail sales or dovish minutes",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. 10-year par yield 4.92% on Nov 20, down 23 bp on the week (Treasury).",
+   "graded": "2026-11-21",
+   "lesson": "We extrapolated the prior week's inflation-driven rise; a flight to safety reversed it."
   },
   {
    "id": "2026-11-14-sat-3",
@@ -7431,7 +7458,10 @@
    "horizon": "2026-11-17",
    "probability": "65-80%",
    "basis": "Consensus ~$109.2B (LSEG via IG), company guide $108B +/-2%; recent quarters beat revenue consensus (Q2 $96.2B vs $92.2B)",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Revenue $115.8B (Nvidia release).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-14-sat-4",
@@ -7441,7 +7471,10 @@
    "horizon": "2026-11-20",
    "probability": "55-70%",
    "basis": "Bloomberg: book multiple times oversubscribed; FT/Capital Brief: underwriters weighing above-range pricing; risk of market turbulence or delay",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Priced at $83 on Nov 18, above the $70-78 range.",
+   "graded": "2026-11-21",
+   "lesson": "Demand reports of 6x+ were a reliable guide to pricing."
   },
   {
    "id": "2026-11-15-sun-1",
@@ -7451,7 +7484,10 @@
    "horizon": "2026-11-20",
    "probability": "45-55%",
    "basis": "VIX 19.3 implies ~2.7% weekly 1-sigma; event-heavy week (NVDA, minutes, IPO, APEC); scorecard lesson to widen base band",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. S&P 500 closed Nov 20 at 6,910.39, down 8.61%, far outside the base range.",
+   "graded": "2026-11-21",
+   "lesson": "We treated Nvidia's results as the main risk; governance, IPO financing and positioning drove the fall."
   },
   {
    "id": "2026-11-15-sun-2",
@@ -7461,7 +7497,10 @@
    "horizon": "2026-11-20",
    "probability": "15-25%",
    "basis": "Needs firm Nvidia guide plus softer yields; real yields at 2.91% a headwind",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. The bull case did not happen.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-3",
@@ -7471,7 +7510,10 @@
    "horizon": "2026-11-20",
    "probability": "22-32%",
    "basis": "Nvidia leadership/China risk, hawkish minutes, rates near 5.15%",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. The index fell through the bear band (7,108-7,373) to 6,910.39.",
+   "graded": "2026-11-21",
+   "lesson": "The bear case was not wrong in direction; the tail was underweighted."
   },
   {
    "id": "2026-11-15-sun-4",
@@ -7481,7 +7523,10 @@
    "horizon": "2026-11-20",
    "probability": "3-8%",
    "basis": "Requires Gulf escalation plus disorderly Nvidia/rates reaction",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes. The shock case (below 7,108) happened: 6,910.39 (-8.61%); we gave it 3-8%.",
+   "graded": "2026-11-21",
+   "lesson": "With a leadership crisis, a record IPO and a hawkish Fed in one week, the left tail deserved far more weight."
   },
   {
    "id": "2026-11-15-sun-5",
@@ -7491,7 +7536,10 @@
    "horizon": "2026-11-18",
    "probability": "50-65%",
    "basis": "Options imply ~9.1% move (Benzinga); first report under interim CEO",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. Nvidia closed Nov 18 at $150.96, -2.9% vs $155.46.",
+   "graded": "2026-11-21",
+   "lesson": "The after-hours pop faded slowly; the move took five days, not one."
   },
   {
    "id": "2026-11-15-sun-6",
@@ -7501,7 +7549,10 @@
    "horizon": "2026-11-17",
    "probability": "75-85%",
    "basis": "Forecasts ~+0.2-0.3%, prior +0.8%; band widened per scorecard lesson on data bands",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Headline +0.2% m/m.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-7",
@@ -7511,7 +7562,10 @@
    "horizon": "2026-11-20",
    "probability": "70-85%",
    "basis": "~90% priced Nov 13 after hot CPI; soft retail sales or dovish minutes could trim it",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. About 97% for a Dec 9 quarter-point hike (CME FedWatch via FXStreet).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-8",
@@ -7521,7 +7575,10 @@
    "horizon": "2026-11-20",
    "probability": "60-75%",
    "basis": "Reported multiple-times oversubscription; conventional book-built pricing; market turbulence risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. ANT closed Nov 19 at $97.17, +17% vs $83.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-9",
@@ -7531,7 +7588,10 @@
    "horizon": "2026-11-20",
    "probability": "8-18%",
    "basis": "Range $70-78 with oversubscribed book; risk from Nvidia/Nasdaq sell-off",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. Priced at $83 on schedule.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-10",
@@ -7541,7 +7601,10 @@
    "horizon": "2026-11-20",
    "probability": "85-95%",
    "basis": "White House confirmed schedule; Manila then Shenzhen itinerary",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Trump and Xi met in Shenzhen Nov 19 as scheduled.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-11",
@@ -7551,7 +7614,10 @@
    "horizon": "2026-11-20",
    "probability": "25-40%",
    "basis": "Strikes routine during blockade (scorecard lesson); Iran drone claims on Bahrain Nov 13 and 15; President says holding off absent provocation",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Ambiguous. AP reported a US strike on an IRGC missile site on Qeshm (Nov 17-18) and an unnamed US official told CBS of limited strikes Nov 20, but no on-record confirmation; CENTCOM denied the Nov 20 strike.",
+   "graded": "2026-11-21",
+   "lesson": "Define 'confirm' precisely (on-record official statement) when writing strike forecasts."
   },
   {
    "id": "2026-11-15-sun-12",
@@ -7561,7 +7627,10 @@
    "horizon": "2026-11-20",
    "probability": "70-80%",
    "basis": "Friday $95.84; weekly swings ~$5-8 recently; IEA surplus vs Hormuz headline risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. January Brent settled about $92.57 on Nov 20 (Bloomberg, as reported).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-13",
@@ -7571,7 +7640,10 @@
    "horizon": "2026-11-20",
    "probability": "25-40%",
    "basis": "~$65,200 Sunday after ~$62,000 low; persistent ETF outflows and liquidations",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes. Bitcoin traded below $60,000 (about $58,800 late Nov 19 and Nov 20, Yahoo).",
+   "graded": "2026-11-21",
+   "lesson": "Crypto fell with equities as forced selling spread; the 25-40% understated correlation in a liquidation."
   },
   {
    "id": "2026-11-15-sun-14",
@@ -7581,7 +7653,10 @@
    "horizon": "2026-11-20",
    "probability": "15-25%",
    "basis": "5.15% Friday after +29bp week; needs strong data, hawkish minutes or weak 20Y auction",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. The 10-year peaked at 5.12% (Nov 16).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-15-sun-15",
@@ -7591,7 +7666,10 @@
    "horizon": "2026-11-17",
    "probability": "75-85%",
    "basis": "Set for Nov 15 12:11 PM; two ground-nitrogen scrubs; vehicle reported healthy; ground systems are a separate scrub risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Vulcan lifted off Sun Nov 15; the mission then failed, losing 40 Amazon Leo satellites.",
+   "graded": "2026-11-21",
+   "lesson": "The forecast was about liftoff only; outcome forecasts should be separate."
   },
   {
    "id": "2026-11-16-am-1",
@@ -7601,7 +7679,10 @@
    "horizon": "2026-11-16",
    "probability": "55-65%",
    "basis": "ES futures -0.31% and NQ -0.80% at 06:27 ET after Asia chip rout; defensives offset",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 7,416.59 vs 7,561.67.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-16-am-2",
@@ -7611,7 +7692,10 @@
    "horizon": "2026-11-16",
    "probability": "70-80%",
    "basis": "Consensus 17.6-19 after an unusually strong October",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Empire State 7.8 (New York Fed).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-16-am-3",
@@ -7621,7 +7705,10 @@
    "horizon": "2026-11-20",
    "probability": "20-30%",
    "basis": "Nasdaq-100 below 200-day, Asia rout, Nvidia governance pressure vs firm credit and defensive rotation",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes. The S&P closed Nov 20 at 6,910.39, 8.6% below 7,561.67; we gave it 20-30%.",
+   "graded": "2026-11-21",
+   "lesson": "Same left-tail underweighting as the Sunday matrix."
   },
   {
    "id": "2026-11-16-am-4",
@@ -7631,7 +7718,10 @@
    "horizon": "2026-11-20",
    "probability": "15-25%",
    "basis": "USD/JPY ~159.6-160; summer intervention near 164; weak Q3 GDP; no new MOF escalation today",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No confirmed intervention by Nov 20.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-16-am-5",
@@ -7641,7 +7731,10 @@
    "horizon": "2026-11-18",
    "probability": "50-65%",
    "basis": "All three refunding auctions tailed last week; least liquid point of the curve",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. The 20-year stopped at 5.459% with a 2.63 bid-to-cover and no reported tail.",
+   "graded": "2026-11-21",
+   "lesson": "Safe-haven demand overrode the refunding's weak pattern."
   },
   {
    "id": "2026-11-16-pm-1",
@@ -7651,7 +7744,10 @@
    "horizon": "2026-11-17",
    "probability": "85-92%",
    "basis": "12 bp cushion; hawkish Fed speakers; one-day moves rarely exceed 10 bp",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 5.10% on Nov 17.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-16-pm-2",
@@ -7661,7 +7757,10 @@
    "horizon": "2026-11-17",
    "probability": "45-55%",
    "basis": "Three-day losing streak vs main risk event (Nvidia) after the close; retail sales at 8:30",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. S&P closed Nov 17 at 7,340.53 (-1.03%).",
+   "graded": "2026-11-21",
+   "lesson": "Rebound calls after consecutive losses were consistently too high this week."
   },
   {
    "id": "2026-11-16-pm-3",
@@ -7671,7 +7770,10 @@
    "horizon": "2026-11-18",
    "probability": "55-70%",
    "basis": "Options-implied post-earnings move ~9%; leadership and export-rule uncertainty",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. -2.89% on Nov 18.",
+   "graded": "2026-11-21",
+   "lesson": "Same as the Sunday call."
   },
   {
    "id": "2026-11-16-pm-4",
@@ -7681,7 +7783,10 @@
    "horizon": "2026-11-20",
    "probability": "60-75%",
    "basis": "Brent ~$92.44 at 15:41 Nov 16; Goldman/IEA glut view; risk = confirmed large tanker loss in Hormuz",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. About $92.57.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-17-am-1",
@@ -7691,7 +7796,10 @@
    "horizon": "2026-11-17",
    "probability": "45-60%",
    "basis": "Four straight beats; company has historically guided above street; consensus already above prior guide",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Q4 guide $130B +/-3%.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-17-am-2",
@@ -7701,7 +7809,10 @@
    "horizon": "2026-11-17",
    "probability": "25-40%",
    "basis": "New licence rule hits growing SE Asia buyers; interim leadership may guide conservatively; Bessent deadline open",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. Midpoint $130B; no new BIS shipment risk was disclosed as such (no China data-centre revenue assumed, as before).",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-17-am-3",
@@ -7711,7 +7822,10 @@
    "horizon": "2026-11-17",
    "probability": "20-30%",
    "basis": "Consensus +0.4%; card-spending data mixed; firm month already assumed",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes. The control group rose 0.6% as published (about 0.58% unrounded, TheStreet); we gave 20-30%.",
+   "graded": "2026-11-21",
+   "lesson": "Firm card-spending data deserved more weight."
   },
   {
    "id": "2026-11-17-pm-1",
@@ -7721,7 +7835,10 @@
    "horizon": "2026-11-18",
    "probability": "60-75%",
    "basis": "CNBC sources: book covered across range and likely to price above; one investor described heavy oversubscription; software sell-off may cool demand",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Priced at $83.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-17-pm-2",
@@ -7731,7 +7848,10 @@
    "horizon": "2026-11-18",
    "probability": "55-70%",
    "basis": "Beat and $130B guide vs ~$125B; ~+2-3% after hours; lower margin guide and stock fell after 3 of last 4 reports",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. $150.96 vs $155.46.",
+   "graded": "2026-11-21",
+   "lesson": "After-hours reactions to Nvidia were a poor guide to the regular session."
   },
   {
    "id": "2026-11-18-am-1",
@@ -7741,7 +7861,10 @@
    "horizon": "2026-11-19",
    "probability": "70-85%",
    "basis": "Bloomberg/CNBC/WSJ report book ~6-7x covered and bankers guiding to top of range or above",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $83.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-18-am-2",
@@ -7751,7 +7874,10 @@
    "horizon": "2026-11-18",
    "probability": "55-70%",
    "basis": "ES +0.47% premarket after Nvidia beat; offset by weak breadth and faded premarket chip gains last week",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. 7,323.63 on Nov 18.",
+   "graded": "2026-11-21",
+   "lesson": "Premarket strength faded into the close for a third time this month."
   },
   {
    "id": "2026-11-18-pm-1",
@@ -7761,7 +7887,10 @@
    "horizon": "2026-11-19",
    "probability": "70-85%",
    "basis": "Book reported ~6-7x covered and priced above range; large IPOs priced above range usually open higher; weak tape and software selling are the risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. First trade $111.50.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-18-pm-2",
@@ -7771,7 +7900,10 @@
    "horizon": "2026-11-19",
    "probability": "55-70%",
    "basis": "Consensus 194K-198K; prior 200K; claims have held 191K-200K for a month",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. 203,000 (DOL, as reported).",
+   "graded": "2026-11-21",
+   "lesson": "Claims were at the edge of the range; a 55-70% call on a 3,000 margin was overconfident."
   },
   {
    "id": "2026-11-19-am-1",
@@ -7781,7 +7913,10 @@
    "horizon": "2026-11-19",
    "probability": "75-90%",
    "basis": "Upsized 825M->980M and priced $5 above range; Bloomberg grey-market +20-26% (single report); NQ futures +2.1%",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $111.50.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-19-am-2",
@@ -7791,7 +7926,10 @@
    "horizon": "2026-11-19",
    "probability": "60-75%",
    "basis": "ES +1.23% at 06:28 ET; Nov 18 breadth less negative than Nov 17; offset by opening gains fading twice this month and Taiex -4.4%",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. 7,175.83 (-2.02%), after a +1.3% open.",
+   "graded": "2026-11-21",
+   "lesson": "Opening gains were sold all week."
   },
   {
    "id": "2026-11-19-pm-1",
@@ -7801,7 +7939,10 @@
    "horizon": "2026-11-20",
    "probability": "45-60%",
    "basis": "Six-day streaks usually see a bounce; offset by close at the day low, inverted VIX curve, monthly opex, Intuit -14% AH",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. 6,910.39 (-3.70%).",
+   "graded": "2026-11-21",
+   "lesson": "Streak-ending base rates failed in a liquidation."
   },
   {
    "id": "2026-11-19-pm-2",
@@ -7811,7 +7952,10 @@
    "horizon": "2026-11-20",
    "probability": "80-92%",
    "basis": "Closed $97.17 (+17%), day low $92.72; would need a further ~15% fall; risk is a broad AI-group selloff",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $88.91, after touching $83.05.",
+   "graded": "2026-11-21",
+   "lesson": "Too confident: the margin was five cents at the low."
   },
   {
    "id": "2026-11-20-am-1",
@@ -7821,7 +7965,10 @@
    "horizon": "2026-11-20",
    "probability": "30-45%",
    "basis": "ES -0.59% at 06:28 ET; Taiex/Kospi/Nikkei -5 to -6%; offset by flat Dow/Russell futures and opex reversal risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. The streak did not end (S&P -3.70%); we gave it 30-45%.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-20-am-2",
@@ -7831,7 +7978,10 @@
    "horizon": "2026-11-20",
    "probability": "70-85%",
    "basis": "VIX 29.61 at ~06:23 ET with inverted 9D/1M/3M curve; holiday week ahead",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. VIX 35.89.",
+   "graded": "2026-11-21",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-20-am-3",
@@ -7841,7 +7991,10 @@
    "horizon": "2026-11-20",
    "probability": "70-85%",
    "basis": "Closed $97.17; reported -6%+ premarket (~$91), ~10% cushion",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $88.91.",
+   "graded": "2026-11-21",
+   "lesson": "Same as the prior call."
   },
   {
    "id": "2026-11-20-pm-1",
@@ -7861,6 +8014,46 @@
    "horizon": "2026-11-23",
    "probability": "55-70%",
    "basis": "Closed 35.89 (high 40.03), VIX9D 40.72; would need a >16% one-day drop",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-21-sat-1",
+   "date": "2026-11-21",
+   "slot": "sat",
+   "forecast": "S&P 500 closes Fri Nov 27, 2026 above 6,910.39 (Nov 20 close).",
+   "horizon": "2026-11-27",
+   "probability": "50-65%",
+   "basis": "Deeply oversold breadth and an inverted VIX curve have usually preceded rebounds within one to two weeks, but rebounds failed four times this week.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-21-sat-2",
+   "date": "2026-11-21",
+   "slot": "sat",
+   "forecast": "October core PCE price index (released Nov 25, 2026) rises 0.3% m/m or more.",
+   "horizon": "2026-11-25",
+   "probability": "55-70%",
+   "basis": "October core CPI +0.30% and core PPI +0.3%; Cook estimated headline PCE near 3.8% y/y.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-21-sat-3",
+   "date": "2026-11-21",
+   "slot": "sat",
+   "forecast": "Anthropic (ANT) closes below its $83 IPO price on at least one day Nov 23-27, 2026.",
+   "horizon": "2026-11-27",
+   "probability": "30-45%",
+   "basis": "Nov 20 low $83.05, close $88.91; underwriter support is common but undisclosed.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-21-sat-4",
+   "date": "2026-11-21",
+   "slot": "sat",
+   "forecast": "VIX closes Fri Nov 27, 2026 below 30.",
+   "horizon": "2026-11-27",
+   "probability": "45-60%",
+   "basis": "Inverted term structures tend to normalise within days or weeks and holiday weeks are usually quieter; Wednesday's data cluster cuts the other way.",
    "status": "open"
   }
  ]
