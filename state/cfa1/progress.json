@@ -1,10 +1,10 @@
 {
  "note": "Statuses only, copied from Logan's study workbook when a lesson is recorded. His notes stay private (they travel encrypted in workbook.enc and are never written here).",
- "updated": "2026-11-21T04:53:40-05:00",
+ "updated": "2026-11-22T04:52:15-05:00",
  "workbook_seen": {
-  "saved_at": "2026-11-20T18:58:22-05:00",
-  "extracted_at": "2026-11-20T18:59:13-05:00",
-  "lesson_date": "2026-11-21"
+  "saved_at": "2026-11-21T18:57:54-05:00",
+  "extracted_at": "2026-11-21T18:59:46-05:00",
+  "lesson_date": "2026-11-22"
  },
  "modules": {
   "PRE-ECON-LM01": {
@@ -21,6 +21,26 @@
    "state": "done",
    "items": 9,
    "done": 9
+  },
+  "PRE-ECON-LM04": {
+   "state": "done",
+   "items": 11,
+   "done": 11
+  },
+  "PRE-ECON-LM05": {
+   "state": "done",
+   "items": 9,
+   "done": 9
+  },
+  "PRE-ECON-LM06": {
+   "state": "done",
+   "items": 11,
+   "done": 11
+  },
+  "PRE-ECON-LM07": {
+   "state": "done",
+   "items": 10,
+   "done": 10
   }
  },
  "sessions": [
@@ -54,6 +74,10 @@
   },
   {
    "date": "2026-11-21",
+   "status": "Done"
+  },
+  {
+   "date": "2026-11-22",
    "status": "Not started"
   }
  ]
