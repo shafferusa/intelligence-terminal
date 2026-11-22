@@ -1,24 +1,8 @@
 {
- "fetched": "2026-11-20T16:46:00-05:00",
- "earnings_fetched": "2026-11-15",
- "earnings_fetched_note": "2026-11-15 sun: Finnhub Nov 16-20 fetched; Alpha Vantage 3-month CSV fetched. Conflicts: NVDA Finnhub $111.2B/$2.52 vs Benzinga/LSEG ~$109.2B/$2.48; WMT EPS 0.64 (Finnhub/Zacks) vs 0.74 (one preview); HD Finnhub $3.96/$44.1B vs Kiplinger/Zacks $3.84-3.87/$42.7-42.8B.",
+ "fetched": "2026-11-22T09:20:45-05:00",
+ "earnings_fetched": "2026-11-22",
+ "earnings_fetched_note": "2026-11-22 sun: Finnhub Nov 23-27 fetched (DELL $6.75/$50.3B; one preview $6.61). Alpha Vantage 3-month CSV not fetched this run. BLS ICS 403.",
  "events": [
-  {
-   "ts_et": "2026-11-20T23:20",
-   "type": "launch",
-   "name": "Falcon 9 USSF-317 (Vandenberg)",
-   "importance": "Low",
-   "reason": "National-security launch cadence",
-   "source": "Launch Library 2"
-  },
-  {
-   "ts_et": "2026-11-22T07:16",
-   "type": "launch",
-   "name": "Falcon 9 NROL-136 (Vandenberg)",
-   "importance": "Low",
-   "reason": "NRO cadence",
-   "source": "Launch Library 2"
-  },
   {
    "ts_et": "2026-11-23T06:09",
    "type": "launch",
@@ -26,6 +10,38 @@
    "importance": "Medium",
    "reason": "First Amazon Leo flight after Vulcan loss",
    "source": "Launch Library 2"
+  },
+  {
+   "ts_et": "2026-11-23T11:30",
+   "type": "auction",
+   "name": "13-wk $95B / 26-wk $82B bills",
+   "importance": "Low",
+   "reason": "Routine bill supply",
+   "source": "TreasuryDirect"
+  },
+  {
+   "ts_et": "2026-11-23T13:00",
+   "type": "auction",
+   "name": "2-year note $69B",
+   "importance": "High",
+   "reason": "Duration demand after 25bp weekly rally",
+   "source": "TreasuryDirect"
+  },
+  {
+   "ts_et": "2026-11-23T15:00",
+   "type": "fed",
+   "name": "NY Fed President Williams speaks (3 or 4 PM per calendars)",
+   "importance": "Medium",
+   "reason": "Last week before Fed blackout",
+   "source": "Kiplinger/US Bank calendars as reported"
+  },
+  {
+   "ts_et": "2026-11-23T16:05",
+   "type": "earnings",
+   "name": "HPE, Agilent, Jacobs, Amentum (AMC); Dick's, Kohl's, Burlington (Mon)",
+   "importance": "Medium",
+   "reason": "AI server read (HPE); consumer",
+   "source": "Finnhub"
   },
   {
    "ts_et": "2026-11-23T00:00",
@@ -36,43 +52,67 @@
    "source": "PA Department of State"
   },
   {
-   "ts_et": "2026-11-23T16:05",
-   "type": "earnings",
-   "name": "HPE, Agilent, Jacobs, Amentum (AMC); Dick's, Kohl's, Burlington, Urban Outfitters (Mon)",
-   "importance": "Medium",
-   "reason": "AI hardware read (HPE)",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-23T11:00",
-   "type": "auction",
-   "name": "Week of Nov 23: 13/26-wk bills $95B/$82B, 52-wk $54B, 6-wk $90B, 2Y $69B, 2Y FRN $28B, 5Y $70B, 7Y $44B",
-   "importance": "High",
-   "reason": "Heavy duration supply after 25bp weekly rally",
-   "source": "TreasuryDirect"
+   "ts_et": "2026-11-24T00:03",
+   "type": "launch",
+   "name": "Soyuz Progress MS-36 (Baikonur)",
+   "importance": "Low",
+   "reason": "ISS logistics",
+   "source": "Launch Library 2"
   },
   {
    "ts_et": "2026-11-24T07:00",
    "type": "earnings",
-   "name": "Best Buy, Medtronic, Analog Devices, Smucker (BMO)",
+   "name": "Best Buy, Medtronic, Analog Devices, Smucker, Dollar Tree (BMO)",
    "importance": "Medium",
    "reason": "Consumer and analog-chip read",
    "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-11-24T09:00",
+   "type": "data",
+   "name": "S&P Case-Shiller, FHFA house prices",
+   "importance": "Low",
+   "reason": "Housing",
+   "source": "Compiled calendars"
+  },
+  {
+   "ts_et": "2026-11-24T10:00",
+   "type": "data",
+   "name": "Conference Board consumer confidence; Richmond Fed survey",
+   "importance": "Medium",
+   "reason": "First sentiment read during sell-off",
+   "source": "Compiled calendars"
+  },
+  {
+   "ts_et": "2026-11-24T10:55",
+   "type": "launch",
+   "name": "Falcon 9 USSF-266 (Vandenberg)",
+   "importance": "Low",
+   "reason": "National-security cadence",
+   "source": "Launch Library 2"
+  },
+  {
+   "ts_et": "2026-11-24T13:00",
+   "type": "auction",
+   "name": "5-year note $70B; 2-year FRN $28B",
+   "importance": "High",
+   "reason": "Belly led the rally",
+   "source": "TreasuryDirect"
   },
   {
    "ts_et": "2026-11-24T16:05",
    "type": "earnings",
    "name": "Dell, HP, Workday, Autodesk (AMC)",
    "importance": "High",
-   "reason": "AI server demand (Dell) in chip rout",
+   "reason": "AI server demand (Dell); software seats (WDAY)",
    "source": "Finnhub"
   },
   {
-   "ts_et": "2026-11-24T00:03",
+   "ts_et": "2026-11-24T19:18",
    "type": "launch",
-   "name": "Soyuz Progress MS-36; Shenzhou 24 Tue 19:18 ET",
+   "name": "Long March 2F Shenzhou 24 (Jiuquan)",
    "importance": "Low",
-   "reason": "Station logistics / China crew",
+   "reason": "China crew",
    "source": "Launch Library 2"
   },
   {
@@ -86,10 +126,18 @@
   {
    "ts_et": "2026-11-25T08:30",
    "type": "data",
-   "name": "Oct PCE/personal income, Q3 GDP 2nd est, jobless claims, durable goods (one calendar lists PCE/GDP Tue)",
+   "name": "Oct PCE/personal income & spending, Q3 GDP 2nd est, jobless claims (durable goods per some calendars)",
    "importance": "Critical",
-   "reason": "Decides size of Dec 9 hike",
+   "reason": "Last big inflation print before Dec 9 FOMC; core seen +0.3% m/m, 3.2-3.3% y/y",
    "source": "Compiled calendars"
+  },
+  {
+   "ts_et": "2026-11-25T13:00",
+   "type": "auction",
+   "name": "7-year note $44B",
+   "importance": "Medium",
+   "reason": "Duration supply",
+   "source": "TreasuryDirect"
   },
   {
    "ts_et": "2026-11-25T14:00",
@@ -108,12 +156,44 @@
    "source": "data/nyse-holidays.json"
   },
   {
+   "ts_et": "2026-11-26T19:05",
+   "type": "launch",
+   "name": "Electron StriX launch 14 (Mahia)",
+   "importance": "Low",
+   "reason": "Rocket Lab cadence",
+   "source": "Launch Library 2"
+  },
+  {
    "ts_et": "2026-11-27T13:00",
    "type": "market",
-   "name": "Early close 13:00 ET",
+   "name": "Early close 13:00 ET (Black Friday)",
    "importance": "Medium",
    "reason": "Holiday early close",
    "source": "data/nyse-holidays.json"
+  },
+  {
+   "ts_et": "2026-11-28T00:00",
+   "type": "fed",
+   "name": "FOMC blackout begins",
+   "importance": "Medium",
+   "reason": "Second Saturday before Dec 8-9 meeting",
+   "source": "Fed blackout rule"
+  },
+  {
+   "ts_et": "2026-11-30T00:00",
+   "type": "politics",
+   "name": "Congress returns; Supreme Court sits",
+   "importance": "Medium",
+   "reason": "Dec 11 funding deadline",
+   "source": "Punchbowl; Supreme Court calendar"
+  },
+  {
+   "ts_et": "2026-12-03T00:00",
+   "type": "politics",
+   "name": "Senate Banking asks Huang, Lutnick to appear",
+   "importance": "High",
+   "reason": "Nvidia oversight",
+   "source": "As reported"
   },
   {
    "ts_et": "2026-12-09T14:00",
@@ -122,6 +202,14 @@
    "importance": "Critical",
    "reason": "+25bp ~97% priced (FXStreet Nov 20); 50bp risk",
    "source": "Federal Reserve"
+  },
+  {
+   "ts_et": "2026-12-11T23:59",
+   "type": "politics",
+   "name": "Government funding lapses without stopgap",
+   "importance": "High",
+   "reason": "Shutdown risk",
+   "source": "NPR, Punchbowl"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

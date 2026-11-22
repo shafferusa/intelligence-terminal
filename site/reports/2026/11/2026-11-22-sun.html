@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Week Ahead — Week of Nov 23, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+  "date": "2026-11-22",
+  "slot": "sun",
+  "title": "Week Ahead — Week of Nov 23, 2026",
+  "path": "reports/2026/11/2026-11-22-sun.html",
+  "summary": "The S&P 500 starts a Thanksgiving-shortened week in a correction at 6,910 with the VIX near 36; October PCE inflation, revised Q3 GDP and $183 billion of Treasury notes land before Wednesday's close, Dell reports Tuesday, and over the weekend the NYT said the SEC's Nvidia inquiry is at an early stage while a drone set a Russian military cargo ship ablaze off Finland.",
+  "headlines": [
+    "Short week: markets shut Thursday, 1 PM close Friday; S&P 500 at 6,910 after an 8.6% fall, VIX 35.9",
+    "Wednesday 8:30 AM: October PCE (core seen +0.3%), Q3 GDP revision, claims; Dell, Workday report Tuesday",
+    "NYT: SEC's Nvidia inquiry at an early stage; drone sets Russian military cargo ship ablaze off Finland"
+  ],
+  "reading_minutes": 32,
+  "generated_at": "2026-11-22T09:20:45-05:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="sun">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Week Ahead</p>
+      <h1>After an 8.6% fall, a short holiday week turns on Wednesday’s inflation data and Dell</h1>
+      <p class="paper-dateline">
+        Sunday, November 22, 2026 <span class="sep">&middot;</span> Week of Nov 23 &ndash; Nov 27 <span class="sep">&middot;</span> 32 min read
+      </p>
+      <p class="paper-standfirst">
+        The S&amp;P 500 starts a three-and-a-half-day Thanksgiving week at 6,910, in a correction, with the VIX near 36. October inflation, a revised GDP figure and $183 billion of Treasury notes arrive before the holiday, along with Dell&rsquo;s AI-server results. Over the weekend the New York Times reported that the SEC&rsquo;s look at Nvidia is at an early stage, a drone set a Russian military cargo ship on fire off Finland, and bitcoin held near $60,700.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>Where markets start.</b> The S&amp;P 500 closed Friday at 6,910.39 after seven straight losses and an 8.6% weekly fall. The Nasdaq is at 22,617.73 and the Dow at 48,147.33. The 10-year Treasury yield is 4.92% and the 2-year 4.63%. The VIX is 35.89, with its 9-day measure above its 3-month measure, a sign of acute short-term stress. S&amp;P futures were last at 6,935 on Friday evening and reopen at 6 PM tonight.</li>
+          <li><b>A short week.</b> U.S. markets are closed Thursday for Thanksgiving, and stocks close at 1 PM on Friday. Thin trading can make moves larger in either direction.</li>
+          <li><b>Wednesday matters most.</b> At 8:30 AM: October PCE inflation, the second estimate of third-quarter GDP and jobless claims. The Beige Book follows at 2 PM. Forecasts put core PCE up 0.3% on the month and 3.2&ndash;3.3% on the year. The Fed is all but certain to raise rates on December 9; this report decides how much talk of a half point there is.</li>
+          <li><b>Earnings.</b> HP Enterprise reports Monday. Dell, HP, Workday and Autodesk report Tuesday after the close, and Deere on Wednesday morning. Dell is the main read on AI-server demand after Nvidia&rsquo;s 23% fall. Its own shares fell 11% on Friday.</li>
+          <li><b>Nvidia over the weekend.</b> The New York Times reported Saturday that the SEC inquiry is at an early stage and could end without charges. Its focus is still unknown. Treasury Secretary Bessent&rsquo;s ten-day request for answers from the board runs out about Wednesday.</li>
+          <li><b>The world.</b> A drone set the Russian military cargo ship <i>Sparta II</i> on fire in the Gulf of Finland. Finland said Ukraine was likely responsible and warned that the war is &ldquo;spilling over.&rdquo; Russian strikes hit the Kyiv region and Kryvyi Rih. Iran&rsquo;s foreign minister said Hormuz stays shut until Washington meets Tehran&rsquo;s conditions.</li>
+          <li><b>Home.</b> A 68-degree Sunday gives way to a cold, wet holiday: highs in the mid-40s from Tuesday, a chance of rain and snow Wednesday night, and rain on Thanksgiving Day. Pennsylvania counties face a Monday deadline to certify the November 3 results.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-today">
+      <h2 id="s-today">Today&rsquo;s News</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>The SEC&rsquo;s look at Nvidia is at an early stage and may end without charges, the New York Times reports</h3>
+          <p class="story-deck">A third outlet now reports the inquiry. It still has no confirmed focus, and Nvidia has said nothing before a week that includes the board&rsquo;s deadline from the Treasury.</p>
+          <div class="story-body">
+            <p>The New York Times reported on Saturday, citing people briefed on the matter, that the Securities and Exchange Commission&rsquo;s inquiry into Nvidia is at an early stage and could end without any charges. That makes three outlets reporting the inquiry, after Reuters (potential accounting issues) and the Wall Street Journal (a civil probe that includes whether disclosures misled investors). None of them has established exactly what the SEC is examining. One open question, as wire coverage on Sunday put it, is whether the inquiry concerns Nvidia&rsquo;s 2025 change to reporting revenue by customer headquarters, which removed Singapore from its geographic breakdown, or the affair around former chief executive Jensen Huang and the Singapore distributor Megaspeed. The SEC says it does not comment on whether an investigation exists. Nvidia has not responded (wire reports via EWN, The Star and Malay Mail; PYMNTS, InvestmentNews).</p>
+            <p>The wire coverage also reports that President Trump on Friday called for Huang to be reinstated. He had said on November 16 that he &ldquo;wouldn&rsquo;t mind&rdquo; Huang returning. Board chairman Harvey Jones has ruled it out, saying directors unanimously accepted the resignation. The board has opened its own investigation and set up a national-security and export-control oversight committee chaired by Suzanne Nora Johnson (ABC News, The Next Web). Separately, California Attorney General Rob Bonta has said his office is looking at aspects of the matter.</p>
+            <p>The Times account cools the most alarming reading of Friday&rsquo;s reports without settling anything. Most SEC inquiries are fact-gathering, and many close without action. But &ldquo;early stage&rdquo; also means the uncertainty will last, and the stock fell 14% on Friday on the report alone. Nvidia closed at $125.53, 48% below its 52-week high.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Three dates. Bessent asked the board on Sunday, November 15, for answers within ten days, which runs out about Wednesday. The quarterly 10-Q, delayed past results day, has no filing date. The Senate Banking Committee has asked Huang and Commerce Secretary Lutnick to appear on December 3. Any of the three could move the whole AI group on a thin holiday tape.
+            </div>
+          </div>
+          <p class="story-sourceline">New York Times, Reuters, Wall Street Journal, as carried by EWN, The Star, Malay Mail, PYMNTS and InvestmentNews · ABC News, The Next Web (board) · Yahoo Finance (price, EOD official Nov 20). We could not check SEC filings directly.</p>
+        </article>
+
+        <article class="story">
+          <h3>A drone sets a Russian military cargo ship on fire off Finland, and Helsinki says the war is &ldquo;spilling over&rdquo;</h3>
+          <p class="story-deck">Finland says Ukraine was likely responsible. The ship drifted into Finnish waters and was still burning on Sunday.</p>
+          <div class="story-body">
+            <p>The <i>Sparta II</i>, a 121-metre Russian-flagged cargo ship owned by Oboronlogistika, which handles logistics for Russia&rsquo;s defence ministry, was hit by drones in international waters in the Gulf of Finland on Saturday and caught fire. Its 16 crew were taken off by another Russian vessel. The ship drifted into Finnish waters and anchored there, and the Finnish coastguard said the fire burned through the night. Finland informed NATO, imposed temporary air and sea restrictions in the area, and said the attack was likely carried out by Ukraine. Its prime minister was reported as saying Kyiv has the right to strike its aggressor. The governor of Russia&rsquo;s Leningrad region said two drones attacked a cargo ship near the border. Finland also suspects a Russian helicopter of violating its airspace hours later (CNN, Al Jazeera, France 24, ABC Australia, SBS). Ukraine has not claimed the strike.</p>
+            <p>Finland&rsquo;s military had reported a strike on a Russian warship in the same waters last week. Estonia&rsquo;s navy commander says more attacks there cannot be ruled out.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The Gulf of Finland carries Russia&rsquo;s Baltic oil and fuel exports through Primorsk and Ust-Luga. Attacks in waters bordered by two NATO members raise the chance of an incident involving them, and can raise shipping and insurance costs on that route. Oil showed no reaction to similar news last week, and there has been no trading since.
+            </div>
+          </div>
+          <p class="story-sourceline">Finnish coastguard and government, Leningrad region governor, as reported by CNN, Al Jazeera, France 24, ABC (Australia) and SBS.</p>
+        </article>
+
+        <article class="story">
+          <h3>Russian strikes hit an apartment block near Kyiv and Zelensky&rsquo;s hometown</h3>
+          <p class="story-deck">The attacks follow Putin&rsquo;s promise of &ldquo;painful&rdquo; retaliation for Ukraine&rsquo;s strikes on the Kerch Bridge.</p>
+          <div class="story-body">
+            <p>A strike on Sunday hit a five-storey apartment block in Dymer, north of Kyiv. AP reported at least two dead and four wounded, and Ukraine&rsquo;s emergency service said 11 people were believed trapped; later coverage put the figure at 14. On Saturday morning, drone and missile debris damaged homes in three Kyiv districts and injured two men. A ballistic missile attack on Kryvyi Rih wounded 60 people, including six children, regional officials said, and strikes also hit Zaporizhzhia and Kharkiv (Kyiv Post, NBC, France 24, AP as reported). Zelensky said Russia launched about 2,700 drones and 1,460 glide bombs this week. Those are casualty figures from the first hours of rescue work, and they usually change.</p>
+          </div>
+          <p class="story-sourceline">Ukrainian State Emergency Service and regional officials, as reported by AP, NBC, Kyiv Post and France 24.</p>
+        </article>
+
+        <article class="story">
+          <h3>Iran says Hormuz stays shut until Washington accepts its conditions</h3>
+          <p class="story-deck">Foreign Minister Araghchi spoke at Oman&rsquo;s National Day. Oman says it is working with Iran to restore normal shipping.</p>
+          <div class="story-body">
+            <p>Speaking in Muscat, Araghchi said reopening the strait &ldquo;would not be difficult&rdquo; if the United States accepted what he called Iran&rsquo;s reasonable and lawful conditions, and he called the U.S. naval blockade of Iranian ports illegal. He said Iran and Oman are discussing new security arrangements for the Gulf. Oman&rsquo;s ambassador to Tehran said his country is working in good faith to restore shipping (Press TV and Nour News, both Iranian state-aligned outlets, and OilPrice). There was no U.S. response by Sunday morning. We found no confirmed new strike over the weekend; Friday&rsquo;s reported U.S. strike on Qeshm Island remains disputed. CBS reported on Saturday that Washington and Israel are discussing a new assault, and the president told Israeli television he is in no hurry.</p>
+          </div>
+          <p class="story-sourceline">Araghchi remarks via Press TV and Nour News (Iranian state-aligned) · OilPrice · CBS (Saturday).</p>
+        </article>
+
+        <article class="story">
+          <h3>Bitcoin holds near $60,700 and heads for a seventh weekly loss</h3>
+          <p class="story-deck">The only market open all weekend steadied after Friday&rsquo;s fall but is still lower than a week ago.</p>
+          <div class="story-body">
+            <p>Bitcoin was $60,723 at about 9:15 AM ET on CoinGecko&rsquo;s aggregate, up 0.7% in 24 hours, after trading as low as about $58,700 in the past day (CoinGlass, as reported). Ether was $1,705 and Solana $70.26. The whole crypto market was worth $2.10 trillion, with bitcoin 58.0% of it. Bitcoin was about $65,200 last Sunday morning, so it is down roughly 7% on the week. One outlet counts this as a seventh straight weekly decline; the weekly candle closes tonight. We found no network or regulatory event behind the fall. It has moved with stocks and gold, as it did all last week.</p>
+          </div>
+          <p class="story-sourceline">CoinGecko (live, about 9:15 AM ET Sunday) · CoinGlass, Ad-hoc News (range, streak).</p>
+        </article>
+
+        <article class="story">
+          <h3>SpaceX flies its second spy-satellite mission from Vandenberg in 32 hours</h3>
+          <p class="story-deck">NROL-136 lifted off before dawn on Sunday, and the booster landed back at the base.</p>
+          <div class="story-body">
+            <p>A Falcon 9 launched the National Reconnaissance Office&rsquo;s NROL-136 at about 4:23 AM Pacific (7:23 AM ET) from Space Launch Complex 4 East, about 32 hours after the classified USSF-317 left the same pad. Tesla North reports the first stage, on its 14th flight, landed at Landing Zone 4. The payload is undisclosed; KeepTrack describes it as the 15th launch of the NRO&rsquo;s proliferated constellation. Launch Library listed the mission in flight. We have not seen a SpaceX or NRO confirmation of payload deployment.</p>
+          </div>
+          <p class="story-sourceline">Launch Library 2 · SpaceX mission page · Tesla North, KeepTrack.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-themes">
+      <h2 id="s-themes">Top Themes</h2>
+      <p><b>1. Does the fall stop, and what would stop it?</b> Last week broke a pattern: four times the market looked ready to rebound and four times it closed lower. Some conditions now look like the end of a sell-off: a VIX in the high 30s with an inverted curve, a 3.7% fall on the last day, and gold falling with stocks, which suggests forced selling. A holiday week with light volume can produce a sharp rebound. It can also make a further fall worse, since there are fewer buyers. Watch Asia tonight. Taiwan, Korea and Japan led the fall into both Monday and Friday last week.</p>
+      <p><b>2. The Fed against the bond market.</b> Officials spent last week arguing for more rate rises, and a quarter point on December 9 is priced at about 97%. Bonds rallied anyway, taking a quarter point off the 2-year yield. Wednesday&rsquo;s PCE report is the last big inflation number before the meeting, apart from the November jobs and CPI reports in early December. A firm reading strengthens the case for a half point. A soft one backs the market&rsquo;s view that the cycle ends sooner. The Fed&rsquo;s pre-meeting quiet period starts Saturday, so this week is the last chance for officials to steer expectations.</p>
+      <p><b>3. Was it the AI build-out or just Nvidia?</b> Dell on Tuesday is the first large AI-hardware company to report since Nvidia, followed by HP Enterprise on Monday. Strong server orders with weak shares would repeat Nvidia&rsquo;s week: the numbers are fine, but investors doubt how long the spending lasts. Weak orders would be worse.</p>
+      <p><b>4. Governance and Washington as market risks.</b> Nvidia&rsquo;s regulators, the Commerce chip rule, a possible order on overseas data centres, Medicare audits and a December 11 funding deadline. Washington moved individual stocks repeatedly last week, and this week the board reply to Bessent and anything on the data-centre remark could do the same.</p>
+      <p><b>5. The consumer into Black Friday.</b> Retail sales and the big retailers held up last week. Best Buy, Dick&rsquo;s, Kohl&rsquo;s, Burlington and Dollar Tree report, and Friday is Black Friday. The household is the main reason this correction does not yet look like a recession call.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-days">
+      <h2 id="s-days">The Week Day by Day</h2>
+      <ul class="timeline">
+        <li><b>Sun Nov 22 (tonight).</b> U.S. futures reopen at 6 PM ET; Asian markets open from about 7 PM. <i>Sensitivity: high.</i> Asian chips led both of last week&rsquo;s worst days.</li>
+        <li><b>Mon Nov 23.</b> Ariane 64 launches 36 Amazon Leo satellites at 6:09 AM. Treasury auctions 13- and 26-week bills ($95 billion and $82 billion) and $69 billion of 2-year notes at 1 PM. New York Fed President Williams speaks in the afternoon (calendars list 3 PM or 4 PM). After the close: HP Enterprise, Agilent, Jacobs, Amentum. Dick&rsquo;s, Kohl&rsquo;s and Burlington also report Monday. Pennsylvania counties must certify their November 3 results. Home Depot&rsquo;s new chief executive starts. <i>Sensitivity: medium-high.</i> It is the first full session after Friday.</li>
+        <li><b>Tue Nov 24.</b> Before the open: Best Buy, Medtronic, Analog Devices, Smucker, Dollar Tree. At 9 AM, home prices (S&amp;P Case-Shiller, FHFA); at 10 AM, Conference Board consumer confidence and the Richmond Fed survey. $70 billion of 5-year notes and a $28 billion 2-year floating-rate note go up for auction. After the close: Dell, HP, Workday, Autodesk. Launches: Progress MS-36 just after midnight, Falcon 9 USSF-266 at 10:55 AM, China&rsquo;s Shenzhou 24 crew at 7:18 PM. <i>Sensitivity: high after the close (Dell).</i></li>
+        <li><b>Wed Nov 25.</b> Deere before the open. At 8:30 AM: October personal income, spending and PCE prices; Q3 GDP second estimate; jobless claims. Some calendars also list durable goods. $44 billion of 7-year notes at 1 PM. Beige Book at 2 PM. The ten days Bessent gave Nvidia&rsquo;s board end around now. <i>Sensitivity: the week&rsquo;s highest.</i></li>
+        <li><b>Thu Nov 26.</b> Thanksgiving. U.S. stock and bond markets closed. Rocket Lab&rsquo;s Electron launches a StriX radar satellite at about 7:05 PM. Tokyo&rsquo;s November CPI is due late in the week. <i>Sensitivity: low in the U.S.; overseas markets open.</i></li>
+        <li><b>Fri Nov 27.</b> Black Friday. Stocks close at 1 PM; the bond market normally closes early too. Volume is usually among the lowest of the year. <i>Sensitivity: low, unless the week has gone wrong.</i></li>
+      </ul>
+      <p>The calendar was checked against the NYSE holiday table: Thursday is a full closure and Friday a 1 PM early close. Congress is out all week and returns November 30. The Supreme Court sits again the same day.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy Ahead</h2>
+      <p><b>PCE inflation, Wednesday 8:30 AM.</b> This is the Fed&rsquo;s preferred measure. September&rsquo;s report put headline PCE at 3.6% on the year and core at 3.1%. For October, published forecasts put core up 0.3% on the month, which would take the yearly rate to 3.2% (most calendars) or 3.3% (RBC). The Cleveland Fed&rsquo;s nowcast, as reported, has headline PCE near 3.8%, matching Governor Cook&rsquo;s estimate on Friday. Most of the PCE inputs are already known: October core CPI rose 0.30% and core PPI 0.3%. <b>What a surprise would mean:</b> core at 0.4% or more would strengthen the half-point case that Waller raised, and the 2-year yield, which fell a quarter point last week, would be most exposed. A 0.2% would support the bond market&rsquo;s bet that the Fed stops soon, and with the S&amp;P in a correction it could be the catalyst for a relief rally. Personal spending matters too. It shows whether the strong October retail sales carried into services.</p>
+      <p><b>Q3 GDP, second estimate, Wednesday 8:30 AM.</b> The advance estimate was 3.4% annualised, above the 3.1% expected and up from 2.2% in the second quarter. We found no firm consensus for the revision. Since the quarter ended in September, this is a check on the past, not on where the economy is now. The softer November data (factory surveys at 7.8 and 6.3, building permits at a five-year low) matter more for that.</p>
+      <p><b>Jobless claims, Wednesday 8:30 AM.</b> Moved up a day for the holiday. Initial claims were 203,000 last week and continuing claims 1.763 million, up 70,000. A second large rise in continuing claims would be the clearest sign yet that hiring is slowing.</p>
+      <p><b>Consumer confidence and the Beige Book.</b> The Conference Board&rsquo;s survey on Tuesday will be the first big sentiment reading taken partly during the sell-off. Michigan&rsquo;s final November reading of 51.5 closed its interviews on November 16. The Beige Book on Wednesday at 2 PM collects anecdotes from the twelve district banks. Watch for any mention of AI spending pulling back or of consumers trading down.</p>
+      <p><b>The Fed.</b> The policy rate is 3.75&ndash;4.00%, and the next decision is December 9. CME FedWatch had a quarter-point rise at about 97% on Friday (FXStreet). Williams on Monday is the only confirmed speaker. He was the most measured voice last week, saying no &ldquo;dramatic action&rdquo; was needed. The Fed Board has no other public events listed for the week, according to one secondhand report. The quiet period begins Saturday, November 28.</p>
+      <p><b>Treasury.</b> $183 billion of coupons in three days: $69 billion of 2-year notes Monday, $70 billion of 5-year notes Tuesday and $44 billion of 7-year notes Wednesday, plus a $28 billion 2-year FRN, and 6-, 13-, 26- and 52-week bills. Last week&rsquo;s 20-year auction went well after three weak sales in the November refunding. These sales come after a quarter-point rally. Strong demand would say investors want Treasuries at these prices. Weak demand would say last week&rsquo;s buying was a flight to safety that is already fading. The 2-, 5- and 7-year notes settle November 30.</p>
+      <p><b>Abroad.</b> Tokyo&rsquo;s November CPI arrives late in the week; core was 2.6% in October. It feeds the Bank of Japan&rsquo;s December decision, where a rise to 1.5% is the base case in coverage. The yen is near 158.5 to the dollar. Euro-area November inflation is due the following week; October was 4.0% against a 2.5% ECB deposit rate. China&rsquo;s official November PMIs are due around the end of the month, after October&rsquo;s broad misses.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Earnings &amp; Business</h2>
+      <p><b>Dell (Tuesday after the close).</b> Finnhub&rsquo;s consensus is $6.75 a share on $50.3 billion of revenue; one preview has $6.61. Dell builds the servers that hold Nvidia&rsquo;s chips, so its AI-server orders, backlog and margins are the closest read on whether last week&rsquo;s fall reflected demand or confidence. The stock fell 11.0% on Friday to $278.02, 53% below its 52-week high. Expectations are already low, and a solid backlog could lift it a long way. A cut to AI-server guidance would hit the whole group.</p>
+      <p><b>The rest of tech.</b> HP Enterprise (Monday; about $1.30 a share on $14.6 billion) is the other server read. HP Inc. (Tuesday; about $0.76 on $15.6 billion) is a PC read. Workday ($2.80 on $2.75 billion) and Autodesk ($3.13 on $2.18 billion), both Tuesday, test the fear that AI agents will cut paid software seats, which hit Salesforce, ServiceNow and Intuit last week. Analog Devices (Tuesday; $3.92 on $4.36 billion) is the industrial and auto chip cycle, away from AI.</p>
+      <p><b>The consumer.</b> Dick&rsquo;s ($1.42 on $5.14 billion), Kohl&rsquo;s (about break-even on $3.42 billion) and Burlington ($1.76 on $3.04 billion) on Monday. Best Buy ($1.50 on $10.0 billion), Dollar Tree ($0.92 on $5.14 billion), Medtronic ($1.34 on $9.58 billion) and Smucker on Tuesday. Deere ($4.17 on $10.7 billion) on Wednesday is the read on farm and construction equipment. Last week&rsquo;s rule for retailers: beats were rewarded when guidance held. Best Buy&rsquo;s holiday guide is the one to watch.</p>
+      <p><b>Anthropic.</b> Its underwriters exercised their option to buy 147 million more shares in full, taking gross IPO proceeds to about $93.5 billion, or $119.5 billion with the $26 billion private placement (Quartz, Invezz). ANT closed Friday at $88.91, 7% above its $83 offer price, after trading as low as $83.05. Underwriters often defend the offer price by covering a short position in the market. A full exercise of the option usually means they did not need to buy many shares that way. That is our reading of the mechanics, not something the banks have disclosed. Coverage puts the end of the analyst quiet period around December 14 and a first lock-up release of about 300 million shares on December 15; we found that in one report only.</p>
+      <p><b>Credit.</b> High-yield spreads widened five days running to 3.52 points by Thursday, and investment-grade to 0.94. There is little new issuance in a holiday week, so the signal comes from spreads and from high-yield bond funds. A move through 4 points would turn an equity correction into a question about funding.</p>
+      <p class="story-sourceline">Finnhub earnings calendar (estimates, fetched Sunday) · company IR calendars as compiled · Quartz, Invezz (Anthropic) · FRED (credit, EOD official Nov 19) · Yahoo Finance (prices, EOD official Nov 20).</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Market Setup</h2>
+      <p><b>Index levels to know.</b> The S&amp;P 500 is at 6,910.39, 11.9% below its record. Its 52-week low is 6,316.91, and the index closed within 0.4% of Friday&rsquo;s low. SPY is about 12% below its 52-week high of $781.62 and 9.6% above its 52-week low of $629.28. The Nasdaq is 18.4% below its high, close to the 20% that most commentators would call a bear market. A further 2% fall in the Nasdaq would cross it. The Russell 2000 closed at 2,581.79.</p>
+      <p><b>Sectors.</b> Last week technology fell 12.5% and staples only 2.1%, and equal weight beat cap weight by 2.4 points. If the rebound comes, the biggest losers usually lead it first: chips, software and the Magnificent Seven. If the selling continues, watch whether it reaches staples, utilities and health care, which have so far been the shelter. A broad fall in defensives would suggest investors are cutting all exposure rather than rotating.</p>
+      <p><b>Company catalysts.</b> Nvidia: the board&rsquo;s reply to Bessent, the 10-Q date, and any SEC disclosure. Anthropic: the first full week of trading and the $83 offer price. Dell and HPE: AI servers. Workday and Autodesk: software seats. UnitedHealth: down 16.6% last week on the Medicare audit plan; comments on it run to January 19. SpaceX (SPCX, $127.79): Monday&rsquo;s Ariane flight for Amazon Leo is a rival constellation&rsquo;s return to launch, and the Vulcan inquiry continues. Strategy and Coinbase move with bitcoin.</p>
+      <p><b>What we expect.</b> We put the chance that the S&amp;P 500 closes Friday above 6,910.39 at 50&ndash;62%, and the chance it finishes the week within 3% of that level at 45&ndash;55%. Basis: oversold conditions and an inverted VIX curve have usually been followed by rebounds within one or two weeks, holiday weeks have historically leaned slightly positive, and Wednesday&rsquo;s data and Dell could swing it either way. Last week we gave a fall of more than 6% less than one chance in ten, and it happened. So we put real weight on the tails: a fall of more than 5% on the week at 10&ndash;18%, a rise of more than 5% at 8&ndash;15%. For Nvidia, we put the chance of a Friday close above $125.53 at 50&ndash;60%. For Dell, a move of 8% or more either way on Wednesday: 55&ndash;70%, given its 11% fall on Friday and how far AI-hardware stocks have moved on recent results.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risks">
+      <h2 id="s-risks">Risk Register</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Probabilities are our estimates for the week to Friday, November 27, with the basis stated. They are logged and graded next Saturday.</caption>
+          <thead><tr><th>Risk</th><th>Probability</th><th>Impact</th><th>Trigger &amp; early signs</th><th>Most affected</th><th>Mitigants</th></tr></thead>
+          <tbody>
+            <tr><td><b>Hot October PCE</b>: core &ge;0.4% m/m or y/y &ge;3.3%</td><td>Core y/y &ge;3.3%: 35&ndash;50%</td><td>High</td><td>Wednesday 8:30 AM. Early sign: Tuesday consumer-confidence price expectations</td><td>2-year Treasury, growth stocks, the dollar</td><td>Mostly known from CPI and PPI; a December rise is already priced</td></tr>
+            <tr><td><b>A new leg down in AI stocks</b></td><td>S&amp;P &minus;5% on the week: 10&ndash;18%</td><td>High</td><td>Weak Asian open tonight; Dell server guide; Nvidia disclosure</td><td>SMH, Nvidia, Dell, MAGS, Taiwan, Korea</td><td>Oversold readings; thin volume cuts both ways</td></tr>
+            <tr><td><b>Nvidia&rsquo;s regulators</b>: an SEC disclosure or the 10-Q filed</td><td>Confirmation or 10-Q by Friday: 20&ndash;35%</td><td>Medium-high</td><td>8-K filing; board reply to Bessent around Wednesday</td><td>Nvidia and its suppliers</td><td>&ldquo;Early stage&rdquo; per the NYT; many inquiries close without action</td></tr>
+            <tr><td><b>Credit cracks</b>: high-yield spreads above 4.00 points</td><td>10&ndash;20%</td><td>High</td><td>HYG and JNK outflows; a pulled bond deal</td><td>High-yield, banks, private credit</td><td>Spreads are 3.52 and still low by history; little issuance</td></tr>
+            <tr><td><b>Weak Treasury auctions</b>: at least one of 2/5/7-year tails, as reported</td><td>50&ndash;65%</td><td>Medium</td><td>When-issued yields before 1 PM; indirect bidders</td><td>Long Treasuries, mortgage rates</td><td>The 20-year went well last week</td></tr>
+            <tr><td><b>Volatility stays acute</b>: VIX closes Friday at 25 or above</td><td>65&ndash;80%</td><td>Medium</td><td>VIX 9-day staying above 3-month</td><td>Options-heavy names, leveraged funds</td><td>Holiday weeks are usually quieter</td></tr>
+            <tr><td><b>Crypto breaks lower</b>: bitcoin below $55,000 at any point</td><td>15&ndash;25%</td><td>Medium</td><td>Equity futures; liquidation data</td><td>COIN, MSTR, crypto funds</td><td>Steadied over the weekend near $60,700</td></tr>
+            <tr><td><b>Gulf or Baltic escalation</b>: Brent settles Friday outside $85&ndash;97</td><td>18&ndash;30%</td><td>Medium</td><td>A confirmed U.S. or Israeli strike, a confirmed tanker loss, attacks near NATO waters</td><td>Oil, shipping, defence</td><td>Glut forecasts from the IEA and Goldman; oil fell last week despite the headlines</td></tr>
+            <tr><td><b>Washington surprises</b>: a data-centre order or new chip rules</td><td>No basis for a number</td><td>Medium</td><td>White House or Commerce statement</td><td>Hyperscalers, Nvidia, data-centre REITs</td><td>Congress is away; no text exists</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The government funding deadline of December 11 is outside this week and Congress is out, so we carry it in The United States below rather than score it here. For the Fed, we put the chance that FedWatch still shows 80% or more for a December rise on Friday at 75&ndash;88%. Basis: a firm PCE report confirms it, and only a very soft report and a weak market together would knock it below that.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-scen">
+      <h2 id="s-scen">Scenarios</h2>
+      <p><b>Base case: a nervous holding pattern (45&ndash;55%).</b> The S&amp;P ends the week within about 3% of 6,910. <i>Conditions:</i> core PCE at 0.3%, Dell broadly in line, no Nvidia surprise. <i>Behaviour:</i> large daily swings that partly cancel, the VIX easing toward the high 20s, Treasuries steady. <i>Confirmers:</i> Asia stable tonight, an orderly 2-year auction. <i>Invalidators:</i> a 3% day in either direction before Wednesday.</p>
+      <p><b>Bull case: a relief rally (15&ndash;25%).</b> The S&amp;P gains more than 4% on the week. <i>Conditions:</i> core PCE at 0.2% or a soft GDP revision, Dell raises its AI outlook, Nvidia&rsquo;s board answers Bessent in a way that calms investors. <i>Behaviour:</i> chips and software lead, the VIX falls below 25, the 2-year yield slips further. <i>Confirmers:</i> breadth above two to one on rising days, high-yield spreads narrowing. <i>Invalidators:</i> a rally that fades by the close again, as all four did last week.</p>
+      <p><b>Bear case: another leg down (15&ndash;25%).</b> The S&amp;P falls more than 4%. <i>Conditions:</i> weak Asia, Dell cuts server guidance, core PCE at 0.4% or more revives half-point talk. <i>Behaviour:</i> the Nasdaq enters a bear market, the VIX holds above 35, the 2-year yield rises while longer bonds rally. <i>Confirmers:</i> defensives start to fall too, high-yield spreads near 4 points. <i>Invalidators:</i> a firm close on Monday after a weak open.</p>
+      <p><b>Shock (5&ndash;10%).</b> A fall of 8% or more, or disorder in credit or funding markets. <i>Conditions:</i> a formal SEC action or restatement at Nvidia, a forced seller in leveraged AI or crypto positions, or a military event in the Gulf or the Baltic involving a NATO state. <i>Indicators:</i> high-yield spreads through 4 points, a disorderly Treasury auction, the dollar and the yen spiking together.</p>
+      <p><b>What would change the outlook.</b> A core PCE print away from 0.3% would change it most, in either direction. After that, Dell&rsquo;s backlog, and any formal step from Nvidia&rsquo;s board or regulators. A confirmed escalation in the Gulf matters less than it did a month ago, because oil is pricing a glut.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <p><b>The funding deadline.</b> Government funding runs out after December 11, and Congress is away for Thanksgiving until November 30. That leaves less than two weeks of session. The dispute is over money for the Iran war. Sen. Tim Kaine wants language in any stopgap that ends war funding. Majority Leader Thune calls that &ldquo;not a realistic ask&rdquo; and says it would mean a shutdown. A stopgap needs 60 Senate votes, so Democrats can block one (NPR, Scripps, Punchbowl). Punchbowl reports a shutdown is increasingly possible. Others still see a deal as somewhat likelier. Flood insurance and surface-transportation authority lapse the same day.</p>
+      <p><b>Leadership.</b> Senate Democrats are expected to vote around December 1 on Chuck Schumer&rsquo;s leadership, which Sen. Chris Van Hollen is challenging. Thune has tied progress on spending to that contest. The House will change hands in January. Several outlets reported on November 4 that Speaker Johnson will not seek to lead House Republicans in the new Congress.</p>
+      <p><b>Oversight.</b> The Senate Banking Committee has asked Jensen Huang and Commerce Secretary Lutnick to appear on December 3. Articles of impeachment against Defense Secretary Hegseth remain in the House Judiciary Committee. The Supreme Court returns November 30.</p>
+      <p><b>Before the holiday.</b> Thanksgiving travel starts after the FAA&rsquo;s nationwide ground stop on November 13, which was traced to a network router; there is no sign of a cyberattack. Watch for weather delays from the system that flooded Florida&rsquo;s Atlantic coast last week.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World Ahead</h2>
+      <p><b>Iran and the Gulf.</b> The naval blockade of Iranian ports continues, and so do mediation efforts through Oman. Tehran&rsquo;s position after the weekend is that Hormuz reopens only on its terms. Reports that Washington and Israel are weighing a new assault, and the president&rsquo;s comment that he is in no hurry, leave the near-term risk two-sided. Most drone and mine claims from either side are still unverified.</p>
+      <p><b>Russia, Ukraine and the Baltic.</b> The weekend&rsquo;s strikes followed Putin&rsquo;s promise of retaliation for the Kerch Bridge, and the drone attack off Finland brings the fighting closer to NATO waters. Estonia closes its Russian border crossings on December 1. European governments want a winter truce on energy infrastructure and the Black Sea. Moscow has not confirmed that it accepted a format for talks that includes Europe.</p>
+      <p><b>China.</b> After Shenzhen, the U.S.&ndash;China tariff truce runs to January 10, and the extra 24% levy is suspended until about January 10. Watch Beijing&rsquo;s promised &ldquo;necessary measures&rdquo; against the Commerce chip rule; none have been named. China&rsquo;s November PMIs come at month-end.</p>
+      <p><b>Elsewhere.</b> Japan&rsquo;s inflation data and the Bank of Japan run-up, Europe&rsquo;s plan for a digital tax to fund its next long-term budget, and the outcome of the COP31 climate talks in Antalya, which were due to end on Friday. We have not confirmed a final text.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology Ahead</h2>
+      <p><b>Earnings.</b> Dell, HP Enterprise and HP are the hardware tests, and Workday and Autodesk the software tests (see Earnings &amp; Business). Together they show whether AI spending is slowing or whether investors are just less willing to pay for it.</p>
+      <p><b>Nvidia&rsquo;s governance.</b> The board reply to Bessent, the 10-Q, the SEC inquiry and the December 3 Senate hearing. Reports still disagree on whether a search firm has been hired to find a permanent chief executive.</p>
+      <p><b>Policy.</b> The Commerce rule requiring licences for advanced chips to five Southeast Asian countries, and to overseas data centres serving Chinese-headquartered firms, has a 90-day transition. Reports still disagree on its Federal Register date. The president&rsquo;s threat to stop U.S. firms building data centres abroad has no text. If one appears, it would matter most for Microsoft, Amazon, Alphabet and Oracle.</p>
+      <p><b>Products.</b> Google added a computer-use mode to the Gemini app on Apple Silicon Macs for paid subscribers, letting it operate apps and edit local files (Digital Trends and developer roundups; we have not seen Google&rsquo;s own post). Newsletters continue to report new models from several labs; we report them when the companies confirm them.</p>
+      <p><b>Anthropic.</b> This newspaper is written by an Anthropic model; we cover the company and its stock on the same terms as any other. Its first full week as a listed company follows the full exercise of the underwriters&rsquo; option.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science Ahead</h2>
+      <p><b>Measles.</b> The CDC normally updates its national case count on Wednesdays. After last week&rsquo;s loss of U.S. elimination status, the count stood at 5,412 cases this year, with Pennsylvania at 1,529, more than any other state. Holiday travel is the risk public-health officials will be watching.</p>
+      <p><b>Floods and the St. Johns River.</b> Florida&rsquo;s St. Johns River passed its 1953 record last week and remained in major flood stage, after more than 14 inches of rain fell on parts of South Florida. Forecasters were watching an offshore system that could become Tropical Storm Kyle (Nature World News, Fox Weather, Scripps). A late-November tropical storm off Florida would be unusual, though not unprecedented.</p>
+      <p>No major scheduled results or conferences stood out for the week in our search.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space Ahead</h2>
+      <p><b>Amazon&rsquo;s return to launch.</b> An Ariane 64 is due to lift off from Kourou at 6:09 AM ET Monday with 36 Amazon Leo satellites. It is Amazon&rsquo;s first launch since ULA&rsquo;s Vulcan lost 40 of them on November 15. Amazon had 398 satellites in orbit, about 12% of its planned 3,230. The Vulcan investigation continues under ULA&rsquo;s lead with FAA oversight, and the Space Force has paused national-security missions on the rocket.</p>
+      <p><b>The rest of the week.</b> Progress MS-36 to the space station from Baikonur just after midnight Tuesday. Falcon 9 with USSF-266 from Vandenberg at 10:55 AM Tuesday. China&rsquo;s Shenzhou 24 crew to the Tiangong station from Jiuquan at 7:18 PM Tuesday. Rocket Lab&rsquo;s Electron with a StriX radar satellite for Synspective at about 7:05 PM Thursday. Several Long March launches. All times Eastern; launch times slip often.</p>
+      <p><b>Starship.</b> After the first tower catch of a Starship upper stage on November 14, Musk says the next flight will try to catch both stages. No date has been set.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News Ahead</h2>
+      <p><b>Thanksgiving travel and weather.</b> Airlines and the FAA face the busiest travel days of the year less than a fortnight after the nationwide ground stop. In Pittsburgh, rain is forecast on Thanksgiving Day itself, with a chance of rain and snow the night before.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local Week Ahead</h2>
+      <p>A warm Sunday near 68 under clouds, with showers possible tonight and Monday morning. Then it turns cold: a high around 44 on Tuesday with a low near 26, 47 on Wednesday, a chance of rain and snow Wednesday night, and light rain on Thanksgiving with a high near 48. Light rain is possible Friday (National Weather Service, Pittsburgh office).</p>
+      <div class="stories">
+        <article class="story">
+          <p class="local-place">Bridgeville &middot; South Fayette &middot; South Hills</p>
+          <h3>Road work winds down and the borough budget heads for a December vote</h3>
+          <div class="story-body">
+            <p>The I-376-to-I-79 ramp work is scheduled to end Monday, November 24, after the Route 50 signal work this month. Bridgeville council&rsquo;s 2027 budget and the property-tax ordinance are on track for a December 14 vote. The proposed rate is not yet published; it is currently 10 mills on land and 6.5 on buildings. We found no other borough, township or school-board business scheduled for the holiday week.</p>
+          </div>
+          <p class="story-sourceline">Bridgeville Borough and PennDOT notices, as reported in last week&rsquo;s editions.</p>
+        </article>
+        <article class="story">
+          <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+          <h3>Council works through O&rsquo;Connor&rsquo;s first budget</h3>
+          <div class="story-body">
+            <p>Mayor Corey O&rsquo;Connor&rsquo;s 2027 plan has a $727 million operating budget and a $145 million capital budget. It draws about $28 million from the rainy-day fund, raises no taxes, makes no layoffs, and ends transfers to the housing and anti-violence trust funds, which residents have protested at council (TribLive, PublicSource, CBS Pittsburgh, New Pittsburgh Courier). Accounts differ on the deadline: one has council voting by December 17, and others say it has until December 31 to amend and adopt. TribLive reports council has moved its vote earlier; we have not confirmed the new date.</p>
+          </div>
+          <p class="story-sourceline">City of Pittsburgh budget releases · TribLive, PublicSource, CBS Pittsburgh, New Pittsburgh Courier.</p>
+        </article>
+        <article class="story">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Counties certify the election that gave Democrats Harrisburg</h3>
+          <div class="story-body">
+            <p>Counties face a Monday deadline to certify the November 3 results. Those results gave Democrats the state Senate for the first time in more than three decades, and with it control of both chambers and the governor&rsquo;s office. Governor Shapiro, re-elected by about 21 points, has said the party will move quickly. Coverage lists a minimum-wage rise and transit funding among its priorities, which matter directly for Pittsburgh Regional Transit. The new session begins in January. We found no session days scheduled this week.</p>
+          </div>
+          <p class="story-sourceline">PA Department of State (certification) · Spotlight PA, WITF, City &amp; State PA.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><b>Risk-off, acute stress; confidence moderate; unchanged from Saturday.</b> Supporting: seven straight losses, the S&amp;P 11.9% and the Nasdaq 18.4% below their highs, a VIX of 35.89 with 9-day (40.72) above 3-month (30.94), gold, silver and bitcoin falling with stocks, high-yield spreads wider five days running. Contradicting: spreads at 3.52 points are well below stress levels, the dollar index is up only 0.4% and not spiking, Treasuries are rallying in an orderly way, equal weight beat cap weight, and retail data held up. This is a repricing at the top of the market that has not yet become a funding problem.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities &amp; futures</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Fri Nov 20, 2026 (Yahoo Finance); futures Delayed, last Fri Nov 20 ~17:00 ET. Weekly change vs Nov 13 close.</caption>
+              <thead><tr><th>Index</th><th>Close</th><th>1W</th><th>52-wk high</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>6,910.39</td><td class="down">&minus;8.61%</td><td>7,844.52</td></tr>
+                <tr><td>Nasdaq Composite</td><td>22,617.73</td><td class="down">&minus;10.02%</td><td>27,722.75</td></tr>
+                <tr><td>Dow Jones</td><td>48,147.33</td><td class="down">&minus;8.02%</td><td>54,744.33</td></tr>
+                <tr><td>Russell 2000</td><td>2,581.79</td><td class="down">&minus;7.48%</td><td>3,069.71</td></tr>
+                <tr><td>S&amp;P futures (ES)</td><td>6,935.00</td><td class="flat">&mdash;</td><td>7,897.50</td></tr>
+                <tr><td>Nasdaq-100 futures (NQ)</td><td>25,126.50</td><td class="flat">&mdash;</td><td>31,616.50</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Futures reopen Sunday at 18:00 ET; their Friday-evening level is not a guide to Monday&rsquo;s open.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>From our whole-market count (Massive grouped daily, EOD official): decliners outnumbered advancers about four to one on three of the four sessions counted through Thursday; on Thursday 925 rose and 4,606 fell, and the share of liquid stocks above their 50-day exponential average fell from 39% to 22% (Estimated &mdash; EMA proxy). Friday&rsquo;s count is taken in Monday&rsquo;s morning edition. Breadth is broad and deteriorating; equal weight (RSP &minus;6.2%) beat cap weight (SPY &minus;8.6%).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlist movers</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Fri Nov 20, 2026 (Yahoo Finance).</caption>
+              <thead><tr><th>Symbol</th><th>Close</th><th>1D</th><th>52-wk range</th></tr></thead>
+              <tbody>
+                <tr><td>NVDA</td><td>$125.53</td><td class="down">&minus;14.0%</td><td>$124.50&ndash;243.37</td></tr>
+                <tr><td>ANT</td><td>$88.91</td><td class="down">&minus;8.5%</td><td>$83.05&ndash;115.10 (since Nov 19 listing)</td></tr>
+                <tr><td>DELL</td><td>$278.02</td><td class="down">&minus;11.0%</td><td>$110.22&ndash;595.51</td></tr>
+                <tr><td>SPCX</td><td>$127.79</td><td class="down">&minus;7.7%</td><td>$104.83&ndash;225.64 (since Jun 12, 2026)</td></tr>
+                <tr><td>SPY</td><td>$689.81</td><td class="down">&minus;3.6%</td><td>$629.28&ndash;781.62</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>U.S. Treasury daily par yield curve, EOD official Fri Nov 20, 2026. Changes in basis points vs Nov 13.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1W</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>4.19%</td><td class="up">+9</td></tr>
+                <tr><td>3M</td><td>4.32%</td><td class="flat">0</td></tr>
+                <tr><td>6M</td><td>4.38%</td><td class="down">&minus;4</td></tr>
+                <tr><td>1Y</td><td>4.51%</td><td class="down">&minus;14</td></tr>
+                <tr><td>2Y</td><td>4.63%</td><td class="down">&minus;25</td></tr>
+                <tr><td>5Y</td><td>4.71%</td><td class="down">&minus;27</td></tr>
+                <tr><td>7Y</td><td>4.80%</td><td class="down">&minus;25</td></tr>
+                <tr><td>10Y</td><td>4.92%</td><td class="down">&minus;23</td></tr>
+                <tr><td>20Y</td><td>5.34%</td><td class="down">&minus;18</td></tr>
+                <tr><td>30Y</td><td>5.31%</td><td class="down">&minus;16</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +29 bp (+27 a week ago); 3m10y +60 bp (+83); 5s30s +60 bp (+49). 10-year real yield 2.88% (FRED DFII10, EOD official Nov 19; Saturday&rsquo;s edition cited 2.77% for Nov 20 from another source; FRED&rsquo;s Nov 20 observation is not yet published). 10-year breakeven 2.15% (Nov 20). SOFR 3.91% (Nov 19). Fed funds target 3.75&ndash;4.00%. Mortgage rates: not fetched this run. MOVE index: no free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA U.S. high-yield option-adjusted spread 3.52 points on Nov 19 (FRED, EOD official), from 3.23 on Nov 13; the Nov 20 observation is not yet published. Investment-grade about 0.94. HYG &minus;0.8% and LQD +0.9% on the week (EOD official Nov 20). Credit has widened but does not confirm the equity move&rsquo;s severity.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Cboe indices via Yahoo Finance, EOD official Fri Nov 20, 2026.</caption>
+              <thead><tr><th>Index</th><th>Nov 13</th><th>Nov 20</th></tr></thead>
+              <tbody>
+                <tr><td>VIX 9-day</td><td>17.82</td><td>40.72</td></tr>
+                <tr><td>VIX</td><td>19.30</td><td>35.89</td></tr>
+                <tr><td>VIX 3-month</td><td>20.62</td><td>30.94</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The term structure is inverted (9-day/30-day 1.13, 30-day/3-month 1.16). Dealer gamma is not tracked: there is no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX &amp; commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Yahoo Finance, EOD official / last trade Fri Nov 20, 2026 (futures front-month continuous).</caption>
+              <thead><tr><th>Asset</th><th>Level</th></tr></thead>
+              <tbody>
+                <tr><td>Dollar index (DXY)</td><td>103.81</td></tr>
+                <tr><td>EUR/USD</td><td>1.0975</td></tr>
+                <tr><td>USD/JPY</td><td>158.51</td></tr>
+                <tr><td>WTI crude</td><td>$83.41</td></tr>
+                <tr><td>Brent crude</td><td>$89.95</td></tr>
+                <tr><td>Gold</td><td>$3,515.40</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Brent: Yahoo&rsquo;s continuous front-month shows $89.95 for Friday, while Saturday&rsquo;s edition cited a $92.57 settlement as reported by Bloomberg. The gap is most likely a contract roll; both are given, and the risk register&rsquo;s $85&ndash;97 band will be graded on the front-month settlement.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Live (CoinGecko aggregate), about 09:15 ET Sun Nov 22, 2026.</caption>
+              <thead><tr><th>Asset</th><th>Price</th><th>24h</th></tr></thead>
+              <tbody>
+                <tr><td>Bitcoin</td><td>$60,723</td><td class="up">+0.7%</td></tr>
+                <tr><td>Ether</td><td>$1,705.42</td><td class="up">+0.5%</td></tr>
+                <tr><td>Solana</td><td>$70.26</td><td class="down">&minus;0.2%</td></tr>
+                <tr><td>Cardano</td><td>$0.1448</td><td class="up">+1.2%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Total market capitalisation $2.10 trillion; bitcoin dominance 58.0%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings calendar</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Finnhub consensus estimates (EPS / revenue), fetched Sun Nov 22, 2026. Estimate, not reported.</caption>
+              <thead><tr><th>Day</th><th>Company</th><th>EPS est.</th><th>Rev. est.</th></tr></thead>
+              <tbody>
+                <tr><td>Mon</td><td>HP Enterprise (after close)</td><td>$1.30</td><td>$14.6B</td></tr>
+                <tr><td>Mon</td><td>Dick&rsquo;s / Kohl&rsquo;s / Burlington</td><td>$1.42 / $0.00 / $1.76</td><td>$5.1B / $3.4B / $3.0B</td></tr>
+                <tr><td>Tue</td><td>Best Buy (before open)</td><td>$1.50</td><td>$10.0B</td></tr>
+                <tr><td>Tue</td><td>Medtronic / Analog Devices (before open)</td><td>$1.34 / $3.92</td><td>$9.6B / $4.4B</td></tr>
+                <tr><td>Tue</td><td>Dell (after close)</td><td>$6.75</td><td>$50.3B</td></tr>
+                <tr><td>Tue</td><td>HP Inc. / Workday / Autodesk (after close)</td><td>$0.76 / $2.80 / $3.13</td><td>$15.6B / $2.75B / $2.18B</td></tr>
+                <tr><td>Wed</td><td>Deere (before open)</td><td>$4.17</td><td>$10.7B</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>TreasuryDirect upcoming (fetched Sun Nov 22): 6-week $90B, 13-week $95B, 26-week $82B, 52-week $54B bills (issue Nov 27); 2-year FRN $28B (issue Nov 27); 2-year $69B, 5-year $70B, 7-year $44B notes (issue Nov 30). Auction days per the published schedule: 2-year Monday, 5-year and FRN Tuesday, 7-year Wednesday.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> U.S. Treasury par yield curve and TreasuryDirect auction schedule; FRED; Yahoo Finance; CoinGecko; Finnhub; Launch Library 2; the National Weather Service; the Federal Reserve; and reporting from the New York Times, Reuters and the Wall Street Journal (as carried by other outlets), CNN, Al Jazeera, France 24, AP, NBC, NPR, Punchbowl, Quartz, TribLive and Spotlight PA. SEC filings could not be checked directly, and the weekly EDGAR scan was not run.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Every forecast here is logged and graded next Saturday. All times Eastern. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-21-sat.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

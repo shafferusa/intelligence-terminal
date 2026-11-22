@@ -1,14 +1,67 @@
 {
  "stories": [
   {
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
+   "id": "shutdown-dec11",
+   "first_seen": "2026-11-20",
+   "headline": "Funding lapses after Dec 11; Congress out until Nov 30; Iran war funding language dispute (Kaine vs Thune)",
+   "status": "Continuing",
+   "rationale": "Fiscal/political risk",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
+   "id": "week-nov23-watch",
+   "first_seen": "2026-11-22",
+   "headline": "Week of Nov 23 watch: PCE/GDP/claims Wed 8:30, Beige Book Wed 2PM, Dell/WDAY/HPQ Tue AMC, HPE Mon, $183B 2/5/7Y auctions, Thanksgiving closed Thu, 1PM close Fri, Fed blackout from Nov 28",
+   "status": "Continuing",
+   "rationale": "Week-ahead calendar",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
+   "id": "araghchi-hormuz-nov21",
+   "first_seen": "2026-11-21",
+   "headline": "Araghchi in Muscat: Hormuz stays shut until US meets Iran's conditions; Oman working on shipping",
+   "status": "New",
+   "rationale": "Gulf/oil; Iranian state-aligned sources"
+  },
+  {
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
+   "id": "kyiv-dymer-strikes-nov22",
+   "first_seen": "2026-11-22",
+   "headline": "Russian strikes: Dymer apartment block (2+ dead, 11-14 trapped), Kryvyi Rih 60 wounded",
+   "status": "New",
+   "rationale": "War; casualties preliminary"
+  },
+  {
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
+   "id": "sparta-ii-gulf-of-finland-nov21",
+   "first_seen": "2026-11-21",
+   "headline": "Drone strike sets Russian MoD-linked cargo ship Sparta II ablaze in Gulf of Finland; Finland says Ukraine likely, war 'spilling over'",
+   "status": "New",
+   "rationale": "Geopolitics near NATO waters; Baltic shipping",
+   "keep_on_watchlist": true
+  },
+  {
    "id": "nvidia-sec-probe-nov21",
    "first_seen": "2026-11-20",
-   "headline": "Reuters and WSJ report SEC inquiry into Nvidia accounting/disclosures; SEC no comment, Nvidia silent; 10-Q delayed",
+   "headline": "NYT (Nov 21): SEC Nvidia inquiry at early stage, could end without charges; focus unknown; Trump called Fri for Huang reinstatement, board says no; Bessent 10-day request ends ~Nov 25",
    "status": "Materially changed",
-   "rationale": "Market-moving regulatory; two independent outlets",
-   "last_seen": "2026-11-21",
-   "last_report": "reports/2026/11/2026-11-21-sat.html",
-   "updated": "2026-11-21-sat",
+   "rationale": "Market-moving regulatory; three outlets",
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
    "keep_on_watchlist": true
   },
   {
@@ -25,12 +78,12 @@
   {
    "id": "ant-offer-price-watch",
    "first_seen": "2026-11-19",
-   "headline": "Anthropic (ANT) $88.91 vs $83 offer; Nov 20 low $83.05",
+   "headline": "Anthropic (ANT) $88.91 vs $83 offer; greenshoe exercised in full, gross proceeds ~$93.5B (Quartz, Invezz); lockup step ~Dec 15 (single source)",
    "status": "Continuing",
    "rationale": "Largest IPO; offer-price test",
-   "last_seen": "2026-11-21",
-   "last_report": "reports/2026/11/2026-11-21-sat.html",
-   "updated": "2026-11-21-sat",
+   "last_seen": "2026-11-22",
+   "last_report": "reports/2026/11/2026-11-22-sun.html",
+   "updated": "2026-11-22-sun",
    "keep_on_watchlist": true
   },
   {
@@ -634,5 +687,5 @@
    "updated": "2026-11-17-pm"
   }
  ],
- "updated": "2026-11-21-sat"
+ "updated": "2026-11-22-sun"
 }

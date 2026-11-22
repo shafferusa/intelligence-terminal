@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-11-21T14:22:30Z",
+ "fetched_at": "2026-11-22T14:20:45Z",
  "treasury_par_curve": {
   "date": "2026-11-20",
   "1M": 4.19,
@@ -92,10 +92,12 @@
   "fetched": "2026-11-20T21:46:58Z"
  },
  "crypto": {
-  "source": "Yahoo v8 (COINGECKO_KEY unset)",
-  "fetched": "2026-11-20T21:46:58Z",
-  "BTC": 58794.71,
-  "ETH": 1617.84
+  "source": "CoinGecko simple/price (public, no key)",
+  "fetched": "2026-11-22T14:20:45Z",
+  "BTC": 60723,
+  "ETH": 1705.42,
+  "SOL": 70.26,
+  "ADA": 0.144844
  },
  "indices": {
   "source": "Yahoo v8 EOD Nov 20",
@@ -1871,10 +1873,9 @@
   }
  },
  "coingecko_global": {
-  "cap": 2188000000000,
-  "btc_dom": 59.3,
-  "chg24": -3.69,
-  "fetched": "2026-11-16T11:45:00Z"
+  "fetched": "2026-11-22T14:20:45Z",
+  "total_cap_usd": 2100673592911.55,
+  "btc_dominance": 58.02
  },
  "fred_csv_2026_09_29": {
   "fetched_at": "2026-09-29T15:13:07Z",
@@ -25936,6 +25937,38 @@
    "XLU": -3.07,
    "XLV": -6.15,
    "XLY": -6.27
+  }
+ },
+ "sun_2026_11_22": {
+  "fetched": "2026-11-22T14:20:45Z",
+  "note": "Weekend run: EOD official Nov 20 closes re-confirmed via Yahoo v8",
+  "ES_F": 6935.0,
+  "NQ_F": 25126.5,
+  "^GSPC": 6910.39,
+  "^IXIC": 22617.73,
+  "^DJI": 48147.33,
+  "^RUT": 2581.79,
+  "VIX": 35.89,
+  "VIX9D": 40.72,
+  "VIX3M": 30.94,
+  "CL_F": 83.41,
+  "BZ_F": 89.95,
+  "GC_F": 3515.4,
+  "DXY": 103.81,
+  "EURUSD": 1.0975,
+  "USDJPY": 158.512,
+  "NVDA": 125.53,
+  "ANT": 88.91,
+  "SPCX": 127.79,
+  "DELL": 278.02,
+  "SPY": 689.81,
+  "treasury_2026_11_20": {
+   "1M": 4.19,
+   "3M": 4.32,
+   "2Y": 4.63,
+   "5Y": 4.71,
+   "10Y": 4.92,
+   "30Y": 5.31
   }
  }
 }

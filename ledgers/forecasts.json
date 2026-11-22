@@ -8055,6 +8055,206 @@
    "probability": "45-60%",
    "basis": "Inverted term structures tend to normalise within days or weeks and holiday weeks are usually quieter; Wednesday's data cluster cuts the other way.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-1",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "S&P 500 closes Fri Nov 27, 2026 above 6,910.39 (Nov 20 close).",
+   "horizon": "2026-11-27",
+   "probability": "50-62%",
+   "basis": "Oversold readings and an inverted VIX curve usually precede rebounds within 1-2 weeks; Thanksgiving weeks lean positive historically; last week broke that pattern four times.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-2",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "S&P 500 closes Fri Nov 27, 2026 within 3% of 6,910.39 (between 6,703.08 and 7,117.70).",
+   "horizon": "2026-11-27",
+   "probability": "45-55%",
+   "basis": "Base case: data cluster and Dell can swing it, but a 3.5-day holiday week limits range; VIX ~36 implies ~2.3% daily moves.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-3",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "S&P 500 closes Fri Nov 27, 2026 more than 5% below 6,910.39 (below 6,564.87).",
+   "horizon": "2026-11-27",
+   "probability": "10-18%",
+   "basis": "Tail after an 8.6% week; last week's tails were badly underpriced.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-4",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "S&P 500 closes Fri Nov 27, 2026 more than 5% above 6,910.39 (above 7,255.91).",
+   "horizon": "2026-11-27",
+   "probability": "8-15%",
+   "basis": "Relief rallies after capitulation-like Fridays can be sharp, but four rallies faded last week.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-5",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "October core PCE price index (released Nov 25) rises 3.3% or more year over year.",
+   "horizon": "2026-11-25",
+   "probability": "35-50%",
+   "basis": "Forecasts split 3.2% (most calendars) vs 3.3% (RBC); core CPI/PPI firm.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-6",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Q3 GDP second estimate (Nov 25) is 3.2% annualised or higher.",
+   "horizon": "2026-11-25",
+   "probability": "60-75%",
+   "basis": "Advance 3.4%; second estimates usually revise by a few tenths; retail control group revised up.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-7",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "10-year Treasury par yield (Treasury curve) is below 5.00% on Fri Nov 27, 2026 (or Wed Nov 25 if no Friday print).",
+   "horizon": "2026-11-27",
+   "probability": "60-75%",
+   "basis": "4.92% on Nov 20 after a 23 bp rally; flight-to-safety bid vs heavy supply and a firm PCE risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-8",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "At least one of the 2-, 5- or 7-year note auctions (Nov 23-25) is reported to have tailed.",
+   "horizon": "2026-11-25",
+   "probability": "50-65%",
+   "basis": "$183B of supply after a 25 bp rally; three tails in the November refunding, but the 20-year went well.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-9",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Dell shares move 8% or more either way on Wed Nov 25 vs the Nov 24 close.",
+   "horizon": "2026-11-25",
+   "probability": "55-70%",
+   "basis": "Fell 11% on Friday, 53% below its 52-week high; AI-hardware names moved sharply on results.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-10",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Nvidia closes Fri Nov 27, 2026 above $125.53.",
+   "horizon": "2026-11-27",
+   "probability": "50-60%",
+   "basis": "Deeply oversold after a 23% week; regulator news risk two-sided.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-11",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Nvidia publicly confirms an SEC inquiry or files its delayed 10-Q by Fri Nov 27, 2026.",
+   "horizon": "2026-11-27",
+   "probability": "20-35%",
+   "basis": "10-Q 'in the coming weeks'; Bessent's ten-day request ends ~Nov 25; holiday week.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-12",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "VIX closes Fri Nov 27, 2026 at 25 or above.",
+   "horizon": "2026-11-27",
+   "probability": "65-80%",
+   "basis": "35.89 on Nov 20 with an inverted curve; normalisation usually takes more than a week from these levels.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-13",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Bitcoin trades below $55,000 at any point Nov 22-27, 2026 (CoinGecko/Yahoo).",
+   "horizon": "2026-11-27",
+   "probability": "15-25%",
+   "basis": "$60,723 Sunday morning; ~7% weekly declines recently; 52-week low ~$55,150.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-14",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "ICE BofA US HY OAS (FRED BAMLH0A0HYM2) above 4.00 on any observation through Nov 27, 2026.",
+   "horizon": "2026-11-27",
+   "probability": "10-20%",
+   "basis": "3.52 on Nov 19, +29 bp in a week; would need a further ~50 bp.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-15",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Brent front-month settles Fri Nov 27, 2026 outside $85-97.",
+   "horizon": "2026-11-27",
+   "probability": "18-30%",
+   "basis": "~$90-93 depending on contract; glut forecasts vs Gulf/Baltic risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-16",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "CME FedWatch shows 80% or more for a December 9 rate rise on Fri Nov 27, 2026.",
+   "horizon": "2026-11-27",
+   "probability": "75-88%",
+   "basis": "~97% on Nov 20; only a very soft PCE plus weak markets would cut it below 80%.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-17",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Scenario base: S&P 500 ends the week (Nov 27) within about 3% of 6,910.39 -- nervous holding pattern.",
+   "horizon": "2026-11-27",
+   "probability": "45-55%",
+   "basis": "Scenario matrix; core PCE 0.3%, Dell in line, no Nvidia surprise.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-18",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Scenario bull: S&P 500 gains more than 4% on the week to Nov 27 (close above 7,186.81).",
+   "horizon": "2026-11-27",
+   "probability": "15-25%",
+   "basis": "Scenario matrix; soft PCE, Dell raises AI outlook.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-19",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Scenario bear: S&P 500 falls more than 4% on the week to Nov 27 (close below 6,633.97).",
+   "horizon": "2026-11-27",
+   "probability": "15-25%",
+   "basis": "Scenario matrix; weak Asia, Dell cuts, hot PCE.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-22-sun-20",
+   "date": "2026-11-22",
+   "slot": "sun",
+   "forecast": "Scenario shock: S&P 500 falls 8% or more on the week (close below 6,357.56) or HY OAS exceeds 4.00 / disorderly credit, by Nov 27.",
+   "horizon": "2026-11-27",
+   "probability": "5-10%",
+   "basis": "Scenario matrix; formal SEC action at Nvidia, forced deleveraging, or NATO-involved military event.",
+   "status": "open"
   }
  ]
 }
