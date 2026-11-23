@@ -8255,6 +8255,46 @@
    "probability": "5-10%",
    "basis": "Scenario matrix; formal SEC action at Nvidia, forced deleveraging, or NATO-involved military event.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-23-am-1",
+   "date": "2026-11-23",
+   "slot": "am",
+   "forecast": "S&P 500 ends its seven-day losing streak today: closes Nov 23 above 6,910.39.",
+   "horizon": "2026-11-23",
+   "probability": "72-85%",
+   "basis": "Futures up 2.1-2.9% premarket, Europe higher; risk of intraday reversal as on Nov 19.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-23-am-2",
+   "date": "2026-11-23",
+   "slot": "am",
+   "forecast": "S&P 500 closes Nov 23 up 2% or more (above 7,048.60).",
+   "horizon": "2026-11-23",
+   "probability": "40-55%",
+   "basis": "Holding most of a ~2.5% futures gain through a full session after an 8.6% weekly fall.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-23-am-3",
+   "date": "2026-11-23",
+   "slot": "am",
+   "forecast": "VIX closes below 30 on Nov 23.",
+   "horizon": "2026-11-23",
+   "probability": "45-60%",
+   "basis": "Closed 35.89 Nov 20 with deep short-end inversion; a broad 2-3% rally usually removes several points; holiday week keeps hedging demand.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-23-am-4",
+   "date": "2026-11-23",
+   "slot": "am",
+   "forecast": "Nvidia closes Nov 23 above $125.53.",
+   "horizon": "2026-11-23",
+   "probability": "75-88%",
+   "basis": "About +8.5% premarket (CNBC 4:08 AM) after Trump's Sunday appeal; risk of company rebuttal or SEC headlines.",
+   "status": "open"
   }
  ]
 }

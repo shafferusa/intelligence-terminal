@@ -1,15 +1,15 @@
 {
- "fetched": "2026-11-22T09:20:45-05:00",
+ "fetched": "2026-11-23T06:47:53-05:00",
  "earnings_fetched": "2026-11-22",
- "earnings_fetched_note": "2026-11-22 sun: Finnhub Nov 23-27 fetched (DELL $6.75/$50.3B; one preview $6.61). Alpha Vantage 3-month CSV not fetched this run. BLS ICS 403.",
+ "earnings_fetched_note": "2026-11-23 am: Finnhub Nov 23-27 refetched (HPE listed Nov 23 amc, date unconfirmed by company). Alpha Vantage not fetched. BLS ICS not fetched this run.",
  "events": [
   {
-   "ts_et": "2026-11-23T06:09",
-   "type": "launch",
-   "name": "Ariane 64 Amazon Leo LE-04 (Kourou)",
-   "importance": "Medium",
-   "reason": "First Amazon Leo flight after Vulcan loss",
-   "source": "Launch Library 2"
+   "ts_et": "2026-11-23T00:00",
+   "type": "politics",
+   "name": "PA counties certify Nov 3 results",
+   "importance": "Low",
+   "reason": "Local: certification deadline",
+   "source": "PA Department of State"
   },
   {
    "ts_et": "2026-11-23T11:30",
@@ -44,19 +44,19 @@
    "source": "Finnhub"
   },
   {
-   "ts_et": "2026-11-23T00:00",
-   "type": "politics",
-   "name": "PA counties certify Nov 3 results",
-   "importance": "Low",
-   "reason": "Local: certification deadline",
-   "source": "PA Department of State"
-  },
-  {
-   "ts_et": "2026-11-24T00:03",
+   "ts_et": "2026-11-24T05:13",
    "type": "launch",
    "name": "Soyuz Progress MS-36 (Baikonur)",
    "importance": "Low",
    "reason": "ISS logistics",
+   "source": "Launch Library 2"
+  },
+  {
+   "ts_et": "2026-11-24T06:09",
+   "type": "launch",
+   "name": "Ariane 64 Amazon Leo LE-04 (Kourou)",
+   "importance": "Medium",
+   "reason": "First Amazon Leo flight after Vulcan loss; slipped a day per LL2 Nov 23",
    "source": "Launch Library 2"
   },
   {
