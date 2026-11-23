@@ -1,10 +1,10 @@
 {
  "note": "Statuses only, copied from Logan's study workbook when a lesson is recorded. His notes stay private (they travel encrypted in workbook.enc and are never written here).",
- "updated": "2026-11-22T04:52:15-05:00",
+ "updated": "2026-11-23T04:52:56-05:00",
  "workbook_seen": {
-  "saved_at": "2026-11-21T18:57:54-05:00",
-  "extracted_at": "2026-11-21T18:59:46-05:00",
-  "lesson_date": "2026-11-22"
+  "saved_at": "2026-11-22T20:28:17-05:00",
+  "extracted_at": "2026-11-22T20:29:46-05:00",
+  "lesson_date": "2026-11-23"
  },
  "modules": {
   "PRE-ECON-LM01": {
@@ -41,6 +41,36 @@
    "state": "done",
    "items": 10,
    "done": 10
+  },
+  "PRE-FSA-LM01": {
+   "state": "done",
+   "items": 14,
+   "done": 14
+  },
+  "PRE-FSA-LM02": {
+   "state": "done",
+   "items": 13,
+   "done": 13
+  },
+  "PRE-FSA-LM03": {
+   "state": "done",
+   "items": 15,
+   "done": 15
+  },
+  "PRE-FSA-LM04": {
+   "state": "done",
+   "items": 12,
+   "done": 12
+  },
+  "PRE-FSA-LM05": {
+   "state": "in_progress",
+   "items": 19,
+   "done": 17
+  },
+  "PRE-FSA-LM09": {
+   "state": "done",
+   "items": 14,
+   "done": 14
   }
  },
  "sessions": [
@@ -78,6 +108,10 @@
   },
   {
    "date": "2026-11-22",
+   "status": "Done"
+  },
+  {
+   "date": "2026-11-23",
    "status": "Not started"
   }
  ]
