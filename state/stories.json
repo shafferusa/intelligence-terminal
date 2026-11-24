@@ -1,6 +1,83 @@
 {
  "stories": [
   {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "futures-giveback-nov24",
+   "first_seen": "2026-11-24",
+   "headline": "ES -0.88%, NQ -1.70% at 6:31 after S&P +4.73% (7,237.17); breadth Nov 23 4,712/902, 26.8% >50EMA; Taiex +9.0%, Kospi +6.32% 5,006, Nikkei +3.91%; VIX 28.8",
+   "status": "New",
+   "rationale": "Lead: market tape",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "nvda-huang-reinstated",
+   "first_seen": "2026-11-23",
+   "headline": "Huang reinstated Nov 23, NVDA +31.48% to $165.05; ~$157 premarket Nov 24 (-5%); Treasury deadline Nov 25; House interviews Dec 1-2; Senate Banking Dec 3 10AM; BIS blacklists Megaspeed-tied firms",
+   "status": "Materially changed",
+   "rationale": "Lead index weight; legal/policy risk",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "sanofi-insmed-nov24",
+   "first_seen": "2026-11-24",
+   "headline": "Sanofi to buy Insmed $175/sh cash, ~$41.0B, ~46% premium to Nov 18; Brinsupri, Arikayce; INSM ~+14% premarket",
+   "status": "New",
+   "rationale": "Major M&A",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "ust-2y-auction-nov23",
+   "first_seen": "2026-11-23",
+   "headline": "2Y $69B 4.700% BTC 2.65; par Mon 2Y 4.63/5Y 4.74/10Y 4.92; Williams 'over time'; 5Y $70B + 2Y FRN $28B Tue 1PM; Dec 9 hike ~95%",
+   "status": "Continuing",
+   "rationale": "Fed/Treasury",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "earnings-nov24-am",
+   "first_seen": "2026-11-24",
+   "headline": "HPE beat ($1.43 vs 1.27, FY27 $5.05-5.35) but -7% AH on gross margin 38.2%; Agilent +7-8% AH; DLTR $1.16 vs ~0.90, FY raised $8.05-8.25; MDT rev $9.36B miss, EPS $1.34; Dell/HPQ/WDAY/ADSK tonight",
+   "status": "New",
+   "rationale": "Earnings/AI hardware read",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "merkury-benghazi-nato-poland",
+   "first_seen": "2026-11-23",
+   "headline": "Zelensky confirms 7 sea drones sank corvette Merkury at Benghazi Nov 22; Libya east govt confirms; overnight 96 drones, 73 downed; Zaporizhzhia ~32 injured",
+   "status": "Materially changed",
+   "rationale": "World: war",
+   "keep_on_watchlist": true
+  },
+  {
+   "last_seen": "2026-11-24",
+   "last_report": "reports/2026/11/2026-11-24-am.html",
+   "updated": "2026-11-24-am",
+   "id": "iran-mines-sanctions-nov24",
+   "first_seen": "2026-11-24",
+   "headline": "IRGC claims 3 tankers hit mines in Hormuz (unconfirmed, CNBC); Treasury widens Iran payment sanctions; Kharg convoy disputed; Windward 31 laden tankers outside; Brent ~$87",
+   "status": "New",
+   "rationale": "Energy/geopolitics",
+   "keep_on_watchlist": true
+  },
+  {
    "last_seen": "2026-11-23",
    "last_report": "reports/2026/11/2026-11-23-pm.html",
    "updated": "2026-11-23-pm",
@@ -9,17 +86,6 @@
    "headline": "COP31 Antalya ended Nov 22 without main agreement",
    "status": "New",
    "rationale": "World/climate",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
-   "id": "merkury-benghazi-nato-poland",
-   "first_seen": "2026-11-23",
-   "headline": "Ukraine says sea drones sank Russian corvette Merkury at Benghazi (Nov 22); NATO emergency NAC after Poland finds 3 Kh-101 missiles (Nov 20)",
-   "status": "New",
-   "rationale": "World: escalation risk",
    "keep_on_watchlist": true
   },
   {
@@ -37,33 +103,11 @@
    "last_seen": "2026-11-23",
    "last_report": "reports/2026/11/2026-11-23-pm.html",
    "updated": "2026-11-23-pm",
-   "id": "ust-2y-auction-nov23",
-   "first_seen": "2026-11-23",
-   "headline": "$69B 2Y at 4.700% (0.3bp stop-through, BTC 2.65); par curve 2Y/10Y unchanged 4.63/4.92; Williams: act 'over time'; Dec 9 hike ~93%",
-   "status": "New",
-   "rationale": "Fed/Treasury block; PCE Wed",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
    "id": "sp500-rebound-nov23",
    "first_seen": "2026-11-23",
    "headline": "S&P 500 +4.73% to 7,237.17, best day since Apr 2025, ends 7-day streak; Nasdaq +6.51%; RSP +2.59% (narrow); VIX 26.62",
    "status": "New",
    "rationale": "Market tape; tests whether rebound broadens",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
-   "id": "nvda-huang-reinstated",
-   "first_seen": "2026-11-23",
-   "headline": "Nvidia board unanimously reinstates Jensen Huang as CEO (Nov 23); NVDA +31.48% to $165.05, ~$950B value added (record); bipartisan probes; Tim Scott hearing Dec 3; Bessent deadline ~Nov 25",
-   "status": "Materially changed",
-   "rationale": "Lead: market-moving governance resolution; largest one-day value gain on record",
    "keep_on_watchlist": true
   },
   {
@@ -579,47 +623,7 @@
    "last_seen": "2026-11-19",
    "last_report": "reports/2026/11/2026-11-19-am.html",
    "updated": "2026-11-19-am"
-  },
-  {
-   "id": "anthropic-ipo-priced-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "Anthropic priced $83 (range $70-78), 980M sh (upsized from 825M), ~$81.3B, largest IPO; +$26B placement; ~$1.08T basic / ~$1.5T diluted; ANT trades Nov 19; grey mkt +20-26% (Bloomberg, single)",
-   "status": "Materially changed",
-   "rationale": "Lead: market-moving, record deal",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-am.html",
-   "updated": "2026-11-19-am"
-  },
-  {
-   "id": "anthropic-ipo",
-   "first_seen": "2026-11-18",
-   "headline": "Bloomberg: Anthropic priced at $83 (range $70-78), deal upsized; unconfirmed by company; trades Nov 19 as ANT",
-   "status": "Resolved",
-   "rationale": "Largest AI listing",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-18-pm.html",
-   "updated": "2026-11-18-pm"
-  },
-  {
-   "id": "watch-anthropic-ipo-nov18",
-   "first_seen": "2026-11-15",
-   "headline": "Anthropic prices Nov 18 eve, 825M sh $70-78; Bloomberg ~6-7x covered, at/above top; WSJ may top $80; $26B placement; trades Nov 19 ANT",
-   "status": "Resolved",
-   "rationale": "Largest AI listing",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-18-am.html",
-   "updated": "2026-11-18-am"
-  },
-  {
-   "id": "anthropic-ipo-nov12",
-   "first_seen": "2026-11-12",
-   "headline": "Anthropic IPO $70-78, 825M sh; CNBC: book covered across range; Yahoo: banks weigh >$78 (unconfirmed); prices Wed eve, trades Thu (ANT)",
-   "status": "Resolved",
-   "rationale": "Keep on watchlist",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-17-am.html",
-   "updated": "2026-11-17-am"
   }
  ],
- "updated": "2026-11-23-pm"
+ "updated": "2026-11-24-am"
 }

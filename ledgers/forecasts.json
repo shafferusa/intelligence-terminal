@@ -8325,6 +8325,46 @@
    "probability": "75-88%",
    "basis": "Requires a fall of more than 9%, seen only on its worst days this month.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-24-am-1",
+   "date": "2026-11-24",
+   "slot": "am",
+   "forecast": "The S&P 500 closes Tue Nov 24 below Monday's 7,237.17.",
+   "horizon": "2026-11-24",
+   "probability": "55-70%",
+   "basis": "Futures -0.88% at 6:31 AM, Nasdaq-100 -1.70%; Monday's breadth was broad and dips were bought.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-24-am-2",
+   "date": "2026-11-24",
+   "slot": "am",
+   "forecast": "Nvidia closes Tue Nov 24 above $150.",
+   "horizon": "2026-11-24",
+   "probability": "70-82%",
+   "basis": "Premarket ~$157 (6:41 AM); needs a further ~4.5% fall; Treasury/SEC news is the risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-24-am-3",
+   "date": "2026-11-24",
+   "slot": "am",
+   "forecast": "VIX closes Tue Nov 24 above 25.",
+   "horizon": "2026-11-24",
+   "probability": "65-80%",
+   "basis": "28.8 at 6:26 AM; term structure inverted; PCE and holiday ahead.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-24-am-4",
+   "date": "2026-11-24",
+   "slot": "am",
+   "forecast": "The Nov 24 5-year note auction clears at a high yield below 4.80%.",
+   "horizon": "2026-11-24",
+   "probability": "70-85%",
+   "basis": "5Y par 4.74% Monday; yields slightly lower this morning; 2Y auction smooth.",
+   "status": "open"
   }
  ]
 }
