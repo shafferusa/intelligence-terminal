@@ -8365,6 +8365,46 @@
    "probability": "70-85%",
    "basis": "5Y par 4.74% Monday; yields slightly lower this morning; 2Y auction smooth.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-24-pm-1",
+   "date": "2026-11-24",
+   "slot": "pm",
+   "forecast": "October core PCE prices, released Wed Nov 25, rise 0.3% or more on the month (as rounded by BEA).",
+   "horizon": "2026-11-25",
+   "probability": "60-75%",
+   "basis": "Consensus +0.3%; October core CPI rose 0.30%; one rounding step either way decides it.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-24-pm-2",
+   "date": "2026-11-24",
+   "slot": "pm",
+   "forecast": "The S&P 500 closes Wed Nov 25 above Tuesday's 7,201.09.",
+   "horizon": "2026-11-25",
+   "probability": "50-62%",
+   "basis": "Dell beat after hours and pre-holiday sessions lean positive; PCE at 8:30 AM is a two-way risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-24-pm-3",
+   "date": "2026-11-24",
+   "slot": "pm",
+   "forecast": "The Nov 25 7-year note auction clears above its pre-sale when-issued yield (a tail).",
+   "horizon": "2026-11-25",
+   "probability": "50-65%",
+   "basis": "The 5-year tailed 0.3 bp with the lowest indirect share since 2020; recent coupon sales have mostly tailed.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-24-pm-4",
+   "date": "2026-11-24",
+   "slot": "pm",
+   "forecast": "Dell closes Wed Nov 25 above Tuesday's $295.28.",
+   "horizon": "2026-11-25",
+   "probability": "65-80%",
+   "basis": "Shares +3-4% after hours on a large beat and higher guidance; margin worries and PCE are the risks.",
+   "status": "open"
   }
  ]
 }
