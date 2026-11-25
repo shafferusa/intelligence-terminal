@@ -8405,6 +8405,56 @@
    "probability": "65-80%",
    "basis": "Shares +3-4% after hours on a large beat and higher guidance; margin worries and PCE are the risks.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-25-am-1",
+   "date": "2026-11-25",
+   "slot": "am",
+   "forecast": "The S&P 500 closes below Tuesday's 7,201.09 on Nov 25.",
+   "horizon": "2026-11-25",
+   "probability": "75-88%",
+   "basis": "Futures -1.76% at 6:29 AM after Asian chip sell-off; VIX 29.8; a soft PCE and dip buying are the risks.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-25-am-2",
+   "date": "2026-11-25",
+   "slot": "am",
+   "forecast": "October core PCE prices rise 0.3% or more m/m as rounded and published on Nov 25.",
+   "horizon": "2026-11-25",
+   "probability": "65-80%",
+   "basis": "Consensus 0.3%; Sep core 0.32%; Oct core CPI 0.30%; CPI-to-PCE mapping largely known.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-25-am-3",
+   "date": "2026-11-25",
+   "slot": "am",
+   "forecast": "Nvidia closes below Tuesday's $155.38 on Nov 25.",
+   "horizon": "2026-11-25",
+   "probability": "75-88%",
+   "basis": "Premarket ~$147.41 (-5.1%) at 6:41 AM; would need to recover all of it intraday.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-25-am-4",
+   "date": "2026-11-25",
+   "slot": "am",
+   "forecast": "The VIX closes above 25 on Nov 25.",
+   "horizon": "2026-11-25",
+   "probability": "78-90%",
+   "basis": "29.76 at ~6:24 AM, inverted term structure, data and holiday ahead.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-25-am-5",
+   "date": "2026-11-25",
+   "slot": "am",
+   "forecast": "New Section 301 tariffs on at least one of the 16 named partners are formally announced by Dec 4.",
+   "horizon": "2026-12-04",
+   "probability": "40-60%",
+   "basis": "Reuters reports announcement could come this week; no notice, rates or lists published; past timetables slipped.",
+   "status": "open"
   }
  ]
 }

@@ -1,6 +1,138 @@
 {
  "stories": [
   {
+   "id": "ai-selloff-resumes-nov25",
+   "headline": "Futures ES -1.76%, NQ -2.71% at 6:29; Kospi -6.16% 4,697.51, Taiex -4.80%, Nikkei -2.78%; NVDA ~$147 pre (-5.1%); VIX 29.8; breadth Nov 24 2,865/2,515, 29.8% >50EMA",
+   "status": "New",
+   "rationale": "Lead: market-moving",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "dell-q3-nov24",
+   "headline": "Dell rev $54.94B, EPS $9.45, AI orders $60.2B, backlog $132.3B, FY rev ~$202B, $25B buyback; -7.1% premarket to $274.21",
+   "status": "Materially changed",
+   "rationale": "AI hardware read-through",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-24",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "pce-gdp-nov25",
+   "headline": "Oct PCE 8:30: core +0.3% m/m ~3.2% y/y (headline 3.8%); GDP 2nd est ~3.5% vs 3.4%; claims ~200K; durable goods; 7Y $44B 1PM; Beige Book 2PM; Dec 9 hike ~97%",
+   "status": "New",
+   "rationale": "Fed path",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "section301-16-partners",
+   "headline": "Reuters: Section 301 tariffs on 16 partners (China, EU, Japan, Korea, Taiwan, Mexico, India...) possibly this week; no rates/notice",
+   "status": "Unconfirmed",
+   "rationale": "Trade policy, Asia sell-off",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "nvda-huang-reinstated",
+   "headline": "NVDA $155.38 Nov 24, ~$147 pre Nov 25; Treasury window ends Nov 25, no reply found; Trump to NY Post: pardon 'always an option', stake 'probably not too late'; House Dec 1-2, Senate Banking Dec 3",
+   "status": "Materially changed",
+   "rationale": "Index heavyweight, legal/policy",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-23",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "software-earnings-nov24",
+   "headline": "WDAY -9.7% pre (Q4 sub guide $2.600B < est), ADSK beat -4% AH, NTNX -8-9% (CEO to step down, recap only), HPQ flat, URBN -10-12%; DE EPS $3.89 miss, -3.4% pre",
+   "status": "New",
+   "rationale": "Software seats / ag cycle",
+   "keep_on_watchlist": false,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "iran-hormuz-nov25",
+   "headline": "IRGC claims more tankers hit mines (unconfirmed, counts inconsistent); Al Jazeera: Hormuz oil traffic -40%; Katz chemical-weapons claim; OFAC Nov 23 exchange-house sanctions ($14.7B); WTI ~$81.4",
+   "status": "Developing",
+   "rationale": "Oil, war",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "shutdown-dec11",
+   "headline": "Funding through Dec 11, no deal; 3/12 House bills; Iran-war limits and $350B Pentagon ask; Dems leader vote Dec 1 (Schumer vs Van Hollen); Congress back Nov 30",
+   "status": "Continuing",
+   "rationale": "Shutdown risk",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-20",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "riemann-claim-nov20",
+   "headline": "Alpöge (Anthropic) Lean-formalized RH proof claim with Claude; Sutherland checks pass so far; Maynard 'suspect correct'; Clay still lists open",
+   "status": "Unconfirmed",
+   "rationale": "Breakthrough claim",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "pa-electric-rates-dec1",
+   "headline": "Duquesne PTC 14.14 -> 14.56 c/kWh Dec 1 (~$2.49/mo at 600 kWh); PECO/PPL ~10%",
+   "status": "New",
+   "rationale": "Local household cost",
+   "keep_on_watchlist": false,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "allegheny-budget-committee-nov19",
+   "headline": "County ~$3B 2027 budget advanced with ~$2.9M amendments; full council by Dec 6; city $872.6M plan draws $28M reserves",
+   "status": "Continuing",
+   "rationale": "Local budget",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-20",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
+   "id": "amazon-leo-ariane-nov24",
+   "headline": "Ariane 64 deployed all 36 Amazon Leo sats; Shenzhou-24 docked (SBS); USSF-266 flown; Vulcan grounded",
+   "status": "Resolved",
+   "rationale": "Space industry",
+   "keep_on_watchlist": false,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-am"
+  },
+  {
    "last_seen": "2026-11-24",
    "last_report": "reports/2026/11/2026-11-24-pm.html",
    "updated": "2026-11-24-pm",
@@ -70,17 +202,6 @@
    "last_seen": "2026-11-24",
    "last_report": "reports/2026/11/2026-11-24-pm.html",
    "updated": "2026-11-24-pm",
-   "id": "dell-q3-nov24",
-   "first_seen": "2026-11-24",
-   "headline": "Dell Q3 rev ~$54.9B vs ~$50B, adj EPS $9.45 vs ~$6.75; Q4 guide $56.3B/$8.40; FY EPS ~$29.68; +3-4% AH after -11.83% session",
-   "status": "New",
-   "rationale": "AI-server demand read",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-24",
-   "last_report": "reports/2026/11/2026-11-24-pm.html",
-   "updated": "2026-11-24-pm",
    "id": "chips-rotation-nov24",
    "first_seen": "2026-11-24",
    "headline": "S&P -0.50% 7,201.09, Nasdaq -1.48% 23,733.54, Dow +0.85% 50,018.70; SMH -7.26%, XLK -3.26%; RSP +0.54%, IWM +0.53%; 8/10 sectors up",
@@ -98,17 +219,6 @@
    "status": "New",
    "rationale": "Lead: market tape",
    "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-24",
-   "last_report": "reports/2026/11/2026-11-24-pm.html",
-   "updated": "2026-11-24-pm",
-   "id": "nvda-huang-reinstated",
-   "headline": "NVDA -5.86% to $155.38 Nov 24 (low $150.50); Reuters: SEC probe centres on possible accounting issues (anon); compliance officer post; Treasury deadline ~Nov 25; House Dec 1-2, Senate Banking Dec 3",
-   "status": "Materially changed",
-   "rationale": "Lead index weight; legal/policy risk",
-   "keep_on_watchlist": true,
-   "first_seen": "2026-11-23"
   },
   {
    "last_seen": "2026-11-24",
@@ -284,17 +394,6 @@
    "headline": "S&P futures +2.1-2.9%, NQ +3-3.8%, Dow +~1,000 premarket Nov 23 after S&P -8.6% week (6,910.39, 7 straight losses); Kospi -3.31% 4,708.54; Taiex +2.2% midday; Japan closed; Stoxx +0.5-0.7%",
    "status": "New",
    "rationale": "Market lead; tests whether sell-off was positioning",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "shutdown-dec11",
-   "first_seen": "2026-11-20",
-   "headline": "Funding lapses after Dec 11; Congress out until Nov 30; Iran war funding language dispute (Kaine vs Thune)",
-   "status": "Continuing",
-   "rationale": "Fiscal/political risk",
    "keep_on_watchlist": true
   },
   {
@@ -523,16 +622,6 @@
    "updated": "2026-11-20-am"
   },
   {
-   "id": "allegheny-budget-committee-nov19",
-   "first_seen": "2026-11-20",
-   "headline": "County Budget & Finance Committee advanced 2027 budget with DA/PD amendments ($1.37M WESA vs ~$2.9M TribLive); full council by Dec 6",
-   "status": "Materially changed",
-   "rationale": "Local",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-am.html",
-   "updated": "2026-11-20-am"
-  },
-  {
    "id": "dc-shutdown-stall-nov19",
    "first_seen": "2026-11-20",
    "headline": "Thune: funding talks stalled pending Schumer challenge; Van Hollen/Kaine want Iran-funding limits; Dec 11 deadline",
@@ -551,87 +640,7 @@
    "last_seen": "2026-11-20",
    "last_report": "reports/2026/11/2026-11-20-am.html",
    "updated": "2026-11-20-am"
-  },
-  {
-   "id": "tips-10y-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "10Y TIPS reopening $19B 2.903% (highest since 2002 per Tipswatch), BTC 2.43, indirect 68.6%; next week 2y $69B, 5y $70B, 7y $44B",
-   "status": "New",
-   "rationale": "Treasury",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-pm.html",
-   "updated": "2026-11-19-pm"
-  },
-  {
-   "id": "walmart-q3-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "WMT adj EPS $0.65, rev $188.8B, US comps ex-fuel +2.9%; FY guide raised to $2.84-2.89; stock -1.04% $126.04",
-   "status": "Materially changed",
-   "rationale": "Consumer read",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-pm.html",
-   "updated": "2026-11-19-pm"
-  },
-  {
-   "id": "philly-claims-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "Philly Fed Nov 6.3 (prior 20.9, cons ~20), prices paid 58.2; claims 203K (prior rev 202K); continuing 1.763M; Jefferson: AI adds to inflation",
-   "status": "New",
-   "rationale": "Macro data",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-pm.html",
-   "updated": "2026-11-19-pm"
-  },
-  {
-   "id": "intuit-q1-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "INTU beat ($2.91 adj EPS) but cut FY rev guide to $23.08-23.37B; sells Mailchimp to Bending Spoons $3.31B cash + $368M stock; ~-14% AH",
-   "status": "New",
-   "rationale": "Software guidance read",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-pm.html",
-   "updated": "2026-11-19-pm"
-  },
-  {
-   "id": "sixth-loss-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "S&P -2.02% 7,175.83 (6th straight loss; intraday +1.26% to 7,415.64); Nasdaq -2.25%; Dow -1,101 49,097 (<50K first since June); all sectors down; VIX 28.44, curve inverted",
-   "status": "New",
-   "rationale": "Market-wide reversal",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-pm.html",
-   "updated": "2026-11-19-pm"
-  },
-  {
-   "id": "anthropic-debut-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "ANT opens $111.50 (+34%), high $115.10, low $92.72, closes $97.17 (+17.07%) on ~847M sh; mkt cap $1.27T basic / $1.75-1.78T diluted",
-   "status": "New",
-   "rationale": "Lead: record IPO trading debut; AI-trade read",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-pm.html",
-   "updated": "2026-11-19-pm"
-  },
-  {
-   "id": "bridgeville-budget-2027",
-   "first_seen": "2026-11-19",
-   "headline": "Bridgeville 2027 budget + Ord. 1039 (millage) posted; adoption vote Dec 14 7 PM",
-   "status": "New",
-   "rationale": "Local",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-am.html",
-   "updated": "2026-11-19-am"
-  },
-  {
-   "id": "pa-house-lameduck-nov19",
-   "first_seen": "2026-11-19",
-   "headline": "PA House returns Nov 19 noon; session ends Nov 30; SB 1273, SB 481 to governor; Alicia's Law signed Nov 17; SB 1150 status UNVERIFIED (Nov 18 am said passed House 182-21 - not reconfirmed)",
-   "status": "Materially changed",
-   "rationale": "Local PA",
-   "last_seen": "2026-11-19",
-   "last_report": "reports/2026/11/2026-11-19-am.html",
-   "updated": "2026-11-19-am"
   }
  ],
- "updated": "2026-11-24-pm"
+ "updated": "2026-11-25-am"
 }

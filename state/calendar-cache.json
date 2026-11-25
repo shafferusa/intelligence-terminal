@@ -1,80 +1,8 @@
 {
- "fetched": "2026-11-24T06:40:00-05:00",
+ "fetched": "2026-11-25T06:50:00-05:00",
  "earnings_fetched": "2026-11-22",
- "earnings_fetched_note": "2026-11-24 am: Finnhub Nov 24-27 refetched (HPE did report Nov 23 amc per outlets). Alpha Vantage not fetched. BLS ICS not fetched.",
+ "earnings_fetched_note": "2026-11-25 am: Finnhub Nov 25-Dec 2 fetched; Alpha Vantage not fetched; BLS ICS not fetched.",
  "events": [
-  {
-   "ts_et": "2026-11-24T05:13",
-   "type": "launch",
-   "name": "Soyuz Progress MS-36 (Baikonur)",
-   "importance": "Low",
-   "reason": "ISS logistics",
-   "source": "Launch Library 2"
-  },
-  {
-   "ts_et": "2026-11-24T06:14",
-   "type": "launch",
-   "name": "Ariane 64 Amazon Leo LE-04 (Kourou) - launched 06:14 ET, deployment pending",
-   "importance": "Medium",
-   "reason": "First Amazon Leo flight after Vulcan loss; slipped a day per LL2 Nov 23",
-   "source": "Launch Library 2"
-  },
-  {
-   "ts_et": "2026-11-24T07:00",
-   "type": "earnings",
-   "name": "Best Buy, Medtronic, Analog Devices, Smucker, Dollar Tree (BMO)",
-   "importance": "Medium",
-   "reason": "Consumer and analog-chip read",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-24T09:00",
-   "type": "data",
-   "name": "S&P Case-Shiller, FHFA house prices",
-   "importance": "Low",
-   "reason": "Housing",
-   "source": "Compiled calendars"
-  },
-  {
-   "ts_et": "2026-11-24T10:00",
-   "type": "data",
-   "name": "Conference Board consumer confidence; Richmond Fed survey",
-   "importance": "Medium",
-   "reason": "First sentiment read during sell-off",
-   "source": "Compiled calendars"
-  },
-  {
-   "ts_et": "2026-11-24T11:08",
-   "type": "launch",
-   "name": "Falcon 9 USSF-266 (Vandenberg)",
-   "importance": "Low",
-   "reason": "National-security cadence",
-   "source": "Launch Library 2"
-  },
-  {
-   "ts_et": "2026-11-24T13:00",
-   "type": "auction",
-   "name": "5-year note $70B; 2-year FRN $28B",
-   "importance": "High",
-   "reason": "Belly led the rally",
-   "source": "TreasuryDirect"
-  },
-  {
-   "ts_et": "2026-11-24T16:05",
-   "type": "earnings",
-   "name": "Dell, HP, Workday, Autodesk (AMC)",
-   "importance": "High",
-   "reason": "AI server demand (Dell); software seats (WDAY)",
-   "source": "Finnhub"
-  },
-  {
-   "ts_et": "2026-11-24T19:18",
-   "type": "launch",
-   "name": "Long March 2F Shenzhou 24 (Jiuquan)",
-   "importance": "Low",
-   "reason": "China crew",
-   "source": "Launch Library 2"
-  },
   {
    "ts_et": "2026-11-25T00:00",
    "type": "politics",
@@ -86,10 +14,10 @@
   {
    "ts_et": "2026-11-25T07:00",
    "type": "earnings",
-   "name": "Deere (BMO)",
+   "name": "Deere (BMO) - reported EPS $3.89 vs ~$4.05-4.17",
    "importance": "Medium",
-   "reason": "Industrial/ag cycle",
-   "source": "Finnhub"
+   "reason": "Ag cycle; FY27 NI guide $4.50-5.25B",
+   "source": "Finnhub; Investing.com"
   },
   {
    "ts_et": "2026-11-25T08:30",
@@ -98,6 +26,22 @@
    "importance": "Critical",
    "reason": "Last big inflation print before Dec 9 FOMC; core seen +0.3% m/m, 3.2-3.3% y/y",
    "source": "Compiled calendars"
+  },
+  {
+   "ts_et": "2026-11-25T09:15",
+   "type": "cb",
+   "name": "BoE Bailey et al. at Treasury Select Committee",
+   "importance": "Low",
+   "reason": "UK policy after hike to 4%",
+   "source": "BoE calendar"
+  },
+  {
+   "ts_et": "2026-11-25T10:30",
+   "type": "data",
+   "name": "EIA weekly petroleum status",
+   "importance": "Low",
+   "reason": "API +126K bbl",
+   "source": "EIA schedule"
   },
   {
    "ts_et": "2026-11-25T13:00",
@@ -156,6 +100,22 @@
    "source": "As reported"
   },
   {
+   "ts_et": "2026-11-29T00:00",
+   "type": "politics",
+   "name": "Spain general election",
+   "importance": "Medium",
+   "reason": "PP leads polls",
+   "source": "As reported"
+  },
+  {
+   "ts_et": "2026-11-29T10:47",
+   "type": "launch",
+   "name": "Falcon 9 Cygnus NG-25 to ISS",
+   "importance": "Low",
+   "reason": "ISS cargo",
+   "source": "Launch Library 2"
+  },
+  {
    "ts_et": "2026-11-30T00:00",
    "type": "politics",
    "name": "Congress returns; Supreme Court sits",
@@ -172,12 +132,52 @@
    "source": "NBC News"
   },
   {
+   "ts_et": "2026-12-01T00:00",
+   "type": "politics",
+   "name": "Senate Democratic leader vote (Schumer vs Van Hollen)",
+   "importance": "Medium",
+   "reason": "Next majority leader; funding talks",
+   "source": "AP, The Hill"
+  },
+  {
+   "ts_et": "2026-12-01T00:00",
+   "type": "local",
+   "name": "PA electric default rates change (Duquesne +~3%)",
+   "importance": "Low",
+   "reason": "Household bills",
+   "source": "WESA, PUC"
+  },
+  {
+   "ts_et": "2026-12-01T16:05",
+   "type": "earnings",
+   "name": "Marvell, NetApp, CrowdStrike (AMC)",
+   "importance": "Medium",
+   "reason": "AI chips, storage, security",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-12-02T16:05",
+   "type": "earnings",
+   "name": "Salesforce, Snowflake (AMC)",
+   "importance": "Medium",
+   "reason": "Software seats",
+   "source": "Finnhub"
+  },
+  {
    "ts_et": "2026-12-03T00:00",
    "type": "politics",
    "name": "Senate Banking asks Huang, Lutnick to appear",
    "importance": "High",
    "reason": "Nvidia oversight",
    "source": "As reported"
+  },
+  {
+   "ts_et": "2026-12-03T00:00",
+   "type": "corporate",
+   "name": "Tesla annual meeting",
+   "importance": "Low",
+   "reason": "No merger proposal on proxy",
+   "source": "TechCrunch"
   },
   {
    "ts_et": "2026-12-09T14:00",
