@@ -494,6 +494,15 @@
       "error_source": "Finnhub earnings calendar dated them Nov 23 with no hour; not cross-checked.",
       "conclusions_changed": false,
       "note": "Surfaced in 2026-11-23-pm colophon."
+    },
+    {
+      "found": "2026-11-25",
+      "report": "reports/2026/11/2026-11-25-am.html",
+      "original": "7-year note auction ($44B) listed at 13:00 ET on Nov 25 (also in the 2026-11-24-pm Tomorrow table).",
+      "corrected": "Competitive bidding closed at 11:30 AM ET (holiday schedule), per TreasuryDirect.",
+      "error_source": "Standard 1 PM time assumed; TreasuryDirect announcement not checked for the pre-holiday schedule.",
+      "conclusions_changed": false,
+      "note": "Surfaced in 2026-11-25-pm colophon."
     }
   ]
 }

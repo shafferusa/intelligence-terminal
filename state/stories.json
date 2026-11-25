@@ -1,81 +1,125 @@
 {
  "stories": [
   {
-   "id": "ai-selloff-resumes-nov25",
-   "headline": "Futures ES -1.76%, NQ -2.71% at 6:29; Kospi -6.16% 4,697.51, Taiex -4.80%, Nikkei -2.78%; NVDA ~$147 pre (-5.1%); VIX 29.8; breadth Nov 24 2,865/2,515, 29.8% >50EMA",
-   "status": "New",
-   "rationale": "Lead: market-moving",
-   "keep_on_watchlist": true,
-   "first_seen": "2026-11-25",
-   "last_seen": "2026-11-25",
-   "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
-  },
-  {
-   "id": "dell-q3-nov24",
-   "headline": "Dell rev $54.94B, EPS $9.45, AI orders $60.2B, backlog $132.3B, FY rev ~$202B, $25B buyback; -7.1% premarket to $274.21",
-   "status": "Materially changed",
-   "rationale": "AI hardware read-through",
-   "keep_on_watchlist": true,
-   "first_seen": "2026-11-24",
-   "last_seen": "2026-11-25",
-   "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
-  },
-  {
-   "id": "pce-gdp-nov25",
-   "headline": "Oct PCE 8:30: core +0.3% m/m ~3.2% y/y (headline 3.8%); GDP 2nd est ~3.5% vs 3.4%; claims ~200K; durable goods; 7Y $44B 1PM; Beige Book 2PM; Dec 9 hike ~97%",
-   "status": "New",
-   "rationale": "Fed path",
-   "keep_on_watchlist": true,
-   "first_seen": "2026-11-25",
-   "last_seen": "2026-11-25",
-   "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
-  },
-  {
-   "id": "section301-16-partners",
-   "headline": "Reuters: Section 301 tariffs on 16 partners (China, EU, Japan, Korea, Taiwan, Mexico, India...) possibly this week; no rates/notice",
-   "status": "Unconfirmed",
-   "rationale": "Trade policy, Asia sell-off",
-   "keep_on_watchlist": true,
-   "first_seen": "2026-11-25",
-   "last_seen": "2026-11-25",
-   "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
-  },
-  {
-   "id": "nvda-huang-reinstated",
-   "headline": "NVDA $155.38 Nov 24, ~$147 pre Nov 25; Treasury window ends Nov 25, no reply found; Trump to NY Post: pardon 'always an option', stake 'probably not too late'; House Dec 1-2, Senate Banking Dec 3",
-   "status": "Materially changed",
-   "rationale": "Index heavyweight, legal/policy",
-   "keep_on_watchlist": true,
-   "first_seen": "2026-11-23",
-   "last_seen": "2026-11-25",
-   "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
-  },
-  {
-   "id": "software-earnings-nov24",
-   "headline": "WDAY -9.7% pre (Q4 sub guide $2.600B < est), ADSK beat -4% AH, NTNX -8-9% (CEO to step down, recap only), HPQ flat, URBN -10-12%; DE EPS $3.89 miss, -3.4% pre",
-   "status": "New",
-   "rationale": "Software seats / ag cycle",
-   "keep_on_watchlist": false,
-   "first_seen": "2026-11-25",
-   "last_seen": "2026-11-25",
-   "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
-  },
-  {
    "id": "iran-hormuz-nov25",
-   "headline": "IRGC claims more tankers hit mines (unconfirmed, counts inconsistent); Al Jazeera: Hormuz oil traffic -40%; Katz chemical-weapons claim; OFAC Nov 23 exchange-house sanctions ($14.7B); WTI ~$81.4",
+   "headline": "IRGC claims 2 tankers + LNG carrier hit mines Nov 25, army claims another; unconfirmed, no ships named; WTI +2.62% to 84.20, Brent -0.62% 90.83 (contract roll)",
    "status": "Developing",
    "rationale": "Oil, war",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-25",
    "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "beige-book-nov25",
+   "headline": "Beige Book: 8 of 12 districts slight-moderate growth, 4 flat; prices moderate; input costs > selling prices; wages faster; housing weaker; data-center imports up",
+   "status": "New",
+   "rationale": "Fed input",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "hardware-earnings-nov25",
+   "headline": "HPQ +11.49% (rev $16.0B, EPS $0.83 incl ~$0.15 tariff refunds; memory ~40% of PC BOM); NTNX -15.19%; DELL +0.60% after -10.3% low; WDAY +0.68%; DE +4.44% on miss; SNDK close $73.61 (move unverified, data gap)",
+   "status": "New",
+   "rationale": "Earnings read-through",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "nvda-huang-reinstated",
+   "headline": "NVDA $149.30 -3.91% (low $141.17); Treasury window closed Nov 25, no public response found; Huang House Dec 1-2, Senate Banking Dec 3",
+   "status": "Continuing",
+   "rationale": "Index heavyweight, legal/policy",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-23",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "section301-16-partners",
+   "headline": "USTR proposed Sec 301 tariffs on 14 economies: China +20% (to 40% if truce fails, ~$30B exempt), EU/JP/KR/TW/CH cap 15%, SE Asia up to 18%, Vietnam up to 35% (reported); no ruling Mexico/Norway; comments/hearing Jan (dates differ)",
+   "status": "Materially changed",
+   "rationale": "Trade policy, Asia sell-off",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "treasury-7y-nov25",
+   "headline": "7y $44B 4.708%, BTC 2.43, indirect 58.2%/direct 33.2%/dealers 8.6%; 10y par 4.85 (-6bp), 2y 4.61; 2s10s 24bp; Dec 9 hike ~98% priced",
+   "status": "New",
+   "rationale": "Treasury/rates",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "pce-gdp-nov25",
+   "headline": "Oct PCE +0.3% m/m, 3.8% y/y; core +0.3% m/m, 3.3% y/y (vs 3.2%); income +0.7%, real spending slightly down, saving 4.1%; Q3 GDP 2nd est 4.3% (from 3.4%), GDI 4.4%; claims 189K",
+   "status": "Materially changed",
+   "rationale": "Fed path",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "open-plunge-recovery-nov25",
+   "headline": "S&P 7,182.78 -0.25% (low 6,970.11, -3.2%); Nasdaq 23,585.80 -0.62% (low -4.6%); Dow 50,182.95 +0.33%; RSP +0.83%, MDY +1.16%; VIX 28.29 (hi 34.95), inverted",
+   "status": "Materially changed",
+   "rationale": "Lead: market-moving intraday reversal",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-pm.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "ai-selloff-resumes-nov25",
+   "headline": "Futures ES -1.76%, NQ -2.71% at 6:29; Kospi -6.16% 4,697.51, Taiex -4.80%, Nikkei -2.78%; NVDA ~$147 pre (-5.1%); VIX 29.8; breadth Nov 24 2,865/2,515, 29.8% >50EMA",
+   "status": "Resolved",
+   "rationale": "Lead: market-moving",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
    "last_report": "reports/2026/11/2026-11-25-am.html",
-   "updated": "2026-11-25-am"
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "dell-q3-nov24",
+   "headline": "Dell rev $54.94B, EPS $9.45, AI orders $60.2B, backlog $132.3B, FY rev ~$202B, $25B buyback; -7.1% premarket to $274.21",
+   "status": "Resolved",
+   "rationale": "AI hardware read-through",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-24",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-pm"
+  },
+  {
+   "id": "software-earnings-nov24",
+   "headline": "WDAY -9.7% pre (Q4 sub guide $2.600B < est), ADSK beat -4% AH, NTNX -8-9% (CEO to step down, recap only), HPQ flat, URBN -10-12%; DE EPS $3.89 miss, -3.4% pre",
+   "status": "Resolved",
+   "rationale": "Software seats / ag cycle",
+   "keep_on_watchlist": false,
+   "first_seen": "2026-11-25",
+   "last_seen": "2026-11-25",
+   "last_report": "reports/2026/11/2026-11-25-am.html",
+   "updated": "2026-11-25-pm"
   },
   {
    "id": "shutdown-dec11",
@@ -600,47 +644,7 @@
    "last_seen": "2026-11-20",
    "last_report": "reports/2026/11/2026-11-20-am.html",
    "updated": "2026-11-20-am"
-  },
-  {
-   "id": "shenzhen-briefing-nov20",
-   "first_seen": "2026-11-20",
-   "headline": "Trump noon news conference on Shenzhen, Thailand/Philippines trade deals; WH gave little detail; declaration silent on tariffs/chips",
-   "status": "Developing",
-   "rationale": "Trade policy read-through",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-am.html",
-   "updated": "2026-11-20-am"
-  },
-  {
-   "id": "sb1150-act103",
-   "first_seen": "2026-11-20",
-   "headline": "SB 1150 Sunshine Act fix enacted as Act 103 of 2026 (signed late Oct), effective Dec 21; corrects Nov 18/19 am framing",
-   "status": "Corrected",
-   "rationale": "Local/PA; correction",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-am.html",
-   "updated": "2026-11-20-am"
-  },
-  {
-   "id": "dc-shutdown-stall-nov19",
-   "first_seen": "2026-11-20",
-   "headline": "Thune: funding talks stalled pending Schumer challenge; Van Hollen/Kaine want Iran-funding limits; Dec 11 deadline",
-   "status": "Continuing",
-   "rationale": "US politics",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-am.html",
-   "updated": "2026-11-20-am"
-  },
-  {
-   "id": "ussf317-scrub-nov19",
-   "first_seen": "2026-11-20",
-   "headline": "USSF-317 scrubbed Nov 19, retargeted Nov 20 21:32 ET; NROL-136 NET Nov 21 07:30 ET; Vulcan still grounded",
-   "status": "Developing",
-   "rationale": "Space",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-am.html",
-   "updated": "2026-11-20-am"
   }
  ],
- "updated": "2026-11-25-am"
+ "updated": "2026-11-25T21:48:16Z"
 }
