@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Thu, Nov 26, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-11-26",
+  "slot": "am",
+  "title": "Morning Brief — Thu, Nov 26, 2026",
+  "path": "reports/2026/11/2026-11-26-am.html",
+  "summary": "With U.S. markets closed for Thanksgiving, Asian and European stocks rebounded and U.S. futures rose about 0.5% as allies read Washington's tariff plan as capped near rates they already pay, while South Korea raised rates, Houthi forces claimed a strike on Saudi Arabia's largest refinery and Iran claimed more tankers hit mines, none of it confirmed.",
+  "headlines": [
+    "Markets closed; S&P futures +0.55%, Taiex +2.5%, Stoxx 600 +1.6% on tariff relief",
+    "Bank of Korea hikes to 3.25%; BoJ signals December rise as yen nears 160",
+    "Houthis claim Ras Tanura strike, Iran claims mine hits; Macy's parade moved to Saturday"
+  ],
+  "reading_minutes": 30,
+  "generated_at": "2026-11-26T06:45:54-05:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Asia and Europe rebound as allies read the U.S. tariff plan as milder than feared</h1>
+      <p class="paper-dateline">
+        Thursday, November 26, 2026 <span class="sep">&middot;</span> 30 min read
+      </p>
+      <p class="paper-standfirst">
+        With U.S. markets shut for Thanksgiving, Taiwan rose 2.5%, Europe about 1.7% and U.S. stock futures half a percent as investors decided Washington’s tariff plan mostly keeps allies at rates they already pay, while South Korea raised interest rates, Houthi forces claimed a strike on Saudi Arabia’s largest refinery, and Pittsburgh settles in for a wet, windy holiday.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> U.S. stock and bond markets are closed for Thanksgiving. S&amp;P 500 futures were up 0.55% at 7,235 at 6:28 AM, Nasdaq-100 futures 0.50%; they stop trading at 1 PM. Stocks reopen Friday for a half-day session ending at 1 PM.</li>
+          <li><b>Abroad.</b> Taiwan’s market rose 2.50%, Hong Kong’s 1.19% (ending a seven-day losing streak), Tokyo’s Nikkei 0.86% and Korea’s Kospi 0.29% after Wednesday’s rout. The Stoxx Europe 600 was up about 1.6% this morning, with every sector higher.</li>
+          <li><b>The tariff read.</b> Analysts and governments in Asia and Europe read the U.S. proposal as keeping the EU, Japan and Korea near the 15% they already pay, with nothing likely to take effect before early 2027. China called it “unilateralism” and said it is “firmly opposed”; Japan called it “regrettable.”</li>
+          <li><b>Rates and central banks.</b> The Bank of Korea raised its policy rate a quarter point to 3.25%, its third rise this year. A Bank of Japan board member urged faster increases, with the yen near 159 to the dollar. Wednesday’s U.S. 10-year par yield of 4.85% stands until Friday; a Fed rise on December 9 remains priced at roughly 95&ndash;98%.</li>
+          <li><b>Biggest risk.</b> The Gulf. Houthi forces say they struck Saudi Arabia’s Ras Tanura refinery and Iran claims two more tankers hit mines near Oman; neither damage claim is confirmed. Brent was little changed near $94.50 a barrel on the expiring contract.</li>
+          <li><b>Beyond markets.</b> Macy’s Thanksgiving parade, in its 100th year, was postponed to Saturday because of forecast 60 mph gusts in New York, the first postponement in its history. Pittsburgh expects all-day rain, gusts near 40 mph and a high of 48.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>A day after a chip rout, Asia and Europe recover as the tariff plan proves narrower than feared</h3>
+          <p class="story-deck">The markets that sold off hardest on Wednesday bought back on Thursday. Semiconductor makers led the bounce, and bank shares followed in Europe.</p>
+          <div class="story-body">
+            <p>Taiwan’s Taiex closed up 2.50% at 39,151.81, recovering most of Wednesday’s 4.8% fall; one recap put the gain at 3.1%, but the exchange-based figure most outlets carry is 2.50%. Hong Kong’s Hang Seng rose 1.19% to 22,226.88, its first gain in eight sessions, and Tokyo’s Nikkei 225 closed up 0.86% at 57,499.16 after being up about 1.5% earlier; the broader Topix rose only 0.11%. SoftBank Group, which fell almost 15% on Wednesday, rose 7.3%, and Advantest and other chip-equipment makers rose 6&ndash;7% during the session (AP, CNBC, as summarized). Korea’s Kospi briefly topped 4,800 before ending up just 0.29% at 4,711.21, as individual investors sold about 1.04 trillion won of shares into the rise and institutions bought; SK hynix rose 2.2% and Samsung 0.4% (Korea Times, JoongAng). Shanghai was flat at 3,476.88, holding its lowest close in more than a year.</p>
+            <p>Europe followed. The Stoxx Europe 600 was up 1.63% at 636.23 at 6:23 AM ET, with Germany’s DAX up 1.92%, France’s CAC 40 up 1.82% and London’s FTSE 100 up 1.60% (Yahoo Finance, delayed). Reuters reported every sector higher, led by banks and technology: Deutsche Bank rose about 3%, and the chipmakers Infineon and Soitec about 4%. The European technology index is still down about 12% this month, and volumes are thin with New York closed.</p>
+            <p>Outlets tied the bounce to two things: a recovery in chip shares after three days of heavy selling, and a reading of Wednesday’s U.S. tariff proposal as milder for allies than the Reuters report earlier in the week had suggested. As reported, the new rates for the EU, Japan, Korea, Taiwan and Switzerland would be capped at the roughly 15% their trade deals already set, and analysts quoted by AP and the law firm Baker McKenzie do not expect anything to take effect before early 2027. That is how markets described it; we cannot show it was the cause.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              U.S. futures pointing 0.5% higher suggest Friday’s short session starts from a firmer footing after Wednesday’s recovery from a 3.2% intraday fall. But most of the global gain is a rebound in the same chip stocks that fell hardest, and Shanghai, which is most exposed to the China tariffs, did not join in.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              Tokyo’s November inflation figures come out at 6:30 PM Eastern tonight. U.S. stocks trade from 9:30 AM to 1 PM on Friday, bonds until 2 PM, with no major U.S. data.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance index closes and morning levels (<em>Delayed</em>) &middot; AP, CNBC, Reuters, Korea Times, JoongAng, Bastille Post (drivers and flows, as summarized) &middot; Baker McKenzie analysis. Most outlet reporting came from search-result summaries.</p>
+        </article>
+
+        <article class="story">
+          <h3>Houthi forces claim a strike on Saudi Arabia’s biggest refinery; Iran claims two more tankers hit mines</h3>
+          <p class="story-deck">Saudi Arabia says it shot down the drones. Neither the refinery damage nor the mine strikes has been independently confirmed.</p>
+          <div class="story-body">
+            <p>The Houthi military spokesman, Yahya Saree, said on Wednesday that his forces attacked Ras Tanura, Saudi Arabia’s largest refinery and a main oil-export terminal, and caused fires; some reports add a claimed strike on Riyadh. Satellite images reportedly showed thick smoke over the site, and a Reuters-style report cites an unnamed source confirming an attack took place. The Saudi-led coalition said its air defences destroyed four drones over Ras Tanura and did not say the refinery was hit; Aramco and the Saudi government did not respond to requests for comment (CBC, The National, Quartz, US News, as summarized). <span class="flag">Damage unconfirmed</span></p>
+            <p>On Thursday Iran’s Revolutionary Guards said two more oil tankers crossing without Tehran’s permission were “hit by sea mines” near Khasab, on Oman’s side of the Strait of Hormuz, after similar claims on Monday and Wednesday. No ships have been named. The maritime security agency UKMTO has attributed recent incidents near Khasab to unidentified projectiles rather than mines, and U.S. Central Command disputes the mine claims and says the main shipping lanes are clear. UKMTO did confirm that three tankers were hit on November 22, without casualties (CNBC, Marine Insight, ABC, as summarized).</p>
+            <p>Oil barely moved. Brent’s January contract, which expires at the end of the month, was down about 0.1% at $94.52 a barrel early Thursday, as reported by Reuters, and U.S. crude was at $84.44, up 0.9% from Wednesday’s settlement (Yahoo Finance, delayed). The next Brent contract, for February, traded near $91.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A confirmed hit on Ras Tanura would be the first damage to Saudi export capacity in this war and a direct supply shock; so far the market is treating it, like the mine claims, as unproven. Shipping trackers put Hormuz traffic at roughly half of normal, and OPEC+ meets on Sunday.
+            </div>
+          </div>
+          <p class="story-sourceline">Houthi and IRGC statements via CBC, The National, CNBC, ABC (claims) &middot; Saudi-led coalition statement &middot; UKMTO and CENTCOM as reported &middot; Reuters and Yahoo Finance (oil, <em>Delayed</em>).</p>
+        </article>
+
+        <article class="story">
+          <h3>South Korea raises rates for the third time this year as Japan signals it may follow</h3>
+          <p class="story-deck">Asia’s central banks are tightening while the yen sits near the level that has prompted intervention before.</p>
+          <div class="story-body">
+            <p>The Bank of Korea raised its seven-day repo rate by a quarter point to 3.25%, the highest since November 2024, after increases in July and August; 32 of 34 economists in a Reuters poll had expected it. Two of the seven board members, Hwang Kun-il and Lee Soo-hyung, voted to hold at 3%. The bank raised its growth forecast for 2026 to 3.9% from 3.3% and for 2027 to 4.1% from 2.9%, and Governor Shin Hyun-song signalled more increases without a timetable. Korean consumer prices rose 2.8% from a year earlier in October (Reuters, CNBC, Korea Times).</p>
+            <p>In Tokyo, Bank of Japan board member Naoki Tamura urged faster increases and said the 1.25% policy rate is “some way from neutral,” after Governor Kazuo Ueda warned this week that the weak yen risks pushing inflation too high. Swaps price about an 80% chance of a rise at the December 17&ndash;18 meeting (FXStreet, as summarized). The dollar bought 159.29 yen this morning, just below the 160 level Japanese officials have warned about, with no report of intervention. Tokyo’s November consumer prices, the best early read on Japanese inflation, are due at 6:30 PM Eastern; October’s headline rate was 2.8%.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              With the Fed, the ECB, the Bank of Korea and probably the Bank of Japan all raising rates into December, the global cost of money is still going up. A Japanese rise matters most for U.S. markets: higher yields at home can draw Japanese savings out of U.S. bonds.
+            </div>
+          </div>
+          <p class="story-sourceline">Bank of Korea decision via Reuters, CNBC, Korea Times &middot; Bank of Japan remarks via FXStreet and others &middot; Yahoo Finance (yen, <em>Delayed</em>).</p>
+        </article>
+
+        <article class="story">
+          <h3>China says it is “firmly opposed” to the new U.S. tariff proposals; Japan calls them “regrettable”</h3>
+          <p class="story-deck">The plan is only a proposal. Washington’s trade chief says nothing is likely to take effect for months.</p>
+          <div class="story-body">
+            <p>China’s commerce ministry called Wednesday’s Section 301 proposals “unilateralism,” said it is firmly opposed, and said it remains in close contact with Washington on extending the trade truce, as reported by Newsquawk and others; we found no sign of immediate retaliation. Japan’s chief cabinet secretary, Minoru Kihara, called the measures “regrettable” and rejected the finding of excess capacity, while noting that the rates are consistent with the two countries’ existing agreement. The EU lodged a formal protest, according to Korea’s SBS; we found no European Commission statement text, and no formal statement from Seoul.</p>
+            <p>The U.S. Trade Representative’s release proposes duties on 14 economies over what it calls “structural excess capacity.” As reported, China would face 20% on top of existing tariffs, rising to 40% if the truce is not extended past January. The EU’s primary rate would be 15%, with alternatives of 20% for the EU and Japan and 25% for Korea. India’s proposed 25% could fall to 17&ndash;20% with a deal. A public hearing is reported for January 25, and Trade Representative Jamieson Greer told CNBC the tariffs likely would not take effect for months (USTR release; CNBC; Reuters via Investing.com; Baker McKenzie). Reported ceilings differ between outlets, and we have not read the Federal Register notice.</p>
+          </div>
+          <p class="story-sourceline">USTR release (as summarized) &middot; China’s commerce ministry via Newsquawk &middot; Japanese government via SBS &middot; CNBC, Reuters, Baker McKenzie. Stage: proposed, not in effect.</p>
+        </article>
+
+        <article class="story">
+          <h3>S&amp;P puts Nvidia’s credit rating on watch for a downgrade; a ransomware gang claims to have its data</h3>
+          <p class="story-deck">Neither development is confirmed as more than a warning. Treasury has said nothing public since its deadline for answers passed.</p>
+          <div class="story-body">
+            <p>S&amp;P Global Ratings placed Nvidia’s AA credit rating on CreditWatch with negative implications on Wednesday, according to several outlets, which means a downgrade is possible once the agency completes its review; we did not see the agency’s report. Nvidia closed Wednesday down 3.91% at $149.30. Separately, the ransomware group known as “Gentlemen” has listed Nvidia on its leak site with a countdown ending November 28, BleepingComputer reports; the group has posted no proof, and Nvidia says it has found no sign that its systems were affected. <span class="flag">Breach claim unverified</span></p>
+            <p>Treasury’s ten-day window for Nvidia’s board to explain how its chips reached China through shell companies closed on Wednesday, and we found no public statement from either side since. Nvidia has said it stopped H200 shipments to China and that past shipments were authorised by the Commerce Department. Chief executive Jensen Huang faces closed-door interviews with three House committees on December 1&ndash;2 and a Senate Banking hearing on December 3.</p>
+          </div>
+          <p class="story-sourceline">S&amp;P Global Ratings action as reported by Quartz and others &middot; BleepingComputer (ransomware claim) &middot; AP, CBS (export questions) &middot; Yahoo Finance (close).</p>
+        </article>
+
+        <article class="story">
+          <h3>Online holiday spending is running 9% ahead of last year, but fewer people plan to shop this weekend</h3>
+          <p class="story-deck">The forecasts point to a season carried by higher spending per shopper, a pattern that fits stalled real consumer spending in October.</p>
+          <div class="story-body">
+            <p>Adobe Analytics says U.S. shoppers spent $82.5 billion online from November 1 to 22, up 9.1% from a year earlier, including $6.1 billion through buy-now-pay-later plans. It forecasts $6.9 billion of online spending today (+8.5%, 63% of it on phones), $12.9 billion on Black Friday (+9.2%) and about $15.1 billion on Cyber Monday, with the season reaching $275.1 billion, up 6.7% (Adobe, via Digital Commerce 360). The National Retail Federation forecasts November&ndash;December sales up 4.2%, but expects 182.7 million people to shop over the five-day weekend, down from 186.9 million last year. These are nominal figures, not adjusted for prices.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Wednesday’s data showed October spending falling slightly after inflation while incomes jumped on one-time payments. Online sales rising 9% with fewer shoppers suggests the money is there but concentrated; the first actual weekend figures arrive Friday and Saturday.
+            </div>
+          </div>
+          <p class="story-sourceline">Adobe Analytics via Digital Commerce 360 (Nov 25) &middot; National Retail Federation forecast.</p>
+        </article>
+
+        <article class="story">
+          <h3>Lean’s developers certify an AI-produced proof of the Riemann hypothesis</h3>
+          <p class="story-deck">It is the strongest endorsement yet of the claim. No one has yet written the argument down in a form a human can follow.</p>
+          <div class="story-body">
+            <p>The Lean Focused Research Organization and the Mathlib Initiative issued a joint statement on November 21 saying, “We hereby certify that both the statement and the proof of the Riemann Hypothesis are correct,” checked against Mathlib’s existing statement of the problem, according to Nature and Scientific American as summarized. The MIT mathematician Andrew Sutherland independently compiled and rechecked the roughly 17-million-line proof with Lean’s kernel using only its three standard axioms; one end-to-end test was still pending as of November 23. Lior Alpöge, the Anthropic researcher behind the claim, says Claude did the technical work between October 6 and November 16. Our Wednesday edition described the proof as still being checked; this certification predates that report, and we had missed it.</p>
+            <p>Mathematicians are cautious about what has been shown. James Maynard called it “a historic milestone” if correct; Daniel Litt said it is “exceedingly likely to be correct&hellip; No human understands it yet”; Maksym Radziwiłł noted that it certifies the result without explaining why it is true. There is no peer-reviewed paper and no human-readable proof, and the Clay Mathematics Institute, which offers $1 million for a solution, still lists the problem as open.</p>
+          </div>
+          <p class="story-sourceline">Nature news, Scientific American, Smithsonian (as summarized) &middot; Lean FRO and Mathlib joint statement (as quoted) &middot; Clay Mathematics Institute problem list. Not peer-reviewed.</p>
+        </article>
+
+        <article class="story">
+          <h3>Wind postpones the Macy’s parade for the first time in its 100 years</h3>
+          <p class="story-deck">An East Coast storm is bringing rain, high winds and coastal flooding on one of the year’s busiest travel days.</p>
+          <div class="story-body">
+            <p>New York City, Macy’s and NBC moved the 100th Thanksgiving Day Parade to Saturday at 8:30 AM because of forecast gusts up to 60 mph and National Weather Service high-wind and coastal-flood warnings for Thursday into Friday. A spokesperson called it the first postponement in the parade’s history; it was cancelled from 1942 to 1944 during the Second World War. NBC will air a rerun of the 2025 parade this morning (CNN, AP, others). Officials in the Philadelphia area, under a high-wind warning, are discouraging travel today, and airlines including American, Delta, United and Southwest have issued travel waivers; about 500 flights were reported delayed at Miami and Dallas&ndash;Fort Worth (CNN, NPR, NBC Philadelphia, as summarized). The storm should clear most of the East by Saturday.</p>
+          </div>
+          <p class="story-sourceline">CNN, AP via OPB, SF Chronicle, WCVB &middot; National Weather Service &middot; NPR, Weather.com, NBC Philadelphia (travel, as summarized).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight &amp; Since the Close</h2>
+      <div class="story-body">
+        <p><b>Since Wednesday’s close.</b> U.S. stocks ended Wednesday nearly flat after a 3.2% intraday fall: S&amp;P 500 7,182.78 (&minus;0.25%), Nasdaq 23,585.80 (&minus;0.62%), Dow 50,182.95 (+0.33%). Overnight, Asia and Europe recovered (Top Stories), and S&amp;P futures added 0.55% to 7,235.00, Nasdaq-100 futures 0.50% to 26,231.50, Dow futures 0.31% to 50,382 and Russell 2000 futures 0.34% to 2,715.40 by 6:28 AM, from Wednesday’s settlements. One overnight report had S&amp;P futures up 0.7% and Nasdaq-100 futures 1.1% during Asian hours, so some of the early gain has faded.</p>
+        <p><b>Rates and the dollar.</b> The Treasury cash market is closed. Ten-year note futures slipped 0.17%, which points to a yield a little above Wednesday’s 4.85%. The dollar index was 103.78, up 0.10%; the euro was $1.0972 and sterling $1.3098.</p>
+        <p><b>Commodities.</b> Gold futures were $3,593.60 an ounce, below their late-Wednesday level of about $3,616; spot gold traded near $3,581 in Asia after touching $3,446 on Wednesday, its lowest since August 2025, before short covering (Reuters via Mining.com). It is about 37% below this year’s record. Silver was $41.78, copper $5.47 a pound and natural gas $3.64, near Wednesday’s late levels after that day’s 11% jump.</p>
+        <p><b>Crypto.</b> Bitcoin was about $60,600, up 3.7% over 24 hours from Wednesday’s low near $57,300 but heading for a seventh weekly fall; ether was about $1,698 (CoinGecko; FXStreet).</p>
+        <p><b>Europe’s data.</b> Germany’s GfK consumer-confidence index for December came in at &minus;30.2, a touch better than the revised &minus;30.9 but below forecasts near &minus;29; households’ price expectations rose sharply, to 2.8 from 1.0 (GfK via ActionForex, FinScans). The ECB publishes its account of the October meeting at 7:30 AM Eastern.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-closed">
+      <h2 id="s-closed">Markets Closed &mdash; Thanksgiving</h2>
+      <div class="story-body">
+        <p>The New York Stock Exchange, Nasdaq and the bond market are closed today; none of the U.S. stock or bond figures in this edition are new closes. CME stock-index and Treasury futures trade an abbreviated session that halts at 1 PM Eastern, energy and metals futures stop at 2:30 PM, and currencies and crypto trade around the clock. Futures are thinly traded today and are not a guaranteed guide to Friday’s open.</p>
+        <p><b>What the tape is pricing.</b> Futures up about half a percent, a slightly softer bond market and a firmer dollar describe a market that thinks Wednesday’s recovery was real, and that sees the tariff plan as a negotiating position rather than a new shock. The VIX closed Wednesday at 28.29, with 9-day protection (29.61) still dearer than 3-month (26.29): an inverted term structure that says traders are paying up to hedge the holiday stretch. Credit is softer but not stressed: the high-yield spread was 3.72 percentage points on Tuesday, up from 3.47 a week earlier. Gold near a one-year low and bitcoin near $60,000 show that liquidation selling has not fully stopped.</p>
+        <p><b>The most fragile assumption.</b> That the Gulf stays a set of unconfirmed claims. Oil near $84 for U.S. crude prices in a surplus; a confirmed hit on Ras Tanura or a named tanker sunk would undercut that, and with it the rebound in rate-sensitive stocks. What would invalidate the calm: satellite or company confirmation of refinery damage, an OPEC+ surprise on Sunday, or a Tokyo inflation figure hot enough to push the yen through 160 and Japanese yields higher.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p><b>No U.S. data today.</b> Wednesday’s releases stand as the last major figures before the Fed meets on December 8&ndash;9: October core PCE prices up 0.3% on the month and 3.3% from a year earlier, third-quarter growth revised to 4.3% annualised, and jobless claims at 189,000. In level terms inflation is high and edging up on a 12-month basis, while the monthly pace is steady; real consumer spending slipped in October.</p>
+        <p><b>The Fed.</b> The target range is 3.75&ndash;4.00%. Futures put a quarter-point rise on December 9 at roughly 95&ndash;98%, depending on the report, and Polymarket at about 94%. The pre-meeting blackout starts Saturday, so Friday is the last day officials can comment. We found no Fed remarks since Wednesday.</p>
+        <p><b>Treasury.</b> No auctions today. This week’s $183 billion of 2-, 5- and 7-year notes settles on Monday, November 30. Government funding expires after December 11; Congress returns on Monday, and there is nothing new on a stopgap (The United States, below).</p>
+        <p><b>Global central banks.</b> Korea raised rates and Japan is leaning that way (Top Stories). The ECB, whose deposit rate is 2.50% after two increases this year, is widely expected to raise again on December 17; this morning’s meeting account will show how broad that support was in October. Japan’s Tokyo inflation figures come out tonight.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><b>No earnings today.</b> The U.S. calendar is empty until Monday, when Marvell, NetApp and CrowdStrike report after the close; Salesforce and Snowflake follow on Tuesday.</p>
+        <p><b>Abroad.</b> Kioxia, the Japanese flash-memory maker, closed up 12.6% after a report that it is working with Nvidia on a solid-state-drive proof of concept; that report comes from a single trade outlet. SoftBank Group rose 7.3%.</p>
+        <p><b>Anthropic and SpaceX.</b> We found no new company news. Anthropic (ANT) closed Wednesday at $82.79, just under its $83 offering price; one report says ARK Invest bought about 317,000 shares on Wednesday, and a lock-up covering about 300 million shares is reported for December. Both reports are single-sourced. SpaceX (SPCX) closed at $127.44; its price history begins June 12, 2026.</p>
+        <p><b>Filings.</b> We could not search SEC filings directly; filing news comes from company releases and reporting.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today’s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Thursday, Nov 26, with Friday’s session. All times ET. Consensus from compiled calendars where available.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>All day</td><td class="txt">NYSE, Nasdaq and U.S. bond market closed for Thanksgiving</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>4:00</td><td class="txt">EU leaders’ euro summit on ECB appointments, Brussels (summit runs to Friday)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>7:30</td><td class="txt">ECB account of the Oct 28&ndash;29 meeting</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt">CME stock-index and Treasury futures halt</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>18:30</td><td class="txt"><strong>Tokyo consumer prices, November</strong></td><td>~2.8&ndash;3.0%</td><td>2.8%</td></tr>
+            <tr><td>~19:00</td><td class="txt">Rocket Lab Electron launches a StriX radar satellite for Synspective, New Zealand</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Fri 9:30&ndash;13:00</td><td class="txt">U.S. stocks’ half-day session (bonds to 14:00); Black Friday</td><td>&mdash;</td><td>S&amp;P 7,182.78</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the most consequential event. Tokyo’s figure is the headline year-on-year rate.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Friday’s half-session holds Thursday’s gains.</strong> We put the chance of the S&amp;P 500 closing Friday above Wednesday’s 7,182.78 at 55&ndash;70%, on the basis that futures are 0.55% higher and overseas markets rallied, set against thin holiday trading and a VIX still near 28. It would be wrong if the Gulf claims are confirmed or a hot Tokyo inflation figure sends the yen and Japanese yields sharply higher.</p>
+        <p><strong>Japan raises rates in December.</strong> We put the chance of a Bank of Japan increase at its December 17&ndash;18 meeting at 65&ndash;80%. Basis: swaps price about 80%, and a board member and the governor have both leaned that way this week; Japan’s central bank has surprised markets before. If it happens, expect pressure on U.S. long-term yields through Japanese demand for Treasuries.</p>
+        <p><strong>The ECB raises rates on December 17.</strong> We put this at 65&ndash;80%: the move is widely expected after two increases this year, and the risk is that the October account or November inflation data shows a divided council.</p>
+        <p><strong>The Gulf escalates.</strong> We do not put a number on whether Ras Tanura was damaged: the evidence is a claim, smoke in satellite images and one unnamed source, against a Saudi statement that the drones were shot down. If damage is confirmed, Brent would likely move several dollars higher.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>Birthright citizenship.</b> Judge Christopher Cooper of the federal district court in Washington issued a classwide preliminary injunction on Wednesday against President Trump’s August 2026 executive order on birthright citizenship, in a 67-page opinion, after a similar injunction in Maryland in September. Several reports say the Supreme Court struck down an earlier version of the order 6&ndash;3 in June. The White House called Cooper “an activist judge.” The case is at the preliminary-injunction stage; an appeal is likely (Washington Times, ABC, Star-Advertiser).</p>
+        <p><b>Disney and the FCC.</b> Judge Loren AliKhan granted Disney a preliminary injunction blocking a Federal Communications Commission hearing on the licences of ABC-owned stations; the FCC called the ruling “wrong on the facts and wrong on the law.” This comes from a single outlet’s report (HuffPost).</p>
+        <p><b>The president.</b> In posts on Truth Social after midnight, Mr. Trump attacked a New York Times correspondent and called the U.S. naval blockade of Iran “the most successful naval blockade in history”; in a Fox interview this week he said he leans toward resuming major strikes after the new year if there is no deal. He has also said the U.S. does not need a deal with Iran, according to one outlet’s account of the posts (Mediaite, HuffPost, Daily Beast, as summarized).</p>
+        <p><b>Funding.</b> Nothing new. Money runs out after December 11. Senate Majority Leader John Thune has sounded open to limits on Iran-war funding in one report and dismissive in another, and Democrats have put talks off until they choose a leader on December 1. At least seven Democratic votes are needed in the Senate.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>Gaza.</b> Israeli strikes overnight killed at least eight or nine people, including a Hamas-appointed deputy education minister, according to Gaza officials cited by NBC and AP; it is the third straight night of strikes despite the ceasefire of about a year ago. Prime Minister Benjamin Netanyahu called them targeted killings of Hamas leaders. The toll has not been independently verified.</p>
+        <p><b>Ukraine.</b> Russian strikes killed at least five people in Odesa and Chernihiv regions on Wednesday and caused power cuts in five regions, according to local officials; Russia’s defence ministry claimed a “massive strike” on defence plants in Kyiv, and a Ukrainian drone attack on Russia’s Samara region killed one person, per Russian officials (Al Jazeera, TASS). Hungary’s new prime minister, Péter Magyar, met President Zelenskyy in western Ukraine on his first official visit. We found no new peace talks.</p>
+        <p><b>Europe.</b> EU leaders meet in Brussels today and Friday. The euro summit discusses the succession to Christine Lagarde, with Spain’s Pablo Hernández de Cos reported as the leading candidate and a formal decision expected in December. Leaders also take up the 2028&ndash;34 budget, where reported totals differ, and a &euro;45 billion loan for Ukraine; any of the 27 can veto. Spain votes on Sunday: under the polling blackout, every recent survey except the state pollster’s shows the conservative Popular Party and Vox together above the 176-seat majority. Polls are not predictions, and Prime Minister Pedro Sánchez says his side will win.</p>
+        <p><b>Also abroad.</b> A boat carrying mourners capsized in Nigeria’s Bayelsa state, killing 24, and about 80 garment factories near Dhaka closed during minimum-wage protests, with 96 arrests reported (wire confirmation not checked).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>OpenAI.</b> Sam Altman said OpenAI is testing “Private Inference” with a small group of business customers, without saying which models it covers, what it costs or when it will be widely available. TechCrunch reports ChatGPT is combining its chat and work modes, and the heaviest users may reach usage limits sooner as shared limits roll out in December.</p>
+        <p><b>Anthropic.</b> Chief executive Dario Amodei called “absurd” a claim that he wants people to surrender free will to AI. A single developer blog reports that Anthropic rewrote its Messages API in the Rust language, cutting processor use per request by about 70%; we could not confirm it.</p>
+        <p><b>Read for the market.</b> Nvidia’s credit watch and the ransomware claim are in Top Stories. The chip rebound in Tokyo and Taipei will be tested in New York on Friday, where Nvidia trades below its level before Monday’s reinstatement of Jensen Huang.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science</h2>
+      <div class="story-body">
+        <p><b>Heart disease genetics.</b> A peer-reviewed study in Nature on Wednesday from Washington University in St. Louis maps, cell by cell, which genetic variants linked to coronary artery disease switch which genes on in artery tissue (DOI 10.1038/s41586-026-11275-z). Maps like this help researchers turn the long lists of risk variants from genome studies into specific genes that drugs could target; it is a research resource, not a treatment. This comes from a single summary of the paper. The Riemann hypothesis certification is in Top Stories.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>Tonight.</b> Rocket Lab’s Electron is set to launch “Night Owls Never Sleep,” the 14th StriX radar satellite for Japan’s Synspective and Rocket Lab’s 101st launch, from New Zealand at about 7 PM Eastern, into a 569 km orbit at 38 degrees, the first mid-latitude StriX (Rocket Lab, Launch Library 2). Rocket Lab signed a 20-launch deal with Synspective for 2028&ndash;31 in September.</p>
+        <p><b>This weekend.</b> A Falcon 9 launches the U.S. Space Force’s USSF-380 mission from California late Saturday, and another carries Northrop Grumman’s Cygnus NG-25 cargo ship to the International Space Station from Florida at about 10:47 AM Sunday. China launched a Yaogan 49 group of military reconnaissance satellites on a Long March 2D this morning.</p>
+        <p><b>Vulcan.</b> ULA’s rocket remains grounded after its November 15 failure; preliminary data point to an inadequate fuel supply to the BE-4 engines rather than a fault in the engines themselves (Spaceflight Now, Nov 18). Blue Origin is aiming for New Glenn’s return to flight in January.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><b>Ebola.</b> The CDC counts 11,793 confirmed cases and 5,779 confirmed deaths from the Bundibugyo-strain outbreak as of November 20, mostly in the Democratic Republic of Congo, with cases also in Kenya and Nigeria, and 400&ndash;500 new cases a week; there are no U.S. cases (CDC, as summarized). <b>Measles.</b> The CDC counts 6,039 U.S. cases and nine deaths this year, after the Pan American Health Organization said on November 17 that the U.S. has lost its measles-elimination status.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">48&deg;<small>today’s high</small></p>
+          <p class="weather-desc">Rain all day, northeast wind 18&ndash;23 mph, gusts to 39</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Thanksgiving</b>
+            <span class="hi">48&deg;</span>
+            <span class="sky">Rain, &frac12;&ndash;&frac34; in.</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">39&deg;</span>
+            <span class="sky">Rain</span>
+          </div>
+          <div class="weather-day">
+            <b>Friday</b>
+            <span class="hi">45&deg;</span>
+            <span class="sky">Light rain, windy</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette &middot; South Hills</p>
+        <h3>Mt. Lebanon proposes replacing its stormwater fee with a higher earned-income tax</h3>
+        <div class="story-body">
+          <p>Mt. Lebanon’s recommended 2027 operating budget is $45.5 million, or $70 million with capital spending, and proposes raising the earned-income tax by 0.2 percentage points to replace the stormwater fee, according to Mt. Lebanon Magazine. That would shift the cost from a charge on property to a tax on residents’ wages. The next budget workshop is Thursday, December 3, at 6 PM at the municipal building. This comes from a single local outlet.</p>
+        </div>
+        <p class="story-sourceline">Mt Lebanon Magazine (lebomag.com, about Nov 24, as summarized).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>The pension board wants more parking-tax money to offset the mayor’s proposed pension cuts</h3>
+        <div class="story-body">
+          <p>The 2027 budget plan would cut the city’s pension contributions by $10 million a year through 2031 and draw about $26&ndash;28 million from reserves; an actuarial report for the pension board recommends sending more parking-tax revenue to the fund to make up the difference, TribLive reports. Council heard from the Parking Authority, the housing authority, Pittsburgh Water and the Land Bank on Tuesday and votes on the budget on December 17. Allegheny County’s roughly $3 billion budget awaits a full council vote by December 6. Closer to home, Pittsburgh Regional Transit’s improvements to Carnegie Station and its park-and-ride are at 90% design, with a virtual public meeting on Tuesday, December 1 (WPXI). Buses run Sunday schedules today.</p>
+        </div>
+        <p class="story-sourceline">TribLive (as summarized; single source on the pension report) &middot; City Council hearing schedule &middot; WPXI (PRT).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>The legislative session ends Monday with a new prevailing-wage law signed</h3>
+        <div class="story-body">
+          <p>Governor Josh Shapiro held a ceremonial signing on Wednesday for Senate Bill 908, which extends prevailing-wage requirements to custom components fabricated off-site for public construction projects, according to the governor’s office as republished. The 2025&ndash;26 session of the General Assembly ends on November 30; bills not passed by then die, and Democrats take control of both chambers and the governorship in January. Duquesne Light’s default electricity rate rises about 3%, to 14.56 cents per kilowatt-hour, on December 1.</p>
+        </div>
+        <p class="story-sourceline">Governor’s office release (via forth.news) &middot; PA NewsMedia Association (session calendar) &middot; Pennsylvania PUC (rates).</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, stabilising</span> <b>Supporting a turn:</b> Wednesday’s recovery from a 3.2% intraday fall; equal-weight, mid-cap and small-cap funds rising two days running; Asia and Europe up 1&ndash;2.5% overnight; U.S. futures +0.5%; strong demand at Wednesday’s 7-year auction; the tariff plan read as capped for allies. <b>Against it:</b> VIX 28.29 with an inverted term structure; SPY 5.4% below its 50-day and 2.2% below its 200-day average; chip fund SMH 22% below its 50-day; high-yield spread up 25 basis points in a week; gold near a one-year low; bitcoin on course for a seventh weekly fall; Gulf claims unresolved; central banks still raising rates. No change in regime since Wednesday evening. Confidence: moderate.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Global equities and U.S. futures</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance &middot; Asia: <em>EOD official</em> Thu Nov 26 closes vs Wed; Europe: <em>Delayed</em> ~6:23 AM ET; U.S. futures: <em>Delayed (+10 min)</em> ~6:28 AM ET vs Wed settlement. U.S. cash indexes are <em>Previous close</em> Nov 25.</caption>
+<thead><tr><th>Market</th><th>Level</th><th>Chg %</th></tr></thead><tbody>
+<tr><td class="txt">Taiex (Taiwan)</td><td>39,151.81</td><td class="up">+2.50</td></tr>
+<tr><td class="txt">Hang Seng</td><td>22,226.88</td><td class="up">+1.19</td></tr>
+<tr><td class="txt">Nikkei 225</td><td>57,499.16</td><td class="up">+0.86</td></tr>
+<tr><td class="txt">S&amp;P/ASX 200</td><td>8,763.80</td><td class="up">+0.82</td></tr>
+<tr><td class="txt">Kospi</td><td>4,711.21</td><td class="up">+0.29</td></tr>
+<tr><td class="txt">Shanghai Composite</td><td>3,476.88</td><td class="flat">+0.01</td></tr>
+<tr><td class="txt">Stoxx Europe 600</td><td>636.23</td><td class="up">+1.63</td></tr>
+<tr><td class="txt">DAX</td><td>25,176.05</td><td class="up">+1.92</td></tr>
+<tr><td class="txt">CAC 40</td><td>8,125.52</td><td class="up">+1.82</td></tr>
+<tr><td class="txt">FTSE 100</td><td>10,593.93</td><td class="up">+1.60</td></tr>
+<tr><td class="txt">S&amp;P 500 futures (ES)</td><td>7,235.00</td><td class="up">+0.55</td></tr>
+<tr><td class="txt">Nasdaq-100 futures (NQ)</td><td>26,231.50</td><td class="up">+0.50</td></tr>
+<tr><td class="txt">Dow futures (YM)</td><td>50,382</td><td class="up">+0.31</td></tr>
+<tr><td class="txt">Russell 2000 futures (RTY)</td><td>2,715.40</td><td class="up">+0.34</td></tr>
+<tr><td class="txt">S&amp;P 500 (Nov 25 close)</td><td>7,182.78</td><td class="down">&minus;0.25</td></tr>
+<tr><td class="txt">Nasdaq Composite (Nov 25 close)</td><td>23,585.80</td><td class="down">&minus;0.62</td></tr>
+<tr><td class="txt">Dow (Nov 25 close)</td><td>50,182.95</td><td class="up">+0.33</td></tr>
+</tbody></table></div>
+          <p>Moving-average distances, sector and watchlist closes are unchanged from Wednesday evening’s Closing Brief, since U.S. stocks have not traded. The Topix rose 0.11% to 3,750.40 (as reported); Taiwan’s gain is the exchange figure, with one recap citing 3.1%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Not updated today: there is no U.S. session. The latest whole-market count is Tuesday’s (2,865 advancers, 2,515 decliners, 29.8% of liquid stocks above their 50-session exponential average; the 200-session figure is still accumulating history). Wednesday’s count will be added on Friday morning. On Wednesday the equal-weight fund RSP rose 0.83% while SPY fell 0.29%, the second day the average stock beat the index.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>U.S. Treasury daily par yield curve &middot; <em>EOD official</em> Nov 25 vs Nov 24, percent. No new curve today (market closed).</caption>
+<thead><tr><th>Tenor</th><th>Nov 25</th><th>Nov 24</th><th>Chg (bp)</th></tr></thead><tbody>
+<tr><td class="txt">1M</td><td>4.27</td><td>4.21</td><td>+6</td></tr>
+<tr><td class="txt">3M</td><td>4.34</td><td>4.36</td><td>&minus;2</td></tr>
+<tr><td class="txt">6M</td><td>4.44</td><td>4.46</td><td>&minus;2</td></tr>
+<tr><td class="txt">1Y</td><td>4.56</td><td>4.59</td><td>&minus;3</td></tr>
+<tr><td class="txt">2Y</td><td>4.61</td><td>4.63</td><td>&minus;2</td></tr>
+<tr><td class="txt">5Y</td><td>4.65</td><td>4.69</td><td>&minus;4</td></tr>
+<tr><td class="txt">7Y</td><td>4.74</td><td>4.79</td><td>&minus;5</td></tr>
+<tr><td class="txt">10Y</td><td>4.85</td><td>4.91</td><td>&minus;6</td></tr>
+<tr><td class="txt">20Y</td><td>5.28</td><td>5.33</td><td>&minus;5</td></tr>
+<tr><td class="txt">30Y</td><td>5.24</td><td>5.30</td><td>&minus;6</td></tr>
+</tbody></table></div>
+          <p>2s10s +24 bp, 3m10y +51 bp, 5s30s +59 bp. FRED, <em>EOD official</em>: 10-year breakeven 2.12% (Nov 25); 10-year TIPS real yield 2.79% and SOFR 3.94% (Nov 24). Ten-year note futures were 107-00 at 6:28 AM, down 0.17% from Wednesday’s settlement (<em>Delayed</em>), consistent with yields slightly higher.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA U.S. high-yield option-adjusted spread (FRED, <em>EOD official</em> Nov 24, one-day lag; no newer observation yet): 3.72 percentage points, from 3.63 on Nov 23, 3.76 on Nov 20 and 3.47 on Nov 18. On Wednesday HYG rose 0.12% and LQD 0.48% (Yahoo Finance, <em>Previous close</em> Nov 25), so credit firmed with Treasuries.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>Yahoo Finance, <em>Previous close</em> Nov 25: VIX 28.29, VIX9D 29.61, VIX3M 26.29 &mdash; inverted (VIX9D &gt; VIX &gt; VIX3M). Yahoo showed the VIX at 27.05 early Thursday; with U.S. options closed, treat that as indicative only. Put/call ratios are not tracked. Dealer gamma is not tracked: there is no legitimate free source. MOVE index: not available.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance ~6:37 AM ET Nov 26, <em>Delayed</em>; ECB reference rates via Frankfurter, <em>EOD official</em> Nov 25 (today’s fix comes at 2:15 PM Frankfurt).</caption>
+<thead><tr><th>Instrument</th><th>Yahoo (Thu)</th><th>ECB fix (Wed)</th></tr></thead><tbody>
+<tr><td class="txt">Dollar index (DXY)</td><td>103.78 (+0.10%)</td><td>&mdash;</td></tr>
+<tr><td class="txt">EUR/USD</td><td>1.0972</td><td>1.0935</td></tr>
+<tr><td class="txt">USD/JPY</td><td>159.29</td><td>159.32</td></tr>
+<tr><td class="txt">GBP/USD</td><td>1.3098</td><td>1.3060</td></tr>
+<tr><td class="txt">USD/CNY</td><td>&mdash;</td><td>6.6757</td></tr>
+<tr><td class="txt">USD/CAD</td><td>&mdash;</td><td>1.4258</td></tr>
+<tr><td class="txt">USD/MXN</td><td>&mdash;</td><td>19.70</td></tr>
+<tr><td class="txt">USD/INR</td><td>&mdash;</td><td>92.24</td></tr>
+</tbody></table></div>
+          <p>The yen is within 1% of 160, the level Japanese officials have repeatedly warned about; we found no report of intervention.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities &amp; crypto</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance front-month futures, <em>Delayed (+10 min)</em>, ~6:28 AM ET Nov 26; Brent January as reported by Reuters; CoinGecko <em>Live (CoinGecko aggregate)</em> ~6:40 AM ET.</caption>
+<thead><tr><th>Instrument</th><th>Level</th><th>Note</th></tr></thead><tbody>
+<tr><td class="txt">WTI crude ($/bbl)</td><td>84.44</td><td>+0.91% vs Wed settlement</td></tr>
+<tr><td class="txt">Brent, January ($/bbl)</td><td>~94.52</td><td>~&minus;0.1% (Reuters); expires Nov 30</td></tr>
+<tr><td class="txt">Brent, February ($/bbl)</td><td>91.01</td><td>Yahoo rolled series</td></tr>
+<tr><td class="txt">Natural gas ($/MMBtu)</td><td>3.64</td><td>near Wed late level</td></tr>
+<tr><td class="txt">Gold ($/oz)</td><td>3,593.60</td><td>below Wed late ~3,616.50</td></tr>
+<tr><td class="txt">Silver ($/oz)</td><td>41.78</td><td>Wed late 41.56</td></tr>
+<tr><td class="txt">Copper ($/lb)</td><td>5.47</td><td>Wed late 5.48</td></tr>
+<tr><td class="txt">Bitcoin</td><td>$60,600</td><td class="up">+3.7% (24h)</td></tr>
+<tr><td class="txt">Ether</td><td>$1,698</td><td class="up">+3.7% (24h)</td></tr>
+<tr><td class="txt">Solana</td><td>$70.68</td><td class="up">+4.8% (24h)</td></tr>
+<tr><td class="txt">Total crypto market value</td><td>$2.07T</td><td>bitcoin dominance 58.7%</td></tr>
+</tbody></table></div>
+          <p>Wednesday’s Brent comparisons in our Closing Brief straddled the January and February contracts; the gap between them, about $3.50, reflects how tight nearby supply is. U.S. crude inventories rose 1.1 million barrels in the week to November 20, the third straight increase (EIA, as reported).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>No U.S. session. Overnight, chip-heavy Taiwan and Japan’s chip-equipment makers led, and Shanghai lagged, consistent with a rebound in the AI hardware trade rather than a broad reach for risk. Gold and the yen did not join the rally; the dollar firmed slightly.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No U.S. reports today or Friday. Next: Marvell, NetApp and CrowdStrike (Mon Dec 1, after the close); Salesforce and Snowflake (Tue Dec 2, after the close), per the Finnhub calendar.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No auctions today or Friday. This week’s 2-, 5- and 7-year notes and the 2-year FRN, $211 billion in all, settle Monday, November 30. On Wednesday the 7-year cleared at 4.708% with a 2.43 bid-to-cover and primary dealers taking only 8.6% (TreasuryDirect, <em>EOD official</em>). Holiday liquidity is thin through Friday’s early close.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> U.S. Treasury par yield curve and TreasuryDirect; FRED; ECB reference rates; Yahoo Finance futures, index and currency quotes; CoinGecko; the National Weather Service; Launch Library 2 and Rocket Lab; the Bank of Korea’s decision and the USTR release as reported; and AP, Reuters, CNBC, Korea Times, CNN, NBC, Al Jazeera, Nature, TribLive, WPXI and the other outlets named in each story. Much of this morning’s reporting rests on search-result summaries rather than full articles, and we say so where it matters.</p>
+      <p><strong>Corrections.</strong> Wednesday morning’s edition described the claimed Riemann hypothesis proof as still being checked and did not report that the Lean and Mathlib organizations had certified it on November 21. The story is updated above; our conclusion that the claim is unconfirmed by peer review and by the Clay Institute is unchanged.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-26-cfa1.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

@@ -503,6 +503,15 @@
       "error_source": "Standard 1 PM time assumed; TreasuryDirect announcement not checked for the pre-holiday schedule.",
       "conclusions_changed": false,
       "note": "Surfaced in 2026-11-25-pm colophon."
+    },
+    {
+      "found": "2026-11-26",
+      "report": "reports/2026/11/2026-11-25-am.html",
+      "original": "Riemann hypothesis proof claim described as still being checked (Sutherland checks pass so far; Clay lists open), with no mention of a certification.",
+      "corrected": "The Lean FRO and Mathlib Initiative issued a joint statement on Nov 21 certifying the statement and proof as correct (as reported by Nature, Scientific American); not peer-reviewed; Clay still lists the problem open.",
+      "error_source": "Research summary missed the Nov 21 joint statement.",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-11-26-am colophon."
     }
   ]
 }

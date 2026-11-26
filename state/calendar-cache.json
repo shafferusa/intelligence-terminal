@@ -1,64 +1,8 @@
 {
- "fetched": "2026-11-25T06:50:00-05:00",
+ "fetched": "2026-11-26T06:45:54-05:00",
  "earnings_fetched": "2026-11-22",
  "earnings_fetched_note": "2026-11-25 am: Finnhub Nov 25-Dec 2 fetched; Alpha Vantage not fetched; BLS ICS not fetched.",
  "events": [
-  {
-   "ts_et": "2026-11-25T00:00",
-   "type": "politics",
-   "name": "Treasury 10-day deadline for Nvidia board answers",
-   "importance": "High",
-   "reason": "Nvidia legal/policy risk",
-   "source": "Politico as reported"
-  },
-  {
-   "ts_et": "2026-11-25T07:00",
-   "type": "earnings",
-   "name": "Deere (BMO) - reported EPS $3.89 vs ~$4.05-4.17",
-   "importance": "Medium",
-   "reason": "Ag cycle; FY27 NI guide $4.50-5.25B",
-   "source": "Finnhub; Investing.com"
-  },
-  {
-   "ts_et": "2026-11-25T08:30",
-   "type": "data",
-   "name": "Oct PCE/personal income & spending, Q3 GDP 2nd est, jobless claims (durable goods per some calendars)",
-   "importance": "Critical",
-   "reason": "Last big inflation print before Dec 9 FOMC; core seen +0.3% m/m, 3.2-3.3% y/y",
-   "source": "Compiled calendars"
-  },
-  {
-   "ts_et": "2026-11-25T09:15",
-   "type": "cb",
-   "name": "BoE Bailey et al. at Treasury Select Committee",
-   "importance": "Low",
-   "reason": "UK policy after hike to 4%",
-   "source": "BoE calendar"
-  },
-  {
-   "ts_et": "2026-11-25T10:30",
-   "type": "data",
-   "name": "EIA weekly petroleum status",
-   "importance": "Low",
-   "reason": "API +126K bbl",
-   "source": "EIA schedule"
-  },
-  {
-   "ts_et": "2026-11-25T13:00",
-   "type": "auction",
-   "name": "7-year note $44B",
-   "importance": "Medium",
-   "reason": "Duration supply",
-   "source": "TreasuryDirect"
-  },
-  {
-   "ts_et": "2026-11-25T14:00",
-   "type": "fed",
-   "name": "Beige Book",
-   "importance": "Medium",
-   "reason": "Regional conditions before FOMC",
-   "source": "Compiled calendars"
-  },
   {
    "ts_et": "2026-11-26T00:00",
    "type": "market",
@@ -66,6 +10,22 @@
    "importance": "High",
    "reason": "Holiday",
    "source": "data/nyse-holidays.json"
+  },
+  {
+   "ts_et": "2026-11-26T07:30",
+   "type": "cb",
+   "name": "ECB account of Oct 28-29 meeting",
+   "importance": "Low",
+   "reason": "ECB Dec 17 path",
+   "source": "FXStreet calendar"
+  },
+  {
+   "ts_et": "2026-11-26T18:30",
+   "type": "data",
+   "name": "Tokyo CPI Nov",
+   "importance": "Medium",
+   "reason": "BoJ Dec 18; yen near 160",
+   "source": "Compiled calendars"
   },
   {
    "ts_et": "2026-11-26T19:05",
@@ -90,6 +50,22 @@
    "importance": "Medium",
    "reason": "Second Saturday before Dec 8-9 meeting",
    "source": "Fed blackout rule"
+  },
+  {
+   "ts_et": "2026-11-28T08:30",
+   "type": "other",
+   "name": "Macy's parade (postponed from Nov 26)",
+   "importance": "Low",
+   "reason": "Wind",
+   "source": "CNN, AP"
+  },
+  {
+   "ts_et": "2026-11-28T23:39",
+   "type": "launch",
+   "name": "Falcon 9 USSF-380 (Vandenberg)",
+   "importance": "Low",
+   "reason": "NSSL",
+   "source": "Launch Library 2"
   },
   {
    "ts_et": "2026-11-29T00:00",
@@ -194,6 +170,30 @@
    "importance": "High",
    "reason": "Shutdown risk",
    "source": "NPR, Punchbowl"
+  },
+  {
+   "ts_et": "2026-12-17T00:00",
+   "type": "cb",
+   "name": "ECB decision",
+   "importance": "High",
+   "reason": "Hike widely expected",
+   "source": "As reported"
+  },
+  {
+   "ts_et": "2026-12-17T00:00",
+   "type": "local",
+   "name": "Pittsburgh council 2027 budget vote",
+   "importance": "Low",
+   "reason": "Pension/parking tax",
+   "source": "TribLive"
+  },
+  {
+   "ts_et": "2026-12-18T00:00",
+   "type": "cb",
+   "name": "BoJ decision (Dec 17-18)",
+   "importance": "High",
+   "reason": "~80% hike priced",
+   "source": "FXStreet"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

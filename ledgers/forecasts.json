@@ -8455,6 +8455,36 @@
    "probability": "40-60%",
    "basis": "Reuters reports announcement could come this week; no notice, rates or lists published; past timetables slipped.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-26-am-1",
+   "date": "2026-11-26",
+   "slot": "am",
+   "forecast": "The S&P 500 closes Fri Nov 27 above Wednesday's 7,182.78.",
+   "horizon": "2026-11-27",
+   "probability": "55-70%",
+   "basis": "ES +0.55% at 06:28 Thu, Asia/Europe rally; offset by thin holiday trading and VIX ~28",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-26-am-2",
+   "date": "2026-11-26",
+   "slot": "am",
+   "forecast": "The Bank of Japan raises its policy rate at its Dec 17-18 meeting.",
+   "horizon": "2026-12-18",
+   "probability": "65-80%",
+   "basis": "Swaps ~80% (FXStreet); Tamura and Ueda hawkish this week",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-26-am-3",
+   "date": "2026-11-26",
+   "slot": "am",
+   "forecast": "The ECB raises its deposit rate on Dec 17.",
+   "horizon": "2026-12-17",
+   "probability": "65-80%",
+   "basis": "Widely expected after two 2026 hikes (FXStreet preview)",
+   "status": "open"
   }
  ]
 }
