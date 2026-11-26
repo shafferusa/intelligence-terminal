@@ -1,6 +1,83 @@
 {
  "stories": [
   {
+   "id": "europe-close-nov26",
+   "headline": "Thanksgiving: Stoxx 600 +1.75% 636.98, DAX +2.08%, FTSE +1.75%, CAC +1.61%; ES +0.54% 7,234.50 at 1 PM halt; ZN -0.20%",
+   "status": "New",
+   "rationale": "Lead; holiday tape",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
+   "id": "ecb-account-oct-nov26",
+   "headline": "ECB Oct account: 'large support' for hike in Oct (Reuters); another rise 'would likely prove necessary'; HICP 3.8% Sep, 4.0% Oct; euro leaders recommend Hernandez de Cos for ECB president (Knot withdrawn), formal approval pending",
+   "status": "New",
+   "rationale": "Central banks",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
+   "id": "kuwait-drones-italians-nov26",
+   "headline": "Drones kill 2 Rheinmetall Italia technicians at Kuwait air-defence site; Tajani: Iranian-made; Iran denies; first deadly attack on Kuwait since July",
+   "status": "New",
+   "rationale": "Gulf escalation; high-risk, attribution disputed",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
+   "id": "altria-imperial-nov26",
+   "headline": "Altria confirms possible (likely cash) offer for Imperial Brands; IMB +13.3% to 3,432p; JT also weighing (Reuters); PUSU deadline Dec 24 5 PM",
+   "status": "New",
+   "rationale": "M&A",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
+   "id": "eu-summit-nov26",
+   "headline": "EU summit day 1: no MFF 2028-34 deal (Macron 'no agreement at this summit'), EUR45B Ukraine loan split (HU/CZ/SK out); conclusions Fri; next summit Dec 17-18",
+   "status": "New",
+   "rationale": "Europe/Ukraine financing",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
+   "id": "east-storm-outages-nov26",
+   "headline": "Thanksgiving storm: outages >1M early, ~660-800K later (VA 200K+, MO 120K+ snow); ~400 cancels, 1,200+ delays by noon; Philly parade cancelled; no confirmed deaths",
+   "status": "New",
+   "rationale": "US disaster/travel",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
+   "id": "china-301-response-nov26",
+   "headline": "MOFCOM He Yadong: firmly opposes, 'reserves the right' to take measures; urges implementing $30B tariff-cut deal; no retaliation",
+   "status": "Materially changed",
+   "rationale": "Trade",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-26",
+   "last_seen": "2026-11-26",
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
+  },
+  {
    "id": "pgh-pension-parking-nov24",
    "headline": "City 2027 plan cuts pension contributions $10M/yr through 2031; actuarial report urges more parking-tax money (TribLive, single); vote Dec 17; Carnegie Station 90% design, meeting Dec 1",
    "status": "New",
@@ -30,8 +107,8 @@
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-am.html",
-   "updated": "2026-11-26-am"
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
   },
   {
    "id": "riemann-lean-certified",
@@ -63,8 +140,8 @@
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-am.html",
-   "updated": "2026-11-26-am"
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
   },
   {
    "id": "section301-reactions-nov26",
@@ -74,8 +151,8 @@
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-am.html",
-   "updated": "2026-11-26-am"
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
   },
   {
    "id": "bok-hike-nov26",
@@ -90,14 +167,14 @@
   },
   {
    "id": "ras-tanura-claim-nov25",
-   "headline": "Houthis claim strike on Ras Tanura (smoke in satellite images, one unnamed source); coalition says 4 drones downed; damage unconfirmed. IRGC claims 2 more tankers hit mines near Khasab Thu; CENTCOM disputes; Brent Jan ~94.52, WTI 84.44",
+   "headline": "Houthi claim on Ras Tanura: NASA/Planet satellite smoke plume (Reuters/CNN); one shipping source says loadings suspended; coalition says 4 drones intercepted; damage unconfirmed",
    "status": "Developing",
    "rationale": "Oil, war",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-am.html",
-   "updated": "2026-11-26-am"
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
   },
   {
    "id": "global-rebound-nov26",
@@ -118,8 +195,8 @@
    "keep_on_watchlist": true,
    "first_seen": "2026-11-25",
    "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-am.html",
-   "updated": "2026-11-26-am"
+   "last_report": "reports/2026/11/2026-11-26-pm.html",
+   "updated": "2026-11-26-pm"
   },
   {
    "id": "beige-book-nov25",
@@ -580,80 +657,6 @@
    "headline": "Russian strikes: Dymer apartment block (2+ dead, 11-14 trapped), Kryvyi Rih 60 wounded",
    "status": "New",
    "rationale": "War; casualties preliminary"
-  },
-  {
-   "last_seen": "2026-11-22",
-   "last_report": "reports/2026/11/2026-11-22-sun.html",
-   "updated": "2026-11-22-sun",
-   "id": "sparta-ii-gulf-of-finland-nov21",
-   "first_seen": "2026-11-21",
-   "headline": "Drone strike sets Russian MoD-linked cargo ship Sparta II ablaze in Gulf of Finland; Finland says Ukraine likely, war 'spilling over'",
-   "status": "New",
-   "rationale": "Geopolitics near NATO waters; Baltic shipping",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "nvidia-sec-probe-nov21",
-   "first_seen": "2026-11-20",
-   "headline": "NYT (Nov 21): SEC Nvidia inquiry at early stage, could end without charges; focus unknown; Trump called Fri for Huang reinstatement, board says no; Bessent 10-day request ends ~Nov 25",
-   "status": "Materially changed",
-   "rationale": "Market-moving regulatory; three outlets",
-   "last_seen": "2026-11-22",
-   "last_report": "reports/2026/11/2026-11-22-sun.html",
-   "updated": "2026-11-22-sun",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "ant-offer-price-watch",
-   "first_seen": "2026-11-19",
-   "headline": "Anthropic (ANT) $88.91 vs $83 offer; greenshoe exercised in full, gross proceeds ~$93.5B (Quartz, Invezz); lockup step ~Dec 15 (single source)",
-   "status": "Continuing",
-   "rationale": "Largest IPO; offer-price test",
-   "last_seen": "2026-11-22",
-   "last_report": "reports/2026/11/2026-11-22-sun.html",
-   "updated": "2026-11-22-sun",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "sp500-correction-nov20",
-   "first_seen": "2026-11-16",
-   "headline": "S&P 500 -8.6% on the week, seven straight losses, correction; VIX 35.89",
-   "status": "Continuing",
-   "rationale": "Market regime",
-   "last_seen": "2026-11-21",
-   "last_report": "reports/2026/11/2026-11-21-sat.html",
-   "updated": "2026-11-21-sat",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "prt-bus-refresh-nov20",
-   "first_seen": "2026-11-20",
-   "headline": "PRT board approves Bus Line Refresh, effective Aug 2027 (WESA, single source)",
-   "status": "New",
-   "rationale": "Local",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-pm.html",
-   "updated": "2026-11-20-pm"
-  },
-  {
-   "id": "qeshm-disputed-nov20",
-   "first_seen": "2026-11-20",
-   "headline": "US official to CBS: limited strikes on Qeshm Island; CENTCOM denies; IRGC claims two tankers hit mines (unconfirmed)",
-   "status": "Disputed",
-   "rationale": "High-risk; disputed",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-pm.html",
-   "updated": "2026-11-20-pm"
-  },
-  {
-   "id": "datacenter-abroad-nov20",
-   "first_seen": "2026-11-20",
-   "headline": "Trump says he will restrict US firms building data centers abroad; no order/text; AI 'guardrails' with Xi claimed, no text",
-   "status": "New",
-   "rationale": "Tech policy read-through",
-   "last_seen": "2026-11-20",
-   "last_report": "reports/2026/11/2026-11-20-pm.html",
-   "updated": "2026-11-20-pm"
   }
  ],
  "updated": "2026-11-26T11:45:54Z"

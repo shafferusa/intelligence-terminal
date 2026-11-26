@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Thu, Nov 26, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-11-26",
+  "slot": "pm",
+  "title": "Closing Brief — Thu, Nov 26, 2026",
+  "path": "reports/2026/11/2026-11-26-pm.html",
+  "summary": "On a closed Thanksgiving in New York, European stocks finished up about 1.6–2.1% and U.S. futures held a 0.5% gain at their 1 PM halt, while the ECB's minutes showed broad support for another rate rise, eurozone leaders backed Pablo Hernández de Cos to succeed Lagarde, two Italian contractors were killed by drones in Kuwait, and Altria said it is weighing a bid for Imperial Brands.",
+  "headlines": [
+    "Markets closed; Europe ends up ~1.8%, S&P futures hold +0.54% at 1 PM halt",
+    "ECB minutes show broad support for another hike; Hernández de Cos backed for ECB chief",
+    "Drones kill two Italians in Kuwait; Altria weighs bid for Imperial Brands, shares +13%"
+  ],
+  "reading_minutes": 28,
+  "generated_at": "2026-11-26T17:20:00-05:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Europe closes near 2% higher and U.S. futures hold their gains on a closed Thanksgiving</h1>
+      <p class="paper-dateline">
+        Thursday, November 26, 2026 <span class="sep">&middot;</span> 28 min read
+      </p>
+      <p class="paper-standfirst">
+        With New York shut for the holiday, Europe’s markets finished about 1.6&ndash;2.1% higher and U.S. stock futures stopped trading at 1 PM still half a percent up, while the ECB’s minutes showed broad support for another rate rise, eurozone leaders backed Spain’s Pablo Hernández de Cos to run the central bank, drones killed two Italian contractors in Kuwait, and Altria said it may bid for Imperial Brands.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> U.S. stock and bond markets were closed for Thanksgiving; the last official closes are Wednesday’s (S&amp;P 500 7,182.78). S&amp;P 500 futures halted at 1 PM at 7,234.50, up 0.54% from Wednesday’s settlement, almost exactly where they stood at dawn. Stocks reopen Friday for a session that ends at 1 PM.</li>
+          <li><b>Europe.</b> The Stoxx Europe 600 closed up 1.75% at 636.98, Germany’s DAX 2.08%, London’s FTSE 100 1.75% and Paris’s CAC 40 1.61%, as outlets cited a milder-than-feared U.S. tariff plan and a rebound in chip shares. Imperial Brands jumped about 13% after Altria said it is considering an offer.</li>
+          <li><b>Central banks.</b> The ECB’s account of its October meeting shows “large support” for a rise even then, and members said another increase would likely prove necessary; a December 17 move is widely expected. Eurozone leaders agreed to recommend Pablo Hernández de Cos as Christine Lagarde’s successor. Tokyo’s November inflation figures arrive at 6:30 PM, with core prices expected at 3.0%.</li>
+          <li><b>Rates and the Fed.</b> No Treasury trading today; Wednesday’s 10-year par yield of 4.85% stands. Ten-year note futures slipped 0.20% before their halt, pointing to slightly higher yields on Friday. A quarter-point Fed rise on December 9 is priced at about 98%.</li>
+          <li><b>Biggest risk.</b> The Gulf. Drones killed two Italian technicians at an air-defence site in Kuwait; Italy calls the drones Iranian-made, and Iran denies involvement. Satellite images show smoke over Saudi Arabia’s Ras Tanura refinery, and one shipping source says loadings were suspended, but damage is unconfirmed. U.S. crude rose 1.5% to $84.91.</li>
+          <li><b>Beyond markets.</b> The East Coast storm cut power to hundreds of thousands of customers and delayed well over a thousand flights; Pittsburgh’s utility added crews for gusts near 45 mph through Friday.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; last official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Wed, Nov 25, 2026 &middot; markets closed Thu</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist last official closing levels, changes and 52-week position, Wednesday Nov 25, 2026. U.S. markets were closed on Thanksgiving, Nov 26.</caption>
+            <thead>
+              <tr><th class="sym">Symbol</th><th>Price</th><th>Chg</th><th>%Chg</th><th>52-week range</th><th>Volume</th><th>Avg vol</th></tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr><td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td><td>716.70</td><td class="down">&minus;2.08</td><td class="down">&minus;0.29%</td><td class="range-cell"><span class="range-nums">629.28 &ndash; 781.62</span><span class="range-bar" style="--pos:57"><i></i></span></td><td>71M</td><td>63M</td></tr>
+              <tr><td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td><td>261.05</td><td class="down">&minus;1.73</td><td class="down">&minus;0.66%</td><td class="range-cell"><span class="range-nums">228.75 &ndash; 314.12</span><span class="range-bar" style="--pos:38"><i></i></span></td><td>8.5M</td><td>6.3M</td></tr>
+              <tr><td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td><td>501.27</td><td class="up">+1.53</td><td class="up">+0.31%</td><td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:53"><i></i></span></td><td>4.2M</td><td>4.2M</td></tr>
+              <tr><td class="sym">IWM<small>iShares Russell 2000 ETF</small></td><td>268.87</td><td class="up">+1.73</td><td class="up">+0.65%</td><td class="range-cell"><span class="range-nums">238.69 &ndash; 305.18</span><span class="range-bar" style="--pos:45"><i></i></span></td><td>32M</td><td>28M</td></tr>
+              <tr><td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td><td>65.06</td><td class="down">&minus;0.69</td><td class="down">&minus;1.05%</td><td class="range-cell"><span class="range-nums">55.09 &ndash; 74.78</span><span class="range-bar" style="--pos:51"><i></i></span></td><td>6.5M</td><td>5.8M</td></tr>
+              <tr><td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td><td>215.74</td><td class="up">+1.78</td><td class="up">+0.83%</td><td class="range-cell"><span class="range-nums">187.36 &ndash; 224.20</span><span class="range-bar" style="--pos:77"><i></i></span></td><td>14M</td><td>12M</td></tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr><td class="sym">SMH<small>VanEck Semiconductor ETF</small></td><td>422.46</td><td class="down">&minus;4.29</td><td class="down">&minus;1.01%</td><td class="range-cell"><span class="range-nums">338.06 &ndash; 671.83</span><span class="range-bar" style="--pos:25"><i></i></span></td><td>14M</td><td>13M</td></tr>
+              <tr><td class="sym">XLK<small>Technology Select Sector SPDR</small></td><td>155.79</td><td class="down">&minus;1.30</td><td class="down">&minus;0.83%</td><td class="range-cell"><span class="range-nums">126.68 &ndash; 203.25</span><span class="range-bar" style="--pos:38"><i></i></span></td><td>20M</td><td>17M</td></tr>
+              <tr><td class="sym">XLF<small>Financial Select Sector SPDR</small></td><td>56.51</td><td class="up">+0.40</td><td class="up">+0.71%</td><td class="range-cell"><span class="range-nums">47.67 &ndash; 60.04</span><span class="range-bar" style="--pos:71"><i></i></span></td><td>38M</td><td>42M</td></tr>
+              <tr><td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td><td>69.83</td><td class="up">+0.07</td><td class="up">+0.10%</td><td class="range-cell"><span class="range-nums">61.80 &ndash; 78.35</span><span class="range-bar" style="--pos:49"><i></i></span></td><td>16M</td><td>16M</td></tr>
+              <tr><td class="sym">XLE<small>Energy Select Sector SPDR</small></td><td>60.90</td><td class="up">+0.45</td><td class="up">+0.74%</td><td class="range-cell"><span class="range-nums">43.77 &ndash; 70.15</span><span class="range-bar" style="--pos:65"><i></i></span></td><td>26M</td><td>37M</td></tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr><td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td><td>4.34%</td><td class="down">&minus;2bp</td><td class="flat">&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr><td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td><td>4.85%</td><td class="down">&minus;6bp</td><td class="flat">&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr><td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td><td>82.24</td><td class="up">+0.75</td><td class="up">+0.92%</td><td class="range-cell"><span class="range-nums">76.43 &ndash; 90.86</span><span class="range-bar" style="--pos:40"><i></i></span></td><td>49M</td><td>38M</td></tr>
+              <tr><td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td><td>92.06</td><td class="up">+0.42</td><td class="up">+0.46%</td><td class="range-cell"><span class="range-nums">88.64 &ndash; 98.05</span><span class="range-bar" style="--pos:36"><i></i></span></td><td>13M</td><td>12M</td></tr>
+              <tr><td class="sym">TIP<small>iShares TIPS Bond ETF</small></td><td>105.84</td><td class="up">+0.39</td><td class="up">+0.37%</td><td class="range-cell"><span class="range-nums">103.76 &ndash; 111.98</span><span class="range-bar" style="--pos:25"><i></i></span></td><td>2.2M</td><td>2.6M</td></tr>
+              <tr><td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td><td>104.29</td><td class="up">+0.50</td><td class="up">+0.48%</td><td class="range-cell"><span class="range-nums">101.20 &ndash; 112.06</span><span class="range-bar" style="--pos:28"><i></i></span></td><td>31M</td><td>31M</td></tr>
+              <tr><td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td><td>76.52</td><td class="up">+0.09</td><td class="up">+0.12%</td><td class="range-cell"><span class="range-nums">76.14 &ndash; 81.24</span><span class="range-bar" style="--pos:7"><i></i></span></td><td>53M</td><td>46M</td></tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr><td class="sym">GLD<small>SPDR Gold Shares</small></td><td>327.45</td><td class="up">+2.00</td><td class="up">+0.61%</td><td class="range-cell"><span class="range-nums">313.96 &ndash; 509.70</span><span class="range-bar" style="--pos:7"><i></i></span></td><td>17M</td><td>11M</td></tr>
+              <tr><td class="sym">USO<small>United States Oil Fund</small></td><td>139.89</td><td class="up">+4.46</td><td class="up">+3.29%</td><td class="range-cell"><span class="range-nums">65.99 &ndash; 171.82</span><span class="range-bar" style="--pos:70"><i></i></span></td><td>2.1M</td><td>4.8M</td></tr>
+              <tr><td class="sym">DXY<small>U.S. Dollar Index</small></td><td>103.71</td><td class="down">&minus;0.10</td><td class="down">&minus;0.10%</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr><td class="sym">VIX<small>Cboe Volatility Index</small></td><td>28.29</td><td class="up">+1.93</td><td class="up">+7.32%</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr><td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td><td>56.40</td><td class="down">&minus;0.29</td><td class="down">&minus;0.51%</td><td class="range-cell"><span class="range-nums">52.58 &ndash; 71.57</span><span class="range-bar" style="--pos:20"><i></i></span></td><td>40M</td><td>34M</td></tr>
+              <tr><td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td><td>84.95</td><td class="up">+0.17</td><td class="up">+0.20%</td><td class="range-cell"><span class="range-nums">78.70 &ndash; 93.29</span><span class="range-bar" style="--pos:43"><i></i></span></td><td>3.8M</td><td>2.5M</td></tr>
+              <tr><td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td><td>26.59</td><td class="up">+0.21</td><td class="up">+0.80%</td><td class="range-cell"><span class="range-nums">25.30 &ndash; 43.36</span><span class="range-bar" style="--pos:7"><i></i></span></td><td>2.9M</td><td>2.1M</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">U.S. markets were closed for Thanksgiving, so these are Wednesday’s official 4:00 PM closes, not new prices: volume and 52-week ranges from Yahoo Finance, average volume over the prior 20 sessions; yields are the Treasury par curve for Nov 25, change from Nov 24. The board updates after Friday’s 1 PM close.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Europe’s rebound holds to the close, and U.S. futures stop trading with their morning gain intact</h3>
+          <p class="story-deck">A thin holiday session gave the overnight bounce no reason to fade. Banks, miners and chip stocks led in Europe; London had a takeover story of its own.</p>
+          <div class="story-body">
+            <p>The Stoxx Europe 600 closed up 1.75% at 636.98, a little above where it stood this morning, and recovered all of Wednesday’s 1.1% fall. Germany’s DAX rose 2.08% to 25,215.52 and the mid-cap MDAX 2.51%; London’s FTSE 100 gained 1.75% to 10,609.30 and the CAC 40 in Paris 1.61% to 8,108.74, where advancing shares outnumbered decliners by 338 to 126 (Yahoo Finance closes; dpa-AFX and Investing.com as summarized). One summary of CNBC data has the Stoxx 600 up 1.83% at 637.50, and one report puts the DAX gain at 2.14%; the exchange levels above are the ones we could check.</p>
+            <p>Outlets attributed the rally to two things already visible in Asia overnight: a reading of Wednesday’s U.S. Section 301 tariff proposals as less damaging for allies than feared, and a bounce in technology and chip shares after heavy AI-related selling, helped by Wall Street’s recovery on Wednesday. Banks and miners led in London. These are the explanations outlets gave; with New York shut and volumes thin, we cannot show they drove the move.</p>
+            <p>In the U.S., the abbreviated futures session ended at 1 PM. S&amp;P 500 futures settled the day at 7,234.50, up 0.54% from Wednesday; Nasdaq-100 futures were up 0.46% at 26,221.25, Dow futures 0.43% at 50,443 and Russell 2000 futures 0.54% at 2,720.80 (Yahoo Finance, delayed). That is within a fraction of where they stood at 6:30 AM. Ten-year Treasury note futures fell 0.20%, which implies yields a couple of basis points above Wednesday’s 4.85% when the cash market reopens.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Friday’s half-day session starts from a market that has now risen two days running from Wednesday’s 3.2% intraday low, with Europe, Asia and U.S. futures all pointing the same way. The test is volume: Friday after Thanksgiving is one of the thinnest sessions of the year, and the VIX closed Wednesday at 28.29, still a stressed level.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              Tokyo’s November inflation figures at 6:30 PM tonight; U.S. stocks trade 9:30 AM to 1 PM on Friday, bonds until 2 PM, with no major U.S. data. The Fed’s pre-meeting quiet period starts Saturday.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (European closes; U.S. futures at the 1 PM halt, <em>Delayed</em>) &middot; dpa-AFX, Investing.com/Reuters, CNBC (drivers, breadth, as summarized).</p>
+        </article>
+
+        <article class="story">
+          <h3>ECB minutes show broad support for raising rates in October, and another rise “would likely prove necessary”</h3>
+          <p class="story-deck">The account makes a December 17 increase look close to settled. Separately, eurozone leaders lined up behind Spain’s Pablo Hernández de Cos to succeed Christine Lagarde.</p>
+          <div class="story-body">
+            <p>The European Central Bank’s account of its October 28&ndash;29 meeting, published at 7:30 AM Eastern, shows what Reuters called “large support” for an increase even at that meeting, when the Governing Council held its deposit rate at 2.50% after rises in June and September. Members said data since September had strengthened the case for tightening, that an October move would only have brought forward an increase, and that another rise “would likely prove necessary” unless the inflation outlook improved significantly. Euro-area inflation was 3.8% in September and 4.0% in October, and some members doubted it would return to the 2% target even by the end of 2028, with energy costs well above the bank’s assumptions. The ECB repeated that it is not committing in advance to a path (Reuters headline via syndicated outlets; summaries of the account). We could not open the account itself, and the summaries give no count of how many members favoured a rise.</p>
+            <p>At the euro summit in Brussels, eurozone leaders agreed to recommend Pablo Hernández de Cos, the head of the Bank for International Settlements and former governor of the Bank of Spain, as the next ECB president after the Netherlands withdrew Klaas Knot, Euronews and Il Sole 24 Ore report. The same statement reportedly covers board nominations for Laurence Boone and Markus Brunnermeier. It is a recommendation: euro-area finance officials and then all EU leaders must still approve it formally. Lagarde’s term ends in October 2027.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Europe tightening alongside the Fed, the Bank of Korea and probably the Bank of Japan means the global rise in borrowing costs has not peaked. For markets, an orderly succession at the ECB removes one source of uncertainty for 2027; Hernández de Cos is seen as a mainstream choice.
+            </div>
+          </div>
+          <p class="story-sourceline">ECB account of the Oct 28&ndash;29 meeting (primary, not retrieved) &middot; Reuters via syndication &middot; Euronews, Il Sole 24 Ore (succession, as summarized).</p>
+        </article>
+
+        <article class="story">
+          <h3>Drones kill two Italian contractors at an air-defence site in Kuwait as Gulf attacks spread</h3>
+          <p class="story-deck">Italy says the drones were Iranian-made; Iran denies it. Satellite images show smoke over Saudi Arabia’s Ras Tanura refinery, but no one has confirmed damage.</p>
+          <div class="story-body">
+            <p>Two Italian technicians working for Rheinmetall Italia, who maintained radar for Kuwait’s Skyguard air-defence system, were killed on Thursday when drones struck an air-defence detection site; falling debris injured a Kuwaiti and a Pakistani worker. Kuwait said it engaged several hostile drones. Italy’s foreign minister, Antonio Tajani, said the drones were Iranian-made and noted that “numerous pro-Iranian militias operate in the region.” Iran’s armed forces spokesman denied involvement, and its foreign minister offered a joint investigation. It is reported as the first deadly attack on Kuwaiti territory since July (Al Jazeera, CBC, ABC Australia, Al-Monitor). <span class="flag">Attribution disputed</span></p>
+            <p>On the Houthi claim of a strike on Ras Tanura, Saudi Arabia’s largest refinery (about 550,000 barrels a day) and a main export terminal: NASA and Planet Labs satellite images reviewed by Reuters and CNN show a large black smoke plume over the site on Wednesday, and one shipping source told CNN that terminal loadings were suspended. The Saudi-led coalition says it intercepted four drones and that falling debris caused no injuries; it has not said the refinery was hit, and Aramco has not commented. We found no report today on whether loadings have resumed. <span class="flag">Damage unconfirmed</span></p>
+            <p>In the Strait of Hormuz, Iran’s Revolutionary Guards again claimed that tankers on “unauthorized” routes hit mines north of Oman’s Khasab port; reports differ on whether two or three ships were claimed today. No ship has been named, and U.S. Central Command has repeatedly called the mine claims false. The UK’s maritime security agency, UKMTO, separately reported an unidentified projectile exploding near a tanker about 50 nautical miles west of Dubai, with no stated link to the Iranian claims.</p>
+            <p>Oil rose modestly. U.S. crude futures were $84.91 a barrel at the 2:30 PM halt, up 1.5% from Wednesday’s settlement, and February Brent $91.73, up from about $91 this morning (Yahoo Finance, delayed). One aggregator puts the expiring January Brent contract at $96.57, up $1.96; we could not confirm that figure from a major outlet.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The attacks now reach three Gulf states in two days, and the Kuwait deaths involve citizens of a NATO country. Oil is still pricing them largely as noise; a confirmed outage at Ras Tanura would change that quickly. OPEC+ meets on Sunday, and Reuters sources say the group may simply roll over its current targets into early 2027.
+            </div>
+          </div>
+          <p class="story-sourceline">Kuwaiti, Italian and Iranian government statements via Al Jazeera, CBC, ABC, Al-Monitor &middot; Reuters and CNN (satellite images, loadings source) &middot; Saudi-led coalition statement &middot; IRGC via Fars, Baird Maritime, Marine Insight &middot; UKMTO, CENTCOM as reported &middot; Yahoo Finance (oil, <em>Delayed</em>).</p>
+        </article>
+
+        <article class="story">
+          <h3>Altria says it is weighing a cash bid for Imperial Brands; the shares jump 13%</h3>
+          <p class="story-deck">It would be one of the largest tobacco deals in years. Imperial says it has received no proposal, and Japan Tobacco is reported to be looking too.</p>
+          <div class="story-body">
+            <p>Altria, the maker of Marlboro cigarettes in the U.S., confirmed under British takeover rules that it is considering a possible offer for Imperial Brands, likely in cash, and that it is in talks with a third party about part of Imperial’s business. Imperial, whose brands include Davidoff and Gauloises, said it has received no proposal. Reuters reports Japan Tobacco is also weighing a bid. Imperial’s shares rose as much as 17.6% to 3,562 pence and closed up about 13.3% at 3,432 pence. Under the UK code Altria has until 5 PM on December 24 to make a firm offer or walk away (Reuters, lse.co.uk, as summarized).</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Altria’s U.S. shares have not traded since the announcement; Friday’s session will show how investors weigh a large cash deal against its dividend. A competing bid from Japan Tobacco would raise the price.
+            </div>
+          </div>
+          <p class="story-sourceline">Altria and Imperial Brands statements under the UK Takeover Code, via Reuters and London market reports (as summarized). Deal not agreed; Japan Tobacco interest single-sourced.</p>
+        </article>
+
+        <article class="story">
+          <h3>China “reserves the right” to respond to the new U.S. tariff proposals but announces no retaliation</h3>
+          <p class="story-deck">Beijing also pressed Washington to carry out September’s tariff-cut deal, which the proposals exempt.</p>
+          <div class="story-body">
+            <p>Commerce ministry spokesman He Yadong said China “firmly opposes” the Section 301 proposals on 14 economies, called them unilateral, urged dialogue and said China reserves the right to take necessary measures, according to Xinhua as summarized. He noted that the proposals exempt the roughly $30 billion of goods covered by the bilateral tariff-cut arrangement agreed in September, and urged that it be implemented quickly. Reports still differ on the proposed rate for China: 20% on top of existing duties in most accounts, rising to as much as 40% if the trade truce lapses. Public comments are due January 5; nothing has taken effect.</p>
+          </div>
+          <p class="story-sourceline">China’s Ministry of Commerce via Xinhua (as summarized) &middot; CNBC &middot; USTR proposal as reported. Stage: proposed.</p>
+        </article>
+
+        <article class="story">
+          <h3>EU leaders fail to agree a budget or the €45 billion Ukraine loan on the summit’s first day</h3>
+          <p class="story-deck">France’s president said there would be no deal at this summit; leaders try again on December 17&ndash;18.</p>
+          <div class="story-body">
+            <p>The special European Council in Brussels, called to settle the 2028&ndash;34 long-term budget, Ukraine’s financing for 2027 and the ECB succession, made progress only on the last. On the budget, reported at about $1.76 trillion, Emmanuel Macron said “there will be no agreement at this summit,” and Italy’s Giorgia Meloni described the sides as “light-years away”; Euronews reported a boycott by the “frugal” member states. On a proposed joint loan of up to &euro;45 billion for Ukraine, Germany is pressing every member to contribute, while Hungary, Czechia and Slovakia are staying out and Bulgaria will join but not its military strand (AP via WTOP, Al Jazeera, France 24, Euronews). Council President António Costa expects conclusions on Friday.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Ukraine’s budget for 2027 depends on this money, and Russia has stepped up strikes on its power grid. A slip to December leaves little margin before the year ends.
+            </div>
+          </div>
+          <p class="story-sourceline">European Council (agenda) &middot; AP, Al Jazeera, France 24, Euronews (as summarized).</p>
+        </article>
+
+        <article class="story">
+          <h3>The Thanksgiving storm cuts power to hundreds of thousands and snarls flights in the East</h3>
+          <p class="story-deck">The worst of the wind falls on one of the busiest travel days of the year, and disruption is expected into Friday.</p>
+          <div class="story-body">
+            <p>Utility counts aggregated by outlets put outages above one million customers early Thursday, falling to roughly 660,000&ndash;800,000 later in the day, with Virginia worst hit at more than 200,000 and a wet snowstorm cutting power to more than 120,000 in Missouri. Gusts topped 60 mph in Delaware, North Carolina, Virginia and West Virginia. By noon about 400 U.S. flights had been cancelled and more than 1,200 delayed; Baltimore&ndash;Washington International scrubbed about one in four morning departures (Weather.com, NBC News, Fox Weather, NPR, as summarized). Philadelphia cancelled its Thanksgiving parade; Macy’s parade in New York runs Saturday at 8:30 AM. CNN calls the Macy’s move the first weather postponement in the parade’s history, while one outlet says it is the first since 1934; we cannot settle which is right. We found no confirmed storm deaths.</p>
+          </div>
+          <p class="story-sourceline">Weather.com, NBC News live blog, Fox Weather, NPR, Latin Times, CNN (as summarized) &middot; National Weather Service warnings.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-closed">
+      <h2 id="s-closed">Markets Closed &mdash; Thanksgiving</h2>
+      <div class="story-body">
+        <p>The New York Stock Exchange, Nasdaq and the Treasury cash market were closed all day, so there are no new U.S. stock or bond closes in this edition; every U.S. close quoted is Wednesday’s. CME stock-index and Treasury futures traded until 1 PM, energy and metals until about 2:30 PM, and currencies and crypto traded through the day.</p>
+        <p><b>U.S. futures.</b> S&amp;P 500 futures +0.54% to 7,234.50, Nasdaq-100 futures +0.46%, Dow futures +0.43% and Russell 2000 futures +0.54% at the 1 PM halt. Futures trade thinly on the holiday and are not a guarantee of where stocks will open on Friday. <span class="chip">Market narrative</span> The firmness matches Europe’s rally and the tariff read; there was no U.S. data or company news to move them.</p>
+        <p><b>Europe.</b> Stoxx 600 +1.75%, DAX +2.08%, FTSE 100 +1.75%, CAC 40 +1.61%. <span class="chip">Likely contributor</span> The milder read of the U.S. tariff plan and the rebound in chip shares, both cited across outlets. <span class="chip">Confirmed catalyst</span> Imperial Brands’ 13% gain on Altria’s announcement.</p>
+        <p><b>Rates and the dollar.</b> Ten-year note futures &minus;0.20% at 106-31. The dollar index was 103.78 late in the day, up 0.1% from Wednesday; the euro was $1.0972, sterling $1.3107 and the dollar 159.27 yen, holding just under the 160 level Japanese officials have warned about. The ECB’s reference rates put the euro at $1.0975 and the yen at 159.26.</p>
+        <p><b>Commodities.</b> U.S. crude +1.5% to $84.91; February Brent $91.73; gold futures $3,593.40 an ounce, 1.6% above Wednesday’s settlement but below where they traded late Wednesday, with spot gold quoted near $3,565&ndash;3,580; silver $41.75; copper $5.43 a pound; natural gas about $3.60, little changed from late Wednesday after that day’s jump. <span class="chip">Likely contributor</span> The Gulf attacks for crude; the others moved on no identifiable news.</p>
+        <p><b>Crypto.</b> Bitcoin about $60,870, up 1% over 24 hours, and ether $1,707; the total crypto market was about $2.11 trillion, with bitcoin 58% of it (CoinGecko). One report counts six straight days of outflows from U.S. spot bitcoin funds, about $4.9 billion this month; that is single-sourced. <span class="chip">Unexplained</span></p>
+        <p><b>The most fragile assumption.</b> That a holiday tape this calm reflects real conviction. The VIX closed Wednesday at 28.29 with short-dated protection still dearer than three-month cover, and Friday’s half-session will be thin. What would break it: confirmed damage at Ras Tanura, a Tokyo inflation figure hot enough to push the yen through 160, or a ransomware data dump at Nvidia on Friday.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><b>The Gulf.</b> <i>This morning:</i> unconfirmed Houthi and Iranian claims against a refinery and tankers. <i>Now:</i> two foreign contractors are dead in Kuwait, satellite images show smoke at Ras Tanura, and one source says its loadings were suspended. <i>Why it matters:</i> the attacks are causing casualties in a third country, though oil has moved only modestly. <i>Confidence:</i> high on the Kuwait deaths; low on Ras Tanura damage.</p>
+        <p><b>The ECB.</b> <i>This morning:</i> a December rise widely expected; the account still to come. <i>Now:</i> the account shows broad support for tightening even in October, and leaders backed Hernández de Cos as the next president. <i>Why it matters:</i> it strengthens the case for December 17. <i>Confidence:</i> moderate; we read summaries, not the account.</p>
+        <p><b>Europe and futures.</b> <i>This morning:</i> Stoxx 600 up 1.63% and S&amp;P futures up 0.55%. <i>Now:</i> the Stoxx closed up 1.75% and S&amp;P futures halted up 0.54%. <i>Why it matters:</i> the overnight rebound did not fade. <i>Confidence:</i> high on the levels.</p>
+        <p><b>EU summit.</b> <i>This morning:</i> budget, Ukraine loan and ECB succession on the agenda. <i>Now:</i> agreement only on the succession recommendation; the money waits for December. <i>Confidence:</i> moderate.</p>
+        <p><b>Altria and Imperial.</b> New today; not on this morning’s radar.</p>
+        <p>None of this morning’s forecasts came due today; Friday’s S&amp;P close will settle the first of them.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p><b>No U.S. data today.</b> Wednesday’s releases remain the last major figures before the Fed meets on December 8&ndash;9: October core PCE prices up 0.3% on the month and 3.3% from a year earlier, third-quarter growth revised to 4.3% annualised, and jobless claims at 189,000. Inflation is high and edging up on a 12-month basis while the monthly pace is steady; real consumer spending slipped in October.</p>
+        <p><b>The Fed.</b> The target range is 3.75&ndash;4.00%. CME’s FedWatch tool put a quarter-point rise on December 9 at about 98% as of Thursday, with prediction markets at 92&ndash;94% (as reported). We found no remarks from Fed officials today. Recent positions range from Governor Waller’s openness to a half-point move to New York Fed President Williams’s view that no dramatic action is needed. The quiet period starts Saturday.</p>
+        <p><b>Treasury.</b> No auctions today or Friday. This week’s 2-, 5- and 7-year notes settle on Monday, November 30. Government funding runs out after December 11; Congress returns Monday with no stopgap agreed (The United States, below).</p>
+        <p><b>Japan tonight.</b> Tokyo’s November consumer prices come out at 6:30 PM Eastern. Economists expect core prices, which exclude fresh food, to rise 3.0% from a year earlier after 2.6% in October; the headline rate was 2.8% in October. A Bank of Japan rise to 1.50% from 1.25% at its December 17&ndash;18 meeting is widely expected; the national inflation figure comes on December 17.</p>
+        <p><b>Holiday spending.</b> No Thanksgiving Day totals were out by our deadline. Adobe forecasts $6.9 billion of online spending today (+8.5%), $12.9 billion on Black Friday and $15.1 billion on Cyber Monday; through November 22, online sales were up 9.1% from a year earlier. These figures are nominal, not adjusted for prices.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><b>No U.S. earnings.</b> The calendar is empty until Monday, when Marvell, NetApp and CrowdStrike report after the close; Salesforce and Snowflake follow on Tuesday.</p>
+        <p><b>Deals.</b> Altria and Imperial Brands are in Top Stories. Pending U.S. deals are unchanged from Wednesday’s close: Insmed at $170.31 against Sanofi’s $175 cash offer, and Zscaler about 2.8% below the value of CrowdStrike’s share offer.</p>
+        <p><b>Nvidia.</b> Reuters reports that S&amp;P’s CreditWatch placement on Wednesday cites management and governance risks and that any downgrade would likely be one notch, to AA&minus;; Moody’s affirmed its Aa1 rating with a stable outlook (via Investing.com). The ransomware group’s countdown on its leak site ends Friday; it has published no proof, and Nvidia says it is investigating an incident at a third-party partner and has found no sign its own systems were affected.</p>
+        <p><b>Anthropic and SpaceX.</b> No new company news. Anthropic (ANT) last closed at $82.79, just under its $83 offering price, and SpaceX (SPCX) at $127.44 on Wednesday (Yahoo Finance); one outlet’s lower SpaceX figure does not match the exchange close. SpaceX’s price history begins June 12, 2026.</p>
+        <p><b>Filings.</b> We could not search SEC filings directly; filing news comes from company releases and reporting.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Thursday evening to Monday, Nov 30. All times ET. Consensus from compiled calendars where available.</caption>
+          <thead>
+            <tr><th>When</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Thu 18:30</td><td class="txt">Tokyo consumer prices, November (core, ex fresh food)</td><td>3.0%</td><td>2.6%</td></tr>
+            <tr><td>Thu ~19:00</td><td class="txt">Rocket Lab Electron launches a StriX radar satellite for Synspective</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Fri</td><td class="txt">EU summit concludes, Brussels</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Fri 9:30&ndash;13:00</td><td class="txt"><strong>U.S. stocks’ half-day session (bonds to 14:00); Black Friday</strong></td><td>&mdash;</td><td>S&amp;P 7,182.78</td></tr>
+            <tr><td>Fri 15:00</td><td class="txt">Steelers host Denver, Acrisure Stadium</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Sat</td><td class="txt">Fed quiet period begins; Macy’s parade, 8:30 AM</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Sun</td><td class="txt">OPEC+ meeting on 2027 output; Spain’s general election; Falcon 9 launches Cygnus to the space station</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Mon</td><td class="txt">ISM manufacturing; Congress returns; Pennsylvania’s session ends; Marvell, NetApp, CrowdStrike results</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the most consequential event. Friday’s session is short and thin; the first full read on markets after the holiday is Monday.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>The president’s holiday message.</b> President Trump posted a Thanksgiving message on Truth Social that, as reported by Reuters and Newsweek, extended greetings to political opponents he accuses of wrongdoing and criticised immigrants and the federal government; critics called it a tirade, and the White House has not commented further. He also reposted the joint statement he and NATO Secretary General Mark Rutte issued after meeting at Mar-a-Lago on Wednesday, urging Russia to avoid actions that “expand the war” and to seek peace quickly. One outlet reports that the version Mr. Trump posted names both Russia and Ukraine while NATO’s names only Russia; we could not confirm which text is official. The Kremlin said the “expansion” comes from Kyiv. The president and first lady planned calls to service members from Mar-a-Lago this evening.</p>
+        <p><b>Courts.</b> In the birthright-citizenship case, Judge Christopher Cooper also denied the government a stay pending appeal, legal commentators report; we found no appeal filed yet. In the Disney case, Judge Loren AliKhan’s injunction halts the FCC’s early licence review of eight ABC-owned stations, finding Disney likely to succeed on its claim of retaliation for speech, while declining a broader order; the FCC must report compliance by December 2. Democratic Commissioner Anna Gomez praised the ruling; the agency called it wrong.</p>
+        <p><b>Congress.</b> Nothing new. Funding runs out after December 11; a stopgap into February or March is widely expected. Some Senate Democrats say they will oppose any bill that does not bar spending on unauthorized military action in Iran, and at least seven of their votes are needed.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>Ukraine.</b> Russia attacked overnight with ballistic missiles and 113 drones, according to Ukraine’s air force; a shopping centre in Kyiv’s Desnianskyi district was hit, and Mayor Vitali Klitschko said seven people were injured. Reported deaths nationwide range from one to at least three, and the Kharkiv toll differs between outlets. A Ukrainian drone strike killed five people in a car park in Russian-occupied Zaporizhzhia, according to the Moscow-installed governor. President Zelenskyy warned of another mass strike on the power grid. There are no new peace talks (Kyiv Independent, Al Jazeera, Euronews).</p>
+        <p><b>Gaza.</b> Gaza health officials say Israeli strikes overnight and on Thursday afternoon killed 10 people, up from eight in earlier counts; Israel’s prime minister and defence minister said one strike killed Khaled Abu Nada, whom they describe as a Hamas official. The ministry’s cumulative toll, which does not separate civilians from fighters, is at least 74,746 (AP). Tolls are not independently verified.</p>
+        <p><b>Spain votes Sunday.</b> Under the pre-election polling ban, every final survey except the state pollster’s put the conservative Popular Party and Vox together above the 176-seat majority: 40dB for El País had PP at 31.8%, the Socialists at 30.9% and Vox at 17.3%; a poll-of-polls put the right at about 191 seats. Some late reports said the gap was narrowing. Polls are not predictions.</p>
+        <p><b>The Gulf and Brussels.</b> The Kuwait attack and the EU summit are in Top Stories.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>A quiet holiday.</b> We found no significant model releases or AI company announcements today. The Nvidia ransomware claim reaches its deadline on Friday; the group, which earlier claimed data from Jentech Precision, a maker of heat spreaders used in Nvidia’s chips, has given no details, and any link to that earlier listing is speculation. Nvidia has not named the partner it is investigating.</p>
+        <p><b>The Riemann proof.</b> Nothing new since the Lean and Mathlib certification on November 21. Reports say two independent proof checkers also accepted the 17-million-line proof, which also covers a generalised version of the hypothesis for one family of functions; there is still no human-readable proof or peer-reviewed paper.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science</h2>
+      <div class="story-body">
+        <p><b>Drained peatlands.</b> A study in Nature on Wednesday estimates that draining the world’s peatlands since 1800 accounts for about 2.7% of present-day human-caused warming, because drained peat keeps releasing stored carbon long after the land is converted; MIT’s César Terrer is among the authors quoted. The finding is an estimate from models and inventories, and it strengthens the case that rewetting peat is a durable climate lever (Nature World News, Ecoticias, as summarized).</p>
+        <p><b>DNA repair.</b> Researchers at Spain’s CNIO and Stanford report that the enzyme PRIMPOL binds the main replication helicase to restart DNA copying when it stalls; a possible link to chemotherapy resistance is proposed, not shown. This rests on a single secondary summary.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>Tonight.</b> Rocket Lab’s Electron is due to launch “Night Owls Never Sleep,” a roughly 100 kg StriX radar satellite for Japan’s Synspective, from New Zealand no earlier than about 7 PM Eastern, into a 569 km orbit at 38 degrees; it would be Electron’s 101st flight (Rocket Lab, Launch Library 2). It had not launched when this edition closed.</p>
+        <p><b>China.</b> A Long March 2D launched the Yaogan 49 01 group from Xichang at 4:38 AM Eastern, the 681st Long March flight; China describes the satellites as for science, land surveys, crop estimates and disaster prevention and did not say how many there are (Xinhua via Anadolu). Long March 6A and 6C launches from Taiyuan are listed for Friday and Saturday.</p>
+        <p><b>This weekend.</b> Falcon 9 launches the Space Force’s USSF-380 mission from California late Saturday Eastern time and Northrop Grumman’s Cygnus NG-25 to the International Space Station at about 10:47 AM Sunday. ULA’s Vulcan remains grounded after the November 15 failure, and Blue Origin’s New Glenn is aiming to return to flight in January.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><b>Ebola.</b> Congo’s health ministry reports 12,021 confirmed cases and 5,904 deaths from the Bundibugyo-strain outbreak, which has no approved vaccine or treatment, across eight of the country’s 26 provinces; AP calls it the fastest-growing Ebola outbreak on record. Fighting between the army and rebels forced about a dozen people, including two WHO staff, to be evacuated after three days trapped in a hospital in Akwe. There are no U.S. cases (AP, CDC).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Duquesne Light adds crews as gusts near 45 mph roll through into Friday</h3>
+        <div class="story-body">
+          <p>Duquesne Light says it added staff for strong winds and heavy rain from Thursday into Friday, with the National Weather Service forecasting gusts up to about 45 mph, and warns that bucket-truck repairs may pause while sustained winds are high, which could slow restorations. As of Thanksgiving eve only a handful of Allegheny County customers were without power, and we found no reports of large outages in the region by this evening. Turnpike travellers left early to beat the weather, WTAE reports. Pittsburgh Regional Transit runs Sunday schedules today.</p>
+        </div>
+        <p class="story-sourceline">Duquesne Light newsroom &middot; WPXI, TribLive, KDKA Radio, WTAE (as summarized).</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, stabilising</span> <b>Supporting a turn:</b> two days of global gains since Wednesday’s intraday low; Europe up 1.6&ndash;2.1% at the close; U.S. futures +0.5% held through the holiday session; the tariff plan read as capped for allies; equal-weight and small caps beat the S&amp;P on Tuesday and Wednesday. <b>Against it:</b> VIX 28.29 at Wednesday’s close with an inverted term structure; SPY 5.4% below its 50-day and 2.2% below its 200-day average; SMH 22% below its 50-day; high-yield spread up 25 basis points in a week; gold near a one-year low; Gulf attacks spreading; the ECB, Fed and Asian central banks still raising rates. No change in regime. Confidence: moderate.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Global equities and U.S. futures</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance &middot; Europe: <em>EOD official</em> Thu Nov 26 closes vs Wed; Asia: <em>EOD official</em> Thu closes (from the morning edition); U.S. futures: <em>Delayed</em>, last trade before the 1 PM ET halt vs Wed settlement. U.S. cash indexes: <em>Previous close</em> Nov 25.</caption>
+<thead><tr><th>Market</th><th>Level</th><th>Chg %</th></tr></thead><tbody>
+<tr><td class="txt">Stoxx Europe 600</td><td>636.98</td><td class="up">+1.75</td></tr>
+<tr><td class="txt">DAX</td><td>25,215.52</td><td class="up">+2.08</td></tr>
+<tr><td class="txt">FTSE 100</td><td>10,609.30</td><td class="up">+1.75</td></tr>
+<tr><td class="txt">CAC 40</td><td>8,108.74</td><td class="up">+1.61</td></tr>
+<tr><td class="txt">Taiex (Taiwan)</td><td>39,151.81</td><td class="up">+2.50</td></tr>
+<tr><td class="txt">Hang Seng</td><td>22,226.88</td><td class="up">+1.19</td></tr>
+<tr><td class="txt">Nikkei 225</td><td>57,499.16</td><td class="up">+0.86</td></tr>
+<tr><td class="txt">Kospi</td><td>4,711.21</td><td class="up">+0.29</td></tr>
+<tr><td class="txt">Shanghai Composite</td><td>3,476.88</td><td class="flat">+0.01</td></tr>
+<tr><td class="txt">S&amp;P 500 futures (ES)</td><td>7,234.50</td><td class="up">+0.54</td></tr>
+<tr><td class="txt">Nasdaq-100 futures (NQ)</td><td>26,221.25</td><td class="up">+0.46</td></tr>
+<tr><td class="txt">Dow futures (YM)</td><td>50,443</td><td class="up">+0.43</td></tr>
+<tr><td class="txt">Russell 2000 futures (RTY)</td><td>2,720.80</td><td class="up">+0.54</td></tr>
+<tr><td class="txt">S&amp;P 500 (Nov 25 close)</td><td>7,182.78</td><td class="down">&minus;0.25</td></tr>
+<tr><td class="txt">Nasdaq Composite (Nov 25 close)</td><td>23,585.80</td><td class="down">&minus;0.62</td></tr>
+<tr><td class="txt">Dow (Nov 25 close)</td><td>50,182.95</td><td class="up">+0.33</td></tr>
+</tbody></table></div>
+          <p>Sector, watchlist and moving-average figures are unchanged from Wednesday’s Closing Brief, since U.S. stocks did not trade.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Not updated: no U.S. session. The latest whole-market count remains Tuesday’s (2,865 advancers, 2,515 decliners; 29.8% of liquid stocks above their 50-session exponential average; the 200-session figure is still accumulating history). Wednesday’s count will be added Friday morning.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <p>No new Treasury curve today (market closed). U.S. Treasury par curve, <em>EOD official</em> Nov 25: 3M 4.34%, 2Y 4.61%, 5Y 4.65%, 10Y 4.85%, 30Y 5.24%; 2s10s +24 bp, 3m10y +51 bp, 5s30s +59 bp. FRED, <em>EOD official</em>: 10-year breakeven 2.12% (Nov 25); 10-year TIPS real yield 2.79% and SOFR 3.94% (Nov 24). Ten-year note futures 106-31 at the 1 PM halt, &minus;0.20% from Wednesday’s settlement (<em>Delayed</em>), consistent with yields a little higher.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA U.S. high-yield option-adjusted spread (FRED, <em>EOD official</em> Nov 24; no newer observation): 3.72 percentage points, from 3.63 on Nov 23 and 3.47 on Nov 18. HYG +0.12% and LQD +0.48% on Wednesday (<em>Previous close</em> Nov 25).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>Yahoo Finance, <em>Previous close</em> Nov 25: VIX 28.29, VIX9D 29.61, VIX3M 26.29 &mdash; inverted. Yahoo showed an indicative VIX of 26.80 during Thursday with U.S. options closed; treat it as indicative only. Put/call ratios are not tracked. Dealer gamma is not tracked: there is no legitimate free source. MOVE index: not available.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance ~4:36 PM ET Nov 26, <em>Delayed</em>; ECB reference rates via Frankfurter, <em>EOD official</em> Nov 26 (vs Nov 25 fix).</caption>
+<thead><tr><th>Instrument</th><th>Yahoo (Thu)</th><th>ECB fix Thu</th><th>ECB fix Wed</th></tr></thead><tbody>
+<tr><td class="txt">Dollar index (DXY)</td><td>103.78 (+0.10%)</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td class="txt">EUR/USD</td><td>1.0972</td><td>1.0975</td><td>1.0935</td></tr>
+<tr><td class="txt">USD/JPY</td><td>159.27</td><td>159.26</td><td>159.32</td></tr>
+<tr><td class="txt">GBP/USD</td><td>1.3107</td><td>1.3104</td><td>1.3060</td></tr>
+<tr><td class="txt">USD/CNY</td><td>&mdash;</td><td>6.6602</td><td>6.6757</td></tr>
+<tr><td class="txt">USD/CAD</td><td>&mdash;</td><td>1.4230</td><td>1.4258</td></tr>
+<tr><td class="txt">USD/MXN</td><td>&mdash;</td><td>19.67</td><td>19.70</td></tr>
+<tr><td class="txt">USD/BRL</td><td>&mdash;</td><td>5.765</td><td>5.901</td></tr>
+<tr><td class="txt">USD/INR</td><td>&mdash;</td><td>92.45</td><td>92.24</td></tr>
+</tbody></table></div>
+          <p>The dollar was slightly weaker against the euro, sterling, the yuan and most of the basket at the ECB fix, and firmer against the rupee. The Brazilian real gained 2.3%, the biggest move in the basket.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities &amp; crypto</summary>
+<div class="table-wrap"><table class="data-table">
+<caption>Yahoo Finance front-month futures, <em>Delayed</em>, last trade before the ~2:30 PM ET halt, vs Wed settlement where shown; CoinGecko <em>Live (CoinGecko aggregate)</em> ~4:40 PM ET.</caption>
+<thead><tr><th>Instrument</th><th>Level</th><th>Note</th></tr></thead><tbody>
+<tr><td class="txt">WTI crude ($/bbl)</td><td>84.91</td><td class="up">+1.47%</td></tr>
+<tr><td class="txt">Brent, February ($/bbl)</td><td>91.73</td><td>~91.01 this morning</td></tr>
+<tr><td class="txt">Brent, January ($/bbl)</td><td>96.57?</td><td>single aggregator; unconfirmed</td></tr>
+<tr><td class="txt">Natural gas ($/MMBtu)</td><td>3.60</td><td>near Wed late level</td></tr>
+<tr><td class="txt">Gold ($/oz)</td><td>3,593.40</td><td class="up">+1.63% vs settlement</td></tr>
+<tr><td class="txt">Silver ($/oz)</td><td>41.75</td><td class="up">+4.24% vs settlement</td></tr>
+<tr><td class="txt">Copper ($/lb)</td><td>5.43</td><td class="up">+1.89% vs settlement</td></tr>
+<tr><td class="txt">Bitcoin</td><td>$60,873</td><td class="up">+0.97% (24h)</td></tr>
+<tr><td class="txt">Ether</td><td>$1,706.54</td><td class="up">+1.03% (24h)</td></tr>
+<tr><td class="txt">Solana</td><td>$71.70</td><td class="up">+1.32% (24h)</td></tr>
+<tr><td class="txt">Total crypto market value</td><td>$2.11T</td><td>bitcoin dominance 58.0%</td></tr>
+</tbody></table></div>
+          <p>Metals’ changes against Wednesday’s settlement overstate the day: gold, silver and copper rallied after Wednesday’s settlement, and against late-Wednesday trading they were roughly flat. The January&ndash;February Brent gap remains several dollars, a sign of tight nearby supply.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No U.S. reports Thursday or Friday. Next: Marvell, NetApp and CrowdStrike (Mon Dec 1, after the close); Salesforce and Snowflake (Tue Dec 2, after the close), per the Finnhub calendar.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No auctions today or Friday. This week’s 2-, 5- and 7-year notes and the 2-year FRN settle Monday, November 30. Liquidity is thin through Friday’s 1 PM stock close and 2 PM bond close.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Yahoo Finance futures, index and currency quotes; ECB reference rates; FRED; the U.S. Treasury par yield curve; CoinGecko; Launch Library 2 and Rocket Lab; government statements from Kuwait, Italy, Iran, Saudi Arabia and China as reported; and Reuters, AP, CNN, CNBC, Al Jazeera, Euronews, France 24, Kyiv Independent, dpa-AFX and the other outlets named in each story. Most of this evening’s reporting rests on search-result summaries rather than full articles, and we say so where it matters.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. All times Eastern. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-26-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
