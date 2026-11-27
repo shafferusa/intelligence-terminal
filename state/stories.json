@@ -1,6 +1,72 @@
 {
  "stories": [
   {
+   "id": "halfday-rally-nov27",
+   "headline": "S&P 7,297.49 +1.60% (range 7,211-7,304), Nasdaq 24,129.50 +2.31%, Dow 50,774.94 +1.18%, R2K 2,750.30 +1.71%; week S&P +5.6% best since Apr 2025; Nov MTD S&P -3.7%; all 11 sectors up; RSP +1.22% lagged; SPY vol 39M vs 65M",
+   "status": "New",
+   "rationale": "Lead: market tape",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
+  },
+  {
+   "id": "chips-rebound-nvda-sea-nov27",
+   "headline": "MU +7.60%, MRVL +7.34%, DELL +6.70%, AMD +4.56%, SMH +4.17%; NVDA +0.80% $150.49 (low $145.39) on FT/Forbes ME report of paused SE Asia shipments (Nvidia no comment); Sandisk ~+16% (Reuters)",
+   "status": "New",
+   "rationale": "AI hardware",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
+  },
+  {
+   "id": "ust-selloff-nov27",
+   "headline": "Par curve Nov 27: 2Y 4.69 (+8), 10Y 4.94 (+9), 30Y 5.33 (+9), 3M 4.35; FedWatch 98.9% Dec 9 hike; HY OAS 3.77 Nov 25-26",
+   "status": "New",
+   "rationale": "Rates/Fed",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
+  },
+  {
+   "id": "adobe-thanksgiving-nov27",
+   "headline": "Adobe: Thanksgiving online $7.1B +10.4% (fcst $6.9B); Black Friday fcst $12.9B, Cyber Monday $15.1B, Cyber Week $47.5B",
+   "status": "New",
+   "rationale": "Consumer",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
+  },
+  {
+   "id": "ant-rebound-nov27",
+   "headline": "ANT +10.98% to $91.88, back above $83 offer, 143M shares; no catalyst found; SPCX +4.83% $133.59",
+   "status": "New",
+   "rationale": "AI listing",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
+  },
+  {
+   "id": "afp-intrusion-unconfirmed",
+   "headline": "Am edition reported AFP Forum intrusion Nov 26 (The Next Web, Arab News); pm research found only 2024 coverage; treated as unconfirmed, no correction logged pending AFP comment",
+   "status": "Unconfirmed",
+   "rationale": "Verification follow-up",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
+  },
+  {
    "id": "china-state-council-support-nov27",
    "headline": "State Council midday pledge: strengthen national team, steer long-term funds to stocks, Huijin liquidity; no amount/timeline. Shanghai +3.73% 3,606.49, HSTECH +6.45%, Kospi +4.34%, Nikkei +2.11%; NBS Oct industrial profits +20.1% y/y; ES +1.74% 7,320.75, NQ +2.32% at 6:27",
    "status": "New",
@@ -13,14 +79,14 @@
   },
   {
    "id": "metals-squeeze-nov27",
-   "headline": "Comex gold +4.77% $3,704.40, silver +11.07% $44.485, copper +6.45% $5.6765 vs Wed settle; cited short covering/China data; no confirmed cause; ZN -0.47%, 10y ~4.92%",
-   "status": "New",
+   "headline": "Gold fut $3,668.50 +3.75% vs Wed (spot ~+2.5% vs Thu, Kitco), silver $43.70 +9.11%, copper +5.03%; faded from am highs",
+   "status": "Materially changed",
    "rationale": "Commodities",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-27",
    "last_seen": "2026-11-27",
-   "last_report": "reports/2026/11/2026-11-27-am.html",
-   "updated": "2026-11-27-am"
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
   },
   {
    "id": "eu-flash-cpi-nov27",
@@ -46,14 +112,14 @@
   },
   {
    "id": "storm-outages-nov27",
-   "headline": "Nor'easter peak >900K outages Thu evening; >700K still out Fri morning, PA and NJ hardest hit; NJ emergency; Bay Bridge-Tunnel closed; WSSC conservation",
+   "headline": "Outages ~800K peak Thu night, ~600K Fri late morning; PA ~148K (east: PECO, PPL, Met-Ed); Duquesne scattered; no deaths confirmed",
    "status": "Materially changed",
    "rationale": "US disaster",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-27",
    "last_seen": "2026-11-27",
-   "last_report": "reports/2026/11/2026-11-27-am.html",
-   "updated": "2026-11-27-am"
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
   },
   {
    "id": "tokyo-cpi-nov27",
@@ -134,14 +200,14 @@
   },
   {
    "id": "altria-imperial-nov26",
-   "headline": "Altria: very early stage, likely cash, talks with third party on part of business; IMB up as much as 17.6% to 3,562p Thu; JT evaluating (Bloomberg); PUSU Dec 24",
+   "headline": "Altria: very early stage, likely cash, talks with third party on part of business; IMB up as much as 17.6% to 3,562p Thu; JT evaluating (Bloomberg); PUSU Dec 24; Fri MO +0.80% $76.89 (low $74.30), IMB +1.8%, JT +4.5% Tokyo; no firm offer",
    "status": "Materially changed",
    "rationale": "M&A",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-27",
-   "last_report": "reports/2026/11/2026-11-27-am.html",
-   "updated": "2026-11-27-am"
+   "last_report": "reports/2026/11/2026-11-27-pm.html",
+   "updated": "2026-11-27-pm"
   },
   {
    "id": "eu-summit-nov26",
@@ -593,73 +659,7 @@
    "status": "Materially changed",
    "rationale": "World: war",
    "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-24",
-   "last_report": "reports/2026/11/2026-11-24-am.html",
-   "updated": "2026-11-24-am",
-   "id": "iran-mines-sanctions-nov24",
-   "first_seen": "2026-11-24",
-   "headline": "IRGC claims 3 tankers hit mines in Hormuz (unconfirmed, CNBC); Treasury widens Iran payment sanctions; Kharg convoy disputed; Windward 31 laden tankers outside; Brent ~$87",
-   "status": "New",
-   "rationale": "Energy/geopolitics",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
-   "id": "cop31-collapse",
-   "first_seen": "2026-11-23",
-   "headline": "COP31 Antalya ended Nov 22 without main agreement",
-   "status": "New",
-   "rationale": "World/climate",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
-   "id": "oil-near-aug-lows",
-   "first_seen": "2026-11-23",
-   "headline": "Brent ~$89.37 (-3.5%), WTI ~$80.2; Libya Sharara reopened, surplus forecasts; OPEC+ Nov 29; HY OAS 3.76 Nov 20",
-   "status": "New",
-   "rationale": "Energy/commodities",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
-   "id": "sp500-rebound-nov23",
-   "first_seen": "2026-11-23",
-   "headline": "S&P 500 +4.73% to 7,237.17, best day since Apr 2025, ends 7-day streak; Nasdaq +6.51%; RSP +2.59% (narrow); VIX 26.62",
-   "status": "New",
-   "rationale": "Market tape; tests whether rebound broadens",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "prt-refresh-approved",
-   "first_seen": "2026-11-23",
-   "headline": "PRT board 10-1 approves Bus Line Refresh (Aug 2027); 95->87 routes (WESA) or 20 cut/14 added (PublicSource); +7-11% riders projected; depends on state funding",
-   "status": "Continuing",
-   "rationale": "Local transit",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "contractor-eo-nov21",
-   "first_seen": "2026-11-23",
-   "headline": "Trump EO: federal contractors must coordinate with WH before answering Congress, follow privilege instructions or risk contracts; Raskin: 'unlawful'",
-   "status": "New",
-   "rationale": "Executive power",
-   "keep_on_watchlist": true
   }
  ],
- "updated": "2026-11-26T11:45:54Z"
+ "updated": "2026-11-27T21:44:53Z"
 }
