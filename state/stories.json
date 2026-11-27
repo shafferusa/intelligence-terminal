@@ -1,6 +1,105 @@
 {
  "stories": [
   {
+   "id": "china-state-council-support-nov27",
+   "headline": "State Council midday pledge: strengthen national team, steer long-term funds to stocks, Huijin liquidity; no amount/timeline. Shanghai +3.73% 3,606.49, HSTECH +6.45%, Kospi +4.34%, Nikkei +2.11%; NBS Oct industrial profits +20.1% y/y; ES +1.74% 7,320.75, NQ +2.32% at 6:27",
+   "status": "New",
+   "rationale": "Lead; global rebound",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "metals-squeeze-nov27",
+   "headline": "Comex gold +4.77% $3,704.40, silver +11.07% $44.485, copper +6.45% $5.6765 vs Wed settle; cited short covering/China data; no confirmed cause; ZN -0.47%, 10y ~4.92%",
+   "status": "New",
+   "rationale": "Commodities",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "eu-flash-cpi-nov27",
+   "headline": "France HICP Nov 3.2% (3.6% exp, 3.7% prior), CPI 2.9%; Spain 4.1% (4.7% exp), core 2.6%; German unemployment +9K to 3.025M, 6.4%",
+   "status": "New",
+   "rationale": "ECB path",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "jazan-refinery-nov26",
+   "headline": "Projectile hits Aramco Jazan refinery Nov 26, 1 worker killed, ops disrupted (Saudi Energy Ministry; Houthis blamed); UKMTO: outbound tanker hit by projectile 18nm E of Khasab, crew safe; WTI $85.40 +2.1%; Brent Jan ~$97.66 (CNBC), Feb $92.10",
+   "status": "New",
+   "rationale": "Gulf energy; high-risk",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "storm-outages-nov27",
+   "headline": "Nor'easter peak >900K outages Thu evening; >700K still out Fri morning, PA and NJ hardest hit; NJ emergency; Bay Bridge-Tunnel closed; WSSC conservation",
+   "status": "Materially changed",
+   "rationale": "US disaster",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "tokyo-cpi-nov27",
+   "headline": "Tokyo Nov core CPI 2.9% (3.0% exp), 16-month high; headline 2.8%; core-core 2.5% (one report 2.3%); BoJ Dec 18 hike base case; USDJPY 159.46",
+   "status": "New",
+   "rationale": "BoJ",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "eu-summit-ends-nov27",
+   "headline": "EU summit ended ~14h without MFF deal; to Dec summit; EUR45B Ukraine loan: 24 back, HU/SK/CZ out; Hernandez de Cos nominated ECB president (Feb), Boone and Brunnermeier to Board",
+   "status": "Materially changed",
+   "rationale": "Europe",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "trump-troops-iran-nov26",
+   "headline": "Trump troop calls: \"victory at hand\", settlement still offered, any new strike would hit \"Pickaxe Mountain\", no attack ordered (Washington Times, Al Jazeera)",
+   "status": "New",
+   "rationale": "US/Iran",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
+   "id": "pgh-parking-rates-nov24",
+   "headline": "Council budget hearing: Strassburger says many favor targeted higher parking rates, dynamic pricing floated; Onorato cautious; nothing decided (WPXI); vote Dec 17",
+   "status": "New",
+   "rationale": "Local",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-27",
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
+  },
+  {
    "id": "europe-close-nov26",
    "headline": "Thanksgiving: Stoxx 600 +1.75% 636.98, DAX +2.08%, FTSE +1.75%, CAC +1.61%; ES +0.54% 7,234.50 at 1 PM halt; ZN -0.20%",
    "status": "New",
@@ -24,25 +123,25 @@
   },
   {
    "id": "kuwait-drones-italians-nov26",
-   "headline": "Drones kill 2 Rheinmetall Italia technicians at Kuwait air-defence site; Tajani: Iranian-made; Iran denies; first deadly attack on Kuwait since July",
-   "status": "New",
+   "headline": "Kuwait drone strike: 2 Rheinmetall Italia technicians killed; Tajani: Iranian origin; Iran: false flag, proposes joint probe; attribution disputed",
+   "status": "Materially changed",
    "rationale": "Gulf escalation; high-risk, attribution disputed",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
-   "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-pm.html",
-   "updated": "2026-11-26-pm"
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
   },
   {
    "id": "altria-imperial-nov26",
-   "headline": "Altria confirms possible (likely cash) offer for Imperial Brands; IMB +13.3% to 3,432p; JT also weighing (Reuters); PUSU deadline Dec 24 5 PM",
-   "status": "New",
+   "headline": "Altria: very early stage, likely cash, talks with third party on part of business; IMB up as much as 17.6% to 3,562p Thu; JT evaluating (Bloomberg); PUSU Dec 24",
+   "status": "Materially changed",
    "rationale": "M&A",
    "keep_on_watchlist": true,
    "first_seen": "2026-11-26",
-   "last_seen": "2026-11-26",
-   "last_report": "reports/2026/11/2026-11-26-pm.html",
-   "updated": "2026-11-26-pm"
+   "last_seen": "2026-11-27",
+   "last_report": "reports/2026/11/2026-11-27-am.html",
+   "updated": "2026-11-27-am"
   },
   {
    "id": "eu-summit-nov26",
@@ -560,103 +659,6 @@
    "status": "New",
    "rationale": "Executive power",
    "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "iran-bahrain-tankers-nov21",
-   "first_seen": "2026-11-23",
-   "headline": "Iran attack on Bahrain Nov 21 (civilian industrial site fire, no casualties; IRGC says US Patriot sites); UKMTO: 2 tankers hit leaving Hormuz Sat, Gulf of Oman incident Sun; 14+ tankers off Kharg to run blockade (day 130); Brent ~$92",
-   "status": "Materially changed",
-   "rationale": "Energy/geopolitical risk",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "kyiv-strikes-nov22",
-   "first_seen": "2026-11-23",
-   "headline": "Weekend Russian strikes on Kyiv region: at least 15 dead (Kyiv Post), mostly Dymer apartment block; Vyshneve supermarket 2 dead; Zelenskyy seeks PURL Patriots; Ryabkov rejected NATO-style guarantees Nov 20",
-   "status": "Materially changed",
-   "rationale": "War casualties, diplomacy",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "yields-up-2y-auction-nov23",
-   "first_seen": "2026-11-23",
-   "headline": "Monday early: 2Y 4.689 (+7bp), 10Y 4.959 (+4), 30Y 5.335 (CNBC); Fri par 2Y 4.63, 10Y 4.92; $69B 2Y Mon 1PM (prior 4.708%), $70B 5Y + $28B FRN Tue, $44B 7Y Wed; Dec +25 ~96%",
-   "status": "Continuing",
-   "rationale": "Treasury supply in holiday week",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-pm.html",
-   "updated": "2026-11-23-pm",
-   "id": "crwd-zs-deal",
-   "first_seen": "2026-11-23",
-   "headline": "CRWD -8.9% to $208.97, ZS +17.7% to $229.24; offer now ~$237 (spread ~3.5%)",
-   "status": "Continuing",
-   "rationale": "Major M&A, software/cyber",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "trump-huang-post-nov22",
-   "first_seen": "2026-11-23",
-   "headline": "Trump Truth Social Sun night urges Nvidia board to reinstate Huang; NYT: Alice Huang in contact with China MSS officer 2025-26 (anonymous sources); Bessent CBS: still 'needs answers', MSS angle 'kind of a canard'; NVDA ~+8.5% premarket (CNBC 4:08); Dec 1 congressional questioning (single, unconfirmed)",
-   "status": "Materially changed",
-   "rationale": "Largest index weight; governance/legal driver",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "futures-rebound-nov23",
-   "first_seen": "2026-11-23",
-   "headline": "S&P futures +2.1-2.9%, NQ +3-3.8%, Dow +~1,000 premarket Nov 23 after S&P -8.6% week (6,910.39, 7 straight losses); Kospi -3.31% 4,708.54; Taiex +2.2% midday; Japan closed; Stoxx +0.5-0.7%",
-   "status": "New",
-   "rationale": "Market lead; tests whether sell-off was positioning",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "week-nov23-watch",
-   "first_seen": "2026-11-22",
-   "headline": "Week of Nov 23 watch: PCE/GDP/claims Wed 8:30, Beige Book Wed 2PM, Dell/WDAY/HPQ Tue AMC, HPE Mon, $183B 2/5/7Y auctions, Thanksgiving closed Thu, 1PM close Fri, Fed blackout from Nov 28",
-   "status": "Continuing",
-   "rationale": "Week-ahead calendar",
-   "keep_on_watchlist": true
-  },
-  {
-   "last_seen": "2026-11-23",
-   "last_report": "reports/2026/11/2026-11-23-am.html",
-   "updated": "2026-11-23-am",
-   "id": "araghchi-hormuz-nov21",
-   "first_seen": "2026-11-21",
-   "headline": "Araghchi in Muscat: Hormuz stays shut until US meets Iran's conditions; Oman working on shipping",
-   "status": "New",
-   "rationale": "Gulf/oil; Iranian state-aligned sources"
-  },
-  {
-   "last_seen": "2026-11-22",
-   "last_report": "reports/2026/11/2026-11-22-sun.html",
-   "updated": "2026-11-22-sun",
-   "id": "kyiv-dymer-strikes-nov22",
-   "first_seen": "2026-11-22",
-   "headline": "Russian strikes: Dymer apartment block (2+ dead, 11-14 trapped), Kryvyi Rih 60 wounded",
-   "status": "New",
-   "rationale": "War; casualties preliminary"
   }
  ],
  "updated": "2026-11-26T11:45:54Z"

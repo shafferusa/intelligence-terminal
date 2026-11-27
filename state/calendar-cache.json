@@ -1,40 +1,8 @@
 {
- "fetched": "2026-11-26T06:45:54-05:00",
+ "fetched": "2026-11-27T06:40:00-05:00",
  "earnings_fetched": "2026-11-22",
- "earnings_fetched_note": "2026-11-25 am: Finnhub Nov 25-Dec 2 fetched; Alpha Vantage not fetched; BLS ICS not fetched.",
+ "earnings_fetched_note": "2026-11-27 am: Finnhub Nov 27-Dec 4 fetched; Alpha Vantage not fetched; BLS ICS 403.",
  "events": [
-  {
-   "ts_et": "2026-11-26T00:00",
-   "type": "market",
-   "name": "Thanksgiving: US markets closed",
-   "importance": "High",
-   "reason": "Holiday",
-   "source": "data/nyse-holidays.json"
-  },
-  {
-   "ts_et": "2026-11-26T07:30",
-   "type": "cb",
-   "name": "ECB account of Oct 28-29 meeting",
-   "importance": "Low",
-   "reason": "ECB Dec 17 path",
-   "source": "FXStreet calendar"
-  },
-  {
-   "ts_et": "2026-11-26T18:30",
-   "type": "data",
-   "name": "Tokyo CPI Nov",
-   "importance": "Medium",
-   "reason": "BoJ Dec 18; yen near 160",
-   "source": "Compiled calendars"
-  },
-  {
-   "ts_et": "2026-11-26T19:05",
-   "type": "launch",
-   "name": "Electron StriX launch 14 (Mahia)",
-   "importance": "Low",
-   "reason": "Rocket Lab cadence",
-   "source": "Launch Library 2"
-  },
   {
    "ts_et": "2026-11-27T13:00",
    "type": "market",
@@ -100,6 +68,14 @@
    "source": "Punchbowl; Supreme Court calendar"
   },
   {
+   "ts_et": "2026-11-30T11:30",
+   "type": "auction",
+   "name": "13-week $95B and 26-week $82B bill auctions",
+   "importance": "Low",
+   "reason": "Bill supply",
+   "source": "TreasuryDirect"
+  },
+  {
    "ts_et": "2026-12-01T00:00",
    "type": "politics",
    "name": "Huang, Teter closed-door interviews with three House committees (Dec 1-2)",
@@ -132,6 +108,14 @@
    "source": "Finnhub"
   },
   {
+   "ts_et": "2026-12-01T16:05",
+   "type": "earnings",
+   "name": "PVH; NIO (BMO)",
+   "importance": "Low",
+   "reason": "Retail/China EV",
+   "source": "Finnhub"
+  },
+  {
    "ts_et": "2026-12-02T16:05",
    "type": "earnings",
    "name": "Salesforce, Snowflake (AMC)",
@@ -154,6 +138,22 @@
    "importance": "Low",
    "reason": "No merger proposal on proxy",
    "source": "TechCrunch"
+  },
+  {
+   "ts_et": "2026-12-03T07:00",
+   "type": "earnings",
+   "name": "Kroger, Dollar General (BMO); Ulta (AMC); Macy's",
+   "importance": "Medium",
+   "reason": "Consumer read after Black Friday",
+   "source": "Finnhub"
+  },
+  {
+   "ts_et": "2026-12-07T00:00",
+   "type": "cb",
+   "name": "European Parliament hearing for Hernandez de Cos (ECB president nominee)",
+   "importance": "Low",
+   "reason": "ECB leadership",
+   "source": "EU Reporter"
   },
   {
    "ts_et": "2026-12-09T14:00",

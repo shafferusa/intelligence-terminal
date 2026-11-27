@@ -8485,6 +8485,46 @@
    "probability": "65-80%",
    "basis": "Widely expected after two 2026 hikes (FXStreet preview)",
    "status": "open"
+  },
+  {
+   "id": "2026-11-27-am-1",
+   "date": "2026-11-27",
+   "slot": "am",
+   "forecast": "The S&P 500 closes on Nov 27 above Wednesday's 7,182.78.",
+   "horizon": "2026-11-27",
+   "probability": "80-92%",
+   "basis": "ES +1.74% vs Wed settle at 6:27 AM after Asia/Europe rally; short session, thin liquidity",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-27-am-2",
+   "date": "2026-11-27",
+   "slot": "am",
+   "forecast": "The VIX closes on Nov 27 below 26.",
+   "horizon": "2026-11-27",
+   "probability": "65-80%",
+   "basis": "VIX 24.96 at 6:23 AM vs 28.29 Wed close; futures strongly higher",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-27-am-3",
+   "date": "2026-11-27",
+   "slot": "am",
+   "forecast": "The Fed raises its target range by exactly 25bp on Dec 9.",
+   "horizon": "2026-12-09",
+   "probability": "85-93%",
+   "basis": "Hike priced ~95%+; blackout from Nov 28; residual risk of 50bp (Waller) or hold",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-27-am-4",
+   "date": "2026-11-27",
+   "slot": "am",
+   "forecast": "OPEC+ leaves current production quotas unchanged for Q1 2027 at its Nov 29 meeting.",
+   "horizon": "2026-11-29",
+   "probability": "55-75%",
+   "basis": "Delegates reportedly weighing rollover; capacity audit late; Gulf disruption cuts both ways",
+   "status": "open"
   }
  ]
 }
