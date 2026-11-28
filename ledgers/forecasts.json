@@ -8004,7 +8004,10 @@
    "horizon": "2026-11-23",
    "probability": "45-60%",
    "basis": "Seven-day streaks usually see a bounce and market oversold; offset by close 0.4% above day low, VIX 35.89 with inverted curve, thin holiday week",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. S&P 500 closed Nov 23 at 7,237.17 (+4.73%).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-20-pm-2",
@@ -8014,7 +8017,10 @@
    "horizon": "2026-11-23",
    "probability": "55-70%",
    "basis": "Closed 35.89 (high 40.03), VIX9D 40.72; would need a >16% one-day drop",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. VIX closed Nov 23 at 26.62.",
+   "graded": "2026-11-28",
+   "lesson": "A broad 4-5% rally removed far more volatility premium than we allowed; inverted curves can normalise in one session."
   },
   {
    "id": "2026-11-21-sat-1",
@@ -8024,7 +8030,10 @@
    "horizon": "2026-11-27",
    "probability": "50-65%",
    "basis": "Deeply oversold breadth and an inverted VIX curve have usually preceded rebounds within one to two weeks, but rebounds failed four times this week.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. S&P 500 closed Nov 27 at 7,297.49, +5.60% on the week.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-21-sat-2",
@@ -8034,7 +8043,10 @@
    "horizon": "2026-11-25",
    "probability": "55-70%",
    "basis": "October core CPI +0.30% and core PPI +0.3%; Cook estimated headline PCE near 3.8% y/y.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. October core PCE +0.3% m/m (BEA, as reported).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-21-sat-3",
@@ -8044,7 +8056,10 @@
    "horizon": "2026-11-27",
    "probability": "30-45%",
    "basis": "Nov 20 low $83.05, close $88.91; underwriter support is common but undisclosed.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes, it happened: ANT closed at $81.91 on Nov 24 and $82.79 on Nov 25, below the $83 offer; it closed the week at $91.88.",
+   "graded": "2026-11-28",
+   "lesson": "Five cents of headroom on Friday was a stronger signal than we credited; we leaned on undisclosed underwriter support."
   },
   {
    "id": "2026-11-21-sat-4",
@@ -8054,7 +8069,10 @@
    "horizon": "2026-11-27",
    "probability": "45-60%",
    "basis": "Inverted term structures tend to normalise within days or weeks and holiday weeks are usually quieter; Wednesday's data cluster cuts the other way.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. VIX closed Nov 27 at 23.81.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-1",
@@ -8064,7 +8082,10 @@
    "horizon": "2026-11-27",
    "probability": "50-62%",
    "basis": "Oversold readings and an inverted VIX curve usually precede rebounds within 1-2 weeks; Thanksgiving weeks lean positive historically; last week broke that pattern four times.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 7,297.49.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-2",
@@ -8074,7 +8095,10 @@
    "horizon": "2026-11-27",
    "probability": "45-55%",
    "basis": "Base case: data cluster and Dell can swing it, but a 3.5-day holiday week limits range; VIX ~36 implies ~2.3% daily moves.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. The S&P 500 closed 5.6% above 6,910.39, outside the 3% band.",
+   "graded": "2026-11-28",
+   "lesson": "After a capitulation-like week the rebound tail was as fat as the decline tail; our base band was too narrow on the upside."
   },
   {
    "id": "2026-11-22-sun-3",
@@ -8084,7 +8108,10 @@
    "horizon": "2026-11-27",
    "probability": "10-18%",
    "basis": "Tail after an 8.6% week; last week's tails were badly underpriced.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No fall of more than 5%; the index rose 5.6%.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-4",
@@ -8094,7 +8121,10 @@
    "horizon": "2026-11-27",
    "probability": "8-15%",
    "basis": "Relief rallies after capitulation-like Fridays can be sharp, but four rallies faded last week.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes, it happened: close 7,297.49, above 7,255.91.",
+   "graded": "2026-11-28",
+   "lesson": "We gave a >5% rally only 8-15% because four rallies had faded the week before; one decisive catalyst (the Huang reinstatement) broke that pattern on day one."
   },
   {
    "id": "2026-11-22-sun-5",
@@ -8104,7 +8134,10 @@
    "horizon": "2026-11-25",
    "probability": "35-50%",
    "basis": "Forecasts split 3.2% (most calendars) vs 3.3% (RBC); core CPI/PPI firm.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes, it happened: core PCE 3.3% y/y.",
+   "graded": "2026-11-28",
+   "lesson": "Where calendars split between two roundings, the firmer CPI/PPI read-through deserved more than even odds."
   },
   {
    "id": "2026-11-22-sun-6",
@@ -8114,7 +8147,10 @@
    "horizon": "2026-11-25",
    "probability": "60-75%",
    "basis": "Advance 3.4%; second estimates usually revise by a few tenths; retail control group revised up.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Q3 GDP second estimate 4.3% (from 3.4%).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-7",
@@ -8124,7 +8160,10 @@
    "horizon": "2026-11-27",
    "probability": "60-75%",
    "basis": "4.92% on Nov 20 after a 23 bp rally; flight-to-safety bid vs heavy supply and a firm PCE risk.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 10-year par 4.94% on Nov 27 (Treasury).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-8",
@@ -8134,7 +8173,10 @@
    "horizon": "2026-11-25",
    "probability": "50-65%",
    "basis": "$183B of supply after a 25 bp rally; three tails in the November refunding, but the 20-year went well.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. The 5-year tailed by 0.3 bp (4.719% vs 4.716% when-issued, as reported); the 2-year stopped through.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-9",
@@ -8144,7 +8186,10 @@
    "horizon": "2026-11-25",
    "probability": "55-70%",
    "basis": "Fell 11% on Friday, 53% below its 52-week high; AI-hardware names moved sharply on results.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No on the close: Dell closed Nov 25 at $297.06, +0.60% vs $295.28, though it traded 10.3% lower intraday.",
+   "graded": "2026-11-28",
+   "lesson": "State whether a move forecast means the close or the intraday range; we meant the close."
   },
   {
    "id": "2026-11-22-sun-10",
@@ -8154,7 +8199,10 @@
    "horizon": "2026-11-27",
    "probability": "50-60%",
    "basis": "Deeply oversold after a 23% week; regulator news risk two-sided.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. Nvidia closed Nov 27 at $150.49.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-11",
@@ -8164,7 +8212,10 @@
    "horizon": "2026-11-27",
    "probability": "20-35%",
    "basis": "10-Q 'in the coming weeks'; Bessent's ten-day request ends ~Nov 25; holiday week.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No confirmation of an SEC inquiry by Nvidia and no 10-Q filing found by Nov 27 (EDGAR not checked directly; SEC access paused).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-12",
@@ -8174,7 +8225,10 @@
    "horizon": "2026-11-27",
    "probability": "65-80%",
    "basis": "35.89 on Nov 20 with an inverted curve; normalisation usually takes more than a week from these levels.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. VIX closed Nov 27 at 23.81.",
+   "graded": "2026-11-28",
+   "lesson": "Normalisation from 36 took one week, not several; holiday-week compression was stronger than we assumed."
   },
   {
    "id": "2026-11-22-sun-13",
@@ -8184,7 +8238,10 @@
    "horizon": "2026-11-27",
    "probability": "15-25%",
    "basis": "$60,723 Sunday morning; ~7% weekly declines recently; 52-week low ~$55,150.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. Bitcoin stayed above $55,000; lowest seen about $57,300 (Nov 25).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-14",
@@ -8194,7 +8251,10 @@
    "horizon": "2026-11-27",
    "probability": "10-20%",
    "basis": "3.52 on Nov 19, +29 bp in a week; would need a further ~50 bp.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. HY OAS peaked at 3.77 (Nov 25-26, FRED).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-15",
@@ -8204,7 +8264,10 @@
    "horizon": "2026-11-27",
    "probability": "18-30%",
    "basis": "~$90-93 depending on contract; glut forecasts vs Gulf/Baltic risk.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No. Brent stayed inside $85-97: the expiring January contract traded about $94-95 into Friday and February ended near $90.84 (Yahoo; Anadolu).",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-16",
@@ -8214,7 +8277,10 @@
    "horizon": "2026-11-27",
    "probability": "75-88%",
    "basis": "~97% on Nov 20; only a very soft PCE plus weak markets would cut it below 80%.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. FedWatch about 98.9% for a Dec 9 rise on Nov 27, as reported.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-17",
@@ -8224,7 +8290,10 @@
    "horizon": "2026-11-27",
    "probability": "45-55%",
    "basis": "Scenario matrix; core PCE 0.3%, Dell in line, no Nvidia surprise.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. The index ended 5.6% above 6,910.39, outside the base band.",
+   "graded": "2026-11-28",
+   "lesson": "Same as the range call above: our scenario matrix put too little weight on a sharp relief rally."
   },
   {
    "id": "2026-11-22-sun-18",
@@ -8234,7 +8303,10 @@
    "horizon": "2026-11-27",
    "probability": "15-25%",
    "basis": "Scenario matrix; soft PCE, Dell raises AI outlook.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes, the bull case happened: +5.6% to 7,297.49 (above 7,186.81).",
+   "graded": "2026-11-28",
+   "lesson": "The bull trigger was a governance decision, not the data we listed; scenario triggers should include company-specific catalysts."
   },
   {
    "id": "2026-11-22-sun-19",
@@ -8244,7 +8316,10 @@
    "horizon": "2026-11-27",
    "probability": "15-25%",
    "basis": "Scenario matrix; weak Asia, Dell cuts, hot PCE.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The bear case did not happen.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-22-sun-20",
@@ -8254,7 +8329,10 @@
    "horizon": "2026-11-27",
    "probability": "5-10%",
    "basis": "Scenario matrix; formal SEC action at Nvidia, forced deleveraging, or NATO-involved military event.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The shock case did not happen; HY OAS peaked at 3.77.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-23-am-1",
@@ -8264,7 +8342,10 @@
    "horizon": "2026-11-23",
    "probability": "72-85%",
    "basis": "Futures up 2.1-2.9% premarket, Europe higher; risk of intraday reversal as on Nov 19.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 7,237.17.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-23-am-2",
@@ -8274,7 +8355,10 @@
    "horizon": "2026-11-23",
    "probability": "40-55%",
    "basis": "Holding most of a ~2.5% futures gain through a full session after an 8.6% weekly fall.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Yes, it happened: S&P +4.73%. Our range (40-55%) leaned against it; Monday's evening edition counted it correct, the Saturday scorecard regrades it on the midpoint.",
+   "graded": "2026-11-28",
+   "lesson": "Futures up 2-3% before a session after a capitulation week deserved better than even odds of holding 2%."
   },
   {
    "id": "2026-11-23-am-3",
@@ -8284,7 +8368,10 @@
    "horizon": "2026-11-23",
    "probability": "45-60%",
    "basis": "Closed 35.89 Nov 20 with deep short-end inversion; a broad 2-3% rally usually removes several points; holiday week keeps hedging demand.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. VIX 26.62.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-23-am-4",
@@ -8294,7 +8381,10 @@
    "horizon": "2026-11-23",
    "probability": "75-88%",
    "basis": "About +8.5% premarket (CNBC 4:08 AM) after Trump's Sunday appeal; risk of company rebuttal or SEC headlines.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $165.05.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-23-pm-1",
@@ -8304,7 +8394,10 @@
    "horizon": "2026-11-24",
    "probability": "45-60%",
    "basis": "Next-day follow-through after very large up days is roughly a coin flip; late futures slightly firmer.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. S&P closed Nov 24 at 7,201.09.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-23-pm-2",
@@ -8314,7 +8407,10 @@
    "horizon": "2026-11-24",
    "probability": "40-55%",
    "basis": "Closed 26.62 with near-flat short end; Dell and Wednesday data keep hedge demand up.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "VIX did not close below 25 on Nov 24 (26.36); our range leaned against it.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-23-pm-3",
@@ -8324,7 +8420,10 @@
    "horizon": "2026-11-24",
    "probability": "75-88%",
    "basis": "Requires a fall of more than 9%, seen only on its worst days this month.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $155.38.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-24-am-1",
@@ -8334,7 +8433,10 @@
    "horizon": "2026-11-24",
    "probability": "55-70%",
    "basis": "Futures -0.88% at 6:31 AM, Nasdaq-100 -1.70%; Monday's breadth was broad and dips were bought.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 7,201.09.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-24-am-2",
@@ -8344,7 +8446,10 @@
    "horizon": "2026-11-24",
    "probability": "70-82%",
    "basis": "Premarket ~$157 (6:41 AM); needs a further ~4.5% fall; Treasury/SEC news is the risk.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $155.38.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-24-am-3",
@@ -8354,7 +8459,10 @@
    "horizon": "2026-11-24",
    "probability": "65-80%",
    "basis": "28.8 at 6:26 AM; term structure inverted; PCE and holiday ahead.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 26.36.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-24-am-4",
@@ -8364,7 +8472,10 @@
    "horizon": "2026-11-24",
    "probability": "70-85%",
    "basis": "5Y par 4.74% Monday; yields slightly lower this morning; 2Y auction smooth.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 5-year high yield 4.719%.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-24-pm-1",
@@ -8374,7 +8485,10 @@
    "horizon": "2026-11-25",
    "probability": "60-75%",
    "basis": "Consensus +0.3%; October core CPI rose 0.30%; one rounding step either way decides it.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. +0.3%.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-24-pm-2",
@@ -8384,7 +8498,10 @@
    "horizon": "2026-11-25",
    "probability": "50-62%",
    "basis": "Dell beat after hours and pre-holiday sessions lean positive; PCE at 8:30 AM is a two-way risk.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No. S&P closed Nov 25 at 7,182.78 (-0.25%), after a 3.2% intraday fall.",
+   "graded": "2026-11-28",
+   "lesson": "Asian chip selling overnight showed up in futures; the after-hours Dell beat was the wrong anchor."
   },
   {
    "id": "2026-11-24-pm-3",
@@ -8394,7 +8511,8 @@
    "horizon": "2026-11-25",
    "probability": "50-65%",
    "basis": "The 5-year tailed 0.3 bp with the lowest indirect share since 2020; recent coupon sales have mostly tailed.",
-   "status": "open"
+   "status": "open",
+   "note": "Not graded 2026-11-28: the 7-year when-issued yield was not found in any source we could read; stays open until verified."
   },
   {
    "id": "2026-11-24-pm-4",
@@ -8404,7 +8522,10 @@
    "horizon": "2026-11-25",
    "probability": "65-80%",
    "basis": "Shares +3-4% after hours on a large beat and higher guidance; margin worries and PCE are the risks.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $297.06.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-25-am-1",
@@ -8414,7 +8535,10 @@
    "horizon": "2026-11-25",
    "probability": "75-88%",
    "basis": "Futures -1.76% at 6:29 AM after Asian chip sell-off; VIX 29.8; a soft PCE and dip buying are the risks.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes, narrowly: 7,182.78 vs 7,201.09, after a low of 6,970.11.",
+   "graded": "2026-11-28",
+   "lesson": "Right on the close, but the reversal from -3.2% shows how little a 6:30 AM futures read says about the close."
   },
   {
    "id": "2026-11-25-am-2",
@@ -8424,7 +8548,10 @@
    "horizon": "2026-11-25",
    "probability": "65-80%",
    "basis": "Consensus 0.3%; Sep core 0.32%; Oct core CPI 0.30%; CPI-to-PCE mapping largely known.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. +0.3%.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-25-am-3",
@@ -8434,7 +8561,10 @@
    "horizon": "2026-11-25",
    "probability": "75-88%",
    "basis": "Premarket ~$147.41 (-5.1%) at 6:41 AM; would need to recover all of it intraday.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. $149.30.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-25-am-4",
@@ -8444,7 +8574,10 @@
    "horizon": "2026-11-25",
    "probability": "78-90%",
    "basis": "29.76 at ~6:24 AM, inverted term structure, data and holiday ahead.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 28.29.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-25-am-5",
@@ -8464,7 +8597,10 @@
    "horizon": "2026-11-27",
    "probability": "55-70%",
    "basis": "ES +0.55% at 06:28 Thu, Asia/Europe rally; offset by thin holiday trading and VIX ~28",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 7,297.49.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-26-am-2",
@@ -8494,7 +8630,10 @@
    "horizon": "2026-11-27",
    "probability": "80-92%",
    "basis": "ES +1.74% vs Wed settle at 6:27 AM after Asia/Europe rally; short session, thin liquidity",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 7,297.49.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-27-am-2",
@@ -8504,7 +8643,10 @@
    "horizon": "2026-11-27",
    "probability": "65-80%",
    "basis": "VIX 24.96 at 6:23 AM vs 28.29 Wed close; futures strongly higher",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Yes. 23.81.",
+   "graded": "2026-11-28",
+   "lesson": "No lesson beyond the outcome."
   },
   {
    "id": "2026-11-27-am-3",
@@ -8554,6 +8696,56 @@
    "horizon": "2026-11-30",
    "probability": "80-90%",
    "basis": "Final published polls (40dB PP 31.5 vs PSOE 30.3; averages PP lead ~5pts) and prediction markets ~83% for Feijoo as PM; CIS outlier shows PSOE ahead",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-28-sat-1",
+   "date": "2026-11-28",
+   "slot": "sat",
+   "forecast": "S&P 500 closes Fri Dec 4, 2026 above 7,297.49 (Nov 27 close).",
+   "horizon": "2026-12-04",
+   "probability": "45-60%",
+   "basis": "Rebounds after corrections often extend, but Friday was a thin half-day and the week brings ISM, payrolls, Huang testimony and Fed-path risk; month-end Monday.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-28-sat-2",
+   "date": "2026-11-28",
+   "slot": "sat",
+   "forecast": "VIX closes Fri Dec 4, 2026 below 25.",
+   "horizon": "2026-12-04",
+   "probability": "55-70%",
+   "basis": "23.81 on Nov 27 with a nearly flat term structure; payrolls on Dec 4 and Huang hearings keep event risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-28-sat-3",
+   "date": "2026-11-28",
+   "slot": "sat",
+   "forecast": "Chuck Schumer is re-elected Senate Democratic leader in the Dec 1, 2026 caucus vote.",
+   "horizon": "2026-12-01",
+   "probability": "75-88%",
+   "basis": "Public endorsements favour Schumer about 16 to 6 and Polymarket ~92%; secret ballot and ~30 undeclared senators are the risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-28-sat-4",
+   "date": "2026-11-28",
+   "slot": "sat",
+   "forecast": "10-year Treasury par yield on Fri Dec 4, 2026 is between 4.75% and 5.10%.",
+   "horizon": "2026-12-04",
+   "probability": "60-75%",
+   "basis": "4.94% on Nov 27; weekly moves of 15-25 bp were common this month; payrolls is the main swing factor.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-28-sat-5",
+   "date": "2026-11-28",
+   "slot": "sat",
+   "forecast": "Anthropic (ANT) closes Fri Dec 4, 2026 above its $83 IPO price.",
+   "horizon": "2026-12-04",
+   "probability": "60-75%",
+   "basis": "$91.88 on Nov 27 after two closes below $83; the Dec 15 lock-up expiry and AI-sentiment swings are the risk.",
    "status": "open"
   }
  ]

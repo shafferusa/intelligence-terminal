@@ -1,6 +1,72 @@
 {
  "stories": [
   {
+   "id": "huang-hearings-dec1-3",
+   "headline": "Huang closed-door House interviews Dec 1-2, Senate Banking 10 AM Dec 3; Gentlemen ransomware countdown Nov 28, no leak seen Sat AM",
+   "status": "Continuing",
+   "rationale": "Nvidia/Congress",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-28",
+   "last_seen": "2026-11-28",
+   "last_report": "reports/2026/11/2026-11-28-sat.html",
+   "updated": "2026-11-28-sat"
+  },
+  {
+   "id": "ukraine-drones-nov28",
+   "headline": "Russia claims 1,246 Ukrainian drones downed overnight Nov 27-28; Kursk 1 dead 9 hurt; >=9 Ukrainian civilians killed Sat (France 24); unverified",
+   "status": "New",
+   "rationale": "War",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-28",
+   "last_seen": "2026-11-28",
+   "last_report": "reports/2026/11/2026-11-28-sat.html",
+   "updated": "2026-11-28-sat"
+  },
+  {
+   "id": "spain-election-nov29",
+   "headline": "Spain votes Sun Nov 29: final 40dB PP 31.5, PSOE 30.3, Vox 18; PP+Vox ~190-210 of 350; Feijoo ~83% markets",
+   "status": "New",
+   "rationale": "Europe election",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-28",
+   "last_seen": "2026-11-28",
+   "last_report": "reports/2026/11/2026-11-28-sat.html",
+   "updated": "2026-11-28-sat"
+  },
+  {
+   "id": "btc-weekend-nov28",
+   "headline": "BTC $59,076 Sat 9:15 AM (CoinGecko, -3.7% 24h), ETH $1,641; total cap $2.06T",
+   "status": "New",
+   "rationale": "Crypto weekend",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-28",
+   "last_seen": "2026-11-28",
+   "last_report": "reports/2026/11/2026-11-28-sat.html",
+   "updated": "2026-11-28-sat"
+  },
+  {
+   "id": "opec-nov29",
+   "headline": "OPEC+ online meeting Sun Nov 29: Reuters (2 sources) and Oman Observer (3) expect Q1 2027 targets rolled over; capacity audit dispute (Iraq), Novak: finish by year-end",
+   "status": "New",
+   "rationale": "Oil/macro",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-28",
+   "last_seen": "2026-11-28",
+   "last_report": "reports/2026/11/2026-11-28-sat.html",
+   "updated": "2026-11-28-sat"
+  },
+  {
+   "id": "weekly-rebound-nov27",
+   "headline": "Week Nov 23-27: S&P +5.60% to 7,297.49 (best since Apr 2025), Nasdaq +6.68%, Dow +5.46%, R2K +6.53%; VIX 35.89->23.81; Nov MTD S&P -3.7%; HY OAS 3.77 widest of sell-off",
+   "status": "New",
+   "rationale": "Lead: weekly review",
+   "keep_on_watchlist": true,
+   "first_seen": "2026-11-28",
+   "last_seen": "2026-11-28",
+   "last_report": "reports/2026/11/2026-11-28-sat.html",
+   "updated": "2026-11-28-sat"
+  },
+  {
    "id": "halfday-rally-nov27",
    "headline": "S&P 7,297.49 +1.60% (range 7,211-7,304), Nasdaq 24,129.50 +2.31%, Dow 50,774.94 +1.18%, R2K 2,750.30 +1.71%; week S&P +5.6% best since Apr 2025; Nov MTD S&P -3.7%; all 11 sectors up; RSP +1.22% lagged; SPY vol 39M vs 65M",
    "status": "New",
@@ -57,10 +123,10 @@
   },
   {
    "id": "afp-intrusion-unconfirmed",
-   "headline": "Am edition reported AFP Forum intrusion Nov 26 (The Next Web, Arab News); pm research found only 2024 coverage; treated as unconfirmed, no correction logged pending AFP comment",
+   "headline": "Am edition reported AFP Forum intrusion Nov 26 (The Next Web, Arab News); pm research found only 2024 coverage; treated as unconfirmed, no correction logged pending AFP comment; Sat review: still unconfirmed, no AFP statement found",
    "status": "Unconfirmed",
    "rationale": "Verification follow-up",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-27",
    "last_seen": "2026-11-27",
    "last_report": "reports/2026/11/2026-11-27-pm.html",
@@ -170,7 +236,7 @@
    "headline": "Thanksgiving: Stoxx 600 +1.75% 636.98, DAX +2.08%, FTSE +1.75%, CAC +1.61%; ES +0.54% 7,234.50 at 1 PM halt; ZN -0.20%",
    "status": "New",
    "rationale": "Lead; holiday tape",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
    "last_report": "reports/2026/11/2026-11-26-pm.html",
@@ -214,7 +280,7 @@
    "headline": "EU summit day 1: no MFF 2028-34 deal (Macron 'no agreement at this summit'), EUR45B Ukraine loan split (HU/CZ/SK out); conclusions Fri; next summit Dec 17-18",
    "status": "New",
    "rationale": "Europe/Ukraine financing",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
    "last_report": "reports/2026/11/2026-11-26-pm.html",
@@ -225,7 +291,7 @@
    "headline": "Thanksgiving storm: outages >1M early, ~660-800K later (VA 200K+, MO 120K+ snow); ~400 cancels, 1,200+ delays by noon; Philly parade cancelled; no confirmed deaths",
    "status": "New",
    "rationale": "US disaster/travel",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
    "last_report": "reports/2026/11/2026-11-26-pm.html",
@@ -269,7 +335,7 @@
    "headline": "Macy's 100th parade postponed to Sat Nov 28 8:30 AM (gusts to 60 mph), first ever; East Coast storm, travel waivers",
    "status": "New",
    "rationale": "US human interest",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
    "last_report": "reports/2026/11/2026-11-26-pm.html",
@@ -346,7 +412,7 @@
    "headline": "Thu: Taiex +2.50% 39,151.81, HSI +1.19% (ends 7-day slide), Nikkei +0.86%, Kospi +0.29%, Shanghai flat; Stoxx 600 +1.63% 06:23; ES +0.55% 7,235, NQ +0.50%; tariff plan read as capped for allies",
    "status": "New",
    "rationale": "Lead: market tape on holiday",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-26",
    "last_seen": "2026-11-26",
    "last_report": "reports/2026/11/2026-11-26-am.html",
@@ -445,7 +511,7 @@
    "headline": "Futures ES -1.76%, NQ -2.71% at 6:29; Kospi -6.16% 4,697.51, Taiex -4.80%, Nikkei -2.78%; NVDA ~$147 pre (-5.1%); VIX 29.8; breadth Nov 24 2,865/2,515, 29.8% >50EMA",
    "status": "Resolved",
    "rationale": "Lead: market-moving",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-25",
    "last_seen": "2026-11-25",
    "last_report": "reports/2026/11/2026-11-25-am.html",
@@ -456,7 +522,7 @@
    "headline": "Dell rev $54.94B, EPS $9.45, AI orders $60.2B, backlog $132.3B, FY rev ~$202B, $25B buyback; -7.1% premarket to $274.21",
    "status": "Resolved",
    "rationale": "AI hardware read-through",
-   "keep_on_watchlist": true,
+   "keep_on_watchlist": false,
    "first_seen": "2026-11-24",
    "last_seen": "2026-11-25",
    "last_report": "reports/2026/11/2026-11-25-am.html",
@@ -614,7 +680,7 @@
    "headline": "ES -0.88%, NQ -1.70% at 6:31 after S&P +4.73% (7,237.17); breadth Nov 23 4,712/902, 26.8% >50EMA; Taiex +9.0%, Kospi +6.32% 5,006, Nikkei +3.91%; VIX 28.8",
    "status": "New",
    "rationale": "Lead: market tape",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "last_seen": "2026-11-24",
@@ -636,7 +702,7 @@
    "headline": "2Y $69B 4.700% BTC 2.65; par Mon 2Y 4.63/5Y 4.74/10Y 4.92; Williams 'over time'; 5Y $70B + 2Y FRN $28B Tue 1PM; Dec 9 hike ~95%",
    "status": "Continuing",
    "rationale": "Fed/Treasury",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "last_seen": "2026-11-24",
@@ -647,7 +713,7 @@
    "headline": "HPE beat ($1.43 vs 1.27, FY27 $5.05-5.35) but -7% AH on gross margin 38.2%; Agilent +7-8% AH; DLTR $1.16 vs ~0.90, FY raised $8.05-8.25; MDT rev $9.36B miss, EPS $1.34; Dell/HPQ/WDAY/ADSK tonight",
    "status": "New",
    "rationale": "Earnings/AI hardware read",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "last_seen": "2026-11-24",
@@ -661,5 +727,5 @@
    "keep_on_watchlist": true
   }
  ],
- "updated": "2026-11-27T21:44:53Z"
+ "updated": "2026-11-28T14:22:04Z"
 }
